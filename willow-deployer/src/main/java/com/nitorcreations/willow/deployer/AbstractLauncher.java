@@ -2,10 +2,12 @@ package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_EXTRA_ENV_KEYS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WDIR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -26,7 +28,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	protected final String PROCESS_IDENTIFIER = new BigInteger(130, new SecureRandom()).toString(32);
 	protected final Set<String> launchArgs = new LinkedHashSet<String>();
 	protected Properties launchProperties;
-	
+	protected URI statUri;
 	protected WebSocketTransmitter transmitter;
 	protected Process child;
 	protected AtomicInteger returnValue= new AtomicInteger(-1);
@@ -68,6 +70,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			for (String nextKey : extraEnvKeys.split(",")) {
 				extraEnv.put(nextKey.trim(), properties.getProperty((nextKey.trim())));
 			}
+		}
+		try {
+			statUri = new URI(properties.getProperty(PROPERTY_KEY_STATISTICS_URI, "ws://localhost:5120/statistics"));
+		} catch (URISyntaxException e) {
 		}
 		workingDir = new File(properties.getProperty(PROPERTY_KEY_WDIR, "."));
 	}

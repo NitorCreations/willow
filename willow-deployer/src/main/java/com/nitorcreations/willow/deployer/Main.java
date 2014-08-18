@@ -1,6 +1,8 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_METHOD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -68,7 +70,9 @@ public class Main {
 		extractNativeLib(launchProperties);
 		WebSocketTransmitter transmitter = null;
         try {
-        	transmitter = WebSocketTransmitter.getSingleton(launchProperties);
+    		long flushInterval = Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
+    		String statUri = launchProperties.getProperty(PROPERTY_KEY_STATISTICS_URI, "ws://localhost:5120/statistics");
+        	transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
 		} catch (URISyntaxException e) {
 			usage(e.getMessage());
 		}

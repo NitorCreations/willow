@@ -13,9 +13,12 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_PREFIX_JAVA_ARGS                = "deployer.java.arg";
 	public static final String PROPERTY_KEY_RESOLVE_TRANSITIVE              = "deployer.artifact.transitive";
 	public static final String PROPERTY_KEY_MAIN_CLASS                      = "deployer.launch.mainclass";
+	public static final String PROPERTY_KEY_CLASSPATH                       = "deployer.launch.classpath";
+	public static final String PROPERTY_KEY_LAUNCH_JAR                      = "deployer.launch.jar";
 	public static final String PROPERTY_KEY_LAUNCH_BINARY                   = "deployer.launch.binary";
 	public static final String PROPERTY_KEY_LAUNCH_ARTIFACT                 = "deployer.launch.artifact";
 	public static final String PROPERTY_KEY_WDIR                            = "deployer.launch.wdir";
 	public static final String PROPERTY_KEY_EXTRA_ENV_KEYS                  = "deployer.launch.env.keys";
-	
+	public static final String PROPERTY_KEY_STATISTICS_URI                  = "deployer.statistics.uri";
+	public static final String PROPERTY_KEY_STATISTICS_FLUSHINTERVAL        = "deployer.statistics.flushinterval";
 }
