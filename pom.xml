@@ -25,6 +25,7 @@
     <module>willow-messages</module>
     <module>willow-servers</module>
     <module>willow-deployer</module>
+    <module>willow-simulate</module>
   </modules>
   <licenses>
     <license>
