@@ -5,8 +5,11 @@
     <groupId>com.nitorcreations</groupId>
     <artifactId>willow-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
   <artifactId>willow-servers</artifactId>
+  <name>Willow servers</name>
+  <description>Willow operational servlets and servers</description>
   <dependencies>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -97,7 +100,7 @@
                   implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                 <transformer
                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.nitorcreations.clustermetrics.MetricsServer</mainClass>
+                  <mainClass>com.nitorcreations.willow.metrics.MetricsServer</mainClass>
                 </transformer>
               </transformers>
             </configuration>
