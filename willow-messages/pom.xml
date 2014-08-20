@@ -4,7 +4,7 @@
   <artifactId>willow-messages</artifactId>
   <packaging>jar</packaging>
   <name>Willow messages</name>
-  <description>Cloud application deployer messages</description>
+  <description>Cloud application messages</description>
   <parent>
     <groupId>com.nitorcreations</groupId>
     <artifactId>willow-parent</artifactId>
