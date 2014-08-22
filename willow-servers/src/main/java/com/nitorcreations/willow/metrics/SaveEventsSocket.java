@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ public class SaveEventsSocket {
     @SuppressWarnings("unused")
     private Session session;
     private String path;
+	private List<String> tags;
     
     public SaveEventsSocket() {
         this.closeLatch = new CountDownLatch(1);
@@ -49,11 +51,13 @@ public class SaveEventsSocket {
         System.out.printf("Got connect: %s%n", session);
         this.session = session;
         path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
+        tags  = session.getUpgradeRequest().getParameterMap().get("tags");
     }
      
     @OnWebSocketMessage
     public void messageReceived(byte buf[], int offset, int length) {
     	try {
+    		Gson gson = new Gson();
     		for (AbstractMessage msgObject : mapping.decode(buf, offset, length)) {
     			MessageType type = mapping.map(msgObject.getClass());
     			Object stored = msgObject;
@@ -62,7 +66,11 @@ public class SaveEventsSocket {
     			} else if (type == MessageType.HASH) {
     				stored = ((HashMessage)msgObject).getMap();
     			}
-    			String source = "{ \"instance\" : \"" + path + "\", " + new Gson().toJson(stored).substring(1);
+    			String tagJson = "";
+    			if (tags != null && !tags.isEmpty()) {
+    				tagJson = "\"instancetags\":" + gson.toJson(tags) + ",";
+    			}
+    			String source = "{ \"instance\":\"" + path + "\"," + tagJson + gson.toJson(stored).substring(1);
     			System.out.println(source);
     			IndexResponse resp = client.prepareIndex(type.lcName(), type.lcName())
     					.setSource(source)
