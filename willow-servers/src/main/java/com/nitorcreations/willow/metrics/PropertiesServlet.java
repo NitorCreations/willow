@@ -60,7 +60,13 @@ public class PropertiesServlet implements Servlet {
 		ve.init();
 		VelocityContext context = new VelocityContext();
 		for (java.util.Map.Entry<String, String[]> next: request.getParameterMap().entrySet()) {
-			context.put(next.getKey(), String.join(",", next.getValue()));
+			boolean first=true;
+			StringBuilder buf = new StringBuilder();
+			for (String nextS : next.getValue()) {
+				if (!first) buf.append(",");
+				buf.append(nextS);
+			}
+			context.put(next.getKey(), buf.toString());
 		}
 		StringWriter out = new StringWriter();
 		Template t = ve.getTemplate(rootProps);
