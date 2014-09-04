@@ -10,15 +10,22 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SECURITY;
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +54,10 @@ public class MetricsServer {
         Server server = setupServer();
         setupServerConnector(server, port);
         ServletContextHandler context = setupServletContextHandler();
+        setupResourceBases(context);
         setupMetrics(context);
         setupStatistics(context);
+        setupTerminal(context);
         setupProxy(context);
         setupHandlers(server, context);
         server.start();
@@ -59,6 +68,23 @@ public class MetricsServer {
         LOG.info("Metrics and health checks available at http://localhost:" + port + "/metrics");
         return server;
     }
+    
+    private void setupResourceBases(final ServletContextHandler context) throws IOException {
+        List<String> resources = new ArrayList<>();
+        String index = "terminal-resources/index.html";
+        for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources(index); urls.hasMoreElements();) {
+            URL url = urls.nextElement();
+            resources.add(url.toString().replace(index, ""));
+        }
+        LOG.info("Terminal resources included from : " + resources.toString());
+        context.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
+        ServletHolder holder = context.addServlet(DefaultServlet.class, "/terminal-resources/*");
+        holder.setInitParameter("dirAllowed", "false");
+        holder.setInitParameter("gzip", "false");
+        holder.setDisplayName("terminal-resources");
+        holder.setInitOrder(1);
+    }
+
 
     private void setupProxy(ServletContextHandler context) {
     	context.addServlet(ElasticsearchProxy.class, "/search/*");
@@ -101,6 +127,11 @@ public class MetricsServer {
     private void setupStatistics(final ServletContextHandler context) {
         LOG.info("Enable statistics servlet");
     	context.addServlet(StatisticsServlet.class, "/statistics/*");
+    }
+
+    private void setupTerminal(final ServletContextHandler context) {
+        LOG.info("Enable statistics servlet");
+    	context.addServlet(TerminalServlet.class, "/terminal/*");
     }
     
     private RequestLogHandler createAccessLogHandler() throws URISyntaxException {
