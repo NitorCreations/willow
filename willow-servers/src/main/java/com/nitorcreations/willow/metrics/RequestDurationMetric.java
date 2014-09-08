@@ -6,7 +6,7 @@ import java.util.List;
 public class RequestDurationMetric extends SimpleMetric {
 
 	@Override
-	public String getIndex() {
+	public String getType() {
 		return "access";
 	}
 
