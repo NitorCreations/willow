@@ -54,7 +54,7 @@ public class MetricsServer {
         Server server = setupServer();
         setupServerConnector(server, port);
         ServletContextHandler context = setupServletContextHandler();
-        setupResourceBases(context);
+        setupResourceBases(context, "terminal-resources", "metrics-resources");
         setupMetrics(context);
         setupStatistics(context);
         setupTerminal(context);
@@ -69,20 +69,23 @@ public class MetricsServer {
         return server;
     }
     
-    private void setupResourceBases(final ServletContextHandler context) throws IOException {
-        List<String> resources = new ArrayList<>();
-        String index = "terminal-resources/index.html";
-        for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources(index); urls.hasMoreElements();) {
-            URL url = urls.nextElement();
-            resources.add(url.toString().replace(index, ""));
-        }
-        LOG.info("Terminal resources included from : " + resources.toString());
-        context.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
-        ServletHolder holder = context.addServlet(DefaultServlet.class, "/terminal-resources/*");
-        holder.setInitParameter("dirAllowed", "false");
-        holder.setInitParameter("gzip", "false");
-        holder.setDisplayName("terminal-resources");
-        holder.setInitOrder(1);
+    private void setupResourceBases(final ServletContextHandler context, String ... resourceBases) throws IOException {
+    	List<String> resources = new ArrayList<>();
+    	for (String next : resourceBases) {
+    		int i=1;
+    		String index = next + "/index.html";
+    		for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources(index); urls.hasMoreElements();) {
+    			URL url = urls.nextElement();
+    			resources.add(url.toString().replace(index, ""));
+    		}
+    		LOG.info("Resources included from : " + resources.toString());
+    		context.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
+    		ServletHolder holder = context.addServlet(DefaultServlet.class, "/" + next + "/*");
+    		holder.setInitParameter("dirAllowed", "false");
+    		holder.setInitParameter("gzip", "false");
+    		holder.setDisplayName("terminal-resources");
+    		holder.setInitOrder(i++);
+    	}
     }
 
 

@@ -1,5 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -30,6 +32,7 @@ public class SaveEventsSocket {
     private Session session;
     private String path;
 	private List<String> tags;
+	private String tagJson="";
     
     public SaveEventsSocket() {
         this.closeLatch = new CountDownLatch(1);
@@ -52,6 +55,9 @@ public class SaveEventsSocket {
         this.session = session;
         path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
         tags  = session.getUpgradeRequest().getParameterMap().get("tags");
+		if (tags != null && !tags.isEmpty()) {
+			tagJson = "\"tags\":" + new Gson().toJson(tags) + ",";
+		}
     }
      
     @OnWebSocketMessage
@@ -67,12 +73,9 @@ public class SaveEventsSocket {
     				stored = ((HashMessage)msgObject).getMap();
     			}
     			String tagJson = "";
-    			if (tags != null && !tags.isEmpty()) {
-    				tagJson = "\"instancetags\":" + gson.toJson(tags) + ",";
-    			}
     			String source = "{ \"instance\":\"" + path + "\"," + tagJson + gson.toJson(stored).substring(1);
     			System.out.println(source);
-    			IndexResponse resp = client.prepareIndex(type.lcName(), type.lcName())
+    			IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName())
     					.setSource(source)
     					.execute()
     					.actionGet(1000);
@@ -83,5 +86,13 @@ public class SaveEventsSocket {
     	} catch (Throwable e) {
     		e.printStackTrace();
     	}
+    }
+    
+    private static String getIndex(long timestamp) {
+    	Calendar cal = Calendar.getInstance();
+    	cal.setTime(new Date(timestamp));
+    	return String.format("%04d", cal.get(Calendar.YEAR)) + "-" + 
+				String.format("%02d", cal.get(Calendar.MONTH)) + "-" +
+				String.format("%02d", cal.get(Calendar.DAY_OF_MONTH));
     }
 }

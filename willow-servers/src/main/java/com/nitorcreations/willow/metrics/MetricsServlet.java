@@ -6,8 +6,12 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.Servlet;
@@ -24,6 +28,8 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -70,6 +76,7 @@ public class MetricsServlet implements Servlet {
 		long start = Long.parseLong(req.getParameter("start"));
 		long stop = Long.parseLong(req.getParameter("stop"));
 		int step = Integer.parseInt(req.getParameter("step"));
+		String tag = req.getParameter("tag");
 		double[] buckets = null;
 		if  (metric instanceof HistogramMetric) {
 			String[] bucketsStr = req.getParameter("buckets").split(",");
@@ -79,22 +86,25 @@ public class MetricsServlet implements Servlet {
 				buckets[i++] = Double.parseDouble(next);
 			}
 		}
-
-		SearchResponse response = client.prepareSearch(metric.getIndex(), metric.getIndex())
-				.setQuery(QueryBuilders.rangeQuery("timestamp")
-						.from(start - step)
-						.to(stop + step)
-						.includeLower(false)
-						.includeUpper(true))
-						.setSearchType(SearchType.QUERY_AND_FETCH)
-						.setSize(5000)
-						.addField("timestamp")
-						.addFields(metric.requiresFields()).get();
+		List<SearchResponse> responses = new ArrayList<>();
+		for (String index : getIndexes(start, stop)) {
+			responses.add(client.prepareSearch(index, metric.getType())
+					.setQuery(QueryBuilders.rangeQuery("timestamp")
+							.from(start - step)
+							.to(stop + step)
+							.includeLower(false)
+							.includeUpper(true))
+							.setSearchType(SearchType.QUERY_AND_FETCH)
+							.setSize(50000)
+							.addField("timestamp")
+							.addFields(metric.requiresFields())
+							.setPostFilter(FilterBuilders.termFilter("tags", tag)).get());
+		}
 		Object data=null;
 		if (metric instanceof HistogramMetric) {
-			data = ((HistogramMetric) metric).calculateHistogram(response, buckets, start, stop, step);
+			data = ((HistogramMetric) metric).calculateHistogram(responses, buckets, start, stop, step);
 		} else {
-			data = metric.calculateMetric(response, start, stop, step);
+			data = metric.calculateMetric(responses, start, stop, step);
 		}
 		res.setContentType("application/json");
 		Gson out = new Gson();
@@ -164,5 +174,25 @@ public class MetricsServlet implements Servlet {
 
 	public String randomNodeId() {
 		return new BigInteger(130, random).toString(32);
+	}
+	
+	private List<String> getIndexes(long start, long end) {
+		ArrayList<String> ret = new ArrayList<>();
+		Calendar startCal = Calendar.getInstance();
+		startCal.setTime(new Date(start));
+		startCal.set(Calendar.SECOND, 1);
+		startCal.set(Calendar.MINUTE, 0);
+		startCal.set(Calendar.HOUR_OF_DAY, 0);
+
+		Calendar endCal = Calendar.getInstance();
+		endCal.setTime(new Date(end));
+		
+		while (startCal.before(endCal)) {
+			ret.add(String.format("%04d", startCal.get(Calendar.YEAR)) + "-" + 
+				String.format("%02d", startCal.get(Calendar.MONTH)) + 
+				"-" + String.format("%02d", startCal.get(Calendar.DAY_OF_MONTH)));
+			startCal.add(Calendar.DAY_OF_YEAR, 1);
+		}
+		return ret;
 	}
 }

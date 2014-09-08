@@ -4,7 +4,7 @@ package com.nitorcreations.willow.metrics;
 public class PhysicalMemoryMetric extends SimpleMetric {
 
 	@Override
-	public String getIndex() {
+	public String getType() {
 		return "mem";
 	}
 
