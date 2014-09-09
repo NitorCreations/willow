@@ -44,7 +44,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				return q.findProcess(sigar);
 			} catch (Throwable e) {
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(500);
 				} catch (InterruptedException e1) {
 				}
 			}
