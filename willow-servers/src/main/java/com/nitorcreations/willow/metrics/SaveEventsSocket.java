@@ -54,7 +54,7 @@ public class SaveEventsSocket {
         System.out.printf("Got connect: %s%n", session);
         this.session = session;
         path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
-        tags  = session.getUpgradeRequest().getParameterMap().get("tags");
+        tags  = session.getUpgradeRequest().getParameterMap().get("tag");
 		if (tags != null && !tags.isEmpty()) {
 			tagJson = "\"tags\":" + new Gson().toJson(tags) + ",";
 		}
@@ -72,9 +72,8 @@ public class SaveEventsSocket {
     			} else if (type == MessageType.HASH) {
     				stored = ((HashMessage)msgObject).getMap();
     			}
-    			String tagJson = "";
     			String source = "{ \"instance\":\"" + path + "\"," + tagJson + gson.toJson(stored).substring(1);
-    			System.out.println(source);
+    			System.out.println(type.lcName() + ": " + source);
     			IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName())
     					.setSource(source)
     					.execute()

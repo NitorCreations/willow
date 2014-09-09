@@ -31,12 +31,12 @@ import sun.jvmstat.monitor.Monitor;
 import sun.jvmstat.monitor.MonitoredHost;
 import sun.jvmstat.monitor.MonitoredVm;
 import sun.jvmstat.monitor.VmIdentifier;
-
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class Main {
     private static final String LOCAL_CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
@@ -73,6 +73,7 @@ public class Main {
     		long flushInterval = Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
     		String statUri = launchProperties.getProperty(PROPERTY_KEY_STATISTICS_URI, "ws://localhost:5120/statistics");
         	transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
+        	transmitter.start();
 		} catch (URISyntaxException e) {
 			usage(e.getMessage());
 		}
