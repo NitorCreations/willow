@@ -30,6 +30,7 @@ import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -60,17 +61,26 @@ public class MetricsServlet implements Servlet {
 	}
 
 	@Override
-	public void service(ServletRequest req, ServletResponse res)
-			throws ServletException, IOException {
+	public void service(ServletRequest req, ServletResponse res) {
 		if (!((HttpServletRequest)req).getMethod().equals("GET")) {
-			((HttpServletResponse)res).sendError(405, "Only GET allowed");
+			try {
+				((HttpServletResponse)res).sendError(405, "Only GET allowed");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return;
 		}
 		Client client = getClient();
 		String metricKey = ((HttpServletRequest)req).getPathInfo();
 		Metric metric = metrics.get(metricKey);
 		if (metric == null) {
-			((HttpServletResponse)res).sendError(404, "Metric " + metricKey + " not found");
+			try {
+				((HttpServletResponse)res).sendError(404, "Metric " + metricKey + " not found");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return;
 		}
 		long start = Long.parseLong(req.getParameter("start"));
@@ -86,29 +96,31 @@ public class MetricsServlet implements Servlet {
 				buckets[i++] = Double.parseDouble(next);
 			}
 		}
-		List<SearchResponse> responses = new ArrayList<>();
-		for (String index : getIndexes(start, stop)) {
-			responses.add(client.prepareSearch(index, metric.getType())
-					.setQuery(QueryBuilders.rangeQuery("timestamp")
-							.from(start - step)
-							.to(stop + step)
-							.includeLower(false)
-							.includeUpper(true))
-							.setSearchType(SearchType.QUERY_AND_FETCH)
-							.setSize(50000)
-							.addField("timestamp")
-							.addFields(metric.requiresFields())
-							.setPostFilter(FilterBuilders.termFilter("tags", tag)).get());
-		}
+		SearchResponse resp = client.prepareSearch(getIndexes(start, stop))
+				.setTypes(metric.getType())
+				.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")
+						.from(start - step)
+						.to(stop + step)
+						.includeLower(false)
+						.includeUpper(true)).must(QueryBuilders.termQuery("tags", tag)))
+						.setSearchType(SearchType.QUERY_AND_FETCH)
+						.setSize(50000)
+						.addField("timestamp")
+						.addFields(metric.requiresFields()).get();
 		Object data=null;
 		if (metric instanceof HistogramMetric) {
-			data = ((HistogramMetric) metric).calculateHistogram(responses, buckets, start, stop, step);
+			data = ((HistogramMetric) metric).calculateHistogram(resp, buckets, start, stop, step);
 		} else {
-			data = metric.calculateMetric(responses, start, stop, step);
+			data = metric.calculateMetric(resp, start, stop, step);
 		}
 		res.setContentType("application/json");
 		Gson out = new Gson();
-		res.getOutputStream().write(out.toJson(data).getBytes());
+		try {
+			res.getOutputStream().write(out.toJson(data).getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -176,7 +188,7 @@ public class MetricsServlet implements Servlet {
 		return new BigInteger(130, random).toString(32);
 	}
 	
-	private List<String> getIndexes(long start, long end) {
+	private String[] getIndexes(long start, long end) {
 		ArrayList<String> ret = new ArrayList<>();
 		Calendar startCal = Calendar.getInstance();
 		startCal.setTime(new Date(start));
@@ -193,6 +205,6 @@ public class MetricsServlet implements Servlet {
 				"-" + String.format("%02d", startCal.get(Calendar.DAY_OF_MONTH)));
 			startCal.add(Calendar.DAY_OF_YEAR, 1);
 		}
-		return ret;
+		return ret.toArray(new String[ret.size()]);
 	}
 }

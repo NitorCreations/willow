@@ -20,7 +20,7 @@
 	      d3.json("/metrics/" + name 
 	          + "?start=" + start.getTime()
 	          + "&stop=" + stop.getTime()
-	          + "&step=" + step, function(data) {
+	          + "&step=" + step + "&tag=host_venom_1", function(data) {
 	        if (!data) return callback(new Error("unable to load data"));
 	        callback(null, data.map(function(d) { return d.value; }));
 	      });

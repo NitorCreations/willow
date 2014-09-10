@@ -13,18 +13,16 @@ import org.elasticsearch.search.SearchHitField;
 
 public abstract class SimpleMetric implements Metric {
 	protected SortedMap<Long, Number> rawData;
-	protected void readResponse(List<SearchResponse> responses) {
+	protected void readResponse(SearchResponse response) {
 		rawData = new TreeMap<Long, Number>();
-		for (SearchResponse response : responses) {
-			for (SearchHit next : response.getHits().getHits()) {
-				Map<String, SearchHitField> fields = next.getFields();
-				Long timestamp = fields.get("timestamp").value();
-				List<Number> nextData = new ArrayList<>();
-				for (String nextField : requiresFields()) {
-					nextData.add((Number)fields.get(nextField).value());
-				}
-				rawData.put(timestamp, getValue(nextData));
+		for (SearchHit next : response.getHits().getHits()) {
+			Map<String, SearchHitField> fields = next.getFields();
+			Long timestamp = fields.get("timestamp").value();
+			List<Number> nextData = new ArrayList<>();
+			for (String nextField : requiresFields()) {
+				nextData.add((Number)fields.get(nextField).value());
 			}
+			rawData.put(timestamp, getValue(nextData));
 		}
 	}
 
@@ -33,7 +31,7 @@ public abstract class SimpleMetric implements Metric {
 	}
 	
 	@Override
-	public Object calculateMetric(List<SearchResponse> response,  long start, long stop, int step) {
+	public Object calculateMetric(SearchResponse response,  long start, long stop, int step) {
 		readResponse(response);
 		if (rawData.isEmpty()) return new double[0];
 		int len = (int)((stop - start)/step) + 1;
