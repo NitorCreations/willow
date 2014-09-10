@@ -7,12 +7,20 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
-public abstract class SimpleMetric implements Metric {
+public abstract class SimpleMetric extends AbstractMetric implements Metric {
 	protected SortedMap<Long, Number> rawData;
+	public abstract String getType();
+	public abstract String[] requiresFields();
+
 	protected void readResponse(SearchResponse response) {
 		rawData = new TreeMap<Long, Number>();
 		for (SearchHit next : response.getHits().getHits()) {
@@ -31,11 +39,27 @@ public abstract class SimpleMetric implements Metric {
 	}
 	
 	@Override
-	public Object calculateMetric(SearchResponse response,  long start, long stop, int step) {
+	public Object calculateMetric(Client client, HttpServletRequest req) {
+		long start = Long.parseLong(req.getParameter("start"));
+		long stop = Long.parseLong(req.getParameter("stop"));
+		int step = Integer.parseInt(req.getParameter("step"));
+		String tag = req.getParameter("tag");
+		SearchResponse response = client.prepareSearch(getIndexes(start, stop))
+				.setTypes(getType())
+				.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")
+						.from(start - step)
+						.to(stop + step)
+						.includeLower(false)
+						.includeUpper(true)).must(QueryBuilders.termQuery("tags", tag)))
+						.setSearchType(SearchType.QUERY_AND_FETCH)
+						.setSize(50000)
+						.addField("timestamp")
+						.addFields(requiresFields()).get();
+
 		readResponse(response);
-		if (rawData.isEmpty()) return new double[0];
 		int len = (int)((stop - start)/step) + 1;
 		List<TimePoint> ret = new ArrayList<TimePoint>();
+		if (rawData.isEmpty()) return ret;
 		List<Long> retTimes = new ArrayList<Long>();
 		long curr=start;
 		for (int i=0;i<len;i++) {
@@ -64,5 +88,4 @@ public abstract class SimpleMetric implements Metric {
 	protected Number fillMissingValue() {
 		return 0;
 	}
-	
 }

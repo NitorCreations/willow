@@ -3,7 +3,6 @@ package com.nitorcreations.willow.metrics;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -91,7 +90,7 @@ public class SaveEventsSocket {
     	Calendar cal = Calendar.getInstance();
     	cal.setTime(new Date(timestamp));
     	return String.format("%04d", cal.get(Calendar.YEAR)) + "-" + 
-				String.format("%02d", cal.get(Calendar.MONTH)) + "-" +
+				String.format("%02d", cal.get(Calendar.MONTH) + 1) + "-" +
 				String.format("%02d", cal.get(Calendar.DAY_OF_MONTH));
     }
 }

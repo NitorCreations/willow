@@ -1,10 +1,8 @@
 package com.nitorcreations.willow.metrics;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.Servlet;
@@ -20,8 +18,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.search.facet.histogram.HistogramFacet.Entry;
 
 public class PropertiesServlet implements Servlet {
 
