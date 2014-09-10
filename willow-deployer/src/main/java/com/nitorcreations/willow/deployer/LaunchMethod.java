@@ -6,7 +6,7 @@ public interface LaunchMethod extends Runnable {
 	public static final String ENV_KEY_DEPLOYER_IDENTIFIER = "DEPLOYER_IDENTIFIER";
 	
 	public enum TYPE {
-		DEPENDENCY(DependencyLauncher.class), NATIVE(NativeLauncher.class);
+		DEPENDENCY(DependencyLauncher.class), NATIVE(NativeLauncher.class), JAVA(JavaLauncher.class);
 		Class<? extends LaunchMethod> launcher;
 		private TYPE(Class<? extends LaunchMethod> launcher) {
 			this.launcher = launcher;
