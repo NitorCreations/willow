@@ -6,12 +6,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.Servlet;
@@ -23,15 +19,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
@@ -52,6 +42,7 @@ public class MetricsServlet implements Servlet {
 		metrics.put("/mem", new PhysicalMemoryMetric());
 		metrics.put("/requests", new RequestCountMetric());
 		metrics.put("/latency", new RequestDurationMetric());
+		metrics.put("/tags", new TagsList());
 		setupElasticSearch(config.getServletContext());
 	}
 
@@ -61,66 +52,21 @@ public class MetricsServlet implements Servlet {
 	}
 
 	@Override
-	public void service(ServletRequest req, ServletResponse res) {
+	public void service(ServletRequest req, ServletResponse res) throws IOException {
 		if (!((HttpServletRequest)req).getMethod().equals("GET")) {
-			try {
-				((HttpServletResponse)res).sendError(405, "Only GET allowed");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			((HttpServletResponse)res).sendError(405, "Only GET allowed");
 			return;
 		}
-		Client client = getClient();
 		String metricKey = ((HttpServletRequest)req).getPathInfo();
 		Metric metric = metrics.get(metricKey);
 		if (metric == null) {
-			try {
-				((HttpServletResponse)res).sendError(404, "Metric " + metricKey + " not found");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			((HttpServletResponse)res).sendError(404, "Metric " + metricKey + " not found");
 			return;
 		}
-		long start = Long.parseLong(req.getParameter("start"));
-		long stop = Long.parseLong(req.getParameter("stop"));
-		int step = Integer.parseInt(req.getParameter("step"));
-		String tag = req.getParameter("tag");
-		double[] buckets = null;
-		if  (metric instanceof HistogramMetric) {
-			String[] bucketsStr = req.getParameter("buckets").split(",");
-			buckets = new double[bucketsStr.length];
-			int i=0;
-			for (String next : bucketsStr) {
-				buckets[i++] = Double.parseDouble(next);
-			}
-		}
-		SearchResponse resp = client.prepareSearch(getIndexes(start, stop))
-				.setTypes(metric.getType())
-				.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")
-						.from(start - step)
-						.to(stop + step)
-						.includeLower(false)
-						.includeUpper(true)).must(QueryBuilders.termQuery("tags", tag)))
-						.setSearchType(SearchType.QUERY_AND_FETCH)
-						.setSize(50000)
-						.addField("timestamp")
-						.addFields(metric.requiresFields()).get();
-		Object data=null;
-		if (metric instanceof HistogramMetric) {
-			data = ((HistogramMetric) metric).calculateHistogram(resp, buckets, start, stop, step);
-		} else {
-			data = metric.calculateMetric(resp, start, stop, step);
-		}
+		Object data = metric.calculateMetric(getClient(), (HttpServletRequest)req);
 		res.setContentType("application/json");
 		Gson out = new Gson();
-		try {
-			res.getOutputStream().write(out.toJson(data).getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		res.getOutputStream().write(out.toJson(data).getBytes());
 	}
 
 	@Override
@@ -188,23 +134,4 @@ public class MetricsServlet implements Servlet {
 		return new BigInteger(130, random).toString(32);
 	}
 	
-	private String[] getIndexes(long start, long end) {
-		ArrayList<String> ret = new ArrayList<>();
-		Calendar startCal = Calendar.getInstance();
-		startCal.setTime(new Date(start));
-		startCal.set(Calendar.SECOND, 1);
-		startCal.set(Calendar.MINUTE, 0);
-		startCal.set(Calendar.HOUR_OF_DAY, 0);
-
-		Calendar endCal = Calendar.getInstance();
-		endCal.setTime(new Date(end));
-		
-		while (startCal.before(endCal)) {
-			ret.add(String.format("%04d", startCal.get(Calendar.YEAR)) + "-" + 
-				String.format("%02d", startCal.get(Calendar.MONTH)) + 
-				"-" + String.format("%02d", startCal.get(Calendar.DAY_OF_MONTH)));
-			startCal.add(Calendar.DAY_OF_YEAR, 1);
-		}
-		return ret.toArray(new String[ret.size()]);
-	}
 }

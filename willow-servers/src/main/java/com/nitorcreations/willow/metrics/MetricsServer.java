@@ -33,10 +33,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import ch.qos.logback.classic.LoggerContext;
 
-import com.nitorcreations.willow.metrics.ElasticsearchProxy;
-import com.nitorcreations.willow.metrics.MetricsServlet;
-import com.nitorcreations.willow.metrics.StatisticsServlet;
-
 public class MetricsServer {
     final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
     

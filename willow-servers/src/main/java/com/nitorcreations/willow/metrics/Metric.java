@@ -1,9 +1,9 @@
 package com.nitorcreations.willow.metrics;
 
-import org.elasticsearch.action.search.SearchResponse;
+import javax.servlet.http.HttpServletRequest;
+
+import org.elasticsearch.client.Client;
 
 public interface Metric {
-	String getType();
-	String[] requiresFields();
-	Object calculateMetric(SearchResponse resp, long start, long stop, int step);
+	Object calculateMetric(Client client, HttpServletRequest req);
 }
