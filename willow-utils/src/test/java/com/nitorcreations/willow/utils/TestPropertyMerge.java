@@ -46,4 +46,60 @@ public class TestPropertyMerge {
 		assertEquals("env_test/settings/node/appserver.properties", res.getProperty("included.file[7]"));
 		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[8]"));
 	}
+	@Test
+	public void testMerge1() {
+		Properties seed = new Properties();
+		seed.setProperty("target.id", "env_test");
+		seed.setProperty("node-group.id", "appservers");
+		seed.setProperty("node.id", "appserver");
+		seed.setProperty("component.id", "webfront");
+		PropertyMerge p = new PropertyMerge("file:./target/test-classes/");
+		Properties res = p.merge(seed, "root.properties");
+		assertEquals("env_test", res.getProperty("target.id"));
+		assertEquals("appservers", res.getProperty("node-group.id"));
+		assertEquals("appserver", res.getProperty("node.id"));
+		assertEquals("webfront", res.getProperty("component.id"));
+		assertEquals("common/common.properties", res.getProperty("included.file[0]"));
+		assertEquals("common/settings/common.properties", res.getProperty("included.file[1]"));
+		assertEquals("common/settings/node-group/appservers.properties", res.getProperty("included.file[2]"));
+		assertEquals("common/settings/node/appserver.properties", res.getProperty("included.file[3]"));
+		assertEquals("common/settings/component/webfront.properties", res.getProperty("included.file[4]"));
+		assertEquals("env_test/settings/common.properties", res.getProperty("included.file[5]"));
+		assertEquals("env_test/settings/node-group/appservers.properties", res.getProperty("included.file[6]"));
+		assertEquals("env_test/settings/node/appserver.properties", res.getProperty("included.file[7]"));
+		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[8]"));
+	}
+	@Test
+	public void testMerge2() {
+		Properties seed = new Properties();
+		seed.setProperty("target.id", "env_test");
+		seed.setProperty("node-group.id", "appservers");
+		seed.setProperty("node.id", "appserver");
+		seed.setProperty("component.id", "webfront");
+		PropertyMerge p = new PropertyMerge("classpath:", "file:./target/test-classes/");
+		Properties res = p.merge(seed, "root.properties");
+		assertEquals("env_test", res.getProperty("target.id"));
+		assertEquals("appservers", res.getProperty("node-group.id"));
+		assertEquals("appserver", res.getProperty("node.id"));
+		assertEquals("webfront", res.getProperty("component.id"));
+		assertEquals("common/common.properties", res.getProperty("included.file[0]"));
+		assertEquals("common/common.properties", res.getProperty("included.file[1]"));
+		assertEquals("common/settings/common.properties", res.getProperty("included.file[2]"));
+		assertEquals("common/settings/common.properties", res.getProperty("included.file[3]"));
+		assertEquals("common/settings/node-group/appservers.properties", res.getProperty("included.file[4]"));
+		assertEquals("common/settings/node-group/appservers.properties", res.getProperty("included.file[5]"));
+		assertEquals("common/settings/node/appserver.properties", res.getProperty("included.file[6]"));
+		assertEquals("common/settings/node/appserver.properties", res.getProperty("included.file[7]"));
+		assertEquals("common/settings/component/webfront.properties", res.getProperty("included.file[8]"));
+		assertEquals("common/settings/component/webfront.properties", res.getProperty("included.file[9]"));
+		assertEquals("env_test/settings/common.properties", res.getProperty("included.file[10]"));
+		assertEquals("env_test/settings/common.properties", res.getProperty("included.file[11]"));
+		assertEquals("env_test/settings/node-group/appservers.properties", res.getProperty("included.file[12]"));
+		assertEquals("env_test/settings/node-group/appservers.properties", res.getProperty("included.file[13]"));
+		assertEquals("env_test/settings/node/appserver.properties", res.getProperty("included.file[14]"));
+		assertEquals("env_test/settings/node/appserver.properties", res.getProperty("included.file[15]"));
+		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[16]"));
+		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[17]"));
+	}
+
 }
