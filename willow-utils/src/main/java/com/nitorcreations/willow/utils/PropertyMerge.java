@@ -1,14 +1,7 @@
 package com.nitorcreations.willow.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
@@ -30,6 +23,7 @@ import org.codehaus.swizzle.stream.ReplaceVariablesInputStream;
 public class PropertyMerge {
 	Logger log = Logger.getLogger(getClass().getName());
 	public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\]$");
+	public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(.*?)\\[last\\](.*)$");
 	public static final String URL_PREFIX_CLASSPATH = "classpath:";
 	public static final String INCLUDE_PROPERTY = "include.properties";
 	private final String[] prefixes;
@@ -73,11 +67,7 @@ public class PropertyMerge {
 			}
 			if (in != null) {
 				try {
-					MergeableProperties override = new MergeableProperties();
-					override.put(INCLUDE_PROPERTY + ".appendchar", "|");
-					override.load(new ReplaceVariablesInputStream(in, "${", "}", tokens));
-					prev.putAll(override);
-
+					prev.load(new ReplaceVariablesInputStream(in, "${", "}", tokens));
 				} catch (IOException e) {
 					LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
 					rec.setThrown(e);
@@ -94,10 +84,10 @@ public class PropertyMerge {
 		return prev;
 	}
 
-	class MergeableProperties extends Properties {
+	public static class MergeableProperties extends Properties {
 		private static final long serialVersionUID = -2166886363149152785L;
 		private final LinkedHashMap<String, String> table = new LinkedHashMap<>();
-
+		private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
 		@Override
 		public Object put(Object key, Object value) {
 			String k = (String)key;
@@ -113,9 +103,21 @@ public class PropertyMerge {
 					while (table.containsKey(arrKey + "[" + i + "]")) {
 						i++;
 					}
+					arrayIndexes.put(arrKey, Integer.valueOf(i));
 					return table.put(arrKey + "[" + i + "]", v);
 				} else {
-					return table.put(k, v);
+					m = ARRAY_REFERENCE_REGEX.matcher(k);
+					if (m.matches()) {
+						String arrKey = m.group(1);
+						Integer lastIndex = arrayIndexes.get(arrKey);
+						if (lastIndex != null) {
+							return table.put(arrKey + "[" + lastIndex + "]" + m.group(2), v);
+						} else {
+							return table.put(k, v);
+						}
+					} else {
+						return table.put(k, v);
+					}
 				}
 			}
 		}
@@ -152,7 +154,7 @@ public class PropertyMerge {
 			return table.toString();
 		}
 	}
-	class ObjectIteratorEnumertion implements Enumeration<Object> {
+	public static class ObjectIteratorEnumertion implements Enumeration<Object> {
 		private final Iterator<String> it;
 		public ObjectIteratorEnumertion(Iterator<String> it) {
 			this.it = it;
