@@ -2,8 +2,10 @@ package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_INTERPOLATE_GLOB;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_ROOT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_GLOB;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_SKIP_GLOB;
 
 import java.io.BufferedInputStream;
@@ -65,25 +67,28 @@ public class PreLaunchDownloadAndExtract {
 			replaceTokens.put("${" + nextEntry.getKey() + "}", (String)nextEntry.getValue());
 			replaceTokens.put("@" + nextEntry.getKey() + "@", (String)nextEntry.getValue());
 		}
-		if (downloadUrl("", properties, replaceTokens)) {
-			int i = 1;
-			while (downloadUrl("" + i, properties, replaceTokens)) {}
-		}
-		if (downloadArtifact("", properties, replaceTokens)) {
-			int i = 1;
-			while (downloadArtifact("" + i, properties, replaceTokens)) {}
-		}
+		int i = 0;
+		while (downloadUrl("[" + i++ + "]", properties, replaceTokens)) {}
+		i = 0;
+		while (downloadArtifact("[" + i++ + "]", properties, replaceTokens)) {}
 	}
 
-	private boolean downloadUrl(String propertySuffix, Properties properties, Map<String, String> replaceTokens) {
-		String url = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + propertySuffix);
+	private boolean downloadUrl(String index, Properties properties, Map<String, String> replaceTokens) {
+		String url = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index);
 		if (url == null) return false;
 		try {
 			URLConnection conn = new URL(url).openConnection();
 			String fileName = FileUtil.getFileName(url);
-			File target = File.createTempFile(fileName, "download");
+			File target = null;
+			if (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH) != null) {
+				target = new File(new File(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH)), fileName);
+			} else {
+			    target = File.createTempFile(fileName, "download");
+			}
 			FileUtil.copy(conn.getInputStream(), target);
-			extractFile(propertySuffix, properties, target, replaceTokens, url);
+			if (properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_GLOB) != null) {
+				extractFile(index, properties, target, replaceTokens, url);
+			}
 		} catch (IOException | CompressorException | ArchiveException e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract " + url);
 			rec.setThrown(e);
@@ -92,12 +97,12 @@ public class PreLaunchDownloadAndExtract {
 		return true;
 	}
 
-	private void extractFile(String propertySuffix, Properties properties,
+	private void extractFile(String index, Properties properties,
 			File archive, Map<String, String> replaceTokens, String fileName) throws CompressorException, IOException, ArchiveException {
-		String root = properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_ROOT + propertySuffix, ".");
+		String root = properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_ROOT + index, ".");
 		String lcFileName = fileName.toLowerCase();
-		Set<PathMatcher> skipMatchers = getGlobMatchers(properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_SKIP_GLOB +propertySuffix));
-		Set<PathMatcher> filterMatchers = getGlobMatchers(properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_INTERPOLATE_GLOB +propertySuffix));
+		Set<PathMatcher> skipMatchers = getGlobMatchers(properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_SKIP_GLOB +index));
+		Set<PathMatcher> filterMatchers = getGlobMatchers(properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_INTERPOLATE_GLOB +index));
 		InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024);
 		if (lcFileName.endsWith("z") ||	lcFileName.endsWith("bz2") || lcFileName.endsWith("lzma") ||
 				lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {

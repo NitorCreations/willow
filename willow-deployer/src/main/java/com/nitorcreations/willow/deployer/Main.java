@@ -67,17 +67,19 @@ public class Main {
 		} catch (IOException e) {
 			usage(e.getMessage());
 		}
-		extractNativeLib(launchProperties);
 		WebSocketTransmitter transmitter = null;
-        try {
-    		long flushInterval = Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
-    		String statUri = launchProperties.getProperty(PROPERTY_KEY_STATISTICS_URI, "ws://localhost:5120/statistics");
-        	transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
-        	transmitter.start();
-		} catch (URISyntaxException e) {
-			usage(e.getMessage());
-		}
-        
+		String statUri = launchProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
+		if (statUri != null && !statUri.isEmpty()) {
+			extractNativeLib(launchProperties);
+			try {
+				long flushInterval = Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
+	
+				transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
+				transmitter.start();
+			} catch (URISyntaxException e) {
+				usage(e.getMessage());
+			}
+		}        
         LaunchMethod launcher = null;
         try {
         	launcher = LaunchMethod.TYPE.valueOf(launchProperties.getProperty(PROPERTY_KEY_LAUNCH_METHOD)).getLauncher();
