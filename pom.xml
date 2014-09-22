@@ -11,6 +11,7 @@
   <scm>
     <developerConnection>scm:git:git@github.com:NitorCreations/willow.git</developerConnection>
     <connection>scm:git:git@github.com:NitorCreations/willow.git</connection>
+    <url>https://github.com/NitorCreations/willow</url>
     <tag>HEAD</tag>
   </scm>
   <url>https://github.com/NitorCreations/willow</url>
