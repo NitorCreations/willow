@@ -15,11 +15,11 @@
       <groupId>com.nitorcreations</groupId>
       <artifactId>willow-messages</artifactId>
     </dependency>
-    <dependency>
+    <!-- dependency>
       <groupId>net.logstash</groupId>
       <artifactId>logstash</artifactId>
       <version>1.4.1</version>
       <scope>runtime</scope>
-    </dependency>
+    </dependency-->
   </dependencies>
 </project>
