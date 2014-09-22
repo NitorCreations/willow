@@ -16,11 +16,11 @@
 	  .start();
 
    function deployer_metric(name) {
-	    return context.metric(function(start, stop, step, callback) {
+	    return context.metric(function(start, stop, step, tag, callback) {
 	      d3.json("/metrics/" + name 
 	          + "?start=" + start.getTime()
 	          + "&stop=" + stop.getTime()
-	          + "&step=" + step + "&tag=host_venom_1", function(data) {
+	          + "&step=" + step + "&tag=" + tag, function(data) {
 	        if (!data) return callback(new Error("unable to load data"));
 	        callback(null, data.map(function(d) { return d.value; }));
 	      });
