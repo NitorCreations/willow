@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.nitorcreations</groupId>
     <artifactId>willow-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>willow-simulate</artifactId>
