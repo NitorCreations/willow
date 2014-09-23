@@ -4,8 +4,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 
 public class ObjectIteratorEnumertion implements Enumeration<Object> {
-	private final Iterator<String> it;
-	public ObjectIteratorEnumertion(Iterator<String> it) {
+	private final Iterator<?> it;
+	public ObjectIteratorEnumertion(Iterator<?> it) {
 		this.it = it;
 	}
 	@Override
