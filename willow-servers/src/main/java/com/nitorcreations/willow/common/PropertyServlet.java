@@ -36,7 +36,7 @@ public class PropertyServlet implements Servlet {
 			((HttpServletResponse)res).sendError(405, "Only GET allowed");
 			return;
 		}
-		String rootProperties = ((HttpServletRequest)req).getPathInfo();
+		String rootProperties = ((HttpServletRequest)req).getPathInfo().substring(1);
 		PropertyMerge mrg = null;
 		if (config.getInitParameter("property.roots") != null) {
 			String roots = config.getInitParameter("property.roots");
@@ -45,6 +45,8 @@ public class PropertyServlet implements Servlet {
 			} else {
 				mrg = new PropertyMerge();
 			}
+		} else {
+			mrg = new PropertyMerge();
 		}
 		Properties seed = new Properties();
 		for (Entry<String, String[]> next : ((HttpServletRequest)req).getParameterMap().entrySet()) {

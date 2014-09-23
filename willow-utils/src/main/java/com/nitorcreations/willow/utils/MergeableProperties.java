@@ -9,16 +9,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 
 public class MergeableProperties extends Properties {
 	private static final long serialVersionUID = -2166886363149152785L;
 	private final LinkedHashMap<String, String> table = new LinkedHashMap<>();
 	private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
-	private BiConsumer<? super String, ? super String> action;
 	@Override
 	public Object put(Object key, Object value) {
 		String k = (String)key;
