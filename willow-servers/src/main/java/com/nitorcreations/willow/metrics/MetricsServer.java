@@ -52,6 +52,7 @@ public class MetricsServer {
         ServletContextHandler context = setupServletContextHandler();
         setupResourceBases(context, "terminal-resources", "metrics-resources");
         setupMetrics(context);
+        setupProperties(context);
         setupStatistics(context);
         setupTerminal(context);
         setupProxy(context);
@@ -121,6 +122,10 @@ public class MetricsServer {
     private void setupMetrics(final ServletContextHandler context) {
         ServletHolder holder = context.addServlet(MetricsServlet.class, "/metrics/*");
         holder.setInitOrder(1);
+    }
+    private void setupProperties(final ServletContextHandler context) {
+        ServletHolder holder = context.addServlet(PropertiesServlet.class, "/properties/*");
+        holder.setInitOrder(2);
     }
 
     private void setupStatistics(final ServletContextHandler context) {
