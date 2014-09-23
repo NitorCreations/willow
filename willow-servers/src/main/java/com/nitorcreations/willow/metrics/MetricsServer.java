@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import com.nitorcreations.willow.common.PropertyServlet;
+
 import ch.qos.logback.classic.LoggerContext;
 
 public class MetricsServer {
@@ -124,7 +126,7 @@ public class MetricsServer {
         holder.setInitOrder(1);
     }
     private void setupProperties(final ServletContextHandler context) {
-        ServletHolder holder = context.addServlet(PropertiesServlet.class, "/properties/*");
+        ServletHolder holder = context.addServlet(PropertyServlet.class, "/properties/*");
         holder.setInitOrder(2);
     }
 
