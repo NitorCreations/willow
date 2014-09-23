@@ -56,6 +56,9 @@ public class MergeableProperties extends Properties {
 		this.defaults = defaults;
 		table.putAll(values);
 	}
+	public MergeableProperties() {
+		super();
+	}
 	@Override
 	public Enumeration<Object> keys() {
 		return new ObjectIteratorEnumertion(table.keySet().iterator());
