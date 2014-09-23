@@ -47,7 +47,7 @@ public class PropertyServlet implements Servlet {
 			}
 		}
 		Properties seed = new Properties();
-		for (Entry<String, String[]> next : ((HttpServletRequest)res).getParameterMap().entrySet()) {
+		for (Entry<String, String[]> next : ((HttpServletRequest)req).getParameterMap().entrySet()) {
 			seed.setProperty(next.getKey(), StringUtils.join(next.getValue(), ","));
 		}
 		res.setContentType("text/plain;charset=utf-8");
