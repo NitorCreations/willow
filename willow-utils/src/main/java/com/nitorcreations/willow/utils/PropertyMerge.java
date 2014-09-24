@@ -36,7 +36,6 @@ public class PropertyMerge {
 		ret.putAll(prev);
 		return merge(ret, name);
 	}
-
 	private MergeableProperties merge(MergeableProperties prev, String name) {
 		if (prev == null) prev = new MergeableProperties();
 		prev.put(INCLUDE_PROPERTY + ".appendchar", "|");

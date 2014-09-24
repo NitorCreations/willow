@@ -23,7 +23,18 @@ public class MergeableProperties extends Properties {
 		if (prev != null && table.get(k + ".appendchar") != null) {
 			return table.put(k, prev + table.get(k + ".appendchar") + v);
 		} else {
-			Matcher m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher(k);
+			Matcher m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(k);
+			while (m.matches()) {
+				String arrKey = m.group(1);
+				Integer lastIndex = arrayIndexes.get(arrKey);
+				if (lastIndex != null) {
+					k = arrKey + "[" + lastIndex + "]" + m.group(2);
+					m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(k);
+				} else {
+					break;
+				}
+			}
+			m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher(k);
 			if (m.matches()) {
 				String arrKey = m.group(1);
 				int i = 0;
@@ -33,18 +44,7 @@ public class MergeableProperties extends Properties {
 				arrayIndexes.put(arrKey, Integer.valueOf(i));
 				return table.put(arrKey + "[" + i + "]", v);
 			} else {
-				m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(k);
-				if (m.matches()) {
-					String arrKey = m.group(1);
-					Integer lastIndex = arrayIndexes.get(arrKey);
-					if (lastIndex != null) {
-						return table.put(arrKey + "[" + lastIndex + "]" + m.group(2), v);
-					} else {
-						return table.put(k, v);
-					}
-				} else {
-					return table.put(k, v);
-				}
+				return table.put(k, v);
 			}
 		}
 	}
@@ -96,34 +96,34 @@ public class MergeableProperties extends Properties {
 		return table.keySet();
 	}
 	@Override
-    public synchronized int size() {
-        return table.size();
-    }
+	public synchronized int size() {
+		return table.size();
+	}
 	@Override
-    public synchronized boolean isEmpty() {
-        return table.isEmpty() && defaults.isEmpty();
-    }
+	public synchronized boolean isEmpty() {
+		return table.isEmpty() && defaults.isEmpty();
+	}
 	@Override
-    public synchronized Enumeration<Object> elements() {
-    	return null;
-    }
+	public synchronized Enumeration<Object> elements() {
+		return null;
+	}
 	@Override
-    public synchronized boolean contains(Object value) {
-    	return table.containsValue(value) || defaults.containsValue(value);
-    }
+	public synchronized boolean contains(Object value) {
+		return table.containsValue(value) || defaults.containsValue(value);
+	}
 	@Override
-    public synchronized boolean containsKey(Object key) {
-    	return table.containsKey(key) || defaults.containsKey(key);
-    }
+	public synchronized boolean containsKey(Object key) {
+		return table.containsKey(key) || defaults.containsKey(key);
+	}
 	@Override
-    public synchronized Object clone() {
+	public synchronized Object clone() {
 		return new MergeableProperties(defaults, table);
-    }
+	}
 	@Override
-    public Set<Object> keySet() {
-    	return new LinkedHashSet<Object>(table.values());
-    }
-    public Collection<Object> values() {
-    	return new LinkedHashSet<Object>(table.values());
-    }
+	public Set<Object> keySet() {
+		return new LinkedHashSet<Object>(table.values());
+	}
+	public Collection<Object> values() {
+		return new LinkedHashSet<Object>(table.values());
+	}
 }
