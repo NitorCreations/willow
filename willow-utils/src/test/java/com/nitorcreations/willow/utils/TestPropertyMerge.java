@@ -48,6 +48,8 @@ public class TestPropertyMerge {
 		assertEquals("common/common.properties", res.getProperty("included.file[0]"));
 		assertEquals("common/settings/common.properties", res.getProperty("included.file[1]"));
 		assertEquals("foo/bar", res.getProperty("included.file[1].extraprops"));
+		assertEquals("foo/bar", res.getProperty("included.file[1].foo[0]"));
+		assertEquals("foo/bar", res.getProperty("included.file[1].foo[0].bar[0]"));
 		assertEquals("common/settings/node-group/appservers.properties", res.getProperty("included.file[2]"));
 		assertEquals("common/settings/node/appserver.properties", res.getProperty("included.file[3]"));
 		assertEquals("common/settings/component/webfront.properties", res.getProperty("included.file[4]"));
