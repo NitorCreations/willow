@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 public class TestPropertyMerge {
 	@Test
 	public void testRegex() {
-		Pattern p = PropertyMerge.ARRAY_PROPERTY_REGEX;
+		Pattern p = MergeableProperties.ARRAY_PROPERTY_REGEX;
 		assertTrue(p.matcher("foo.bar[]").matches());
 		assertTrue(p.matcher("foo.bar[44]").matches());
 		assertFalse(p.matcher("foo.bar[4w4]").matches());
@@ -24,7 +24,7 @@ public class TestPropertyMerge {
 	}
 	@Test
 	public void testRegex1() {
-		Pattern p = PropertyMerge.ARRAY_REFERENCE_REGEX;
+		Pattern p = MergeableProperties.ARRAY_REFERENCE_REGEX;
 		Matcher m = p.matcher("foo.bar[last].extractroot");
 		assertTrue(m.matches());
 		assertNull(m.group(1));
@@ -35,7 +35,7 @@ public class TestPropertyMerge {
 		assertEquals("${", m.group(1));
 		assertEquals("foo.bar", m.group(2));
 		assertEquals(".extractroot[]}", m.group(3));
-		m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher("${foo.bar[1].extractroot[]}");
+		m = MergeableProperties.ARRAY_PROPERTY_REGEX.matcher("${foo.bar[1].extractroot[]}");
 		assertTrue(m.matches());
 		assertEquals("${foo.bar[1].extractroot", m.group(1));
 		assertEquals("}", m.group(2));
@@ -49,7 +49,7 @@ public class TestPropertyMerge {
 		seed.setProperty("node-group.id", "appservers");
 		seed.setProperty("node.id", "appserver");
 		seed.setProperty("component.id", "webfront");
-		PropertyMerge p = new PropertyMerge();
+		MergeableProperties p = new MergeableProperties();
 		Properties res = p.merge(seed, "root.properties");
 		assertEquals("env_test", res.getProperty("target.id"));
 		assertEquals("appservers", res.getProperty("node-group.id"));
@@ -76,7 +76,7 @@ public class TestPropertyMerge {
 		seed.setProperty("node-group.id", "appservers");
 		seed.setProperty("node.id", "appserver");
 		seed.setProperty("component.id", "webfront");
-		PropertyMerge p = new PropertyMerge("file:./target/test-classes/");
+		MergeableProperties p = new MergeableProperties("file:./target/test-classes/");
 		Properties res = p.merge(seed, "root.properties");
 		assertEquals("env_test", res.getProperty("target.id"));
 		assertEquals("appservers", res.getProperty("node-group.id"));
@@ -100,7 +100,7 @@ public class TestPropertyMerge {
 		seed.setProperty("node-group.id", "appservers");
 		seed.setProperty("node.id", "appserver");
 		seed.setProperty("component.id", "webfront");
-		PropertyMerge p = new PropertyMerge("classpath:", "file:./target/test-classes/");
+		MergeableProperties p = new MergeableProperties("classpath:", "file:./target/test-classes/");
 		Properties res = p.merge(seed, "root.properties");
 		assertEquals("env_test", res.getProperty("target.id"));
 		assertEquals("appservers", res.getProperty("node-group.id"));

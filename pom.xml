@@ -28,6 +28,7 @@
     <module>willow-deployer</module>
     <module>willow-utils</module>
     <module>willow-simulate</module>
+    <module>willow-maven-plugin</module>
   </modules>
   <licenses>
     <license>
