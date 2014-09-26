@@ -11,42 +11,59 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
+import org.apache.commons.lang3.text.StrLookup;
+import org.apache.commons.lang3.text.StrSubstitutor;
+
 public class MergeableProperties extends Properties {
 	private static final long serialVersionUID = -2166886363149152785L;
 	private final LinkedHashMap<String, String> table = new LinkedHashMap<>();
 	private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
+
 	@Override
 	public Object put(Object key, Object value) {
-		String k = (String)key;
-		String v = (String)value;
+		String k = resolveIndexes((String)key);
+		String v = resolveIndexes((String)value);
+		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
+		k = sub.replace(k);
+		v = sub.replace(v);
 		String prev = table.get(k);
 		if (prev != null && table.get(k + ".appendchar") != null) {
 			return table.put(k, prev + table.get(k + ".appendchar") + v);
 		} else {
-			Matcher m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(k);
-			while (m.matches()) {
-				String arrKey = m.group(1);
-				Integer lastIndex = arrayIndexes.get(arrKey);
-				if (lastIndex != null) {
-					k = arrKey + "[" + lastIndex + "]" + m.group(2);
-					m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(k);
-				} else {
-					break;
-				}
+			return table.put(k, v);
+		}
+	}
+	protected String resolveIndexes(String original) {
+		String ret = original;
+		Matcher m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(ret);
+		while (m.matches()) {
+			String arrKey = m.group(2);
+			Integer lastIndex = arrayIndexes.get(arrKey);
+			String prefix = "";
+			if (m.group(1) != null) {
+				prefix = m.group(1);
 			}
-			m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher(k);
-			if (m.matches()) {
-				String arrKey = m.group(1);
-				int i = 0;
-				while (table.containsKey(arrKey + "[" + i + "]")) {
-					i++;
-				}
-				arrayIndexes.put(arrKey, Integer.valueOf(i));
-				return table.put(arrKey + "[" + i + "]", v);
+			if (lastIndex != null) {
+				ret = prefix + arrKey + "[" + lastIndex + "]" + m.group(3);
+				m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(ret);
 			} else {
-				return table.put(k, v);
+				break;
 			}
 		}
+		m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher(ret);
+		if (m.matches()) {
+			String arrKey = m.group(1);
+			int i = 0;
+			while (table.containsKey(arrKey + "[" + i + "]")) {
+				i++;
+			}
+			arrayIndexes.put(arrKey, Integer.valueOf(i));
+			ret = arrKey + "[" + i + "]";
+			if (m.group(2) != null) {
+				ret = ret + m.group(2);
+			}
+		}
+		return ret;
 	}
 	protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values) {
 		this.defaults = defaults;

@@ -27,8 +27,18 @@ public class TestPropertyMerge {
 		Pattern p = PropertyMerge.ARRAY_REFERENCE_REGEX;
 		Matcher m = p.matcher("foo.bar[last].extractroot");
 		assertTrue(m.matches());
-		assertEquals("foo.bar", m.group(1));
-		assertEquals(".extractroot", m.group(2));
+		assertNull(m.group(1));
+		assertEquals("foo.bar", m.group(2));
+		assertEquals(".extractroot", m.group(3));
+		m = p.matcher("${foo.bar[last].extractroot[]}");
+		assertTrue(m.matches());
+		assertEquals("${", m.group(1));
+		assertEquals("foo.bar", m.group(2));
+		assertEquals(".extractroot[]}", m.group(3));
+		m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher("${foo.bar[1].extractroot[]}");
+		assertTrue(m.matches());
+		assertEquals("${foo.bar[1].extractroot", m.group(1));
+		assertEquals("}", m.group(2));
 		m = p.matcher("foo.bar.plalala[].doo");
 		assertFalse(m.matches());
 	}
@@ -50,6 +60,7 @@ public class TestPropertyMerge {
 		assertEquals("foo/bar", res.getProperty("included.file[1].extraprops"));
 		assertEquals("foo/bar", res.getProperty("included.file[1].foo[0]"));
 		assertEquals("foo/bar", res.getProperty("included.file[1].foo[0].bar[0]"));
+		assertEquals("foo/bar", res.getProperty("foo.bar"));
 		assertEquals("common/settings/node-group/appservers.properties", res.getProperty("included.file[2]"));
 		assertEquals("common/settings/node/appserver.properties", res.getProperty("included.file[3]"));
 		assertEquals("common/settings/component/webfront.properties", res.getProperty("included.file[4]"));
@@ -114,5 +125,4 @@ public class TestPropertyMerge {
 		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[16]"));
 		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[17]"));
 	}
-
 }
