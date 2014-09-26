@@ -11,12 +11,10 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.codehaus.swizzle.stream.ReplaceVariablesInputStream;
-
 public class PropertyMerge {
 	Logger log = Logger.getLogger(getClass().getName());
-	public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\]$");
-	public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(.*?)\\[last\\](.*)$");
+	public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
+	public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
 	public static final String URL_PREFIX_CLASSPATH = "classpath:";
 	public static final String INCLUDE_PROPERTY = "include.properties";
 	private final String[] prefixes;
@@ -40,7 +38,6 @@ public class PropertyMerge {
 		if (prev == null) prev = new MergeableProperties();
 		prev.put(INCLUDE_PROPERTY + ".appendchar", "|");
 		for (String nextPrefix : prefixes) {
-			Map<String, String> tokens = prev.backingTable();
 			String url = nextPrefix + name;
 			InputStream in = null;
 			if (url.startsWith(URL_PREFIX_CLASSPATH)) {
@@ -59,7 +56,7 @@ public class PropertyMerge {
 			}
 			if (in != null) {
 				try {
-					prev.load(new ReplaceVariablesInputStream(in, "${", "}", tokens));
+					prev.load(in);
 				} catch (IOException e) {
 					LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
 					rec.setThrown(e);
