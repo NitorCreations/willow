@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.nitorcreations.it</groupId>
+  <artifactId>simple-it</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <description>A simple IT verifying the basic use case.</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <foo.bar.appendchar>,</foo.bar.appendchar>
+    <foo.bar>baz</foo.bar>
+    <target.id>env_test</target.id>
+    <component.id>webfront</component.id>
+    <node.id>appserver</node.id>
+    <node-group.id>appservers</node-group.id>
+  </properties>
+  <developers>
+    <developer>
+      <name>Pasi Niemi</name>
+    </developer>
+  </developers>
+  <organization>
+    <name>Nitor Creations</name>
+  </organization>
+  <inceptionYear>2013</inceptionYear>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <executions>
+          <execution>
+            <id>merge</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+            <configuration>
+              <outputFile>target/app.properties</outputFile>
+              <prefixes>
+                <prefix>file:@project.build.directory@/it/simple-it/target/classes/</prefix>
+              </prefixes>
+              <rootProperties>my.properties</rootProperties>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <name>Testing Properties</name>
+</project>

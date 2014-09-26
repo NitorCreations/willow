@@ -1,5 +1,9 @@
 package com.nitorcreations.willow.utils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -9,16 +13,86 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class MergeableProperties extends Properties {
+	public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
+	public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
+	public static final String URL_PREFIX_CLASSPATH = "classpath:";
+	public static final String INCLUDE_PROPERTY = "include.properties";
+	private Logger log = Logger.getLogger(getClass().getName());
+	private final String[] prefixes;
 	private static final long serialVersionUID = -2166886363149152785L;
 	private final LinkedHashMap<String, String> table = new LinkedHashMap<>();
 	private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
-
+	
+	protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, String ... prefixes) {
+		super(defaults);
+		table.putAll(values);
+		this.prefixes = prefixes;
+	}
+	public MergeableProperties() {
+		super();
+		prefixes = new String[] { "classpath:" };
+	}
+	public MergeableProperties(String ... prefixes) {
+		super();
+		this.prefixes = prefixes;
+	}
+	public Properties merge(String name) {
+		merge0(name);
+		return this;
+	}
+	public Properties merge(Properties prev, String name) {
+		if (prev != null) {
+			putAll(prev);
+		}
+		merge0(name);
+		return this;
+	}
+	private void merge0(String name) {
+		put(INCLUDE_PROPERTY + ".appendchar", "|");
+		for (String nextPrefix : prefixes) {
+			String url = nextPrefix + name;
+			InputStream in = null;
+			if (url.startsWith(URL_PREFIX_CLASSPATH)) {
+				in = getClass().getClassLoader().getResourceAsStream(url.substring(URL_PREFIX_CLASSPATH.length()));
+			} else {
+				try {
+					URL toFetch = new URL(url);
+					URLConnection conn = toFetch.openConnection(); 
+					conn.connect();
+					in = conn.getInputStream();
+				} catch (IOException e) {
+					LogRecord rec = new LogRecord(Level.INFO, "Failed to load url: " + url);
+					rec.setThrown(e);
+					this.log.log(rec);
+				}
+			}
+			if (in != null) {
+				try {
+					load(in);
+				} catch (IOException e) {
+					LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
+					rec.setThrown(e);
+					this.log.log(rec);
+				}
+			}
+		}
+		String include = (String) remove(INCLUDE_PROPERTY);
+		if (include != null && !include.isEmpty()) {
+			for (String nextInclude : include.split("\\|")) {
+				merge0(nextInclude);
+			}
+		}
+	}
 	@Override
 	public Object put(Object key, Object value) {
 		String k = resolveIndexes((String)key);
@@ -35,7 +109,7 @@ public class MergeableProperties extends Properties {
 	}
 	protected String resolveIndexes(String original) {
 		String ret = original;
-		Matcher m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(ret);
+		Matcher m = ARRAY_REFERENCE_REGEX.matcher(ret);
 		while (m.matches()) {
 			String arrKey = m.group(2);
 			Integer lastIndex = arrayIndexes.get(arrKey);
@@ -45,12 +119,12 @@ public class MergeableProperties extends Properties {
 			}
 			if (lastIndex != null) {
 				ret = prefix + arrKey + "[" + lastIndex + "]" + m.group(3);
-				m = PropertyMerge.ARRAY_REFERENCE_REGEX.matcher(ret);
+				m = ARRAY_REFERENCE_REGEX.matcher(ret);
 			} else {
 				break;
 			}
 		}
-		m = PropertyMerge.ARRAY_PROPERTY_REGEX.matcher(ret);
+		m = ARRAY_PROPERTY_REGEX.matcher(ret);
 		if (m.matches()) {
 			String arrKey = m.group(1);
 			int i = 0;
@@ -64,13 +138,6 @@ public class MergeableProperties extends Properties {
 			}
 		}
 		return ret;
-	}
-	protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values) {
-		this.defaults = defaults;
-		table.putAll(values);
-	}
-	public MergeableProperties() {
-		super();
 	}
 	@Override
 	public Enumeration<Object> keys() {
@@ -134,7 +201,7 @@ public class MergeableProperties extends Properties {
 	}
 	@Override
 	public synchronized Object clone() {
-		return new MergeableProperties(defaults, table);
+		return new MergeableProperties(defaults, table, prefixes);
 	}
 	@Override
 	public Set<Object> keySet() {

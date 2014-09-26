@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.nitorcreations.willow.utils.PropertyMerge;
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class PropertyServlet implements Servlet {
 	ServletConfig config;
@@ -23,12 +23,10 @@ public class PropertyServlet implements Servlet {
 	public void init(ServletConfig config) throws ServletException {
 		this.config = config;
 	}
-
 	@Override
 	public ServletConfig getServletConfig() {
 		return config;
 	}
-
 	@Override
 	public void service(ServletRequest req, ServletResponse res)
 			throws ServletException, IOException {
@@ -37,16 +35,16 @@ public class PropertyServlet implements Servlet {
 			return;
 		}
 		String rootProperties = ((HttpServletRequest)req).getPathInfo().substring(1);
-		PropertyMerge mrg = null;
+		MergeableProperties mrg = null;
 		if (config.getInitParameter("property.roots") != null) {
 			String roots = config.getInitParameter("property.roots");
 			if (!roots.isEmpty()) {
-				mrg = new PropertyMerge(roots.split("\\|"));
+				mrg = new MergeableProperties(roots.split("\\|"));
 			} else {
-				mrg = new PropertyMerge();
+				mrg = new MergeableProperties();
 			}
 		} else {
-			mrg = new PropertyMerge();
+			mrg = new MergeableProperties();
 		}
 		Properties seed = new Properties();
 		for (Entry<String, String[]> next : ((HttpServletRequest)req).getParameterMap().entrySet()) {
@@ -55,19 +53,16 @@ public class PropertyServlet implements Servlet {
 		res.setContentType("text/plain;charset=utf-8");
 		((HttpServletResponse)res).setStatus(200);
 		Properties result = mrg.merge(seed, rootProperties);
-		OutputStream out = res.getOutputStream();
-		result.store(out, null);
-		out.flush();
-		out.close();
+		try (OutputStream out = res.getOutputStream()){
+			result.store(out, null);
+			out.flush();
+		}
 	}
-
 	@Override
 	public String getServletInfo() {
 		return "PropertiesServlet";
 	}
-
 	@Override
 	public void destroy() {
 	}
-
 }
