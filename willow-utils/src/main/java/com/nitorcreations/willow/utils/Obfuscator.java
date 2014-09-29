@@ -84,7 +84,7 @@ public class Obfuscator {
 		try {
 			out = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			out.init(Cipher.ENCRYPT_MODE, key);
-			byte[] input = value.getBytes(Charset.forName("UTF-8"));
+			byte[] input = (getSalt() + value).getBytes(Charset.forName("UTF-8"));
 			bOut = new ByteArrayOutputStream();
 			cOut = new CipherOutputStream(bOut, out);
 			cOut.write(input, 0, input.length);
@@ -113,7 +113,8 @@ public class Obfuscator {
 			cIn = new CipherOutputStream(bIn, in);
 			cIn.write(input);
 			cIn.close();
-			return new String(bIn.toByteArray(), Charset.forName("UTF-8"));
+			String ret = new String(bIn.toByteArray(), Charset.forName("UTF-8"));
+			return ret.substring(ret.indexOf('|') + 1);
 		} catch (NoSuchAlgorithmException
 				| NoSuchPaddingException | InvalidKeyException | IOException e) {
 			e.printStackTrace();
@@ -159,5 +160,11 @@ public class Obfuscator {
 			}
 		}
 		return Base64.getEncoder().encodeToString(md.digest());
+	}
+	private static String getSalt() {
+		SecureRandom sr = new SecureRandom();
+		byte[] bsalt = new byte[32];
+		sr.nextBytes(bsalt);
+		return Base64.getEncoder().encodeToString(bsalt) + "|";
 	}
 }
