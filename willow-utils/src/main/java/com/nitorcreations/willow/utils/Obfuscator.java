@@ -8,22 +8,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Permissions;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.crypto.Cipher;
@@ -54,34 +47,10 @@ public class Obfuscator {
 			perms.add(PosixFilePermission.OWNER_READ);
 			Files.setPosixFilePermissions(masterFile.toPath(), perms);
 		}
-		Set<PosixFilePermission> perms = Files.getPosixFilePermissions(masterFile.toPath());
-		if (perms.contains(PosixFilePermission.GROUP_EXECUTE) ||
-				perms.contains(PosixFilePermission.GROUP_WRITE) ||
-				perms.contains(PosixFilePermission.GROUP_READ) ||
-				perms.contains(PosixFilePermission.OTHERS_EXECUTE) ||
-				perms.contains(PosixFilePermission.OTHERS_READ) ||
-				perms.contains(PosixFilePermission.OTHERS_WRITE)) {
-			throw new IOException("Master file permissions too wide");
-		}
-		MergeableProperties p = new MergeableProperties();
-		try {
-			p.load(new FileInputStream(masterFile));
-		} catch (IOException e) {}
-		MessageDigest md = null;
-		try {
-			md = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {}
-		if (p.isEmpty()) {
-			byte[] content = Files.readAllBytes(masterFile.toPath());
-			md.update(content);
-		} else {
-			for (Entry<String, String> next : p.backingEntrySet()) {
-				md.update(next.getKey().getBytes(Charset.forName("UTF-8")));
-				md.update(next.getValue().getBytes(Charset.forName("UTF-8")));
-			}
-		}
-		String key = Base64.getEncoder().encodeToString(md.digest());
-		this.propertyKey = key;
+		this.propertyKey = getFileMaster(masterFile);
+	}
+	public Obfuscator(File masterFile) throws IOException {
+		this(getFileMaster(masterFile));
 	}
 	public Obfuscator(String key) {
 		this.propertyKey = key;
@@ -161,5 +130,34 @@ public class Obfuscator {
 		} catch (NoSuchAlgorithmException e) {
 			return null;
 		}
+	}
+	public static String getFileMaster(File masterFile) throws IOException {
+		Set<PosixFilePermission> perms = Files.getPosixFilePermissions(masterFile.toPath());
+		if (perms.contains(PosixFilePermission.GROUP_EXECUTE) ||
+				perms.contains(PosixFilePermission.GROUP_WRITE) ||
+				perms.contains(PosixFilePermission.GROUP_READ) ||
+				perms.contains(PosixFilePermission.OTHERS_EXECUTE) ||
+				perms.contains(PosixFilePermission.OTHERS_READ) ||
+				perms.contains(PosixFilePermission.OTHERS_WRITE)) {
+			throw new IOException("Master file permissions too wide");
+		}
+		MergeableProperties p = new MergeableProperties();
+		try {
+			p.load(new FileInputStream(masterFile));
+		} catch (IOException e) {}
+		MessageDigest md = null;
+		try {
+			md = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {}
+		if (p.isEmpty()) {
+			byte[] content = Files.readAllBytes(masterFile.toPath());
+			md.update(content);
+		} else {
+			for (Entry<String, String> next : p.backingEntrySet()) {
+				md.update(next.getKey().getBytes(Charset.forName("UTF-8")));
+				md.update(next.getValue().getBytes(Charset.forName("UTF-8")));
+			}
+		}
+		return Base64.getEncoder().encodeToString(md.digest());
 	}
 }
