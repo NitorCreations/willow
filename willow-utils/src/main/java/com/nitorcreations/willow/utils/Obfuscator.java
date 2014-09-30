@@ -22,11 +22,11 @@ import java.util.Set;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class Obfuscator {
 
+	private static final int SALT_LENGTH = 42;
 	private final String propertyKey;
 	public Obfuscator() throws IOException {
 		String defaultMaster = System.getProperty("user.home") + File.separator + 
@@ -84,10 +84,11 @@ public class Obfuscator {
 		try {
 			out = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			out.init(Cipher.ENCRYPT_MODE, key);
-			byte[] input = (getSalt() + value).getBytes(Charset.forName("UTF-8"));
+			byte[] input = value.getBytes(Charset.forName("UTF-8"));
 			bOut = new ByteArrayOutputStream();
 			cOut = new CipherOutputStream(bOut, out);
-			cOut.write(input, 0, input.length);
+			cOut.write(getSalt());
+			cOut.write(input);
 			cOut.flush();
 			cOut.close();
 			return Base64.getEncoder().encodeToString(bOut.toByteArray());
@@ -113,8 +114,8 @@ public class Obfuscator {
 			cIn = new CipherOutputStream(bIn, in);
 			cIn.write(input);
 			cIn.close();
-			String ret = new String(bIn.toByteArray(), Charset.forName("UTF-8"));
-			return ret.substring(ret.indexOf('|') + 1);
+			byte[] result = bIn.toByteArray();
+			return new String(result, SALT_LENGTH, result.length - SALT_LENGTH, Charset.forName("UTF-8"));
 		} catch (NoSuchAlgorithmException
 				| NoSuchPaddingException | InvalidKeyException | IOException e) {
 			e.printStackTrace();
@@ -161,10 +162,10 @@ public class Obfuscator {
 		}
 		return Base64.getEncoder().encodeToString(md.digest());
 	}
-	private static String getSalt() {
+	private static byte[] getSalt() {
 		SecureRandom sr = new SecureRandom();
-		byte[] bsalt = new byte[32];
+		byte[] bsalt = new byte[SALT_LENGTH];
 		sr.nextBytes(bsalt);
-		return Base64.getEncoder().encodeToString(bsalt) + "|";
+		return bsalt;
 	}
 }
