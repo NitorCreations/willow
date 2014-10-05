@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_EXTRA_ENV_KEYS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WDIR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 
 import java.io.File;
@@ -75,7 +75,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			statUri = new URI(properties.getProperty(PROPERTY_KEY_STATISTICS_URI, "ws://localhost:5120/statistics"));
 		} catch (URISyntaxException e) {
 		}
-		workingDir = new File(properties.getProperty(PROPERTY_KEY_WDIR, "."));
+		workingDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
 	}
 	
 	protected void launch(String ... args) {
@@ -112,11 +112,11 @@ public abstract class AbstractLauncher implements LaunchMethod {
 		return returnValue.get();
 	}
 	protected void addLauncherArgs(Properties properties, String prefix) {
-		int i=1;
-		String next = properties.getProperty(prefix + i);
+		int i=0;
+		String next = properties.getProperty(prefix + "[" + i + "]");
 		while (next != null) {
 			launchArgs.add(next);
-			next = properties.getProperty(prefix + ++i);
+			next = properties.getProperty(prefix + "[" + ++i  + "]");
 		}
 	}
 	protected String[] getLaunchArgs() {
