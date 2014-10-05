@@ -1,0 +1,144 @@
+package com.nitorcreations.willow.deployer;
+
+import java.io.IOException;
+import java.lang.management.ClassLoadingMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.JMX;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.management.openmbean.CompositeDataSupport;
+
+import org.apache.commons.beanutils.PropertyUtils;
+import org.hyperic.sigar.Cpu;
+import org.hyperic.sigar.FileSystem;
+import org.hyperic.sigar.FileSystemUsage;
+import org.hyperic.sigar.Mem;
+import org.hyperic.sigar.ProcCpu;
+import org.hyperic.sigar.ProcStat;
+import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
+
+import com.nitorcreations.willow.messages.CPU;
+import com.nitorcreations.willow.messages.DiskUsage;
+import com.nitorcreations.willow.messages.GcInfo;
+import com.nitorcreations.willow.messages.JmxMessage;
+import com.nitorcreations.willow.messages.Memory;
+import com.nitorcreations.willow.messages.ProcessCPU;
+import com.nitorcreations.willow.messages.Processes;
+import com.nitorcreations.willow.messages.ThreadInfoMessage;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
+
+public class PlatformStatsSender implements Runnable {
+	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private AtomicBoolean running = new AtomicBoolean(true);
+	protected final WebSocketTransmitter transmitter;
+	protected final StatisticsConfig conf;
+	
+	public PlatformStatsSender(WebSocketTransmitter transmitter, StatisticsConfig config) {
+		this.transmitter = transmitter;
+		this.conf = config;
+	}
+
+	public void stop() {
+		running.set(false);
+		this.notifyAll();
+	}
+
+	@Override
+	public void run() {
+		Sigar sigar = new Sigar();
+
+		long nextProcs = System.currentTimeMillis() + conf.getIntervalProcs();
+		long nextCpus =  System.currentTimeMillis() + conf.getIntervalCpus();
+		long nextMem =  System.currentTimeMillis() + conf.getIntervalMem();
+		long nextDisks = System.currentTimeMillis() + conf.getIntervalDisks();
+		ProcStat pStat;
+		DiskUsage[] dStat;
+		Cpu cStat;
+		ProcCpu pCStat;
+		Mem mem;
+		while (running.get()) {
+			long now = System.currentTimeMillis();
+			FileSystem[] fileSystems;
+			if (now > nextProcs) {
+				try {
+					pStat = sigar.getProcStat();
+					Processes msg = new Processes();
+					PropertyUtils.copyProperties(msg, pStat);
+					transmitter.queue(msg);
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Process statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextProcs = nextProcs + conf.getIntervalProcs();
+			}
+			if (now > nextCpus) {
+				try {
+					cStat = sigar.getCpu();
+					CPU msg = new CPU();
+					PropertyUtils.copyProperties(msg, cStat);
+					transmitter.queue(msg);
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get CPU statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextCpus = nextCpus + conf.getIntervalCpus();
+			}
+			if (now > nextMem) {
+				try {
+					mem = sigar.getMem();
+					Memory msg = new Memory();
+					PropertyUtils.copyProperties(msg, mem);
+					transmitter.queue(msg);
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Memory statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextMem = nextMem + conf.getIntervalMem();
+			}
+			if (now > nextDisks) {
+				try {
+					fileSystems = sigar.getFileSystemList();
+					dStat = new DiskUsage[fileSystems.length];
+					for (int i=0; i < fileSystems.length; i++) {
+						FileSystemUsage next = sigar.getMountedFileSystemUsage(fileSystems[i].getDirName());
+						dStat[i] = new DiskUsage();
+						PropertyUtils.copyProperties(dStat[i], next);
+						dStat[i].setName(fileSystems[i].getDirName());
+					}
+					for (DiskUsage next : dStat) {
+						transmitter.queue(next);
+					}
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextDisks = nextDisks + conf.getIntervalDisks();
+			}
+		}
+	}
+}

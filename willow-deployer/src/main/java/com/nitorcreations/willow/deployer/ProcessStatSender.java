@@ -5,7 +5,6 @@ import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,91 +24,36 @@ import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.hyperic.sigar.Cpu;
-import org.hyperic.sigar.FileSystem;
-import org.hyperic.sigar.FileSystemUsage;
-import org.hyperic.sigar.Mem;
 import org.hyperic.sigar.ProcCpu;
-import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
-import com.nitorcreations.willow.messages.CPU;
-import com.nitorcreations.willow.messages.DiskUsage;
 import com.nitorcreations.willow.messages.GcInfo;
 import com.nitorcreations.willow.messages.JmxMessage;
-import com.nitorcreations.willow.messages.Memory;
 import com.nitorcreations.willow.messages.ProcessCPU;
-import com.nitorcreations.willow.messages.Processes;
 import com.nitorcreations.willow.messages.ThreadInfoMessage;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
-public class StatsSender implements Runnable {
+public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
-	private AtomicBoolean running = new AtomicBoolean(true);
-	private final WebSocketTransmitter transmitter;
-	private final StatisticsConfig conf;
 	private MBeanServerConnection mBeanServerConnection;
 	private long pid;
-	
-	public StatsSender(WebSocketTransmitter transmitter, MBeanServerConnection mBeanServerConnection, long pid, StatisticsConfig config) throws URISyntaxException {
-		this.transmitter = transmitter;
+	private AtomicBoolean running = new AtomicBoolean(true);
+
+	public ProcessStatSender(WebSocketTransmitter transmitter, MBeanServerConnection mBeanServerConnection, long pid, StatisticsConfig conf) {
+		super(transmitter, conf);
 		this.mBeanServerConnection = mBeanServerConnection;
 		this.pid = pid;
-		this.conf = config;
 	}
-
-	public void stop() {
-		running.set(false);
-		this.notifyAll();
-	}
-
 	@Override
 	public void run() {
 		Sigar sigar = new Sigar();
 
-		long nextProcs = System.currentTimeMillis() + conf.getIntervalProcs();
-		long nextCpus =  System.currentTimeMillis() + conf.getIntervalCpus();
 		long nextProcCpus =  System.currentTimeMillis() + conf.getIntervalProcCpus();
-		long nextMem =  System.currentTimeMillis() + conf.getIntervalMem();
 		long nextJmx = System.currentTimeMillis() + conf.getIntervalJmx();
-		long nextDisks = System.currentTimeMillis() + conf.getIntervalDisks();
-		ProcStat pStat;
-		DiskUsage[] dStat;
-		Cpu cStat;
 		ProcCpu pCStat;
-		Mem mem;
 		while (running.get()) {
 			long now = System.currentTimeMillis();
-			FileSystem[] fileSystems;
-			if (now > nextProcs) {
-				try {
-					pStat = sigar.getProcStat();
-					Processes msg = new Processes();
-					PropertyUtils.copyProperties(msg, pStat);
-					transmitter.queue(msg);
-				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
-						NoSuchMethodException e) {
-					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Process statistics");
-					rec.setThrown(e);
-					logger.log(rec);
-				}
-				nextProcs = nextProcs + conf.getIntervalProcs();
-			}
-			if (now > nextCpus) {
-				try {
-					cStat = sigar.getCpu();
-					CPU msg = new CPU();
-					PropertyUtils.copyProperties(msg, cStat);
-					transmitter.queue(msg);
-				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
-						NoSuchMethodException e) {
-					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get CPU statistics");
-					rec.setThrown(e);
-					logger.log(rec);
-				}
-				nextCpus = nextCpus + conf.getIntervalCpus();
-			}
 			if (now > nextProcCpus) {
 				try {
 					pCStat = sigar.getProcCpu(pid);
@@ -123,20 +67,6 @@ public class StatsSender implements Runnable {
 					logger.log(rec);
 				}
 				nextProcCpus = nextProcCpus + conf.getIntervalProcCpus();
-			}
-			if (now > nextMem) {
-				try {
-					mem = sigar.getMem();
-					Memory msg = new Memory();
-					PropertyUtils.copyProperties(msg, mem);
-					transmitter.queue(msg);
-				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
-						NoSuchMethodException e) {
-					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Memory statistics");
-					rec.setThrown(e);
-					logger.log(rec);
-				}
-				nextMem = nextMem + conf.getIntervalMem();
 			}
 			if (mBeanServerConnection != null) {
 				if (now > nextJmx) {
@@ -155,30 +85,11 @@ public class StatsSender implements Runnable {
 					nextJmx = nextJmx + conf.getIntervalJmx();
 				}
 			}
-			if (now > nextDisks) {
-				try {
-					fileSystems = sigar.getFileSystemList();
-					dStat = new DiskUsage[fileSystems.length];
-					for (int i=0; i < fileSystems.length; i++) {
-						FileSystemUsage next = sigar.getMountedFileSystemUsage(fileSystems[i].getDirName());
-						dStat[i] = new DiskUsage();
-						PropertyUtils.copyProperties(dStat[i], next);
-						dStat[i].setName(fileSystems[i].getDirName());
-					}
-					for (DiskUsage next : dStat) {
-						transmitter.queue(next);
-					}
-				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
-						NoSuchMethodException e) {
-					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
-					rec.setThrown(e);
-					logger.log(rec);
-				}
-				nextDisks = nextDisks + conf.getIntervalDisks();
-			}
+
+
 		}
+
 	}
-	
 	public JmxMessage getJmxStats() throws MalformedObjectNameException, IOException, ReflectionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstanceNotFoundException, MBeanException {
 		JmxMessage ret = new JmxMessage();
 		ObjectName query = new ObjectName("java.lang:type=GarbageCollector,*");
@@ -274,4 +185,5 @@ public class StatsSender implements Runnable {
 		ret.setUnloadedClassCount(clBean.getUnloadedClassCount());
 		return ret;
 	}
+
 }

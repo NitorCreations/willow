@@ -80,6 +80,10 @@
       <artifactId>willow-messages</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.nitorcreations</groupId>
+      <artifactId>willow-utils</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils-core</artifactId>
       <exclusions>
@@ -113,6 +117,7 @@
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
+          <attach>false</attach>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>

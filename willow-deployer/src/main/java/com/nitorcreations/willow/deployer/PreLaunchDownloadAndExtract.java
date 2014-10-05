@@ -1,14 +1,9 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_INTERPOLATE_GLOB;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_ROOT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_GLOB;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_EXTRACT_SKIP_GLOB;
+import static com.nitorcreations.willow.deployer.PropertyKeys.*;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -42,6 +41,8 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
+
+import com.nitorcreations.willow.utils.MD5SumInputStream;
 
 public class PreLaunchDownloadAndExtract {
 	private final ArchiveStreamFactory factory = new ArchiveStreamFactory();
@@ -59,8 +60,6 @@ public class PreLaunchDownloadAndExtract {
 		perms.put(0200, PosixFilePermission.OWNER_WRITE);
 		perms.put(0400, PosixFilePermission.OWNER_READ);
 	}
-
-
 	public void execute(Properties properties) {
 		Map<String, String> replaceTokens = new HashMap<>();
 		for (Entry<Object,Object> nextEntry : properties.entrySet()) {
@@ -68,14 +67,64 @@ public class PreLaunchDownloadAndExtract {
 			replaceTokens.put("@" + nextEntry.getKey() + "@", (String)nextEntry.getValue());
 		}
 		int i = 0;
-		while (downloadUrl("[" + i++ + "]", properties, replaceTokens)) {}
+		int retries = 0;
+		boolean lastSuccess = true;
+		while (lastSuccess) {
+			try {
+				if (retries > 3) throw new RuntimeException("Download failed");
+				lastSuccess = downloadUrl("[" + i++ + "]", properties, replaceTokens);
+				retries = 0;
+			} catch (IOException e) {
+				lastSuccess = true;
+				i--;
+				retries++;
+			}
+		}
 		i = 0;
-		while (downloadArtifact("[" + i++ + "]", properties, replaceTokens)) {}
+		lastSuccess = true;
+		while (lastSuccess) {
+			try {
+				if (retries > 3) throw new RuntimeException("Download failed");
+				lastSuccess = downloadArtifact("[" + i++ + "]", properties, replaceTokens);
+				retries = 0;
+			} catch (IOException e) {
+				lastSuccess = true;
+				i--;
+				retries++;
+			}
+		}
 	}
 
-	private boolean downloadUrl(String index, Properties properties, Map<String, String> replaceTokens) {
+	private boolean downloadUrl(String index, Properties properties, Map<String, String> replaceTokens) throws IOException {
 		String url = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index);
 		if (url == null) return false;
+		String urlMd5 = url + ".md5";
+		byte[] md5 = null;
+		String propMd5 = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5);
+		if (propMd5 != null) {
+			try {
+				md5 = Hex.decodeHex(propMd5.toCharArray());
+			} catch (DecoderException e) {
+				logger.warning("Invalid md5sum " + propMd5);
+				throw new IOException("Failed to download " + url, e);
+			}
+		} else {	
+			try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+				URLConnection conn = new URL(urlMd5).openConnection();
+				FileUtil.copy(conn.getInputStream(), out);
+				String md5Str = new String(out.toByteArray(), 0, 32);
+				md5 = Hex.decodeHex(md5Str.toCharArray());
+			} catch (IOException | DecoderException e) {
+				LogRecord rec = new LogRecord(Level.WARNING, "Failed to get md5" + urlMd5);
+				rec.setThrown(e);
+				logger.log(rec);
+			}
+		}
+		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, 
+				properties.getProperty(PROPERTY_KEY_WORKDIR, ".")) ;
+		String extractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB) ;
+		String skipExtractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
+		String filterGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
 		try {
 			URLConnection conn = new URL(url).openConnection();
 			String fileName = FileUtil.getFileName(url);
@@ -83,62 +132,82 @@ public class PreLaunchDownloadAndExtract {
 			if (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH) != null) {
 				target = new File(new File(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH)), fileName);
 			} else {
-			    target = File.createTempFile(fileName, "download");
+				target = File.createTempFile(fileName, ".download");
 			}
-			FileUtil.copy(conn.getInputStream(), target);
-			if (properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_GLOB) != null) {
-				extractFile(index, properties, target, replaceTokens, url);
+			InputStream in;
+			MD5SumInputStream md5in = null;
+			if (md5 != null) {
+				md5in = new MD5SumInputStream(conn.getInputStream());
+				in = md5in;
+			} else {
+				in = conn.getInputStream();
 			}
-		} catch (IOException | CompressorException | ArchiveException e) {
+			FileUtil.copy(in, target);
+			if (extractGlob != null || skipExtractGlob != null) {
+				extractFile(target, replaceTokens, extractRoot, extractGlob, skipExtractGlob, filterGlob);
+			}
+			byte[] digest = md5in.digest();
+			if (md5 != null && Arrays.equals(md5, digest)) {
+				logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
+			} else {
+				throw new IOException("MD5 Sum does not match " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(digest));
+			}
+		} catch (IOException | CompressorException | ArchiveException 
+				| NoSuchAlgorithmException e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract " + url);
 			rec.setThrown(e);
 			logger.log(rec);
+			throw new IOException("Failed to download url " + url, e);
 		}
 		return true;
 	}
-
-	private void extractFile(String index, Properties properties,
-			File archive, Map<String, String> replaceTokens, String fileName) throws CompressorException, IOException, ArchiveException {
-		String root = properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_ROOT + index, ".");
-		String lcFileName = fileName.toLowerCase();
-		Set<PathMatcher> skipMatchers = getGlobMatchers(properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_SKIP_GLOB +index));
-		Set<PathMatcher> filterMatchers = getGlobMatchers(properties.getProperty(PROPERTY_KEY_PREFIX_EXTRACT_INTERPOLATE_GLOB +index));
+	private void extractFile(File archive, Map<String, String> replaceTokens, String root, 
+			String extractGlob, String skipExtractGlob, String filterGlob) throws CompressorException, IOException, ArchiveException {
+		String lcFileName = archive.getName().toLowerCase();
+		Set<PathMatcher> extractMatchers = getGlobMatchers(extractGlob);
+		Set<PathMatcher> skipMatchers = getGlobMatchers(skipExtractGlob);
+		Set<PathMatcher> filterMatchers = getGlobMatchers(filterGlob);
 		InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024);
 		if (lcFileName.endsWith("z") ||	lcFileName.endsWith("bz2") || lcFileName.endsWith("lzma") ||
 				lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
 			in = cfactory.createCompressorInputStream(in);
 		}
-		extractArchive(factory.createArchiveInputStream(in), new File(root), replaceTokens, skipMatchers, filterMatchers);
+		extractArchive(factory.createArchiveInputStream(in), new File(root), replaceTokens, extractMatchers, skipMatchers, filterMatchers);
 	}
-
-	private boolean downloadArtifact(String propertySuffix, Properties properties, Map<String, String> replaceTokens) {
+	private boolean downloadArtifact(String index, Properties properties, Map<String, String> replaceTokens) throws IOException {
 		String artifact = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT);
 		if (artifact == null) return false;
 		AetherDownloader downloader = new AetherDownloader();
 		downloader.setProperties(properties);
 		File artifactFile = downloader.downloadArtifact(artifact);
+		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, 
+				properties.getProperty(PROPERTY_KEY_WORKDIR, ".")) ;
+		String extractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB) ;
+		String skipExtractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
+		String filterGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
 		try {
-			extractFile(propertySuffix, properties, artifactFile, replaceTokens, artifactFile.getName());
+			if (extractGlob != null || skipExtractGlob != null) {
+				extractFile(artifactFile, replaceTokens, extractRoot, extractGlob, skipExtractGlob, filterGlob);
+			}
 		} catch (CompressorException | IOException | ArchiveException e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract artifact " + artifact);
 			rec.setThrown(e);
 			logger.log(rec);
+			throw new IOException("Failed to download artifact" + artifact, e);
 		}
 		return true;
 	}
-
 	private boolean globMatches(String path, Set<PathMatcher> matchers) {
 		for (PathMatcher next : matchers) {
 			if (next.matches(Paths.get(path))) return true;
 		}
 		return false;
 	}
-
 	private Set<PathMatcher> getGlobMatchers(String expressions) {
 		Set<PathMatcher> matchers = new LinkedHashSet<>();
 		if (expressions == null || expressions.isEmpty()) return matchers;
 		FileSystem def = FileSystems.getDefault();
-		for (String next : expressions.split("|")) {
+		for (String next : expressions.split("\\|")) {
 			String trimmed = next.trim();
 			if (!trimmed.isEmpty()) {
 				matchers.add(def.getPathMatcher("glob:"  + trimmed));
@@ -146,7 +215,6 @@ public class PreLaunchDownloadAndExtract {
 		}
 		return matchers;
 	}
-
 	public Set<PosixFilePermission> getPermissions(int mode) {
 		Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
 		for (int mask : perms.keySet()) {
@@ -156,16 +224,16 @@ public class PreLaunchDownloadAndExtract {
 		}
 		return permissions;
 	}
-
-	private void extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers) throws IOException {
+	private void extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers) throws IOException {
 		try {
 			ArchiveEntry entry;
 			while((entry =  is.getNextEntry()) != null) {
 				File dest = new File(destFolder, entry.getName());
-				if (!globMatches(entry.getName(), skipMatchers)) {
+				if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {
 					if (entry.isDirectory()) {
 						dest.mkdirs();
 					} else {
+						dest.getParentFile().mkdirs();
 						if (globMatches(entry.getName(), filterMatchers)) {
 							FileUtil.filterStream(is, dest, replaceTokens);
 						} else {
@@ -187,7 +255,6 @@ public class PreLaunchDownloadAndExtract {
 			}
 		}
 	}
-
 	private int getMode(ArchiveEntry entry) {
 		Method m = null;
 		try {
@@ -196,7 +263,9 @@ public class PreLaunchDownloadAndExtract {
 		}
 		if (m == null) {
 			if (entry instanceof ZipArchiveEntry) {
-				return (int) ((((ZipArchiveEntry)entry).getExternalAttributes() >> 16) & 0xFFF);
+				int ret = (int) ((((ZipArchiveEntry)entry).getExternalAttributes() >> 16) & 0xFFF);
+				if (ret == 0) { return 0644; }
+				else return ret;
 			} else return 0664;
 		} else {
 			try {
