@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -20,12 +21,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.JMX;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+
+import org.hyperic.sigar.ProcTime;
+import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.ptql.ProcessQuery;
+import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
 import sun.jvmstat.monitor.Monitor;
 import sun.jvmstat.monitor.MonitoredHost;
@@ -36,29 +50,50 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.utils.HostUtil;
 
-public class Main {
-    private static final String LOCAL_CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
-    private Logger log = Logger.getLogger(this.getClass().getCanonicalName());
-    private List<PlatformStatsSender> stats = new ArrayList<>();
-	
-	public Main() {	}
-	
+public class Main implements MainMBean {
+	private static final String LOCAL_CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
+	private Logger log = Logger.getLogger(this.getClass().getCanonicalName());
+	private List<PlatformStatsSender> stats = new ArrayList<>();
+	private List<Properties> launchPropertiesList = new ArrayList<>();
+	private List<LaunchMethod> children = new ArrayList<>();
+    public static ObjectName OBJECT_NAME;
+    static {
+        try {
+            OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
+        } catch (MalformedObjectNameException e) {
+            e.printStackTrace();
+            assert false;
+        }
+    }
+
+    public Main() {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        try {
+			mbs.registerMBean(this, OBJECT_NAME);
+		} catch (InstanceAlreadyExistsException | MBeanRegistrationException
+				| NotCompliantMBeanException e) {
+			e.printStackTrace();
+		}
+    }
+
 	public static void main(String[] args) throws URISyntaxException {
 		new Main().doMain(args);
 	}
 	public void doMain(String[] args) {
-		if (args.length < 1) usage("At least one argument expected"); 
-		Properties launchProperties = getURLProperties(args[0]);
-		String deployerName = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME, args[0]);
-		Environment.libc.setenv(ENV_DEPLOYER_NAME, deployerName, 1);
-		extractNativeLib(launchProperties);
+		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}"); 
+		String deployerName = args[0];
+		Properties firstProperties = getURLProperties(args[1]);
+		firstProperties.setProperty(PROPERTY_KEY_DEPLOYER_NAME, deployerName);
+		extractNativeLib(firstProperties);
 		WebSocketTransmitter transmitter = null;
-		String statUri = launchProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
+		String statUri = firstProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
 		if (statUri != null && !statUri.isEmpty()) {
 			try {
-				long flushInterval = Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
+				long flushInterval = Long.parseLong(firstProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
 				transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
 				transmitter.start();
 			} catch (URISyntaxException e) {
@@ -75,16 +110,88 @@ public class Main {
 				usage(e.getMessage());
 			}
 		}
+		launchPropertiesList.add(firstProperties);
+		for (int i=2; i<args.length;i++) {
+			launchPropertiesList.add(getURLProperties(args[i]));
+		}
+		//Download
+		for (Properties launchProps : launchPropertiesList) {
+			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract();
+			downloader.execute(launchProps);
+		}
+		//Stop
 		int i=0;
-		while (i < args.length) {
+		for (Properties launchProps : launchPropertiesList) {
+			LaunchMethod stopper = null;
+			String stopMethod = launchProps.getProperty(PROPERTY_KEY_PREFIX_SHUTDOWN + PROPERTY_KEY_METHOD);
+			if (stopMethod != null) {
+				try {
+					stopper = LaunchMethod.TYPE.valueOf(stopMethod).getLauncher();
+					stopper.setProperties(launchProps, PROPERTY_KEY_PREFIX_SHUTDOWN);
+					stopper.run();
+				} catch (Throwable t) {
+					usage(t.getMessage());
+				}
+			}
+			i++;
+		}
+		try {
+			Sigar sigar = new Sigar();
+			ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);
+			long minStart = Long.MAX_VALUE;
+			long firstPid = 0;
+			long mypid = 0;
+			long[] pids = q.find(sigar);
+			if (pids.length > 1) {
+				for (long pid : pids) {
+					ProcTime time = sigar.getProcTime(pid);
+					if (time.getStartTime() < minStart) {
+						minStart = time.getStartTime();
+						mypid = firstPid;
+						firstPid = pid;
+					} else {
+						mypid = pid;
+					}
+				}
+				MBeanServerConnection server = getMBeanServerConnection(firstPid);
+				MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class); 
+				try {
+					proxy.stop();
+				} catch (Throwable e) {
+					log.info("JMX stop failed - terminating");
+				}
+				q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName);
+				long termTimeout = Long.parseLong(firstProperties.getProperty(PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT, "60000"));
+				long start = System.currentTimeMillis();
+				for (long nextpid : q.find(sigar)) {
+					if (nextpid != mypid) {
+						KillProcess.termProcess(Long.toString(nextpid));
+					}
+					if (System.currentTimeMillis() > (start + termTimeout)) break;
+				}
+				for (long nextpid : q.find(sigar)) {
+					if (nextpid != mypid) {
+						KillProcess.killProcess(Long.toString(nextpid));
+					}
+				}
+			}
+		} catch (Throwable e) {
+			LogRecord rec = new LogRecord(Level.WARNING, "Failed to kill old deployer");
+			rec.setThrown(e);
+			log.log(rec);
+		}
+		//Start
+		i=0;
+		for (Properties launchProps : launchPropertiesList) {
 			LaunchMethod launcher = null;
 			try {
-				launcher = LaunchMethod.TYPE.valueOf(launchProperties.getProperty(PROPERTY_KEY_LAUNCH_METHOD)).getLauncher();
+				launcher = LaunchMethod.TYPE.valueOf(launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + PROPERTY_KEY_METHOD)).getLauncher();
 			} catch (Throwable t) {
 				usage(t.getMessage());
 			}
-			File workDir = new File(launchProperties.getProperty(PROPERTY_KEY_WORKDIR, "."));
-			String propsName = launchProperties.getProperty(PROPERTY_KEY_PROPERTIES_FILENAME, "application.properties");
+			launchProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(i));
+			File workDir = new File(launchProps.getProperty(PROPERTY_KEY_WORKDIR, "."));
+			String propsName = launchProps.getProperty(PROPERTY_KEY_PROPERTIES_FILENAME, "application.properties");
 			File propsFile = new File(propsName);
 			if (!propsFile.isAbsolute()) {
 				propsFile = new File(workDir, propsName);
@@ -93,15 +200,14 @@ public class Main {
 				usage("Unable to create work directory " + workDir.getAbsolutePath());
 			}
 			try {
-				launchProperties.store(new FileOutputStream(propsFile), null);
+				launchProps.store(new FileOutputStream(propsFile), null);
 			} catch (IOException e) {
 				usage(e.getMessage());
 			}
-			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract();
-			downloader.execute(launchProperties);
-			launcher.setProperties(launchProperties);
+			launcher.setProperties(launchProps);
 			Thread executable = new Thread(launcher);
 			executable.start();
+			children.add(launcher);
 			long pid = launcher.getProcessId();
 			if (transmitter != null) {
 				try {
@@ -115,8 +221,19 @@ public class Main {
 			}
 		}
 		i++;
-		if (i < args.length) {
-			launchProperties = getURLProperties(args[i]);
+	}
+	public void stop() {
+		for (LaunchMethod next : children) {
+			next.stop();
+		}
+		for (LaunchMethod next : children) {
+			try {
+				next.waitForChild();
+			} catch (InterruptedException e) {
+			}
+		}
+		for (PlatformStatsSender next : stats) {
+			next.stop();
 		}
 	}
 	private static void extractNativeLib(Properties launchProperties) {
@@ -156,93 +273,93 @@ public class Main {
 			}
 		}
 	}
-	
-    public MBeanServerConnection getMBeanServerConnection(long lvmid) throws Exception {
-        String host = null;
-        MonitoredHost monitoredHost = MonitoredHost.getMonitoredHost(host);
 
-        log.fine("Inspecting VM " + lvmid);
-        MonitoredVm vm = null;
-        String vmidString = "//" + lvmid + "?mode=r";
-        try {
-        	VmIdentifier id = new VmIdentifier(vmidString);
-        	vm = monitoredHost.getMonitoredVm(id, 0);
-        } catch (URISyntaxException e) {
-        	// Should be able to generate valid URLs
-        	assert false;
-        } catch (Exception e) {
-        } finally {
-        	if (vm == null) {
-        		return null;
-        	}
-        }
+	public MBeanServerConnection getMBeanServerConnection(long lvmid) throws Exception {
+		String host = null;
+		MonitoredHost monitoredHost = MonitoredHost.getMonitoredHost(host);
 
-        log.finer("VM " + lvmid + " is a our vm");
-        Monitor command = vm.findByName("sun.rt.javaCommand");
-        String lcCommandStr = command.getValue().toString()
-        		.toLowerCase();
+		log.fine("Inspecting VM " + lvmid);
+		MonitoredVm vm = null;
+		String vmidString = "//" + lvmid + "?mode=r";
+		try {
+			VmIdentifier id = new VmIdentifier(vmidString);
+			vm = monitoredHost.getMonitoredVm(id, 0);
+		} catch (URISyntaxException e) {
+			// Should be able to generate valid URLs
+			assert false;
+		} catch (Exception e) {
+		} finally {
+			if (vm == null) {
+				return null;
+			}
+		}
 
-        log.finer("Command for beanserver VM " + lvmid + ": " + lcCommandStr);
+		log.finer("VM " + lvmid + " is a our vm");
+		Monitor command = vm.findByName("sun.rt.javaCommand");
+		String lcCommandStr = command.getValue().toString()
+				.toLowerCase();
 
-        try {
-        	VirtualMachine attachedVm = VirtualMachine
-        			.attach("" + lvmid);
-        	String home = attachedVm.getSystemProperties()
-        			.getProperty("java.home");
+		log.finer("Command for beanserver VM " + lvmid + ": " + lcCommandStr);
 
-        	// Normally in ${java.home}/jre/lib/management-agent.jar but might
-        	// be in ${java.home}/lib in build environments.
-        	File f = Paths.get(home, "jre", "lib", "management-agent.jar").toFile();
-        	if (!f.exists()) {
-        		f = Paths.get(home,  "lib", "management-agent.jar").toFile();
-        		if (!f.exists()) {
-        			throw new IOException("Management agent not found");
-        		}
-        	}
+		try {
+			VirtualMachine attachedVm = VirtualMachine
+					.attach("" + lvmid);
+			String home = attachedVm.getSystemProperties()
+					.getProperty("java.home");
 
-        	String agent = f.getCanonicalPath();
-        	log.finer("Found agent for VM " + lvmid + ": " + agent);
-        	try {
-        		attachedVm.loadAgent(agent,	"com.sun.management.jmxremote");
-        	} catch (AgentLoadException x) {
-        		return null;
-        	} catch (AgentInitializationException x) {
-        		return null;
-        	}
-        	Properties agentProps = attachedVm.getAgentProperties();
-        	String address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
-        	JMXServiceURL url = new JMXServiceURL(address);
-        	JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
-        	MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-        	vm.detach();                            
-        	return mbsc;
-        } catch (AttachNotSupportedException x) {
-        	log.log(Level.WARNING,
-        			"Not attachable", x);
-        } catch (IOException x) {
-        	log.log(Level.WARNING,
-        			"Failed to get JMX connection", x);
-        }
+			// Normally in ${java.home}/jre/lib/management-agent.jar but might
+			// be in ${java.home}/lib in build environments.
+			File f = Paths.get(home, "jre", "lib", "management-agent.jar").toFile();
+			if (!f.exists()) {
+				f = Paths.get(home,  "lib", "management-agent.jar").toFile();
+				if (!f.exists()) {
+					throw new IOException("Management agent not found");
+				}
+			}
 
-        return null;
-    }
-    
-    private static void usage(String error) {
-    	System.err.println(error);
-    	System.err.println(Main.class.getName() + " [property-url]");
-    	System.exit(1);
-    }
-    
-    private static Proxy resolveProxy(String proto) throws MalformedURLException {
-    	String proxyUrl = System.getenv(proto.toLowerCase() + "_proxy");
-    	if (proxyUrl == null) {
-    		proxyUrl = System.getenv(proto.toUpperCase() + "_PROXY");
-    	}
-    	if (proxyUrl == null) return null;
-    	URL proxyAddr = new URL(proxyUrl);
-    	return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
-    }
-    private Properties getURLProperties(String url) {
+			String agent = f.getCanonicalPath();
+			log.finer("Found agent for VM " + lvmid + ": " + agent);
+			try {
+				attachedVm.loadAgent(agent,	"com.sun.management.jmxremote");
+			} catch (AgentLoadException x) {
+				return null;
+			} catch (AgentInitializationException x) {
+				return null;
+			}
+			Properties agentProps = attachedVm.getAgentProperties();
+			String address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+			JMXServiceURL url = new JMXServiceURL(address);
+			JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
+			MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
+			vm.detach();                            
+			return mbsc;
+		} catch (AttachNotSupportedException x) {
+			log.log(Level.WARNING,
+					"Not attachable", x);
+		} catch (IOException x) {
+			log.log(Level.WARNING,
+					"Failed to get JMX connection", x);
+		}
+
+		return null;
+	}
+
+	private static void usage(String error) {
+		System.err.println(error);
+		System.err.println(Main.class.getName() + " [property-url]");
+		System.exit(1);
+	}
+
+	private static Proxy resolveProxy(String proto) throws MalformedURLException {
+		String proxyUrl = System.getenv(proto.toLowerCase() + "_proxy");
+		if (proxyUrl == null) {
+			proxyUrl = System.getenv(proto.toUpperCase() + "_PROXY");
+		}
+		if (proxyUrl == null) return null;
+		URL proxyAddr = new URL(proxyUrl);
+		return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
+	}
+	private Properties getURLProperties(String url) {
 		Properties launchProperties = new Properties();
 		try {
 			URL propertyURL = new URL(url);
@@ -260,5 +377,5 @@ public class Main {
 			usage(e.getMessage());
 		}
 		return launchProperties;
-    }
+	}
 }

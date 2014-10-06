@@ -1,10 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_MAIN_CLASS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_JAVA_ARGS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_JAR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_CLASSPATH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH_ARGS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.*;
 
 import java.io.File;
 import java.util.Properties;
@@ -26,16 +22,16 @@ public class JavaLauncher extends AbstractLauncher {
 			launchArgs.add("-jar");
 			launchArgs.add(launchJar.getAbsolutePath());
 		}
-		addLauncherArgs(launchProperties, PROPERTY_KEY_PREFIX_LAUNCH_ARGS);
+		addLauncherArgs(launchProperties, keyPrefix + PROPERTY_KEY_PREFIX_ARGS);
 		super.run();
 	}
 
 	@Override
-	public void setProperties(Properties properties) {
-		super.setProperties(properties);
-		mainClass = properties.getProperty(PROPERTY_KEY_MAIN_CLASS, "");
-		classPath = properties.getProperty(PROPERTY_KEY_CLASSPATH, "");
-		String jarPath = properties.getProperty(PROPERTY_KEY_LAUNCH_JAR);
+	public void setProperties(Properties properties, String keyPrefix) {
+		super.setProperties(properties, keyPrefix);
+		mainClass = properties.getProperty(keyPrefix + PROPERTY_KEY_MAIN_CLASS, "");
+		classPath = properties.getProperty(keyPrefix + PROPERTY_KEY_CLASSPATH, "");
+		String jarPath = properties.getProperty(keyPrefix + PROPERTY_KEY_JAR);
 		if (jarPath != null && !jarPath.isEmpty()) {
 			launchJar = new File(jarPath);
 		}
@@ -48,6 +44,6 @@ public class JavaLauncher extends AbstractLauncher {
 		}
 
 		launchArgs.add(java.getAbsolutePath());
-		addLauncherArgs(properties, PROPERTY_KEY_PREFIX_JAVA_ARGS);
+		addLauncherArgs(properties, keyPrefix + PROPERTY_KEY_PREFIX_JAVA_ARGS);
 	}
 }

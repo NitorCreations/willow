@@ -20,6 +20,8 @@ public interface LaunchMethod extends Runnable {
 		}
 	}
 	public void setProperties(Properties properties);
+	public void setProperties(Properties properties, String keyPrefix);
 	public long getProcessId();
 	void stop();
+	int waitForChild() throws InterruptedException;
 }
