@@ -146,11 +146,10 @@ public class PreLaunchDownloadAndExtract {
 			if (extractGlob != null || skipExtractGlob != null) {
 				extractFile(target, replaceTokens, extractRoot, extractGlob, skipExtractGlob, filterGlob);
 			}
-			byte[] digest = md5in.digest();
-			if (md5 != null && Arrays.equals(md5, digest)) {
+			if (md5 != null && Arrays.equals(md5, md5in.digest())) {
 				logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
-			} else {
-				throw new IOException("MD5 Sum does not match " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(digest));
+			} else if (md5 != null){
+				throw new IOException("MD5 Sum does not match " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(md5in.digest()));
 			}
 		} catch (IOException | CompressorException | ArchiveException 
 				| NoSuchAlgorithmException e) {

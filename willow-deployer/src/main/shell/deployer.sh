@@ -32,5 +32,7 @@ fi
 
 JAVA_TOOLS=$JAVA_LIB/tools.jar
 
-exec $JAVA_HOME/bin/java -cp $JAVA_TOOLS:deployer.jar com.nitorcreations.willow.deployer.Main "$@"
+export W_DEPLOYER_NAME=$1
+
+exec $JAVA_HOME/bin/java -Dsun.rmi.transport.tcp.responseTimeout=300000 -cp $JAVA_TOOLS:deployer.jar com.nitorcreations.willow.deployer.Main "$@"
 __ARCHIVE_BELOW__

@@ -26,6 +26,7 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
 import com.google.gson.Gson;
+import com.nitorcreations.willow.utils.HostUtil;
 
 public class MetricsServlet implements Servlet {
 	private static Node node;
@@ -45,12 +46,10 @@ public class MetricsServlet implements Servlet {
 		metrics.put("/tags", new TagsList());
 		setupElasticSearch(config.getServletContext());
 	}
-
 	@Override
 	public ServletConfig getServletConfig() {
 		return config;
 	}
-
 	@Override
 	public void service(ServletRequest req, ServletResponse res) throws IOException {
 		if (!((HttpServletRequest)req).getMethod().equals("GET")) {
@@ -68,24 +67,20 @@ public class MetricsServlet implements Servlet {
 		Gson out = new Gson();
 		res.getOutputStream().write(out.toJson(data).getBytes());
 	}
-
 	@Override
 	public String getServletInfo() {
 		return "Cluster metrics";
 	}
-
 	@Override
 	public void destroy() {
 		node.stop();
 	}
-
 	public static Client getClient() {
 		return node.client();
 	}
-
 	private void setupElasticSearch(ServletContext context) {
 		ImmutableSettings.Builder settingsBuilder = ImmutableSettings.settingsBuilder();
-		String nodeName = getInitParameter(context, "node.name", getHostName());
+		String nodeName = getInitParameter(context, "node.name", HostUtil.getHostName());
 		if (nodeName == null || nodeName.isEmpty() || "localhost".equals(nodeName)) {
 			nodeName = randomNodeId();
 		}
@@ -103,33 +98,11 @@ public class MetricsServlet implements Servlet {
 				.data(true).local(true).node();
 
 	}
-
 	public String getInitParameter(ServletContext context, String name, String defaultVal) {
 		String ret = context.getInitParameter(name);
 		if (ret == null || ret.isEmpty()) return defaultVal;
 		return ret;
 	}
-
-	public static String getHostName() {
-		Enumeration<NetworkInterface> interfaces;
-		try {
-			interfaces = NetworkInterface.getNetworkInterfaces();
-			while (interfaces.hasMoreElements()) {
-				NetworkInterface nic = interfaces.nextElement();
-				Enumeration<InetAddress> addresses = nic.getInetAddresses();
-				while (addresses.hasMoreElements()) {
-					InetAddress address = addresses.nextElement();
-					if (!address.isLoopbackAddress()) {
-						return address.getHostName();
-					}
-				}
-			}
-			return "localhost";
-		} catch (SocketException e) {
-			return "localhost";
-		}
-	}
-
 	public String randomNodeId() {
 		return new BigInteger(130, random).toString(32);
 	}
