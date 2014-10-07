@@ -92,11 +92,17 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				new Thread(stdout, "child-stdout-pumper").start();
 				new Thread(stderr, "child-sdrerr-pumper").start();
 				returnValue.set(child.waitFor());
+				String postStopStr = launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_METHOD);
+				if (postStopStr != null) {
+					LaunchMethod postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
+					postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
+					postStop.run();
+				}
 			} catch (IOException | URISyntaxException | InterruptedException e) {
 				e.printStackTrace();
 			}
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 		}
@@ -156,7 +162,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				extraEnv.put(nextKey.trim(), properties.getProperty((nextKey.trim())));
 			}
 		}
-		workingDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
+		workingDir = new File(properties.getProperty(keyPrefix + PROPERTY_KEY_LAUNCH_WORKDIR,
+				properties.getProperty(PROPERTY_KEY_WORKDIR, ".")));
 		
 	}
 }

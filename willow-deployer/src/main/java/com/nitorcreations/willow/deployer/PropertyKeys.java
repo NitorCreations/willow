@@ -3,6 +3,7 @@ package com.nitorcreations.willow.deployer;
 public interface PropertyKeys {
 	public static final String PROPERTY_KEY_PREFIX_LAUNCH                   = "deployer.launch";
 	public static final String PROPERTY_KEY_PREFIX_SHUTDOWN                 = "deployer.shutdown";
+	public static final String PROPERTY_KEY_PREFIX_POST_STOP                = "deployer.post.stop";
 	public static final String PROPERTY_KEY_METHOD                          = ".method";
 	public static final String PROPERTY_KEY_PREFIX_ARGS                     = ".arg";
 	public static final String PROPERTY_KEY_BINARY                          = ".binary";
@@ -13,6 +14,7 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_MAIN_CLASS                      = ".java.mainclass";
 	public static final String PROPERTY_KEY_CLASSPATH                       = ".java.classpath";
 	public static final String PROPERTY_KEY_JAR                             = ".java.jar";
+	public static final String PROPERTY_KEY_LAUNCH_WORKDIR                  = ".workdir";
 
 	
 	public static final String PROPERTY_KEY_PREFIX_DOWNLOAD_URL             = "deployer.download.url";
