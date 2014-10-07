@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.hyperic.sigar.Sigar;
@@ -82,13 +83,19 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			log.info(String.format("Starting %s%n", pb.command().toString()));
 			try {
 				child = pb.start();
-				if (transmitter != null) {
-					stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
-					stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
-				} else {
-					stdout = new LoggingStreamPumper(child.getInputStream(), Level.FINE, name);
-					stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
-				}
+			} catch (IOException e) {
+				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start  process");
+				rec.setThrown(e);
+				log.log(rec);
+			}
+			if (transmitter != null) {
+				stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
+				stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
+			} else {
+				stdout = new LoggingStreamPumper(child.getInputStream(), Level.FINE, name);
+				stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
+			}
+			try {
 				new Thread(stdout, "child-stdout-pumper").start();
 				new Thread(stderr, "child-sdrerr-pumper").start();
 				returnValue.set(child.waitFor());
@@ -98,8 +105,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
 					postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
 					postStop.run();
 				}
-			} catch (IOException | URISyntaxException | InterruptedException e) {
-				e.printStackTrace();
+			} catch (InterruptedException e) {
+				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start process stream pumpers");
+				rec.setThrown(e);
+				log.log(rec);
 			}
 			try {
 				Thread.sleep(500);
