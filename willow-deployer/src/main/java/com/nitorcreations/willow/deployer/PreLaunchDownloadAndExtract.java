@@ -115,8 +115,7 @@ public class PreLaunchDownloadAndExtract {
 				String md5Str = new String(out.toByteArray(), 0, 32);
 				md5 = Hex.decodeHex(md5Str.toCharArray());
 			} catch (IOException | DecoderException e) {
-				LogRecord rec = new LogRecord(Level.WARNING, "Failed to get md5" + urlMd5);
-				rec.setThrown(e);
+				LogRecord rec = new LogRecord(Level.INFO, "No md5 sum available" + urlMd5);
 				logger.log(rec);
 			}
 		}
