@@ -163,10 +163,15 @@ public class Main implements MainMBean {
 				q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName);
 				long termTimeout = Long.parseLong(firstProperties.getProperty(PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT, "60000"));
 				long start = System.currentTimeMillis();
-				for (long nextpid : q.find(sigar)) {
-					if (nextpid != mypid) {
-						KillProcess.termProcess(Long.toString(nextpid));
+				pids = q.find(sigar);
+				while (pids.length > 1) {
+					for (long nextpid : pids) {
+						if (nextpid != mypid) {
+							KillProcess.termProcess(Long.toString(nextpid));
+						}
 					}
+					Thread.sleep(500);
+					pids = q.find(sigar);
 					if (System.currentTimeMillis() > (start + termTimeout)) break;
 				}
 				for (long nextpid : q.find(sigar)) {
