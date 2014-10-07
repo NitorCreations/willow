@@ -119,17 +119,35 @@ public class PreLaunchDownloadAndExtract {
 				logger.log(rec);
 			}
 		}
-		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, 
-				properties.getProperty(PROPERTY_KEY_WORKDIR, ".")) ;
+		File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
+		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, workDir.getAbsolutePath()) ;
 		String extractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB) ;
 		String skipExtractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
 		String filterGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
+		String downloadDir = properties.getProperty(PROPERTY_KEY_DOWNLOAD_DIRECTORY);
 		try {
 			URLConnection conn = new URL(url).openConnection();
 			String fileName = FileUtil.getFileName(url);
 			File target = null;
-			if (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH) != null) {
-				target = new File(new File(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_FINALPATH)), fileName);
+			String finalPath = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH); 
+			if (finalPath != null) {
+				target = new File(finalPath);
+				if (!target.isAbsolute()) {
+					target = new File(workDir, finalPath).getCanonicalFile();
+				}
+				File finalDir = target.getParentFile();
+				if (!finalDir.exists() || finalDir.mkdirs()) {
+					throw new IOException("Failed to create final download directory " + finalDir.getAbsolutePath());
+				}
+			} else  if (downloadDir != null) {
+				File downloadDirFile = new File(downloadDir);
+				if (!downloadDirFile.isAbsolute()) {
+					downloadDirFile = new File(workDir, downloadDir).getCanonicalFile();
+				}
+				if (!downloadDirFile.exists() || downloadDirFile.mkdirs()) {
+					throw new IOException("Failed to create final download directory " + downloadDirFile.getAbsolutePath());
+				}
+				target = new File(downloadDirFile, fileName);
 			} else {
 				target = File.createTempFile(fileName, ".download");
 			}
