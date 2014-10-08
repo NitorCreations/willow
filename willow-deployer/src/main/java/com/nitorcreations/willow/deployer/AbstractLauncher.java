@@ -106,11 +106,13 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				rec.setThrown(e);
 				log.log(rec);
 			} finally {
-				String postStopStr = launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_METHOD);
-				if (postStopStr != null) {
-					LaunchMethod postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
-					postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
-					postStop.run();
+				if (keyPrefix.equals(PROPERTY_KEY_PREFIX_LAUNCH)) {
+					String postStopStr = launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_METHOD);
+					if (postStopStr != null) {
+						LaunchMethod postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
+						postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
+						postStop.run();
+					}
 				}
 			}
 			try {
