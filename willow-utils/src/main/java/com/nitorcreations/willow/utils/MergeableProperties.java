@@ -30,7 +30,7 @@ public class MergeableProperties extends Properties {
 	private Logger log = Logger.getLogger(getClass().getName());
 	private final String[] prefixes;
 	private static final long serialVersionUID = -2166886363149152785L;
-	private final LinkedHashMap<String, String> table = new LinkedHashMap<>();
+	private LinkedHashMap<String, String> table = new LinkedHashMap<>();
 	private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
 	
 	protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, String ... prefixes) {
@@ -55,7 +55,16 @@ public class MergeableProperties extends Properties {
 			putAll(prev);
 		}
 		merge0(name);
+		postMerge();
 		return this;
+	}
+	private void postMerge() {
+		LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
+		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
+		for (Entry<String, String> next : table.entrySet()) {
+			finalTable.put(sub.replace(next.getKey()), sub.replace(next.getValue()));
+		}
+		table = finalTable;
 	}
 	private void merge0(String name) {
 		put(INCLUDE_PROPERTY + ".appendchar", "|");
@@ -95,7 +104,7 @@ public class MergeableProperties extends Properties {
 	public Object put(Object key, Object value) {
 		String k = resolveIndexes((String)key);
 		String v = resolveIndexes((String)value);
-		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
+		StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');
 		k = sub.replace(k);
 		v = sub.replace(v);
 		String prev = table.get(k);
@@ -126,6 +135,9 @@ public class MergeableProperties extends Properties {
 		if (m.matches()) {
 			String arrKey = m.group(1);
 			int i = 0;
+			if (arrayIndexes.get(arrKey) != null) {
+				i = arrayIndexes.get(arrKey).intValue() + 1;
+			}
 			while (table.containsKey(arrKey + "[" + i + "]")) {
 				i++;
 			}
