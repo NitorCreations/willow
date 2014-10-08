@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -44,10 +45,11 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 
-public class PreLaunchDownloadAndExtract {
+public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 	private final ArchiveStreamFactory factory = new ArchiveStreamFactory();
 	private final CompressorStreamFactory cfactory = new CompressorStreamFactory();
 	private static Map<Integer, PosixFilePermission> perms = new HashMap<Integer, PosixFilePermission>();
+	private final Properties properties;
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	static {
 		perms.put(0001, PosixFilePermission.OTHERS_EXECUTE);
@@ -60,7 +62,10 @@ public class PreLaunchDownloadAndExtract {
 		perms.put(0200, PosixFilePermission.OWNER_WRITE);
 		perms.put(0400, PosixFilePermission.OWNER_READ);
 	}
-	public void execute(Properties properties) {
+	public PreLaunchDownloadAndExtract(Properties properties) {
+		this.properties = properties;
+	}
+	public Integer call() {
 		Map<String, String> replaceTokens = new HashMap<>();
 		for (Entry<Object,Object> nextEntry : properties.entrySet()) {
 			replaceTokens.put("${" + nextEntry.getKey() + "}", (String)nextEntry.getValue());
@@ -69,10 +74,12 @@ public class PreLaunchDownloadAndExtract {
 		int i = 0;
 		int retries = 0;
 		boolean lastSuccess = true;
+		int downloads = 0;
 		while (lastSuccess) {
 			try {
 				if (retries > 3) throw new RuntimeException("Download failed");
 				lastSuccess = downloadUrl("[" + i++ + "]", properties, replaceTokens);
+				if (lastSuccess) downloads++;
 				retries = 0;
 			} catch (IOException e) {
 				lastSuccess = true;
@@ -86,6 +93,7 @@ public class PreLaunchDownloadAndExtract {
 			try {
 				if (retries > 3) throw new RuntimeException("Download failed");
 				lastSuccess = downloadArtifact("[" + i++ + "]", properties, replaceTokens);
+				if (lastSuccess) downloads++;
 				retries = 0;
 			} catch (IOException e) {
 				lastSuccess = true;
@@ -93,6 +101,7 @@ public class PreLaunchDownloadAndExtract {
 				retries++;
 			}
 		}
+		return Integer.valueOf(downloads);
 	}
 
 	private boolean downloadUrl(String index, Properties properties, Map<String, String> replaceTokens) throws IOException {

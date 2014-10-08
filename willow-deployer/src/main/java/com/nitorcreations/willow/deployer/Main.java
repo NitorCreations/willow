@@ -18,8 +18,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -61,6 +69,8 @@ public class Main implements MainMBean {
 	private List<Properties> launchPropertiesList = new ArrayList<>();
 	private List<LaunchMethod> children = new ArrayList<>();
     public static ObjectName OBJECT_NAME;
+	private ExecutorService executor;
+
     static {
         try {
             OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
@@ -84,6 +94,7 @@ public class Main implements MainMBean {
 		new Main().doMain(args);
 	}
 	public void doMain(String[] args) {
+		executor = Executors.newFixedThreadPool(args.length);
 		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}"); 
 		String deployerName = args[0];
 		Properties firstProperties = getURLProperties(args[1]);
@@ -115,12 +126,22 @@ public class Main implements MainMBean {
 			launchPropertiesList.add(getURLProperties(args[i]));
 		}
 		//Download
+		List<Future<Integer>> downloads = new ArrayList<>();
 		for (Properties launchProps : launchPropertiesList) {
-			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract();
-			downloader.execute(launchProps);
+			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract(launchProps);
+			downloads.add(executor.submit(downloader));
+		}
+		int i=0;
+		for (Future<Integer> next : downloads) {
+			try {
+				log.info("Download " + i + " got " + next.get() + " items");
+			} catch (InterruptedException | ExecutionException e) {
+				log.warning("Download faield: " + e.getMessage());
+			}
 		}
 		//Stop
-		int i=0;
+		LinkedHashMap<Future<Integer>, Long> stopTasks = new LinkedHashMap<>();
+		i=0;
 		for (Properties launchProps : launchPropertiesList) {
 			LaunchMethod stopper = null;
 			String stopMethod = launchProps.getProperty(PROPERTY_KEY_PREFIX_SHUTDOWN + PROPERTY_KEY_METHOD);
@@ -128,10 +149,21 @@ public class Main implements MainMBean {
 				try {
 					stopper = LaunchMethod.TYPE.valueOf(stopMethod).getLauncher();
 					stopper.setProperties(launchProps, PROPERTY_KEY_PREFIX_SHUTDOWN);
-					stopper.run();
+					long timeout = Long.valueOf(launchProps.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_TIMEOUT, "5"));
+					stopTasks.put(executor.submit(stopper), Long.valueOf(timeout));
 				} catch (Throwable t) {
 					usage(t.getMessage());
 				}
+			}
+			i++;
+		}
+		i=0;
+		for (Entry<Future<Integer>, Long> next : stopTasks.entrySet()) {
+			try {
+				log.info("Stopper " + i + " returned "  + next.getKey().get(next.getValue().longValue(), TimeUnit.SECONDS));
+			} catch (InterruptedException | ExecutionException
+					| TimeoutException e) {
+				log.warning("Stopper " + i + " failed "  + e.getMessage());
 			}
 			i++;
 		}
@@ -210,8 +242,7 @@ public class Main implements MainMBean {
 				usage(e.getMessage());
 			}
 			launcher.setProperties(launchProps);
-			Thread executable = new Thread(launcher);
-			executable.start();
+			executor.submit(launcher);
 			children.add(launcher);
 			long pid = launcher.getProcessId();
 			if (transmitter != null) {

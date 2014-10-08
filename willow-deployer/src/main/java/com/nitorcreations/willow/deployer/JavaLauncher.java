@@ -12,7 +12,7 @@ public class JavaLauncher extends AbstractLauncher {
 
 
 	@Override
-	public void run() {
+	public Integer call() {
 		launchArgs.add("-Daccesslog.websocket=" + statUri.toString());
 		if (!mainClass.isEmpty() && !classPath.isEmpty()) {
 			launchArgs.add("-cp");
@@ -23,7 +23,7 @@ public class JavaLauncher extends AbstractLauncher {
 			launchArgs.add(launchJar.getAbsolutePath());
 		}
 		addLauncherArgs(launchProperties, keyPrefix + PROPERTY_KEY_PREFIX_ARGS);
-		super.run();
+		return super.call();
 	}
 
 	@Override
