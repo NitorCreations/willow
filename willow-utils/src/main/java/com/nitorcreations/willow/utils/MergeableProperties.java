@@ -97,6 +97,9 @@ public class MergeableProperties extends Properties {
 		String include = (String) remove(INCLUDE_PROPERTY);
 		if (include != null && !include.isEmpty()) {
 			for (String nextInclude : include.split("\\|")) {
+				if (log.isLoggable(Level.FINE)) {
+					log.fine("Including file: " + nextInclude);
+				}
 				merge0(nextInclude);
 			}
 		}
