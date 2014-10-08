@@ -14,7 +14,6 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -23,6 +22,10 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
+
 
 public class Obfuscator {
 
@@ -39,7 +42,7 @@ public class Obfuscator {
 			byte[] key = new byte[128];
 			sr.nextBytes(key);
 			try (OutputStream out = new FileOutputStream(masterFile)) {
-				out.write(("value=" + Base64.getEncoder().encodeToString(key) + "\n").getBytes(Charset.forName("UTF-8")));
+				out.write(("value=" + printBase64Binary(key) + "\n").getBytes(Charset.forName("UTF-8")));
 				out.flush();
 			}
 			Set<PosixFilePermission> perms = new HashSet<>();
@@ -91,7 +94,7 @@ public class Obfuscator {
 			cOut.write(input);
 			cOut.flush();
 			cOut.close();
-			return Base64.getEncoder().encodeToString(bOut.toByteArray());
+			return printBase64Binary(bOut.toByteArray());
 		} catch (NoSuchAlgorithmException
 				| NoSuchPaddingException | InvalidKeyException 
 				| IOException e) {
@@ -109,7 +112,7 @@ public class Obfuscator {
 		try { 
 			in = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			in.init(Cipher.DECRYPT_MODE, key);
-			byte[] input = Base64.getDecoder().decode(encrypted);
+			byte[] input = parseBase64Binary(encrypted);
 			bIn = new ByteArrayOutputStream();
 			cIn = new CipherOutputStream(bIn, in);
 			cIn.write(input);
@@ -160,7 +163,7 @@ public class Obfuscator {
 				md.update(next.getValue().getBytes(Charset.forName("UTF-8")));
 			}
 		}
-		return Base64.getEncoder().encodeToString(md.digest());
+		return printBase64Binary(md.digest());
 	}
 	private static byte[] getSalt() {
 		SecureRandom sr = new SecureRandom();
