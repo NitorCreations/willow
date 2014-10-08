@@ -35,6 +35,7 @@ public class PropertiesMojo extends AbstractMojo {
 			prefixes = new String[] { "file:" + project.getBuild().getTestOutputDirectory() + "/" };
 		}
 		MergeableProperties p = new MergeableProperties(prefixes);
+		p.putAll(project.getProperties());
 		p.merge(project.getProperties(), rootProperties);
 		try (OutputStream out = new FileOutputStream(outputFile)){
 			p.store(out, String.format("Artifact properties for %s", project.getArtifact().toString()));
