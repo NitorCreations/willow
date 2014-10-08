@@ -72,7 +72,6 @@ public class MergeableProperties extends Properties {
 					in = conn.getInputStream();
 				} catch (IOException e) {
 					LogRecord rec = new LogRecord(Level.INFO, "Failed to load url: " + url);
-					rec.setThrown(e);
 					this.log.log(rec);
 				}
 			}
@@ -81,7 +80,6 @@ public class MergeableProperties extends Properties {
 					load(in);
 				} catch (IOException e) {
 					LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
-					rec.setThrown(e);
 					this.log.log(rec);
 				}
 			}
