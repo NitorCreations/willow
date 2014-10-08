@@ -80,8 +80,7 @@ public class MergeableProperties extends Properties {
 					conn.connect();
 					in = conn.getInputStream();
 				} catch (IOException e) {
-					LogRecord rec = new LogRecord(Level.INFO, "Failed to load url: " + url);
-					this.log.log(rec);
+					//Logged in the next if else block
 				}
 			}
 			if (in != null) {
@@ -91,6 +90,8 @@ public class MergeableProperties extends Properties {
 					LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
 					this.log.log(rec);
 				}
+			} else {
+				log.info("Failed to load url: " + url);
 			}
 		}
 		String include = (String) remove(INCLUDE_PROPERTY);
