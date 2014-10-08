@@ -1,8 +1,9 @@
 package com.nitorcreations.willow.deployer;
 
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
-public interface LaunchMethod extends Runnable {
+public interface LaunchMethod extends Callable<Integer> {
 	public static final String ENV_KEY_DEPLOYER_IDENTIFIER = "DEPLOYER_IDENTIFIER";
 	
 	public enum TYPE {

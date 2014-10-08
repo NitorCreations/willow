@@ -13,6 +13,12 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -39,6 +45,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	protected String keyPrefix;
 	protected AtomicBoolean running = new AtomicBoolean(true);
 	protected AbstractStreamPumper stdout, stderr;
+	private LaunchMethod postStop;
+	private String name;
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
+
 	
 	public long getProcessId() {
 		Sigar sigar = new Sigar();
@@ -58,29 +68,32 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	}
 
 	@Override
-	public void run() {
-		launch(extraEnv, getLaunchArgs());
+	public Integer call() {
+		return launch(extraEnv, getLaunchArgs());
 	}
 	@Override
 	public void setProperties(Properties properties) {
 		this.setProperties(properties, PROPERTY_KEY_PREFIX_LAUNCH);
 	}
-	protected void launch(String ... args) {
-		this.launch(new HashMap<String, String>(), args);
+	protected Integer launch(String ... args) {
+		return launch(new HashMap<String, String>(), args);
 	}
-	protected void launch(Map<String, String> extraEnv, String ... args) {
-		while (running.get()) {
-			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, "false"));
+	protected Integer launch(Map<String, String> extraEnv, String ... args) {
+		while (running.get() && !Thread.interrupted()) {
+			String autoRestartDefault = "false";
+			if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+				autoRestartDefault = "true";
+			}
+			name = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
+					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX);
+			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
-			String name = "deployer." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME) + "." + 
-					launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX);
 			Logger log = Logger.getLogger(name);
 			ProcessBuilder pb = new ProcessBuilder(args);
 			pb.environment().putAll(System.getenv());
 			pb.environment().putAll(extraEnv);
 			pb.environment().put(ENV_KEY_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
-			pb.environment().put(ENV_DEPLOYER_NAME, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
-					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX));
+			pb.environment().put(ENV_DEPLOYER_NAME, name);
 			pb.directory(workingDir);
 			log.info(String.format("Starting %s%n", pb.command().toString()));
 			try {
@@ -98,8 +111,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
 					stdout = new LoggingStreamPumper(child.getInputStream(), Level.FINE, name);
 					stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
 				}
-				new Thread(stdout, "child-stdout-pumper").start();
-				new Thread(stderr, "child-sdrerr-pumper").start();
+				new Thread(stdout, name + "-child-stdout-pumper").start();
+				new Thread(stderr, name + "-child-sdrerr-pumper").start();
 				returnValue.set(child.waitFor());
 			} catch (InterruptedException e) {
 				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start process stream pumpers");
@@ -109,9 +122,16 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				if (keyPrefix.equals(PROPERTY_KEY_PREFIX_LAUNCH)) {
 					String postStopStr = launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_METHOD);
 					if (postStopStr != null) {
-						LaunchMethod postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
+						postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
 						postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
-						postStop.run();
+						long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_TIMEOUT, "5"));
+						Future<Integer> ret = executor.submit(postStop);
+						try {
+							log.info("Post stop returned" + ret.get(timeout, TimeUnit.SECONDS));
+						} catch (InterruptedException | ExecutionException
+								| TimeoutException e) {
+							log.info("Post stop failed: " + e.getMessage());
+						}
 					}
 				}
 			}
@@ -120,21 +140,25 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			} catch (InterruptedException e) {
 			}
 		}
+		return returnValue.get();
 	}
 	@Override
 	public void stop() {
 		running.set(false);
-		if (child != null) {
-			child.destroy();
-		}
-		stderr.stop();
-		stdout.stop();
 	}
 	@Override
 	public int waitForChild() throws InterruptedException {
 		if (child != null) {
-			return child.waitFor();
+			child.destroy();
+			child.waitFor();
 		}
+		if (stderr != null) {
+			stderr.stop();
+		}
+		if (stdout != null) {
+			stdout.stop();
+		}
+		executor.shutdown();
 		return getReturnValue();
 	}
 	public synchronized int getReturnValue() {

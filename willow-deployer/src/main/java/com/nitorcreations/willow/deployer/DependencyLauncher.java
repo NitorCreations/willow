@@ -12,7 +12,7 @@ public class DependencyLauncher extends JavaLauncher implements LaunchMethod {
 	private AetherDownloader downloader;
 	
 	@Override
-	public void run() {
+	public Integer call() {
 		if (transitive) {
 			classPath = downloader.downloadTransitive(artifactCoords);
 			launchJar = new File(classPath.split(File.pathSeparator)[0]);
@@ -20,7 +20,7 @@ public class DependencyLauncher extends JavaLauncher implements LaunchMethod {
 			launchJar = downloader.downloadArtifact(artifactCoords);
 			classPath = launchJar.getAbsolutePath();
 		}
-		super.run();
+		return super.call();
 	}
 	@Override
 	public void setProperties(Properties properties) {
