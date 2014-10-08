@@ -15,6 +15,7 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_CLASSPATH                       = ".java.classpath";
 	public static final String PROPERTY_KEY_JAR                             = ".java.jar";
 	public static final String PROPERTY_KEY_LAUNCH_WORKDIR                  = ".workdir";
+	public static final String PROPERTY_KEY_AUTORESTART                     = ".autorestart";
 
 	
 	public static final String PROPERTY_KEY_PREFIX_DOWNLOAD_URL             = "deployer.download.url";

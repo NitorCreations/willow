@@ -70,6 +70,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	}
 	protected void launch(Map<String, String> extraEnv, String ... args) {
 		while (running.get()) {
+			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, "false"));
+			running.set(autoRestart);
 			String name = "deployer." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME) + "." + 
 					launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX);
 			Logger log = Logger.getLogger(name);
@@ -88,27 +90,28 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				rec.setThrown(e);
 				log.log(rec);
 			}
-			if (transmitter != null) {
-				stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
-				stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
-			} else {
-				stdout = new LoggingStreamPumper(child.getInputStream(), Level.FINE, name);
-				stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
-			}
 			try {
+				if (transmitter != null) {
+					stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
+					stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
+				} else {
+					stdout = new LoggingStreamPumper(child.getInputStream(), Level.FINE, name);
+					stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
+				}
 				new Thread(stdout, "child-stdout-pumper").start();
 				new Thread(stderr, "child-sdrerr-pumper").start();
 				returnValue.set(child.waitFor());
+			} catch (InterruptedException e) {
+				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start process stream pumpers");
+				rec.setThrown(e);
+				log.log(rec);
+			} finally {
 				String postStopStr = launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_METHOD);
 				if (postStopStr != null) {
 					LaunchMethod postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
 					postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
 					postStop.run();
 				}
-			} catch (InterruptedException e) {
-				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start process stream pumpers");
-				rec.setThrown(e);
-				log.log(rec);
 			}
 			try {
 				Thread.sleep(500);
