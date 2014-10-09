@@ -48,7 +48,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	private LaunchMethod postStop;
 	private String name;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
-
+	private int restarts=0;
 	
 	public long getProcessId() {
 		Sigar sigar = new Sigar();
@@ -80,6 +80,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	}
 	protected Integer launch(Map<String, String> extraEnv, String ... args) {
 		while (running.get() && !Thread.interrupted()) {
+			restarts++;
 			String autoRestartDefault = "false";
 			if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
 				autoRestartDefault = "true";
@@ -143,11 +144,11 @@ public abstract class AbstractLauncher implements LaunchMethod {
 		return returnValue.get();
 	}
 	@Override
-	public void stop() {
+	public void stopRelaunching() {
 		running.set(false);
 	}
 	@Override
-	public int waitForChild() throws InterruptedException {
+	public int destroyChild() throws InterruptedException {
 		if (child != null) {
 			child.destroy();
 			child.waitFor();
@@ -203,5 +204,9 @@ public abstract class AbstractLauncher implements LaunchMethod {
 		workingDir = new File(properties.getProperty(keyPrefix + PROPERTY_KEY_LAUNCH_WORKDIR,
 				properties.getProperty(PROPERTY_KEY_WORKDIR, ".")));
 		
+	}
+	@Override
+	public int restarts() {
+		return restarts;
 	}
 }

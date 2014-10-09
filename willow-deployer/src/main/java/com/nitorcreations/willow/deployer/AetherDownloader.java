@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LOCAL_REPOSITORY;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
 
 import java.io.File;
@@ -46,7 +46,6 @@ public class AetherDownloader {
 		}
 		return rootJar;
 	}
-
 	public String downloadTransitive(String artifactCoords) {
 		Dependency dependency = new Dependency( new DefaultArtifact( artifactCoords ), "runtime" );
 		CollectRequest collectRequest = new CollectRequest();
@@ -68,9 +67,11 @@ public class AetherDownloader {
 			throw new RuntimeException("Failed to resolve (transitively) " + artifactCoords, e);
 		}
 	}
-
 	public void setProperties(Properties properties) {
-		localRepo = properties.getProperty(PROPERTY_KEY_LOCAL_REPOSITORY, System.getProperty("user.home") + File.separator + ".deployer" + File.separator + "repository");
+		localRepo = System.getenv(ENV_DEPLOYER_LOCAL_REPOSITORY);
+		if (localRepo == null) {
+          localRepo = System.getProperty("user.home") + File.separator + ".deployer" + File.separator + "repository";
+		}
 		remoteRepo = properties.getProperty(PROPERTY_KEY_REMOTE_REPOSITORY, "http://localhost:5120/maven");
 		system = GuiceRepositorySystemFactory.newRepositorySystem();
 		local = new LocalRepository(localRepo);
