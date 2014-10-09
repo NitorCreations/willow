@@ -2,6 +2,7 @@ package com.nitorcreations.willow.common;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -13,6 +14,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.iterators.EnumerationIterator;
 import org.apache.commons.lang.StringUtils;
 
 import com.nitorcreations.willow.utils.MergeableProperties;
@@ -49,6 +51,12 @@ public class PropertyServlet implements Servlet {
 		Properties seed = new Properties();
 		for (Entry<String, String[]> next : ((HttpServletRequest)req).getParameterMap().entrySet()) {
 			seed.setProperty(next.getKey(), StringUtils.join(next.getValue(), ","));
+		}
+		Enumeration<String> it = ((HttpServletRequest)req).getHeaderNames();
+		while (it.hasMoreElements()) {
+			String key = it.nextElement();
+			String value = ((HttpServletRequest)req).getHeader(key);
+			seed.setProperty(key.toLowerCase(), value);
 		}
 		res.setContentType("text/plain;charset=utf-8");
 		((HttpServletResponse)res).setStatus(200);
