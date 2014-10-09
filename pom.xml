@@ -44,6 +44,7 @@
     <mavenVersion>3.1.0</mavenVersion>
     <wagonVersion>1.0</wagonVersion>
     <msgpack.version>0.6.11</msgpack.version>
+    <jetty.version>9.2.3.v20140905</jetty.version>
   </properties>
   <distributionManagement>
     <snapshotRepository>
@@ -198,7 +199,7 @@
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>websocket-client</artifactId>
-        <version>9.2.0.M0</version>
+        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>com.nitorcreations</groupId>
@@ -264,17 +265,17 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-servlet</artifactId>
-        <version>9.1.2.v20140210</version>
+        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>websocket-server</artifactId>
-        <version>9.1.2.v20140210</version>
+        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-proxy</artifactId>
-        <version>9.1.2.v20140210</version>
+        <version>${jetty.version}</version>
       </dependency>
       <dependency>
         <groupId>org.elasticsearch</groupId>
