@@ -1,7 +1,8 @@
 package com.nitorcreations.willow.deployer;
 
-import java.util.Properties;
 import java.util.concurrent.Callable;
+
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 public interface LaunchMethod extends Callable<Integer> {
 	public static final String ENV_KEY_DEPLOYER_IDENTIFIER = "DEPLOYER_IDENTIFIER";
@@ -20,8 +21,8 @@ public interface LaunchMethod extends Callable<Integer> {
 			}
 		}
 	}
-	public void setProperties(Properties properties);
-	public void setProperties(Properties properties, String keyPrefix);
+	public void setProperties(MergeableProperties properties);
+	public void setProperties(MergeableProperties properties, String keyPrefix);
 	public long getProcessId();
 	void stopRelaunching();
 	int destroyChild() throws InterruptedException;

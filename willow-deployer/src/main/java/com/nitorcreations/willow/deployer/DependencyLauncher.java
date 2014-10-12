@@ -1,9 +1,12 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.*;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_ARTIFACT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_RESOLVE_TRANSITIVE;
 
 import java.io.File;
-import java.util.Properties;
+
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 
 public class DependencyLauncher extends JavaLauncher implements LaunchMethod {
@@ -23,11 +26,11 @@ public class DependencyLauncher extends JavaLauncher implements LaunchMethod {
 		return super.call();
 	}
 	@Override
-	public void setProperties(Properties properties) {
+	public void setProperties(MergeableProperties properties) {
 		this.setProperties(properties, PROPERTY_KEY_PREFIX_LAUNCH);
 	}
 	@Override
-	public void setProperties(Properties properties, String keyPrefix) {
+	public void setProperties(MergeableProperties properties, String keyPrefix) {
 		super.setProperties(properties);
 		downloader = new AetherDownloader();
 		downloader.setProperties(properties);

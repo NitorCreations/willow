@@ -1,9 +1,14 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.*;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_CLASSPATH;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_JAR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_MAIN_CLASS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_ARGS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_JAVA_ARGS;
 
 import java.io.File;
-import java.util.Properties;
+
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class JavaLauncher extends AbstractLauncher {
 	protected String mainClass="";
@@ -27,7 +32,7 @@ public class JavaLauncher extends AbstractLauncher {
 	}
 
 	@Override
-	public void setProperties(Properties properties, String keyPrefix) {
+	public void setProperties(MergeableProperties properties, String keyPrefix) {
 		super.setProperties(properties, keyPrefix);
 		mainClass = properties.getProperty(keyPrefix + PROPERTY_KEY_MAIN_CLASS, "");
 		classPath = properties.getProperty(keyPrefix + PROPERTY_KEY_CLASSPATH, "");

@@ -1,6 +1,17 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.*;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_AUTORESTART;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_EXTRA_ENV_KEYS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_WORKDIR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +22,6 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -30,12 +40,13 @@ import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 
 public abstract class AbstractLauncher implements LaunchMethod {
 	protected final String PROCESS_IDENTIFIER = new BigInteger(130, new SecureRandom()).toString(32);
 	protected final Set<String> launchArgs = new LinkedHashSet<String>();
-	protected Properties launchProperties;
+	protected MergeableProperties launchProperties;
 	protected URI statUri;
 	protected WebSocketTransmitter transmitter = null;
 	protected Process child;
@@ -72,7 +83,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 		return launch(extraEnv, getLaunchArgs());
 	}
 	@Override
-	public void setProperties(Properties properties) {
+	public void setProperties(MergeableProperties properties) {
 		this.setProperties(properties, PROPERTY_KEY_PREFIX_LAUNCH);
 	}
 	protected Integer launch(String ... args) {
@@ -165,19 +176,14 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	public synchronized int getReturnValue() {
 		return returnValue.get();
 	}
-	protected void addLauncherArgs(Properties properties, String prefix) {
-		int i=0;
-		String next = properties.getProperty(prefix + "[" + i + "]");
-		while (next != null) {
-			launchArgs.add(next);
-			next = properties.getProperty(prefix + "[" + ++i  + "]");
-		}
+	protected void addLauncherArgs(MergeableProperties properties, String prefix) {
+		launchArgs.addAll(properties.getArrayProperty(prefix));
 	}
 	protected String[] getLaunchArgs() {
 		return launchArgs.toArray(new String[launchArgs.size()]);
 	}
 
-	public void setProperties(Properties properties, String keyPrefix) {
+	public void setProperties(MergeableProperties properties, String keyPrefix) {
 		this.keyPrefix = keyPrefix;
 		launchProperties = properties;
 		try {

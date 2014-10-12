@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
 public interface PropertyKeys {
+	public static final String PROPERTY_KEY_LAUNCH_URLS                     = "deployer.launch.urls";
 	public static final String PROPERTY_KEY_PREFIX_LAUNCH                   = "deployer.launch";
 	public static final String PROPERTY_KEY_PREFIX_SHUTDOWN                 = "deployer.shutdown";
 	public static final String PROPERTY_KEY_PREFIX_POST_STOP                = "deployer.post.stop";

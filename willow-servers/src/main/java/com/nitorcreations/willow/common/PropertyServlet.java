@@ -8,18 +8,20 @@ import java.util.Properties;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.iterators.EnumerationIterator;
 import org.apache.commons.lang.StringUtils;
 
 import com.nitorcreations.willow.utils.MergeableProperties;
 
-public class PropertyServlet implements Servlet {
+public class PropertyServlet extends HttpServlet implements Servlet {
+	private static final long serialVersionUID = -7870102334063578984L;
 	ServletConfig config;
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -58,6 +60,9 @@ public class PropertyServlet implements Servlet {
 			String value = ((HttpServletRequest)req).getHeader(key);
 			seed.setProperty(key.toLowerCase(), value);
 		}
+		ServletContext ctx = getServletContext();
+		seed.setProperty("path", ((HttpServletRequest)req).getPathInfo());
+		seed.setProperty("context", ctx.getContextPath());
 		res.setContentType("text/plain;charset=utf-8");
 		((HttpServletResponse)res).setStatus(200);
 		Properties result = mrg.merge(seed, rootProperties);

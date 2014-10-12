@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
@@ -28,12 +29,15 @@ import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class Main extends DeployerControl implements MainMBean {
 	private List<PlatformStatsSender> stats = new ArrayList<>();
 	private List<LaunchMethod> children = new ArrayList<>();
 
     public Main() {
+    }
+    private void registerBean() {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
 			mbs.registerMBean(this, OBJECT_NAME);
@@ -42,19 +46,28 @@ public class Main extends DeployerControl implements MainMBean {
 			e.printStackTrace();
 		}
     }
-
 	public static void main(String[] args) throws URISyntaxException {
 		new Main().doMain(args);
 	}
 	public void doMain(String[] args) {
 		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}"); 
 		populateProperties(args);
+		MergeableProperties mergedProperties = new MergeableProperties();
+		for (int i=launchPropertiesList.size()-1; i>=0; i--) {
+			mergedProperties.putAll(launchPropertiesList.get(i));
+		}
+		List<String> launchUrls = mergedProperties.getArrayProperty(PROPERTY_KEY_LAUNCH_URLS);
+		if (launchUrls.size() > 0) {
+			launchUrls.add(0, deployerName);
+			new Main().doMain(launchUrls.toArray(new String[launchUrls.size()]));
+			return;
+		}
+		registerBean();
 		WebSocketTransmitter transmitter = null;
-		Properties firstProperties = launchPropertiesList.get(0);
-		String statUri = firstProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
+		String statUri = mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
 		if (statUri != null && !statUri.isEmpty()) {
 			try {
-				long flushInterval = Long.parseLong(firstProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
+				long flushInterval = Long.parseLong(mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
 				transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
 				transmitter.start();
 			} catch (URISyntaxException e) {
@@ -89,7 +102,7 @@ public class Main extends DeployerControl implements MainMBean {
 		stopOld(args);
 		//Start
 		i=0;
-		for (Properties launchProps : launchPropertiesList) {
+		for (MergeableProperties launchProps : launchPropertiesList) {
 			LaunchMethod launcher = null;
 			try {
 				launcher = LaunchMethod.TYPE.valueOf(launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + PROPERTY_KEY_METHOD)).getLauncher();

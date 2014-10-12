@@ -15,7 +15,7 @@
  */
 package com.nitorcreations.willow.ssh;
 
-import com.google.gson.Gson;
+import static com.nitorcreations.willow.ssh.SecureShellWS.BUFFER_LEN;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +23,7 @@ import java.nio.charset.Charset;
 
 import org.eclipse.jetty.websocket.api.Session;
 
-import static com.nitorcreations.willow.ssh.SecureShellWS.BUFFER_LEN;
+import com.google.gson.Gson;
 
 /**
  * class to send output to web socket client

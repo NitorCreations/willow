@@ -2,11 +2,7 @@ package com.nitorcreations.willow.metrics;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.security.SecureRandom;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 

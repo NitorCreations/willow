@@ -1,28 +1,10 @@
 package com.nitorcreations.willow.deployer;
 
-import java.io.IOException;
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.JMX;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectInstance;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.management.openmbean.CompositeDataSupport;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hyperic.sigar.Cpu;
@@ -36,12 +18,8 @@ import org.hyperic.sigar.SigarException;
 
 import com.nitorcreations.willow.messages.CPU;
 import com.nitorcreations.willow.messages.DiskUsage;
-import com.nitorcreations.willow.messages.GcInfo;
-import com.nitorcreations.willow.messages.JmxMessage;
 import com.nitorcreations.willow.messages.Memory;
-import com.nitorcreations.willow.messages.ProcessCPU;
 import com.nitorcreations.willow.messages.Processes;
-import com.nitorcreations.willow.messages.ThreadInfoMessage;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class PlatformStatsSender implements Runnable {

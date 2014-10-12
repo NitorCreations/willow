@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -165,6 +167,16 @@ public class MergeableProperties extends Properties {
 	public String getProperty(String key) {
 		String oval = table.get(key);
 		return ((oval == null) && (defaults != null)) ? defaults.getProperty(key) : oval;
+	}
+	public List<String> getArrayProperty(String key) {
+		int i=0;
+		ArrayList<String> ret = new ArrayList<>();
+		String next = getProperty(key + "[" + i + "]");
+		while (next != null) {
+			ret.add(next);
+			next = getProperty(key + "[" + ++i  + "]");
+		}
+		return ret;
 	}
 	public void putAll(MergeableProperties toMerge) {
 		for (Entry<String, String> next: toMerge.table.entrySet()) {
