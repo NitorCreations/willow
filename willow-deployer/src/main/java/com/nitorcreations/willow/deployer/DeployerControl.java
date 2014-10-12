@@ -1,6 +1,13 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.*;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,16 +18,16 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.Proxy.Type;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,6 +57,7 @@ import sun.jvmstat.monitor.MonitoredVm;
 import sun.jvmstat.monitor.VmIdentifier;
 
 import com.nitorcreations.core.utils.KillProcess;
+import com.nitorcreations.willow.utils.MergeableProperties;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
@@ -59,7 +67,7 @@ public class DeployerControl {
 	private static final String LOCAL_CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
 	protected final Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 	protected final ExecutorService executor = Executors.newFixedThreadPool(10);
-	protected final List<Properties> launchPropertiesList = new ArrayList<>();
+	protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
 	protected String deployerName;
     public static ObjectName OBJECT_NAME;
 
@@ -75,13 +83,13 @@ public class DeployerControl {
 	public void stopOld(String[] args) {
 		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}"); 
 		populateProperties(args);
-		Properties firstProperties = launchPropertiesList.get(0);
+		MergeableProperties firstProperties = launchPropertiesList.get(0);
 		firstProperties.setProperty(PROPERTY_KEY_DEPLOYER_NAME, deployerName);
 		extractNativeLib();
 		//Stop
 		LinkedHashMap<Future<Integer>, Long> stopTasks = new LinkedHashMap<>();
 		int i=0;
-		for (Properties launchProps : launchPropertiesList) {
+		for (MergeableProperties launchProps : launchPropertiesList) {
 			LaunchMethod stopper = null;
 			String stopMethod = launchProps.getProperty(PROPERTY_KEY_PREFIX_SHUTDOWN + PROPERTY_KEY_METHOD);
 			if (stopMethod != null) {
@@ -281,8 +289,8 @@ public class DeployerControl {
 		URL proxyAddr = new URL(proxyUrl);
 		return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
 	}
-	private Properties getURLProperties(String url) {
-		Properties launchProperties = new Properties();
+	private MergeableProperties getURLProperties(String url) {
+		MergeableProperties launchProperties = new MergeableProperties();
 		try {
 			URL propertyURL = new URL(url);
 			Proxy p = resolveProxy(propertyURL.getProtocol());
@@ -305,7 +313,7 @@ public class DeployerControl {
 		launchPropertiesList.clear();
 		deployerName = args[0];
 		for (int i=1; i<args.length;i++) {
-			Properties next = getURLProperties(args[i]);
+			MergeableProperties next = getURLProperties(args[i]);
 			next.setProperty(PROPERTY_KEY_DEPLOYER_NAME, deployerName);
 			launchPropertiesList.add(next);
 		}

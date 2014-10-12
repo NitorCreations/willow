@@ -31,9 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.nitorcreations.willow.common.PropertyServlet;
-
 import ch.qos.logback.classic.LoggerContext;
+
+import com.nitorcreations.willow.common.PropertyServlet;
 
 public class MetricsServer {
     final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
