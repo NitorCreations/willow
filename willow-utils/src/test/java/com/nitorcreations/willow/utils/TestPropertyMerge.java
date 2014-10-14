@@ -138,5 +138,6 @@ public class TestPropertyMerge {
 		assertEquals("env_test/settings/component/webfront.properties", p.getProperty("included.file[16]"));
 		assertEquals("env_test/settings/component/webfront.properties", p.getProperty("included.file[17]"));
 		assertEquals("baz", p.getProperty("obfuscated.value"));
+		assertEquals("obf:foobar", p.getProperty("fake.obsfuscated.value"));
 	}
 }
