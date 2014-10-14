@@ -96,6 +96,10 @@ public class Obfuscator {
 			bOut = new ByteArrayOutputStream();
 			cOut = new CipherOutputStream(bOut, out);
 			cOut.write(getSalt());
+			cOut.write((byte)0xca);
+			cOut.write((byte)0xfe);
+			cOut.write((byte)0xba);
+			cOut.write((byte)0xbe);
 			cOut.write(input);
 			cOut.flush();
 			cOut.close();
@@ -123,7 +127,14 @@ public class Obfuscator {
 			cIn.write(input);
 			cIn.close();
 			byte[] result = bIn.toByteArray();
-			return new String(result, SALT_LENGTH, result.length - SALT_LENGTH, Charset.forName("UTF-8"));
+			if (result.length <= (SALT_LENGTH + 4) 
+					|| result[SALT_LENGTH] != (byte)0xca
+					|| result[SALT_LENGTH + 1] != (byte)0xfe 
+					|| result[SALT_LENGTH + 2] != (byte)0xba
+					|| result[SALT_LENGTH + 3] != (byte)0xbe) {
+				return null;
+			}
+			return new String(result, SALT_LENGTH + 4, result.length - (SALT_LENGTH + 4), Charset.forName("UTF-8"));
 		} catch (NoSuchAlgorithmException
 				| NoSuchPaddingException | InvalidKeyException | IOException e) {
 			e.printStackTrace();
