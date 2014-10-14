@@ -12,16 +12,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.text.StrLookup;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class MergeableProperties extends Properties {
@@ -65,6 +64,19 @@ public class MergeableProperties extends Properties {
 		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
 		for (Entry<String, String> next : table.entrySet()) {
 			finalTable.put(sub.replace(next.getKey()), sub.replace(next.getValue()));
+		}
+		table = finalTable;
+	}
+	public void deObfuscate(PropertySource source, String obfuscatedPrefix) {
+		if (obfuscatedPrefix == null) return;
+		LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
+		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
+		for (Entry<String, String> next : table.entrySet()) {
+			String value = next.getValue();
+			if (value.startsWith(obfuscatedPrefix)) {
+				value = source.getProperty(value.substring(obfuscatedPrefix.length()));
+			}
+			finalTable.put(next.getKey(), value);
 		}
 		table = finalTable;
 	}

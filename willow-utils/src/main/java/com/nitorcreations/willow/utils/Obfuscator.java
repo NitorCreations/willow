@@ -1,5 +1,8 @@
 package com.nitorcreations.willow.utils;
 
+import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,9 +25,6 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
-import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 
 
 public class Obfuscator {
@@ -137,14 +137,18 @@ public class Obfuscator {
 		}
 	}
 	public static String getFileMaster(File masterFile) throws IOException {
-		Set<PosixFilePermission> perms = Files.getPosixFilePermissions(masterFile.toPath());
-		if (perms.contains(PosixFilePermission.GROUP_EXECUTE) ||
-				perms.contains(PosixFilePermission.GROUP_WRITE) ||
-				perms.contains(PosixFilePermission.GROUP_READ) ||
-				perms.contains(PosixFilePermission.OTHERS_EXECUTE) ||
-				perms.contains(PosixFilePermission.OTHERS_READ) ||
-				perms.contains(PosixFilePermission.OTHERS_WRITE)) {
-			throw new IOException("Master file permissions too wide");
+		try {
+			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(masterFile.toPath());
+			if (perms.contains(PosixFilePermission.GROUP_EXECUTE) ||
+					perms.contains(PosixFilePermission.GROUP_WRITE) ||
+					perms.contains(PosixFilePermission.GROUP_READ) ||
+					perms.contains(PosixFilePermission.OTHERS_EXECUTE) ||
+					perms.contains(PosixFilePermission.OTHERS_READ) ||
+					perms.contains(PosixFilePermission.OTHERS_WRITE)) {
+				throw new IOException("Master file permissions too wide");
+			}
+		} catch (UnsupportedOperationException e) {
+			// On windows you're ... anyway ;)
 		}
 		MergeableProperties p = new MergeableProperties();
 		try {
