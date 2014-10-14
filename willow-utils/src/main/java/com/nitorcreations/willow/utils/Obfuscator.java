@@ -11,13 +11,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -137,8 +142,9 @@ public class Obfuscator {
 		}
 	}
 	public static String getFileMaster(File masterFile) throws IOException {
-		try {
-			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(masterFile.toPath());
+		PosixFileAttributeView posix = Files.getFileAttributeView(masterFile.toPath(), PosixFileAttributeView.class);
+		if (posix != null) {
+			Set<PosixFilePermission> perms = posix.readAttributes().permissions();
 			if (perms.contains(PosixFilePermission.GROUP_EXECUTE) ||
 					perms.contains(PosixFilePermission.GROUP_WRITE) ||
 					perms.contains(PosixFilePermission.GROUP_READ) ||
@@ -147,8 +153,17 @@ public class Obfuscator {
 					perms.contains(PosixFilePermission.OTHERS_WRITE)) {
 				throw new IOException("Master file permissions too wide");
 			}
-		} catch (UnsupportedOperationException e) {
-			// On windows you're ... anyway ;)
+		} else {
+			AclFileAttributeView aclAw = Files.getFileAttributeView(masterFile.toPath(),
+					AclFileAttributeView.class);
+			if (aclAw == null) {
+				throw new IOException("Unable to read master file permissions. Probably insecure.");
+			}
+			UserPrincipal owner = aclAw.getOwner();
+			List<AclEntry> acl = aclAw.getAcl();
+			if (!(acl.size() == 1 && acl.get(0).principal().equals(owner))) {
+				throw new IOException("Master file permissions too wide");
+			}
 		}
 		MergeableProperties p = new MergeableProperties();
 		try {
