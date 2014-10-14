@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -70,7 +71,6 @@ public class MergeableProperties extends Properties {
 	public void deObfuscate(PropertySource source, String obfuscatedPrefix) {
 		if (obfuscatedPrefix == null) return;
 		LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
-		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
 		for (Entry<String, String> next : table.entrySet()) {
 			String value = next.getValue();
 			if (value.startsWith(obfuscatedPrefix)) {
@@ -117,6 +117,13 @@ public class MergeableProperties extends Properties {
 				merge0(nextInclude);
 			}
 		}
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public Set<Entry<Object, Object>> entrySet() {
+		@SuppressWarnings("rawtypes")
+		Set ret = table.entrySet();
+		return (Set<Entry<Object, Object>>)ret; 
 	}
 	@Override
 	public Object put(Object key, Object value) {
