@@ -42,10 +42,12 @@ public class MergeableProperties extends Properties {
 	}
 	public MergeableProperties() {
 		super();
+		defaults = new Properties();
 		prefixes = new String[] { "classpath:" };
 	}
 	public MergeableProperties(String ... prefixes) {
 		super();
+		defaults = new Properties();
 		this.prefixes = prefixes;
 	}
 	public Properties merge(String name) {
@@ -75,6 +77,9 @@ public class MergeableProperties extends Properties {
 			String value = next.getValue();
 			if (value.startsWith(obfuscatedPrefix)) {
 				value = source.getProperty(value.substring(obfuscatedPrefix.length()));
+			}
+			if (value == null) {
+				value = next.getValue();
 			}
 			finalTable.put(next.getKey(), value);
 		}
