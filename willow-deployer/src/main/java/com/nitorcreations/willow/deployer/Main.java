@@ -90,10 +90,10 @@ public class Main extends DeployerControl implements MainMBean {
 			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract(launchProps);
 			downloads.add(executor.submit(downloader));
 		}
-		int i=0;
+		int i=1;
 		for (Future<Integer> next : downloads) {
 			try {
-				log.info("Download " + i + " got " + next.get() + " items");
+				log.info("Download " + i++ + " got " + next.get() + " items");
 			} catch (InterruptedException | ExecutionException e) {
 				log.warning("Download failed: " + e.getMessage());
 			}

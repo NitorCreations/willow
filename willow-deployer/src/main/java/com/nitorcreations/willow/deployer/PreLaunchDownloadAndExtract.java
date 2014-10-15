@@ -50,7 +50,6 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipExtraField;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.compressors.CompressorException;
@@ -143,6 +142,10 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		}
 		File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
 		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, workDir.getAbsolutePath()) ;
+		File root = new File(extractRoot);
+		if (!root.isAbsolute()) {
+			root = new File(workDir.getCanonicalFile(), extractRoot).getCanonicalFile();
+		}
 		String extractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB) ;
 		String skipExtractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
 		String filterGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
@@ -183,7 +186,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			}
 			FileUtil.copy(in, target);
 			if (extractGlob != null || skipExtractGlob != null) {
-				extractFile(target, replaceTokens, extractRoot, extractGlob, skipExtractGlob, filterGlob);
+				extractFile(target, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob);
 			}
 			if (md5 != null && Arrays.equals(md5, md5in.digest())) {
 				logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
@@ -199,7 +202,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		}
 		return true;
 	}
-	private void extractFile(File archive, Map<String, String> replaceTokens, String root, 
+	private void extractFile(File archive, Map<String, String> replaceTokens, File root, 
 			String extractGlob, String skipExtractGlob, String filterGlob) throws CompressorException, IOException, ArchiveException {
 		String lcFileName = archive.getName().toLowerCase();
 		Set<PathMatcher> extractMatchers = getGlobMatchers(extractGlob);
@@ -211,9 +214,9 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			in = cfactory.createCompressorInputStream(in);
 		}
 		if (!lcFileName.endsWith(".zip")) {
-			extractZip(new ZipFile(archive), new File(root), replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+			extractZip(new ZipFile(archive), root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
 		} else {
-			extractArchive(new ZipArchiveInputStream(in, "UTF-8", true, true), new File(root), replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+			extractArchive(factory.createArchiveInputStream(in), root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
 		}
 	}
 	private void extractZip(ZipFile zipFile, File destFolder,
@@ -229,17 +232,22 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 	private boolean downloadArtifact(String index, Properties properties, Map<String, String> replaceTokens) throws IOException {
 		String artifact = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT);
 		if (artifact == null) return false;
+		File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
 		AetherDownloader downloader = new AetherDownloader();
 		downloader.setProperties(properties);
 		File artifactFile = downloader.downloadArtifact(artifact);
 		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, 
 				properties.getProperty(PROPERTY_KEY_WORKDIR, ".")) ;
+		File root = new File(extractRoot);
+		if (!root.isAbsolute()) {
+			root = new File(workDir.getCanonicalFile(), extractRoot);
+		}
 		String extractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB) ;
 		String skipExtractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
 		String filterGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
 		try {
 			if (extractGlob != null || skipExtractGlob != null) {
-				extractFile(artifactFile, replaceTokens, extractRoot, extractGlob, skipExtractGlob, filterGlob);
+				extractFile(artifactFile, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob);
 			}
 		} catch (CompressorException | IOException | ArchiveException e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract artifact " + artifact);
