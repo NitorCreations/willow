@@ -162,7 +162,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 				if (!downloadDirFile.isAbsolute()) {
 					downloadDirFile = new File(workDir, downloadDir).getCanonicalFile();
 				}
-				if (!downloadDirFile.exists() || downloadDirFile.mkdirs()) {
+				if (!(downloadDirFile.exists() || downloadDirFile.mkdirs())) {
 					throw new IOException("Failed to create final download directory " + downloadDirFile.getAbsolutePath());
 				}
 				target = new File(downloadDirFile, fileName);
@@ -262,7 +262,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		try {
 			ArchiveEntry entry;
 			while((entry =  is.getNextEntry()) != null) {
-				File dest = new File(destFolder, entry.getName());
+				File dest = new File(destFolder, entry.getName()).getCanonicalFile();
 				if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {
 					if (entry.isDirectory()) {
 						dest.mkdirs();
@@ -273,10 +273,10 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 						} else {
 							FileUtil.copy(is, dest);
 						}
+						Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
+						Path destPath = Paths.get(dest.getAbsolutePath());
+						Files.setPosixFilePermissions(destPath, permissions);
 					}
-					Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
-					Path destPath = Paths.get(dest.getAbsolutePath());
-					Files.setPosixFilePermissions(destPath, permissions);
 				}
 			}
 		} catch (IOException e) {

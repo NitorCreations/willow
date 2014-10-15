@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -85,33 +84,31 @@ public class MergeableProperties extends Properties {
 		}
 		table = finalTable;
 	}
+	private InputStream getUrlInputStream(String url) throws IOException {
+		InputStream in = null;
+		if (url.startsWith(URL_PREFIX_CLASSPATH)) {
+			in = getClass().getClassLoader().getResourceAsStream(url.substring(URL_PREFIX_CLASSPATH.length()));
+			if (in == null) {
+				throw new IOException("Resource " + url + " not found");
+			}
+		} else {
+			URL toFetch = new URL(url);
+			URLConnection conn = toFetch.openConnection(); 
+			conn.connect();
+			in = conn.getInputStream();
+		}
+		return in;
+	}
 	private void merge0(String name) {
 		put(INCLUDE_PROPERTY + ".appendchar", "|");
 		for (String nextPrefix : prefixes) {
 			String url = nextPrefix + name;
-			InputStream in = null;
-			if (url.startsWith(URL_PREFIX_CLASSPATH)) {
-				in = getClass().getClassLoader().getResourceAsStream(url.substring(URL_PREFIX_CLASSPATH.length()));
-			} else {
-				try {
-					URL toFetch = new URL(url);
-					URLConnection conn = toFetch.openConnection(); 
-					conn.connect();
-					in = conn.getInputStream();
-				} catch (IOException e) {
-					//Logged in the next if else block
-				}
-			}
-			if (in != null) {
-				try {
-					load(in);
-				} catch (IOException e) {
-					LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
-					this.log.log(rec);
-				}
-			} else {
-				log.info("Failed to load url: " + url);
-			}
+			try (InputStream in = getUrlInputStream(url)) {
+				load(in);
+			} catch (IOException e) {
+				LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
+				this.log.log(rec);
+			} 
 		}
 		String include = (String) remove(INCLUDE_PROPERTY);
 		if (include != null && !include.isEmpty()) {
