@@ -39,6 +39,6 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_DEPLOYER_NAME                   = "deployer.name";
 	public static final String PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX           = "deployer.launch.index";
 	public static final String PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT           = "deployer.term.timeout";
-	public static final String ENV_DEPLOYER_LOCAL_REPOSITORY                        = "DEPLOYER_LOCAL_REPOSITORY";
+	public static final String ENV_DEPLOYER_LOCAL_REPOSITORY                = "DEPLOYER_LOCAL_REPOSITORY";
 	public static final String ENV_DEPLOYER_NAME                            = "W_DEPLOYER_NAME";
 }
