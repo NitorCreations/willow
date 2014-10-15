@@ -290,20 +290,41 @@ public class DeployerControl {
 			}
 		}
 	}
-	private static Proxy resolveProxy(String proto) throws MalformedURLException {
+	private static Proxy resolveProxy(String proto, String hostName) throws MalformedURLException {
 		String proxyUrl = System.getenv(proto.toLowerCase() + "_proxy");
 		if (proxyUrl == null) {
 			proxyUrl = System.getenv(proto.toUpperCase() + "_PROXY");
 		}
 		if (proxyUrl == null) return null;
-		URL proxyAddr = new URL(proxyUrl);
-		return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
+		String noProxy = System.getenv("no_proxy");
+		if (noProxy == null) {
+			noProxy = System.getenv("NO_PROXY");
+		}
+		if (!noProxyMatches(hostName, noProxy)) {
+			URL proxyAddr = new URL(proxyUrl);
+			return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
+		} else {
+			return null;
+		}
 	}
-	private MergeableProperties getURLProperties(String url) {
+	protected static boolean noProxyMatches(String host, String noProxy) {
+		if (noProxy == null) return false;
+		for (String next : noProxy.split(",")) {
+			String trimmed = next.trim();
+			while (trimmed.startsWith(".")) {
+				trimmed = trimmed.substring(1);
+			}
+			if (trimmed.equals(host) || host.endsWith("." + trimmed)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	protected MergeableProperties getURLProperties(String url) {
 		MergeableProperties launchProperties = new MergeableProperties();
 		try {
 			URL propertyURL = new URL(url);
-			Proxy p = resolveProxy(propertyURL.getProtocol());
+			Proxy p = resolveProxy(propertyURL.getProtocol(), propertyURL.getHost());
 			URLConnection conn; 
 			if (p == null) {
 				conn = propertyURL.openConnection();
