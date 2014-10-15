@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -49,6 +50,9 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipExtraField;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
@@ -206,7 +210,21 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 				lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
 			in = cfactory.createCompressorInputStream(in);
 		}
-		extractArchive(factory.createArchiveInputStream(in), new File(root), replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+		if (!lcFileName.endsWith(".zip")) {
+			extractZip(new ZipFile(archive), new File(root), replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+		} else {
+			extractArchive(new ZipArchiveInputStream(in, "UTF-8", true, true), new File(root), replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+		}
+	}
+	private void extractZip(ZipFile zipFile, File destFolder,
+			Map<String, String> replaceTokens,
+			Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers,
+			Set<PathMatcher> filterMatchers) throws IOException {
+		Enumeration<ZipArchiveEntry> en = zipFile.getEntries();
+		while (en.hasMoreElements()) {
+			ZipArchiveEntry nextEntry = en.nextElement();
+			extractEntry(zipFile.getInputStream(nextEntry), (ArchiveEntry) nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+		}
 	}
 	private boolean downloadArtifact(String index, Properties properties, Map<String, String> replaceTokens) throws IOException {
 		String artifact = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT);
@@ -258,26 +276,29 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		}
 		return permissions;
 	}
+	private void extractEntry(InputStream is, ArchiveEntry entry, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers) throws IOException {
+		File dest = new File(destFolder, entry.getName()).getCanonicalFile();
+		if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {
+			if (entry.isDirectory()) {
+				dest.mkdirs();
+			} else {
+				dest.getParentFile().mkdirs();
+				if (globMatches(entry.getName(), filterMatchers)) {
+					FileUtil.filterStream(is, dest, replaceTokens);
+				} else {
+					FileUtil.copy(is, dest);
+				}
+				Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
+				Path destPath = Paths.get(dest.getAbsolutePath());
+				Files.setPosixFilePermissions(destPath, permissions);
+			}
+		}
+	}
 	private void extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers) throws IOException {
 		try {
 			ArchiveEntry entry;
 			while((entry =  is.getNextEntry()) != null) {
-				File dest = new File(destFolder, entry.getName()).getCanonicalFile();
-				if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {
-					if (entry.isDirectory()) {
-						dest.mkdirs();
-					} else {
-						dest.getParentFile().mkdirs();
-						if (globMatches(entry.getName(), filterMatchers)) {
-							FileUtil.filterStream(is, dest, replaceTokens);
-						} else {
-							FileUtil.copy(is, dest);
-						}
-						Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
-						Path destPath = Paths.get(dest.getAbsolutePath());
-						Files.setPosixFilePermissions(destPath, permissions);
-					}
-				}
+				extractEntry(is, entry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
 			}
 		} catch (IOException e) {
 			throw e;
@@ -297,7 +318,9 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		}
 		if (m == null) {
 			if (entry instanceof ZipArchiveEntry) {
-				int ret = (int) ((((ZipArchiveEntry)entry).getExternalAttributes() >> 16) & 0xFFF);
+				ZipArchiveEntry e = (ZipArchiveEntry)entry; 
+				ZipExtraField[] ef = e.getExtraFields(true);
+				int ret = (int) ((e.getExternalAttributes() >> 16) & 0xFFF);
 				if (ret == 0) { return 0644; }
 				else return ret;
 			} else return 0664;
