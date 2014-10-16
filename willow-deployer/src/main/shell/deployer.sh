@@ -6,14 +6,14 @@ if [ -z "$DEPLOYER_HOME" ]; then
   DEPLOYER_HOME=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
 fi
 
-if [ -r deployer.jar.md5 ]; then
+if [ -r $DEPLOYER_HOME/deployer.jar.md5 ]; then
   OLD_MD5=$(cat $DEPLOYER_HOME/deployer.jar.md5 | cut -d " " -f 1)
 fi
 
 if [ "$NEW_MD5" != "$OLD_MD5" ]; then
   ARCHIVE=$(awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0)
   tail -n+$ARCHIVE $0 > $DEPLOYER_HOME/deployer.jar
-  echo "$NEW_MD5 deployer.jar" > $DEPLOYER_HOME/deployer.jar.md5
+  echo "$NEW_MD5  deployer.jar" > $DEPLOYER_HOME/deployer.jar.md5
 fi
 
 if [ -z "$JAVA_HOME" ]; then
