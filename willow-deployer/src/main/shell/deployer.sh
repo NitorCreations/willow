@@ -10,7 +10,7 @@ if [ "$1" = "-d" ]; then
   else
     DEBUG_PORT=4444
   fi
-  $DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT" 
+  DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT" 
 fi
 
 if [ -z "$DEPLOYER_HOME" ]; then

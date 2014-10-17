@@ -85,23 +85,11 @@ public class Main extends DeployerControl implements MainMBean {
 			}
 		}
 		//Download
-		List<Future<Integer>> downloads = new ArrayList<>();
-		for (Properties launchProps : launchPropertiesList) {
-			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract(launchProps);
-			downloads.add(executor.submit(downloader));
-		}
-		int i=1;
-		for (Future<Integer> next : downloads) {
-			try {
-				log.info("Download " + i++ + " got " + next.get() + " items");
-			} catch (InterruptedException | ExecutionException e) {
-				log.warning("Download failed: " + e.getMessage());
-			}
-		}
+		download();
 		//Stop
 		stopOld(args);
 		//Start
-		i=0;
+		int i=0;
 		for (MergeableProperties launchProps : launchPropertiesList) {
 			LaunchMethod launcher = null;
 			try {
