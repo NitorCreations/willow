@@ -27,7 +27,7 @@ public class JavaLauncher extends AbstractLauncher {
 			launchArgs.add(mainClass);
 		} else {
 			launchArgs.add("-jar");
-			launchArgs.add(launchJar.getAbsolutePath());
+			launchArgs.add(launchJar.getPath());
 		}
 		addLauncherArgs(launchProperties, keyPrefix + PROPERTY_KEY_PREFIX_ARGS);
 		return super.call();

@@ -8,6 +8,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNC
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SHUTDOWN_DOWNLOAD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
 
 import java.io.File;
@@ -96,6 +97,10 @@ public class DeployerControl {
 			return;
 		}
 		extractNativeLib();
+		boolean download = Boolean.valueOf(mergedProperties.getProperty(PROPERTY_KEY_SHUTDOWN_DOWNLOAD, "false")).booleanValue();
+		if (download) {
+			download();
+		}
 		//Stop
 		LinkedHashMap<Future<Integer>, Long> stopTasks = new LinkedHashMap<>();
 		int i=0;
@@ -175,7 +180,21 @@ public class DeployerControl {
 			log.log(rec);
 		}
 	}
-
+	protected void download() {
+		List<Future<Integer>> downloads = new ArrayList<>();
+		for (Properties launchProps : launchPropertiesList) {
+			PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract(launchProps);
+			downloads.add(executor.submit(downloader));
+		}
+		int i=1;
+		for (Future<Integer> next : downloads) {
+			try {
+				log.info("Download " + i++ + " got " + next.get() + " items");
+			} catch (InterruptedException | ExecutionException e) {
+				log.warning("Download failed: " + e.getMessage());
+			}
+		}
+	}
 	public MBeanServerConnection getMBeanServerConnection(long lvmid) throws Exception {
 		String host = null;
 		MonitoredHost monitoredHost = MonitoredHost.getMonitoredHost(host);
