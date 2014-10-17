@@ -298,9 +298,33 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 					FileUtil.copy(is, dest);
 				}
 				PosixFileAttributeView posix = Files.getFileAttributeView(dest.toPath(), PosixFileAttributeView.class);
+				Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
 				if (posix != null) {
-					Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
 					posix.setPermissions(permissions);
+				} else {
+					for (PosixFilePermission next : permissions) {
+						boolean userOnly = false;
+						if (next == PosixFilePermission.OWNER_EXECUTE ||
+								next == PosixFilePermission.OWNER_READ ||
+								next == PosixFilePermission.OWNER_WRITE) {
+							userOnly = true;
+						}
+						if (next == PosixFilePermission.OWNER_EXECUTE ||
+								next == PosixFilePermission.GROUP_EXECUTE ||
+								next == PosixFilePermission.OTHERS_EXECUTE) {
+							dest.setExecutable(true, userOnly);
+						}
+						if (next == PosixFilePermission.OWNER_WRITE ||
+								next == PosixFilePermission.GROUP_WRITE ||
+								next == PosixFilePermission.OTHERS_WRITE) {
+							dest.setWritable(true, userOnly);
+						}
+						if (next == PosixFilePermission.OWNER_READ ||
+								next == PosixFilePermission.GROUP_READ ||
+								next == PosixFilePermission.OTHERS_READ) {
+							dest.setReadable(true, userOnly);
+						}
+					}
 				}
 			}
 		}
