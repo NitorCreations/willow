@@ -214,7 +214,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 				lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
 			in = cfactory.createCompressorInputStream(in);
 		}
-		if (!lcFileName.endsWith(".zip")) {
+		if (lcFileName.endsWith(".zip")) {
 			extractZip(new ZipFile(archive), root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
 		} else {
 			extractArchive(factory.createArchiveInputStream(in), root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
