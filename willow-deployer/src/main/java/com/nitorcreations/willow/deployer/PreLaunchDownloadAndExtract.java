@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -296,9 +297,11 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 				} else {
 					FileUtil.copy(is, dest);
 				}
-				Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
-				Path destPath = Paths.get(dest.getAbsolutePath());
-				Files.setPosixFilePermissions(destPath, permissions);
+				PosixFileAttributeView posix = Files.getFileAttributeView(dest.toPath(), PosixFileAttributeView.class);
+				if (posix != null) {
+					Set<PosixFilePermission> permissions = getPermissions(getMode(entry));
+					posix.setPermissions(permissions);
+				}
 			}
 		}
 	}

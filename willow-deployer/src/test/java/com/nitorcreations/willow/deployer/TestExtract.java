@@ -18,6 +18,10 @@ public class TestExtract {
 		props.setProperty("deployer.download.url[]", "file:./target/test-classes/test.zip");
 		props.setProperty("deployer.download.url[last].extract.glob", "**");
 		props.setProperty("deployer.download.url[last].extract.root", "target/test2-extract");
+		props.setProperty("coremedia.admin.user", "foo");
+		props.setProperty("coremedia.admin.password", "bar");
+		props.setProperty("debug.comment", "#");
+		props.setProperty("deployer.download.url[last].extract.filter.glob", "**.sh|**.xml|**.properties|**.jpif");
 		PreLaunchDownloadAndExtract dwnld = new PreLaunchDownloadAndExtract(props);
 		dwnld.call();
 		File res = new File("target/test-extract/bin/graceful.sh");
