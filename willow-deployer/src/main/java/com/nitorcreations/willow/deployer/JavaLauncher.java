@@ -18,7 +18,9 @@ public class JavaLauncher extends AbstractLauncher {
 
 	@Override
 	public Integer call() {
-		launchArgs.add("-Daccesslog.websocket=" + statUri.toString());
+		if (statUri != null) {
+			launchArgs.add("-Daccesslog.websocket=" + statUri.toString());
+		}
 		if (!mainClass.isEmpty() && !classPath.isEmpty()) {
 			launchArgs.add("-cp");
 			launchArgs.add(classPath);
