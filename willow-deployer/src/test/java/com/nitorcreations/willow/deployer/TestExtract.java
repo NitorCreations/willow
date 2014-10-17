@@ -12,6 +12,7 @@ public class TestExtract {
 	@Test
 	public void testExtract() {
 		MergeableProperties props = new MergeableProperties();
+		props.setProperty("deployer.download.directory", "target/test-download");
 		props.setProperty("deployer.download.url[]", "file:./target/test-classes/test.zip");
 		props.setProperty("deployer.download.url[last].extract.glob", "**");
 		props.setProperty("deployer.download.url[last].extract.root", "target/test-extract");

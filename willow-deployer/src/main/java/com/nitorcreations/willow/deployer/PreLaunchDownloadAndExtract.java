@@ -175,7 +175,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 				}
 				target = new File(downloadDirFile, fileName);
 			} else {
-				target = File.createTempFile(fileName, ".download");
+				target = File.createTempFile("deployer.download", fileName);
 			}
 			InputStream in;
 			MD5SumInputStream md5in = null;
