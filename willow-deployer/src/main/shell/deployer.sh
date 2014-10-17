@@ -2,6 +2,17 @@
 
 NEW_MD5=%%MD5%%
 
+if [ "$1" = "-d" ]; then
+  shift
+  if [[ "$1" =~ ^[0-9]*$ ]]; then
+    DEBUG_PORT=$1
+    shift
+  else
+    DEBUG_PORT=4444
+  fi
+  $DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT" 
+fi
+
 if [ -z "$DEPLOYER_HOME" ]; then
   DEPLOYER_HOME=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
 fi
@@ -40,15 +51,15 @@ export W_DEPLOYER_NAME=$2
 case $1 in 
 start)
   shift
-  exec $JAVA_HOME/bin/java -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Main "$@"
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Main "$@"
   ;;
 stop)
   shift
-  exec $JAVA_HOME/bin/java -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Stop "$@"
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Stop "$@"
   ;;
 status)
   shift
-  exec $JAVA_HOME/bin/java -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Status "$@"
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Status "$@"
   ;;
 *)
   echo "usage $0 {start|stop|status} [role] url [url [...]]"
