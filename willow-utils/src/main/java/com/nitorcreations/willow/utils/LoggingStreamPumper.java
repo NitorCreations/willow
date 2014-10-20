@@ -1,12 +1,10 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.utils;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoggingStreamPumper extends AbstractStreamPumper implements Runnable {
-	private BufferedReader in;
 	private Logger log;
 	private Level level;
 

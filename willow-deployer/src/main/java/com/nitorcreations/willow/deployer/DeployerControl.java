@@ -67,7 +67,7 @@ import com.sun.tools.attach.VirtualMachine;
 
 public class DeployerControl {
 	private static final String LOCAL_CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
-	protected final Logger log = Logger.getLogger(this.getClass().getCanonicalName());
+	protected final static Logger log = Logger.getLogger("deployer");
 	protected final ExecutorService executor = Executors.newFixedThreadPool(10);
 	protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
 	protected String deployerName;
@@ -264,9 +264,8 @@ public class DeployerControl {
 
 		return null;
 	}
-	protected static void usage(String error) {
+	protected void usage(String error) {
 		System.err.println(error);
-		System.err.println(Main.class.getName() + " [property-url]");
 		System.exit(1);
 	}
 	protected static void extractNativeLib() {

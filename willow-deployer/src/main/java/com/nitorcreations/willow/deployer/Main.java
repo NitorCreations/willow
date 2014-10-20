@@ -1,13 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,12 +9,17 @@ import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -30,6 +28,7 @@ import javax.management.NotCompliantMBeanException;
 
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
+import com.nitorcreations.willow.utils.SimpleFormatter;
 
 public class Main extends DeployerControl implements MainMBean {
 	private List<PlatformStatsSender> stats = new ArrayList<>();
@@ -50,7 +49,8 @@ public class Main extends DeployerControl implements MainMBean {
 		new Main().doMain(args);
 	}
 	public void doMain(String[] args) {
-		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}"); 
+		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}");
+		setupLogging();
 		populateProperties(args);
 		MergeableProperties mergedProperties = new MergeableProperties();
 		for (int i=launchPropertiesList.size()-1; i>=0; i--) {
@@ -85,9 +85,25 @@ public class Main extends DeployerControl implements MainMBean {
 			}
 		}
 		//Download
+		try {
+			runHooks(PROPERTY_KEY_PREFIX_PRE_DOWNLOAD, mergedProperties);
+		} catch (Exception e) {
+			usage(e.getMessage());
+		}
 		download();
+		try {
+			runHooks(PROPERTY_KEY_PREFIX_POST_DOWNLOAD, mergedProperties);
+		} catch (Exception e) {
+			usage(e.getMessage());
+		}
 		//Stop
 		stopOld(args);
+		try {
+			runHooks(PROPERTY_KEY_PREFIX_POST_STOP_OLD, mergedProperties);
+		} catch (Exception e) {
+			usage(e.getMessage());
+		}
+
 		//Start
 		int i=0;
 		for (MergeableProperties launchProps : launchPropertiesList) {
@@ -133,6 +149,37 @@ public class Main extends DeployerControl implements MainMBean {
 		}
 		i++;
 	}
+	public static void runHooks(String hookPrefix, MergeableProperties properties) throws Exception {
+		ExecutorService exec = Executors.newFixedThreadPool(1);
+		int i=0;
+		for (String nextMethod : properties.getArrayProperty(hookPrefix, PROPERTY_KEY_METHOD)) {
+			LaunchMethod launcher = null;
+			launcher = LaunchMethod.TYPE.valueOf(nextMethod).getLauncher();
+			launcher.setProperties(properties,hookPrefix + "[" + i + "]");
+			long timeout = Long.valueOf(properties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_TIMEOUT, "30"));
+			Future<Integer> ret = exec.submit(launcher);
+			try {
+				log.info(hookPrefix + " returned " + ret.get(timeout, TimeUnit.SECONDS));
+			} catch (InterruptedException | ExecutionException
+					| TimeoutException e) {
+				log.info(hookPrefix + " failed: " + e.getMessage());
+				throw e;
+			}
+
+			i++;
+		}
+	}
+	public void setupLogging() {
+		Logger rootLogger = Logger.getLogger("");
+        for (Handler nextHandler : rootLogger.getHandlers()) {
+                rootLogger.removeHandler(nextHandler);
+        }
+        Handler console = new ConsoleHandler();
+        console.setLevel(Level.INFO);
+        console.setFormatter(new SimpleFormatter());
+        rootLogger.addHandler(console);
+        rootLogger.setLevel(Level.INFO);
+	}
 	public void stop() {
 		for (LaunchMethod next : children) {
 			next.stopRelaunching();
@@ -177,4 +224,10 @@ public class Main extends DeployerControl implements MainMBean {
 		}
 		return ret.toString();
 	}
+	@Override
+	protected void usage(String error) {
+		stop();
+		super.usage(error);
+	}
+
 }
