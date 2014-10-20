@@ -40,6 +40,8 @@ import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.utils.AbstractStreamPumper;
+import com.nitorcreations.willow.utils.LoggingStreamPumper;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 
@@ -56,7 +58,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	protected String keyPrefix;
 	protected AtomicBoolean running = new AtomicBoolean(true);
 	protected AbstractStreamPumper stdout, stderr;
-	private LaunchMethod postStop;
 	private String name;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private int restarts=0;
@@ -97,7 +98,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				autoRestartDefault = "true";
 			}
 			name = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
-					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX);
+					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0");
 			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);
@@ -120,7 +121,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 					stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
 					stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
 				} else {
-					stdout = new LoggingStreamPumper(child.getInputStream(), Level.FINE, name);
+					stdout = new LoggingStreamPumper(child.getInputStream(), Level.INFO, name);
 					stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
 				}
 				new Thread(stdout, name + "-child-stdout-pumper").start();
@@ -131,20 +132,11 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				rec.setThrown(e);
 				log.log(rec);
 			} finally {
-				if (keyPrefix.equals(PROPERTY_KEY_PREFIX_LAUNCH)) {
-					String postStopStr = launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_METHOD);
-					if (postStopStr != null) {
-						postStop = LaunchMethod.TYPE.valueOf(postStopStr).getLauncher();
-						postStop.setProperties(launchProperties, PROPERTY_KEY_PREFIX_POST_STOP);
-						long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_TIMEOUT, "5"));
-						Future<Integer> ret = executor.submit(postStop);
-						try {
-							log.info("Post stop returned" + ret.get(timeout, TimeUnit.SECONDS));
-						} catch (InterruptedException | ExecutionException
-								| TimeoutException e) {
-							log.info("Post stop failed: " + e.getMessage());
-						}
+				try {
+					if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+						Main.runHooks(PROPERTY_KEY_PREFIX_POST_STOP, launchProperties);
 					}
+				} catch (Exception e) {
 				}
 			}
 			try {
@@ -152,7 +144,11 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			} catch (InterruptedException e) {
 			}
 		}
-		return returnValue.get();
+		try {
+			return destroyChild();
+		} catch (InterruptedException e) {
+			return returnValue.get();
+		}
 	}
 	@Override
 	public void stopRelaunching() {

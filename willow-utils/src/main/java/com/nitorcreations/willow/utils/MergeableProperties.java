@@ -189,16 +189,21 @@ public class MergeableProperties extends Properties {
 		String oval = table.get(key);
 		return ((oval == null) && (defaults != null)) ? defaults.getProperty(key) : oval;
 	}
-	public List<String> getArrayProperty(String key) {
+	public List<String> getArrayProperty(String key, String suffix) {
 		int i=0;
+		if (suffix == null) suffix = "";
 		ArrayList<String> ret = new ArrayList<>();
-		String next = getProperty(key + "[" + i + "]");
+		String next = getProperty(key + "[" + i + "]" + suffix);
 		while (next != null) {
 			ret.add(next);
-			next = getProperty(key + "[" + ++i  + "]");
+			next = getProperty(key + "[" + ++i  + "]" + suffix);
 		}
 		return ret;
 	}
+	public List<String> getArrayProperty(String key) {
+		return getArrayProperty(key, null);
+	}
+	
 	public void putAll(MergeableProperties toMerge) {
 		for (Entry<String, String> next: toMerge.table.entrySet()) {
 			put(next.getKey(), next.getValue());
