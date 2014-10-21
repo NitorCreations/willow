@@ -72,7 +72,7 @@ public class Main extends DeployerControl implements MainMBean {
 				transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
 				transmitter.start();
 			} catch (URISyntaxException e) {
-				usage(e.getMessage());
+				usage(e);
 			}
 		}
 		if (transmitter != null) {
@@ -82,7 +82,7 @@ public class Main extends DeployerControl implements MainMBean {
 				statThread.start();
 				stats.add(statsSender);
 			} catch (Exception e) {
-				usage(e.getMessage());
+				usage(e);
 			}
 		}
 		//Download
@@ -152,9 +152,9 @@ public class Main extends DeployerControl implements MainMBean {
 	}
 	public static void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
 		ExecutorService exec = Executors.newFixedThreadPool(1);
-		int i=0;
 		Exception lastThrown = null;
 		for (MergeableProperties properties : propertiesList) {
+			int i=0;
 			for (String nextMethod : properties.getArrayProperty(hookPrefix, PROPERTY_KEY_METHOD)) {
 				LaunchMethod launcher = null;
 				launcher = LaunchMethod.TYPE.valueOf(nextMethod).getLauncher();
@@ -245,6 +245,11 @@ public class Main extends DeployerControl implements MainMBean {
 			ret.setLength(ret.length() - 1);
 		}
 		return ret.toString();
+	}
+	@Override
+	protected void usage(String message) {
+		stop();
+		super.usage(message);
 	}
 	protected void usage(Throwable e) {
 		stop();
