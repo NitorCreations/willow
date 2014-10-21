@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -98,7 +99,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				autoRestartDefault = "true";
 			}
 			name = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
-					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0");
+					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, launchProperties.getProperty(keyPrefix, "0"));
 			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);
@@ -134,7 +135,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			} finally {
 				try {
 					if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
-						Main.runHooks(PROPERTY_KEY_PREFIX_POST_STOP, launchProperties);
+						Main.runHooks(PROPERTY_KEY_PREFIX_POST_STOP, Collections.singletonList(launchProperties), false);
 					}
 				} catch (Exception e) {
 				}

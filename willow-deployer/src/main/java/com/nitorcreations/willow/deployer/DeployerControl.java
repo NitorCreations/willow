@@ -97,38 +97,7 @@ public class DeployerControl {
 			return;
 		}
 		extractNativeLib();
-		boolean download = Boolean.valueOf(mergedProperties.getProperty(PROPERTY_KEY_SHUTDOWN_DOWNLOAD, "false")).booleanValue();
-		if (download) {
-			download();
-		}
 		//Stop
-		LinkedHashMap<Future<Integer>, Long> stopTasks = new LinkedHashMap<>();
-		int i=0;
-		for (MergeableProperties launchProps : launchPropertiesList) {
-			LaunchMethod stopper = null;
-			String stopMethod = launchProps.getProperty(PROPERTY_KEY_PREFIX_SHUTDOWN + PROPERTY_KEY_METHOD);
-			if (stopMethod != null) {
-				try {
-					stopper = LaunchMethod.TYPE.valueOf(stopMethod).getLauncher();
-					stopper.setProperties(launchProps, PROPERTY_KEY_PREFIX_SHUTDOWN);
-					long timeout = Long.valueOf(launchProps.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_TIMEOUT, "5"));
-					stopTasks.put(executor.submit(stopper), Long.valueOf(timeout));
-				} catch (Throwable t) {
-					usage(t.getMessage());
-				}
-			}
-			i++;
-		}
-		i=0;
-		for (Entry<Future<Integer>, Long> next : stopTasks.entrySet()) {
-			try {
-				log.info("Stopper " + i + " returned "  + next.getKey().get(next.getValue().longValue(), TimeUnit.SECONDS));
-			} catch (InterruptedException | ExecutionException
-					| TimeoutException e) {
-				log.warning("Stopper " + i + " failed "  + e.getMessage());
-			}
-			i++;
-		}
 		try {
 			Sigar sigar = new Sigar();
 			ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);

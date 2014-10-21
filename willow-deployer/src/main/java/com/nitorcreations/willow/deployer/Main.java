@@ -19,6 +19,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -86,22 +87,22 @@ public class Main extends DeployerControl implements MainMBean {
 		}
 		//Download
 		try {
-			runHooks(PROPERTY_KEY_PREFIX_PRE_DOWNLOAD, mergedProperties);
+			runHooks(PROPERTY_KEY_PREFIX_PRE_DOWNLOAD, launchPropertiesList, true);
 		} catch (Exception e) {
-			usage(e.getMessage());
+			usage(e);
 		}
 		download();
 		try {
-			runHooks(PROPERTY_KEY_PREFIX_POST_DOWNLOAD, mergedProperties);
+			runHooks(PROPERTY_KEY_PREFIX_POST_DOWNLOAD, launchPropertiesList, true);
 		} catch (Exception e) {
-			usage(e.getMessage());
+			usage(e);
 		}
 		//Stop
 		stopOld(args);
 		try {
-			runHooks(PROPERTY_KEY_PREFIX_POST_STOP_OLD, mergedProperties);
+			runHooks(PROPERTY_KEY_PREFIX_POST_STOP_OLD, launchPropertiesList, true);
 		} catch (Exception e) {
-			usage(e.getMessage());
+			usage(e);
 		}
 
 		//Start
@@ -111,7 +112,7 @@ public class Main extends DeployerControl implements MainMBean {
 			try {
 				launcher = LaunchMethod.TYPE.valueOf(launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + PROPERTY_KEY_METHOD)).getLauncher();
 			} catch (Throwable t) {
-				usage(t.getMessage());
+				usage(t);
 			}
 			launchProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(i));
 			File workDir = new File(launchProps.getProperty(PROPERTY_KEY_WORKDIR, "."));
@@ -130,7 +131,7 @@ public class Main extends DeployerControl implements MainMBean {
 			try {
 				launchProps.store(new FileOutputStream(propsFile), null);
 			} catch (IOException e) {
-				usage(e.getMessage());
+				usage(e);
 			}
 			launcher.setProperties(launchProps);
 			executor.submit(launcher);
@@ -143,31 +144,43 @@ public class Main extends DeployerControl implements MainMBean {
 					statThread.start();
 					stats.add(statsSender);
 				} catch (Exception e) {
-					usage(e.getMessage());
+					usage(e);
 				}
 			}
 		}
 		i++;
 	}
-	public static void runHooks(String hookPrefix, MergeableProperties properties) throws Exception {
+	public static void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
 		ExecutorService exec = Executors.newFixedThreadPool(1);
 		int i=0;
-		for (String nextMethod : properties.getArrayProperty(hookPrefix, PROPERTY_KEY_METHOD)) {
-			LaunchMethod launcher = null;
-			launcher = LaunchMethod.TYPE.valueOf(nextMethod).getLauncher();
-			launcher.setProperties(properties,hookPrefix + "[" + i + "]");
-			long timeout = Long.valueOf(properties.getProperty(PROPERTY_KEY_PREFIX_POST_STOP + PROPERTY_KEY_TIMEOUT, "30"));
-			Future<Integer> ret = exec.submit(launcher);
-			try {
-				log.info(hookPrefix + " returned " + ret.get(timeout, TimeUnit.SECONDS));
-			} catch (InterruptedException | ExecutionException
-					| TimeoutException e) {
-				log.info(hookPrefix + " failed: " + e.getMessage());
-				throw e;
+		Exception lastThrown = null;
+		for (MergeableProperties properties : propertiesList) {
+			for (String nextMethod : properties.getArrayProperty(hookPrefix, PROPERTY_KEY_METHOD)) {
+				LaunchMethod launcher = null;
+				launcher = LaunchMethod.TYPE.valueOf(nextMethod).getLauncher();
+				String prefix = hookPrefix + "[" + i + "]";
+				launcher.setProperties(properties, prefix);
+				long timeout = Long.valueOf(properties.getProperty(prefix + PROPERTY_KEY_TIMEOUT, "30"));
+				Future<Integer> ret = exec.submit(launcher);
+				try {
+					int retVal = ret.get(timeout, TimeUnit.SECONDS);
+					log.info(hookPrefix + " returned " + retVal);
+					if (retVal != 0 && failFast) {
+						throw new Exception("hook " + hookPrefix + "." + i + " failed");
+					}
+				} catch (InterruptedException | ExecutionException
+						| TimeoutException e) {
+					log.info(hookPrefix + " failed: " + e.getMessage());
+					if (failFast) {
+						throw e;
+					} else {
+						lastThrown = e;
+					}
+				}
+				i++;
 			}
-
-			i++;
 		}
+		if (lastThrown != null) throw lastThrown;
 	}
 	public void setupLogging() {
 		Logger rootLogger = Logger.getLogger("");
@@ -184,22 +197,31 @@ public class Main extends DeployerControl implements MainMBean {
 		for (LaunchMethod next : children) {
 			next.stopRelaunching();
 		}
-		final ExecutorService stopexec = Executors.newFixedThreadPool(children.size());
-		List<Future<Integer>> waits = new ArrayList<>();
-		for (final LaunchMethod next : children) {
-			waits.add(stopexec.submit(new Callable<Integer>() {
-				@Override
-				public Integer call() throws Exception {
-					return next.destroyChild();
-				}
-			}));
+		try {
+			Main.runHooks(PROPERTY_KEY_PREFIX_SHUTDOWN, launchPropertiesList, false);
+		} catch (Exception e) {
+			LogRecord rec = new LogRecord(Level.SEVERE, "Shutdown failed");
+			rec.setThrown(e);
+			log.log(rec);
 		}
-		int i=0;
-		for (Future<Integer> next : waits) {
-			try {
-				log.info("Child " + i + " returned " + next.get());
-			} catch (InterruptedException | ExecutionException e) {
-				log.warning("Destroy failed: " + e.getMessage());
+		if (children.size() > 0) {
+			final ExecutorService stopexec = Executors.newFixedThreadPool(children.size());
+			List<Future<Integer>> waits = new ArrayList<>();
+			for (final LaunchMethod next : children) {
+				waits.add(stopexec.submit(new Callable<Integer>() {
+					@Override
+					public Integer call() throws Exception {
+						return next.destroyChild();
+					}
+				}));
+			}
+			int i=0;
+			for (Future<Integer> next : waits) {
+				try {
+					log.info("Child " + i + " returned " + next.get());
+				} catch (InterruptedException | ExecutionException e) {
+					log.warning("Destroy failed: " + e.getMessage());
+				}
 			}
 		}
 		for (PlatformStatsSender next : stats) {
@@ -217,17 +239,17 @@ public class Main extends DeployerControl implements MainMBean {
 		} else {
 			ret.append(children.size()).append(" children ");
 			for (LaunchMethod next : children) {
-				ret.append("(PID:").append(children.get(0).getProcessId())
-				.append(" - restarts:").append(children.get(0).restarts()).append(") ");
+				ret.append("(PID:").append(next.getProcessId())
+				.append(" - restarts:").append(next.restarts()).append(") ");
 			}
 			ret.setLength(ret.length() - 1);
 		}
 		return ret.toString();
 	}
-	@Override
-	protected void usage(String error) {
+	protected void usage(Throwable e) {
 		stop();
-		super.usage(error);
+		e.printStackTrace();
+		super.usage(e.getMessage());
 	}
 
 }
