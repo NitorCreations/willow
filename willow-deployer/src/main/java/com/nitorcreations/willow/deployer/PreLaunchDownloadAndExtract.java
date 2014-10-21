@@ -209,15 +209,25 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		Set<PathMatcher> extractMatchers = getGlobMatchers(extractGlob);
 		Set<PathMatcher> skipMatchers = getGlobMatchers(skipExtractGlob);
 		Set<PathMatcher> filterMatchers = getGlobMatchers(filterGlob);
-		InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024);
-		if (lcFileName.endsWith("z") ||	lcFileName.endsWith("bz2") || lcFileName.endsWith("lzma") ||
-				lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
-			in = cfactory.createCompressorInputStream(in);
-		}
 		if (lcFileName.endsWith(".zip")) {
-			extractZip(new ZipFile(archive), root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+			try (ZipFile source = new ZipFile(archive)) {
+				extractZip(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+			}
 		} else {
-			extractArchive(factory.createArchiveInputStream(in), root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+			try (InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024)) {
+				if (lcFileName.endsWith("z") ||	lcFileName.endsWith("bz2") || lcFileName.endsWith("lzma") ||
+						lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
+					try (InputStream compressed = cfactory.createCompressorInputStream(in)) {
+						try (ArchiveInputStream source = factory.createArchiveInputStream(compressed)) {
+							extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+						}
+					}
+				} else {
+					try (ArchiveInputStream source = factory.createArchiveInputStream(in)) {
+						extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+					}
+				}
+			}
 		}
 	}
 	private void extractZip(ZipFile zipFile, File destFolder,
@@ -229,6 +239,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			ZipArchiveEntry nextEntry = en.nextElement();
 			extractEntry(zipFile.getInputStream(nextEntry), (ArchiveEntry) nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
 		}
+		
 	}
 	private boolean downloadArtifact(String index, Properties properties, Map<String, String> replaceTokens) throws IOException {
 		String artifact = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT);
