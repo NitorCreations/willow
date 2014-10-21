@@ -60,6 +60,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	protected AtomicBoolean running = new AtomicBoolean(true);
 	protected AbstractStreamPumper stdout, stderr;
 	private String name;
+	@Override
+	public String getName() {
+		return name;
+	}
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	private int restarts=0;
 	
@@ -99,7 +103,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				autoRestartDefault = "true";
 			}
 			name = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
-					+ "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, launchProperties.getProperty(keyPrefix, "0"));
+					+ "." + launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
 			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);

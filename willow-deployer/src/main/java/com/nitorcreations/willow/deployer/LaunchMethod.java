@@ -27,4 +27,5 @@ public interface LaunchMethod extends Callable<Integer> {
 	void stopRelaunching();
 	int destroyChild() throws InterruptedException;
 	int restarts();
+	String getName();
 }

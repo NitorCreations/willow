@@ -233,13 +233,14 @@ public class Main extends DeployerControl implements MainMBean {
 	public String getStatus() {
 		StringBuilder ret = new StringBuilder(deployerName).append(" running ");
 		if (children.size() == 1) {
-			ret.append("1 child (PID:").append(children.get(0).getProcessId())
+			ret.append("1 child (" + children.get(0).getName() + ": ")
+			.append(children.get(0).getProcessId())
 			.append(" - restarts: ").append(children.get(0).restarts())
 			.append(")");
 		} else {
 			ret.append(children.size()).append(" children ");
 			for (LaunchMethod next : children) {
-				ret.append("(PID:").append(next.getProcessId())
+				ret.append("(" + next.getName() + ": ").append(next.getProcessId())
 				.append(" - restarts:").append(next.restarts()).append(") ");
 			}
 			ret.setLength(ret.length() - 1);
