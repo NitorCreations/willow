@@ -102,8 +102,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
 				autoRestartDefault = "true";
 			}
-			name = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
-					+ "." + launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
+			name = launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
+					+ "." +  launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
 			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);
