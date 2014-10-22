@@ -104,7 +104,12 @@ public class Main extends DeployerControl implements MainMBean {
 		} catch (Exception e) {
 			usage(e);
 		}
-
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				Main.this.stop();
+			}
+		});
 		//Start
 		int i=0;
 		for (MergeableProperties launchProps : launchPropertiesList) {
