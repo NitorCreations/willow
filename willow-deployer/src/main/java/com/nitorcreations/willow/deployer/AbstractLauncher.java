@@ -12,6 +12,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,6 +173,9 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			stdout.stop();
 		}
 		executor.shutdown();
+		long timeout = Long.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_TERM_TIMEOUT, "30"));
+		executor.awaitTermination(timeout, TimeUnit.SECONDS);
+		executor.shutdownNow();
 		return getReturnValue();
 	}
 	public synchronized int getReturnValue() {

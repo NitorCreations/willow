@@ -24,6 +24,7 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_LAUNCH_WORKDIR                  = ".workdir";
 	public static final String PROPERTY_KEY_AUTORESTART                     = ".autorestart";
 	public static final String PROPERTY_KEY_TIMEOUT                         = ".timeout";
+	public static final String PROPERTY_KEY_TERM_TIMEOUT                    = ".term.timeout";
 	
 
 	
@@ -44,7 +45,7 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_PROPERTIES_FILENAME             = "deployer.properties.filename";
 	public static final String PROPERTY_KEY_DEPLOYER_NAME                   = "deployer.name";
 	public static final String PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX           = "deployer.launch.index";
-	public static final String PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT           = "deployer.term.timeout";
+	public static final String ENV_DEPLOYER_TERM_TIMEOUT                    = "DEPLOYER_TERM_TIMEOUT";
 	public static final String ENV_DEPLOYER_LOCAL_REPOSITORY                = "DEPLOYER_LOCAL_REPOSITORY";
 	public static final String ENV_DEPLOYER_NAME                            = "W_DEPLOYER_NAME";
 }

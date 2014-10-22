@@ -2,8 +2,8 @@ package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
@@ -83,19 +83,7 @@ public class DeployerControl {
     }
 
 	public void stopOld(String[] args) {
-		if (args.length < 2) usage("At least two arguments expected: {name} {launch.properties}"); 
-		populateProperties(args);
-		MergeableProperties mergedProperties = new MergeableProperties();
-		for (int i=launchPropertiesList.size()-1; i>=0; i--) {
-			mergedProperties.putAll(launchPropertiesList.get(i));
-		}
-		List<String> launchUrls = mergedProperties.getArrayProperty(PROPERTY_KEY_LAUNCH_URLS);
-		if (launchUrls.size() > 0) {
-			launchUrls.add(0, deployerName);
-			launchPropertiesList.clear();
-			stopOld(launchUrls.toArray(new String[launchUrls.size()]));
-			return;
-		}
+		if (args.length < 1) usage("At least one argument expected: {name}"); 
 		extractNativeLib();
 		//Stop
 		try {
@@ -124,7 +112,11 @@ public class DeployerControl {
 					log.info("JMX stop failed - terminating");
 				}
 				q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName);
-				long termTimeout = Long.parseLong(mergedProperties.getProperty(PROPERTY_KEY_DEPLOYER_TERM_TIMEOUT, "60000"));
+				String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
+				long termTimeout = 60000;
+				if (timeOutEnv != null) {
+					termTimeout = Long.valueOf(timeOutEnv);
+				}
 				long start = System.currentTimeMillis();
 				pids = q.find(sigar);
 				while (pids.length > 1) {
