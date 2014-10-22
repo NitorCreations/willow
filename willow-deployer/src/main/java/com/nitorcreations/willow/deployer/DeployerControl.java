@@ -84,6 +84,7 @@ public class DeployerControl {
 
 	public void stopOld(String[] args) {
 		if (args.length < 1) usage("At least one argument expected: {name}"); 
+		deployerName = args[0];
 		extractNativeLib();
 		//Stop
 		try {
