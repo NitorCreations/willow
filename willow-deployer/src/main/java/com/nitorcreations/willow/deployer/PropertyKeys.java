@@ -6,6 +6,8 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_PREFIX_SHUTDOWN                 = "deployer.shutdown";
 	public static final String PROPERTY_KEY_SHUTDOWN_DOWNLOAD               = "deployer.shutdown.download";
 	public static final String PROPERTY_KEY_PREFIX_POST_STOP                = "deployer.post.stop";
+	public static final String PROPERTY_KEY_PREFIX_POST_START               = "deployer.post.start";
+	public static final String PROPERTY_KEY_PREFIX_PRE_START                = "deployer.pre.start";
 	public static final String PROPERTY_KEY_PREFIX_POST_STOP_OLD            = "deployer.post.stop.old";
 	public static final String PROPERTY_KEY_PREFIX_POST_DOWNLOAD            = "deployer.post.download";
 	public static final String PROPERTY_KEY_PREFIX_PRE_DOWNLOAD             = "deployer.pre.download";
