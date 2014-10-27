@@ -4,12 +4,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SHUTDOWN_DOWNLOAD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,16 +20,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -81,7 +71,6 @@ public class DeployerControl {
             assert false;
         }
     }
-
 	public void stopOld(String[] args) {
 		if (args.length < 1) usage("At least one argument expected: {name}"); 
 		deployerName = args[0];
@@ -112,6 +101,7 @@ public class DeployerControl {
 				} catch (Throwable e) {
 					log.info("JMX stop failed - terminating");
 				}
+				
 				q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName);
 				String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
 				long termTimeout = 60000;

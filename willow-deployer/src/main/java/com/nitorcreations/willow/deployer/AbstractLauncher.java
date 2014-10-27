@@ -6,13 +6,13 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLO
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_EXTRA_ENV_KEYS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_WORKDIR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,12 +25,9 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -116,13 +113,16 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			pb.directory(workingDir);
 			log.info(String.format("Starting %s%n", pb.command().toString()));
 			try {
+				try {
+					if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+						Main.runHooks(PROPERTY_KEY_PREFIX_PRE_START, Collections.singletonList(launchProperties), false);
+					}
+				} catch (Exception e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to run pre start");
+					rec.setThrown(e);
+					log.log(rec);
+				}
 				child = pb.start();
-			} catch (IOException e) {
-				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start  process");
-				rec.setThrown(e);
-				log.log(rec);
-			}
-			try {
 				if (transmitter != null) {
 					stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
 					stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
@@ -132,7 +132,20 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				}
 				new Thread(stdout, name + "-child-stdout-pumper").start();
 				new Thread(stderr, name + "-child-sdrerr-pumper").start();
+				try {
+					if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+						Main.runHooks(PROPERTY_KEY_PREFIX_POST_START, Collections.singletonList(launchProperties), false);
+					}
+				} catch (Exception e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to run post start");
+					rec.setThrown(e);
+					log.log(rec);
+				}
 				returnValue.set(child.waitFor());
+			} catch (IOException e) {
+				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start  process");
+				rec.setThrown(e);
+				log.log(rec);
 			} catch (InterruptedException e) {
 				LogRecord rec = new LogRecord(Level.WARNING, "Failed to start process stream pumpers");
 				rec.setThrown(e);
