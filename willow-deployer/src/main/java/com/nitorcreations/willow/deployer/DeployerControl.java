@@ -2,9 +2,10 @@ package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_PARENT_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-
+import static com.nitorcreations.willow.deployer.LaunchMethod.ENV_KEY_DEPLOYER_IDENTIFIER;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -20,8 +21,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,6 +45,8 @@ import javax.management.remote.JMXServiceURL;
 
 import org.hyperic.sigar.ProcTime;
 import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
+import org.hyperic.sigar.ptql.MalformedQueryException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
@@ -101,39 +108,54 @@ public class DeployerControl {
 				} catch (Throwable e) {
 					log.info("JMX stop failed - terminating");
 				}
-				
-				q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName);
 				String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
 				long termTimeout = 60000;
 				if (timeOutEnv != null) {
 					termTimeout = Long.valueOf(timeOutEnv);
 				}
-				long start = System.currentTimeMillis();
-				pids = q.find(sigar);
-				while (pids.length > 1) {
-					for (long nextpid : pids) {
-						if (nextpid != mypid) {
-							KillProcess.termProcess(Long.toString(nextpid));
-						}
-					}
-					Thread.sleep(500);
-					pids = q.find(sigar);
-					if (System.currentTimeMillis() > (start + termTimeout)) break;
-				}
-				while (pids.length > 1) {
-					for (long nextpid : q.find(sigar)) {
-						if (nextpid != mypid) {
-							KillProcess.killProcess(Long.toString(nextpid));
-						}
-					}
-					Thread.sleep(500);
-					pids = q.find(sigar);
-				}
+				//Processes with old deployer as parent
+				killWithQuery("State.Ppid.eq=" + firstPid, termTimeout, mypid);
+				//Processes with deployer name in Parent Environment variable
+				killWithQuery("Env." + ENV_DEPLOYER_PARENT_NAME + ".eq=" + deployerName, termTimeout, mypid);
+				//Old deployer identified by deployerName in environment
+				killWithQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName, termTimeout, mypid);
+				//Stranded child processes - parent name init or parend pid 1
+				killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Name.Peq=init", termTimeout, mypid);
+				killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Ppid.eq=1", termTimeout, mypid);
 			}
 		} catch (Throwable e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to kill old deployer");
 			rec.setThrown(e);
 			log.log(rec);
+		}
+	}
+	protected Set<String> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
+		Sigar sigar = new Sigar();
+		ProcessQuery q = ProcessQueryFactory.getInstance().getQuery(query);
+		long[] pids = q.find(sigar);
+		Set<String> pidSet = new HashSet<>();
+		for (long next : pids) {
+			if (next != mypid) pidSet.add(String.valueOf(next));
+		}
+		return pidSet;
+	}
+	protected void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
+		long start = System.currentTimeMillis();
+		Set<String> pids = getPidsExcludingMyPid(query, mypid);
+		while (pids.size()> 0) {
+			for (String nextpid : pids) {
+				KillProcess.termProcess(nextpid);
+			}
+			Thread.sleep(500);
+			pids = getPidsExcludingMyPid(query, mypid);
+			if (System.currentTimeMillis() > (start + termTimeout)) break;
+		}
+		while (pids.size() > 0) {
+			for (String nextpid : pids) {
+				KillProcess.killProcess(nextpid);
+			}
+			Thread.sleep(500);
+			pids = getPidsExcludingMyPid(query, mypid);
 		}
 	}
 	protected void download() {
@@ -193,7 +215,6 @@ public class DeployerControl {
 					throw new IOException("Management agent not found");
 				}
 			}
-
 			String agent = f.getCanonicalPath();
 			log.finer("Found agent for VM " + lvmid + ": " + agent);
 			try {
