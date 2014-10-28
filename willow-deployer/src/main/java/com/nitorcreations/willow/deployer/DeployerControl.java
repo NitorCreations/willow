@@ -120,9 +120,11 @@ public class DeployerControl {
 					pids = q.find(sigar);
 					if (System.currentTimeMillis() > (start + termTimeout)) break;
 				}
-				for (long nextpid : q.find(sigar)) {
-					if (nextpid != mypid) {
-						KillProcess.killProcess(Long.toString(nextpid));
+				while (pids.length > 1) {
+					for (long nextpid : q.find(sigar)) {
+						if (nextpid != mypid) {
+							KillProcess.killProcess(Long.toString(nextpid));
+						}
 					}
 				}
 			}
