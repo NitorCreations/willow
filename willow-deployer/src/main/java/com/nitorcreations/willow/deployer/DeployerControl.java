@@ -46,7 +46,6 @@ import javax.management.remote.JMXServiceURL;
 import org.hyperic.sigar.ProcTime;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
-import org.hyperic.sigar.ptql.MalformedQueryException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
@@ -108,21 +107,25 @@ public class DeployerControl {
 				} catch (Throwable e) {
 					log.info("JMX stop failed - terminating");
 				}
-				String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
-				long termTimeout = 60000;
-				if (timeOutEnv != null) {
-					termTimeout = Long.valueOf(timeOutEnv);
-				}
+			} else {
+				mypid = pids[0];
+			}
+			String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
+			long termTimeout = 60000;
+			if (timeOutEnv != null) {
+				termTimeout = Long.valueOf(timeOutEnv);
+			}
+			if (firstPid > 0) {
 				//Processes with old deployer as parent
 				killWithQuery("State.Ppid.eq=" + firstPid, termTimeout, mypid);
-				//Processes with deployer name in Parent Environment variable
-				killWithQuery("Env." + ENV_DEPLOYER_PARENT_NAME + ".eq=" + deployerName, termTimeout, mypid);
-				//Old deployer identified by deployerName in environment
-				killWithQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName, termTimeout, mypid);
-				//Stranded child processes - parent name init or parend pid 1
-				killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Name.Peq=init", termTimeout, mypid);
-				killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Ppid.eq=1", termTimeout, mypid);
 			}
+			//Processes with deployer name in Parent Environment variable
+			killWithQuery("Env." + ENV_DEPLOYER_PARENT_NAME + ".eq=" + deployerName, termTimeout, mypid);
+			//Old deployer identified by deployerName in environment
+			killWithQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName, termTimeout, mypid);
+			//Stranded child processes - parent name init or parend pid 1
+			killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Name.Peq=init", termTimeout, mypid);
+			killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Ppid.eq=1", termTimeout, mypid);
 		} catch (Throwable e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to kill old deployer");
 			rec.setThrown(e);
