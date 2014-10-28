@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_PARENT_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_AUTORESTART;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
@@ -102,6 +103,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			}
 			name = launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
 					+ "." +  launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
+			String parentName = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME);
 			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);
@@ -110,6 +112,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			pb.environment().putAll(extraEnv);
 			pb.environment().put(ENV_KEY_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
 			pb.environment().put(ENV_DEPLOYER_NAME, name);
+			pb.environment().put(ENV_DEPLOYER_PARENT_NAME, parentName);
 			pb.directory(workingDir);
 			log.info(String.format("Starting %s%n", pb.command().toString()));
 			try {

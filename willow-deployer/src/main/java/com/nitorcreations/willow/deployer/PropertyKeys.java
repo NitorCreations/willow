@@ -50,4 +50,5 @@ public interface PropertyKeys {
 	public static final String ENV_DEPLOYER_TERM_TIMEOUT                    = "DEPLOYER_TERM_TIMEOUT";
 	public static final String ENV_DEPLOYER_LOCAL_REPOSITORY                = "DEPLOYER_LOCAL_REPOSITORY";
 	public static final String ENV_DEPLOYER_NAME                            = "W_DEPLOYER_NAME";
+	public static final String ENV_DEPLOYER_PARENT_NAME                     = "W_DEPLOYER_PARENT_NAME";
 }
