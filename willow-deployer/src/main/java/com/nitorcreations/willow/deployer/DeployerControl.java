@@ -126,6 +126,8 @@ public class DeployerControl {
 							KillProcess.killProcess(Long.toString(nextpid));
 						}
 					}
+					Thread.sleep(500);
+					pids = q.find(sigar);
 				}
 			}
 		} catch (Throwable e) {
