@@ -9,7 +9,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNC
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
@@ -143,11 +142,14 @@ public abstract class AbstractLauncher implements LaunchMethod {
 				rec.setThrown(e);
 				log.log(rec);
 			} finally {
-				try {
-					if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+				if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+					try {
 						Main.runHooks(PROPERTY_KEY_PREFIX_POST_STOP, Collections.singletonList(launchProperties), false);
+					} catch (Exception e) {
+						LogRecord rec = new LogRecord(Level.WARNING, "Failed to run post stop");
+						rec.setThrown(e);
+						log.log(rec);
 					}
-				} catch (Exception e) {
 				}
 			}
 			try {
