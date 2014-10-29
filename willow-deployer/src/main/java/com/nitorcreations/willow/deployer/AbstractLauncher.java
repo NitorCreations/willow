@@ -1,6 +1,5 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_PARENT_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_AUTORESTART;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
@@ -115,15 +114,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			pb.directory(workingDir);
 			log.info(String.format("Starting %s%n", pb.command().toString()));
 			try {
-				try {
-					if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
-						Main.runHooks(PROPERTY_KEY_PREFIX_PRE_START, Collections.singletonList(launchProperties), false);
-					}
-				} catch (Exception e) {
-					LogRecord rec = new LogRecord(Level.WARNING, "Failed to run pre start");
-					rec.setThrown(e);
-					log.log(rec);
-				}
 				child = pb.start();
 				if (transmitter != null) {
 					stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");

@@ -12,7 +12,6 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_PREFIX_POST_DOWNLOAD            = "deployer.post.download";
 	public static final String PROPERTY_KEY_PREFIX_PRE_DOWNLOAD             = "deployer.pre.download";
 	
-	
 	public static final String PROPERTY_KEY_METHOD                          = ".method";
 	public static final String PROPERTY_KEY_PREFIX_ARGS                     = ".arg";
 	public static final String PROPERTY_KEY_BINARY                          = ".binary";
@@ -27,8 +26,6 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_AUTORESTART                     = ".autorestart";
 	public static final String PROPERTY_KEY_TIMEOUT                         = ".timeout";
 	public static final String PROPERTY_KEY_TERM_TIMEOUT                    = ".term.timeout";
-	
-
 	
 	public static final String PROPERTY_KEY_PREFIX_DOWNLOAD_URL             = "deployer.download.url";
 	public static final String PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH       = ".finalpath";

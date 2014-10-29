@@ -7,6 +7,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_DOWNLOAD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP_OLD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_DOWNLOAD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -148,6 +150,11 @@ public class Main extends DeployerControl implements MainMBean {
 			try {
 				launchProps.store(new FileOutputStream(propsFile), null);
 			} catch (IOException e) {
+				usage(e);
+			}
+			try {
+				Main.runHooks(PROPERTY_KEY_PREFIX_PRE_START, Collections.singletonList(launchProps), true);
+			} catch (Exception e) {
 				usage(e);
 			}
 			launcher.setProperties(launchProps);
