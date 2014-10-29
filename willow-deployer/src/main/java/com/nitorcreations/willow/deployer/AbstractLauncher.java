@@ -111,7 +111,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			pb.environment().putAll(System.getenv());
 			pb.environment().putAll(extraEnv);
 			pb.environment().put(ENV_KEY_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
-			pb.environment().put(ENV_DEPLOYER_NAME, name);
 			pb.environment().put(ENV_DEPLOYER_PARENT_NAME, parentName);
 			pb.directory(workingDir);
 			log.info(String.format("Starting %s%n", pb.command().toString()));
@@ -180,7 +179,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
 	public int destroyChild() throws InterruptedException {
 		if (child != null) {
 			child.destroy();
-			child.waitFor();
 		}
 		if (stderr != null) {
 			stderr.stop();
@@ -192,6 +190,9 @@ public abstract class AbstractLauncher implements LaunchMethod {
 		long timeout = Long.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_TERM_TIMEOUT, "30"));
 		executor.awaitTermination(timeout, TimeUnit.SECONDS);
 		executor.shutdownNow();
+		if (child != null) {
+			child.waitFor();
+		}
 		return getReturnValue();
 	}
 	public synchronized int getReturnValue() {
