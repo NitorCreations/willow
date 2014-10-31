@@ -33,9 +33,15 @@ import javax.crypto.spec.SecretKeySpec;
 
 
 public class Obfuscator {
-
+	public enum KeyDigest {
+		MD5, SHA_256;
+	}
 	private static final int SALT_LENGTH = 42;
+	private final KeyDigest digest;
+	private static final String CIPHER = "AES/ECB/PKCS5Padding";
 	private final String propertyKey;
+	private final int digestIterations;
+	
 	public Obfuscator() throws IOException {
 		String defaultMaster = System.getProperty("user.home") + File.separator + 
 				".omaster" + File.separator + ".data" + File.pathSeparator + "md5";
@@ -55,13 +61,21 @@ public class Obfuscator {
 			perms.add(PosixFilePermission.OWNER_READ);
 			Files.setPosixFilePermissions(masterFile.toPath(), perms);
 		}
-		this.propertyKey = getFileMaster(masterFile);
+		this.digest = KeyDigest.MD5;
+		this.propertyKey = getFileMaster(masterFile, digest);
+		this.digestIterations = 1;
 	}
+	
 	public Obfuscator(File masterFile) throws IOException {
-		this(getFileMaster(masterFile));
+		this(getFileMaster(masterFile, KeyDigest.MD5));
 	}
 	public Obfuscator(String key) {
+		this(key, KeyDigest.MD5, 1);
+	}
+	public Obfuscator(String key, KeyDigest digest, int digestIterations) {
 		this.propertyKey = key;
+		this.digest = digest;
+		this.digestIterations = digestIterations;
 	}
 	public String encrypt(String value) {
 		return encrypt(propertyKey, value);
@@ -82,7 +96,7 @@ public class Obfuscator {
 			}
 		}
 	}
-	public static String encrypt(String skey, String value) {
+	public String encrypt(String skey, String value) {
 		byte[] bkey = getKeyBytes(skey);
 		Key                     key;
 		Cipher                  out;
@@ -90,7 +104,7 @@ public class Obfuscator {
 		ByteArrayOutputStream   bOut;
 		key = new SecretKeySpec(bkey, "AES");
 		try {
-			out = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			out = Cipher.getInstance(CIPHER);
 			out.init(Cipher.ENCRYPT_MODE, key);
 			byte[] input = value.getBytes(Charset.forName("UTF-8"));
 			bOut = new ByteArrayOutputStream();
@@ -111,7 +125,7 @@ public class Obfuscator {
 			return null;
 		}
 	}
-	public static String decrypt(String skey, String encrypted) {
+	public String decrypt(String skey, String encrypted) {
 		byte[] bkey = getKeyBytes(skey);
 		Key                     key;
 		Cipher                  in;
@@ -119,7 +133,7 @@ public class Obfuscator {
 		ByteArrayOutputStream   bIn;
 		key = new SecretKeySpec(bkey, "AES");
 		try { 
-			in = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			in = Cipher.getInstance(CIPHER);
 			in.init(Cipher.DECRYPT_MODE, key);
 			byte[] input = parseBase64Binary(encrypted);
 			bIn = new ByteArrayOutputStream();
@@ -141,18 +155,21 @@ public class Obfuscator {
 			return null;
 		}
 	}
-	private static byte[] getKeyBytes(String key) {
+	private byte[] getKeyBytes(String key) {
 		MessageDigest md;
 		try {
-			md = MessageDigest.getInstance("MD5");
+			md = MessageDigest.getInstance(digest.toString().replace("_", "-"));
 			byte[] raw = key.getBytes(Charset.forName("UTF-8"));
-			md.update(raw);
-			return md.digest();
+			for (int i=0; i<digestIterations; ++i) {
+				md.update(raw);
+			    raw = md.digest();
+			}
+			return raw;
 		} catch (NoSuchAlgorithmException e) {
 			return null;
 		}
 	}
-	public static String getFileMaster(File masterFile) throws IOException {
+	public static String getFileMaster(File masterFile, KeyDigest digest) throws IOException {
 		PosixFileAttributeView posix = Files.getFileAttributeView(masterFile.toPath(), PosixFileAttributeView.class);
 		if (posix != null) {
 			Set<PosixFilePermission> perms = posix.readAttributes().permissions();
@@ -182,7 +199,7 @@ public class Obfuscator {
 		} catch (IOException e) {}
 		MessageDigest md = null;
 		try {
-			md = MessageDigest.getInstance("MD5");
+			md = MessageDigest.getInstance(digest.toString().replace("_", "-"));
 		} catch (NoSuchAlgorithmException e) {}
 		if (p.isEmpty()) {
 			byte[] content = Files.readAllBytes(masterFile.toPath());
