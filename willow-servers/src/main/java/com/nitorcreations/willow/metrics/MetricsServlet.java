@@ -41,6 +41,7 @@ public class MetricsServlet implements Servlet {
 		metrics.put("/latency", new RequestDurationMetric());
 		metrics.put("/tags", new TagsList());
 		metrics.put("/cpu", new CpuBusyMetric());
+		metrics.put("/hosts", new HostsMetric());
 		setupElasticSearch(config.getServletContext());
 	}
 	@Override
