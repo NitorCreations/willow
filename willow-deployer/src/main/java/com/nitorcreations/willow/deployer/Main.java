@@ -77,6 +77,7 @@ public class Main extends DeployerControl implements MainMBean {
 			new Main().doMain(launchUrls.toArray(new String[launchUrls.size()]));
 			return;
 		}
+		extractNativeLib();
 		registerBean();
 		WebSocketTransmitter transmitter = null;
 		String statUri = mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
@@ -92,7 +93,7 @@ public class Main extends DeployerControl implements MainMBean {
 		if (transmitter != null) {
 			try {
 				PlatformStatsSender statsSender = new PlatformStatsSender(transmitter, new StatisticsConfig());
-				Thread statThread = new Thread(statsSender);
+				Thread statThread = new Thread(statsSender, "PlatformStatistics");
 				statThread.start();
 				stats.add(statsSender);
 			} catch (Exception e) {
@@ -164,7 +165,7 @@ public class Main extends DeployerControl implements MainMBean {
 			if (transmitter != null) {
 				try {
 					ProcessStatSender statsSender = new ProcessStatSender(transmitter, getMBeanServerConnection(launcher.getProcessId()), pid, new StatisticsConfig());
-					Thread statThread = new Thread(statsSender);
+					Thread statThread = new Thread(statsSender, "ProcessStatistics");
 					statThread.start();
 					stats.add(statsSender);
 				} catch (Exception e) {

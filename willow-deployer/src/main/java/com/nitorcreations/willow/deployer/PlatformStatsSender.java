@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -35,7 +36,9 @@ public class PlatformStatsSender implements Runnable {
 
 	public void stop() {
 		running.set(false);
-		this.notifyAll();
+		synchronized (this) {
+			this.notifyAll();
+		}
 	}
 
 	@Override
@@ -116,6 +119,10 @@ public class PlatformStatsSender implements Runnable {
 					logger.log(rec);
 				}
 				nextDisks = nextDisks + conf.getIntervalDisks();
+			}
+			try {
+				TimeUnit.MILLISECONDS.sleep(conf.shortest());
+			} catch (InterruptedException e) {
 			}
 		}
 	}
