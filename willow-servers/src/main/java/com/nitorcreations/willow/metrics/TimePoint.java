@@ -29,4 +29,8 @@ public class TimePoint {
 	public void setValue(Number value) {
 		this.value = value;
 	}
+	@Override
+	public String toString() {
+		return "{ \"time\": " + value.toString() + " }";
+	}
 }
