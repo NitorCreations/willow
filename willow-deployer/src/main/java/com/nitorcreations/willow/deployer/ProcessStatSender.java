@@ -7,6 +7,7 @@ import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -68,6 +69,7 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 				}
 				nextProcCpus = nextProcCpus + conf.getIntervalProcCpus();
 			}
+			
 			if (mBeanServerConnection != null) {
 				if (now > nextJmx) {
 					try {
@@ -85,19 +87,30 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 					nextJmx = nextJmx + conf.getIntervalJmx();
 				}
 			}
-
-
+			try {
+				TimeUnit.MILLISECONDS.sleep(conf.shortest());
+			} catch (InterruptedException e) {
+			}
 		}
-
 	}
 	public JmxMessage getJmxStats() throws MalformedObjectNameException, IOException, ReflectionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstanceNotFoundException, MBeanException {
 		JmxMessage ret = new JmxMessage();
+		Set<String> poolNames = addGc(ret);
+		addPools(ret, poolNames);
+		addMemory(ret);
+		addCodeCache(ret);
+		addThreads(ret);
+		addUptime(ret);
+		addClassloading(ret);
+		return ret;
+	}
+	private Set<String> addGc(JmxMessage ret) throws MalformedObjectNameException, IOException {
 		ObjectName query = new ObjectName("java.lang:type=GarbageCollector,*");
 		Set<ObjectInstance> gcs = mBeanServerConnection.queryMBeans(query, null);
 		LinkedHashSet<String> poolNames = new LinkedHashSet<String>();
 		for (ObjectInstance next : gcs) {
 			GcInfo gi = new GcInfo();
-			 try {
+			try {
 				gi.setCollectionCount(((Number)mBeanServerConnection.getAttribute(next.getObjectName(), "CollectionCount")).longValue());
 				gi.setCollectionTime(((Number)mBeanServerConnection.getAttribute(next.getObjectName(), "CollectionTime")).longValue());
 				ret.gcInfo.add(gi);
@@ -107,15 +120,18 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 						poolNames.add(nextPool);
 					}
 				}
-			 } catch (AttributeNotFoundException | InstanceNotFoundException
+			} catch (AttributeNotFoundException | InstanceNotFoundException
 					| MBeanException | ReflectionException e) {
-					LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect GC JMX statistics");
-					rec.setThrown(e);
-					logger.log(rec);
+				LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect GC JMX statistics");
+				rec.setThrown(e);
+				logger.log(rec);
 			}
 		}
+		return poolNames;
+	}
+	private void addPools(JmxMessage ret, Set<String> poolNames) throws MalformedObjectNameException, IOException {
 		for (String nextPool : poolNames) {
-			query = new ObjectName("java.lang:type=MemoryPool,name=" + nextPool);
+			ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=" + nextPool);
 			Set<ObjectInstance> memPool = mBeanServerConnection.queryMBeans(query, null);
 			ObjectInstance next = memPool.iterator().next();
 			try {
@@ -128,7 +144,9 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 				logger.log(rec);
 			}
 		}
-		query = new ObjectName("java.lang:type=Memory");
+	}
+	private void addMemory(JmxMessage ret) throws MalformedObjectNameException, IOException {
+		ObjectName query = new ObjectName("java.lang:type=Memory");
 		Set<ObjectInstance> mem = mBeanServerConnection.queryMBeans(query, null);
 		ObjectInstance next = mem.iterator().next();
 		try {
@@ -140,9 +158,12 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 			rec.setThrown(e);
 			logger.log(rec);
 		}
-		query = new ObjectName("java.lang:type=MemoryPool,name=Code Cache");
+
+	}
+	private void addCodeCache(JmxMessage ret) throws IOException, MalformedObjectNameException {
+		ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=Code Cache");
 		Set<ObjectInstance> cc = mBeanServerConnection.queryMBeans(query, null);
-		next = cc.iterator().next();
+		ObjectInstance next = cc.iterator().next();
 		try {
 			ret.setHeapMemory(((Long) ((CompositeDataSupport)mBeanServerConnection.getAttribute(next.getObjectName(), "Usage")).get("used")).longValue());
 		} catch (AttributeNotFoundException | InstanceNotFoundException
@@ -151,9 +172,11 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 			rec.setThrown(e);
 			logger.log(rec);
 		}
-		query = new ObjectName("java.lang:type=Threading");
+	}
+	private void addThreads(JmxMessage ret) throws IOException, MalformedObjectNameException, InstanceNotFoundException, MBeanException, ReflectionException {
+		ObjectName query = new ObjectName("java.lang:type=Threading");
 		Set<ObjectInstance> tr = mBeanServerConnection.queryMBeans(query, null);
-		next = tr.iterator().next();
+		ObjectInstance next = tr.iterator().next();
 		ThreadMXBean threadBean = JMX.newMBeanProxy(mBeanServerConnection, query, ThreadMXBean.class);
 		ret.setLiveThreads(threadBean.getThreadCount());
 		long[] ids = threadBean.getAllThreadIds();
@@ -174,16 +197,18 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 			tim.setWaitedTime(((Long)tInfo.get("waitedTime")).longValue());
 			ret.threads.add(tim);
 		}
-		
-		query = new ObjectName("java.lang:type=Runtime");
+	}
+	private void addUptime(JmxMessage ret) throws MalformedObjectNameException {
+		ObjectName query = new ObjectName("java.lang:type=Runtime");
 		RuntimeMXBean  runtimeBean = JMX.newMBeanProxy(mBeanServerConnection, query, RuntimeMXBean.class);
 		ret.setStartTime(runtimeBean.getStartTime());
 		ret.setUptime(runtimeBean.getUptime());
-		query = new ObjectName("java.lang:type=ClassLoading");
+	}
+	private void addClassloading(JmxMessage ret) throws MalformedObjectNameException {
+		ObjectName query = new ObjectName("java.lang:type=ClassLoading");
 		ClassLoadingMXBean  clBean = JMX.newMBeanProxy(mBeanServerConnection, query, ClassLoadingMXBean.class);
 		ret.setLoadedClassCount(clBean.getLoadedClassCount());
 		ret.setUnloadedClassCount(clBean.getUnloadedClassCount());
-		return ret;
 	}
 
 }

@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -106,10 +107,15 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);
 			ProcessBuilder pb = new ProcessBuilder(args);
-			pb.environment().putAll(System.getenv());
+			LinkedHashMap<String, String> copyEnv = new LinkedHashMap<>(System.getenv());
+			copyEnv.remove(PROPERTY_KEY_DEPLOYER_NAME);
+			pb.environment().putAll(copyEnv);
 			pb.environment().putAll(extraEnv);
 			pb.environment().put(ENV_KEY_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
 			pb.environment().put(ENV_DEPLOYER_PARENT_NAME, parentName);
+			if (!(workingDir.exists() || workingDir.mkdirs())) {
+				throw new RuntimeException("Failed to create working directory");
+			}
 			pb.directory(workingDir);
 			log.info(String.format("Starting %s%n", pb.command().toString()));
 			try {

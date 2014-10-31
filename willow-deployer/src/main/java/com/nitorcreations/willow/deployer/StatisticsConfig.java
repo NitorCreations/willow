@@ -56,5 +56,15 @@ public class StatisticsConfig {
 	public long getIntervalDisks() {
 		return intervalDisks;
 	}
+	public long shortest() {
+		return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, intervalProcs);
+	}
+	private static long min(long ... vals) {
+		long ret = Long.MAX_VALUE;
+		for (long next : vals) {
+			if (next < ret) ret = next;
+		}
+		return ret;
+	}
 
 }
