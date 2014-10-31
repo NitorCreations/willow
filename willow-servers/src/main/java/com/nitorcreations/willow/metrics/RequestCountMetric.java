@@ -3,7 +3,7 @@ package com.nitorcreations.willow.metrics;
 import java.util.List;
 
 
-public class RequestCountMetric extends SimpleMetric {
+public class RequestCountMetric extends SimpleMetric<Number> {
 
 	@Override
 	public String getType() {

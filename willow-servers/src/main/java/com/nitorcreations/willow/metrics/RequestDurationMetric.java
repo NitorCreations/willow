@@ -3,7 +3,7 @@ package com.nitorcreations.willow.metrics;
 import java.util.List;
 
 
-public class RequestDurationMetric extends SimpleMetric {
+public class RequestDurationMetric extends SimpleMetric<Number> {
 
 	@Override
 	public String getType() {
@@ -18,8 +18,8 @@ public class RequestDurationMetric extends SimpleMetric {
 	@Override
 	protected Number estimateValue(List<Number> preceeding, Long stepTime) {
 		long sum = 0;
-		for (Number next : preceeding) {
-			sum += next.longValue();
+		for (Object next : preceeding) {
+			sum += ((Number)next).longValue();
 		}
 		return sum / preceeding.size();
 	}

@@ -16,13 +16,13 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
-public abstract class SimpleMetric extends AbstractMetric implements Metric {
-	protected SortedMap<Long, Number> rawData;
+public abstract class  SimpleMetric<L> extends AbstractMetric implements Metric {
+	protected SortedMap<Long, L> rawData;
 	public abstract String getType();
 	public abstract String[] requiresFields();
 
 	protected void readResponse(SearchResponse response) {
-		rawData = new TreeMap<Long, Number>();
+		rawData = new TreeMap<Long, L>();
 		for (SearchHit next : response.getHits().getHits()) {
 			Map<String, SearchHitField> fields = next.getFields();
 			Long timestamp = fields.get("timestamp").value();
@@ -34,8 +34,8 @@ public abstract class SimpleMetric extends AbstractMetric implements Metric {
 		}
 	}
 
-	protected Number getValue(List<Number> arr) {
-		return arr.get(0);
+	protected L getValue(List<Number> arr) {
+		return (L) arr.get(0);
 	}
 	
 	@Override
@@ -66,12 +66,12 @@ public abstract class SimpleMetric extends AbstractMetric implements Metric {
 			retTimes.add(Long.valueOf(curr));
 			curr += step;
 		}
-		Collection<Number> preceeding = new ArrayList<Number>();
+		Collection<L> preceeding = new ArrayList<L>();
 		for (Long nextTime : retTimes) {
 			long afterNextTime = nextTime + 1;
 			preceeding = rawData.headMap(afterNextTime).values();
 			rawData = rawData.tailMap(afterNextTime);
-			List<Number> tmplist = new ArrayList<Number>(preceeding);
+			List<L> tmplist = new ArrayList<L>(preceeding);
 			if (tmplist.isEmpty()) {
 				ret.add(new TimePoint(nextTime.longValue(), fillMissingValue()));
 				continue;
@@ -81,8 +81,8 @@ public abstract class SimpleMetric extends AbstractMetric implements Metric {
 		return ret;
 	}
 	
-	protected Number estimateValue(List<Number> preceeding, Long stepTime) {
-		return preceeding.get(preceeding.size() - 1);
+	protected Number estimateValue(List<L> preceeding, Long stepTime) {
+		return (Number) preceeding.get(preceeding.size() - 1);
 	}
 
 	protected Number fillMissingValue() {
