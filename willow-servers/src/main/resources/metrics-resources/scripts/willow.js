@@ -18,7 +18,18 @@ var deployer_metric = function(name, tag) {
 		});
 	}, name += "");
 };
-
+var expandDetails = function() {
+  	var element = ".details-" + $(this).attr("data-host");
+  	if ($(element).attr("data-expanded")) {
+  		$(element).slideUp("slow", function() {
+  			$(this).removeAttr("data-expanded");
+  		});
+  	} else {
+  		$(element).slideDown("slow", function() {
+  			$(this).attr("data-expanded", "true");
+  		});
+    }
+};
 var initGraphs = function () {
 	var stop = new Date().getTime();
 	var start = stop - (step * size);
@@ -28,28 +39,31 @@ var initGraphs = function () {
 			+ "&type=cpu", function(data) {
 				if (!data) return new Error("unable to load data");
 				for (var i=0; i<data.length; i++) {
-					if ( ! $(".horizon-" + data[i]).length ) {
+					var host = data[i].substring(5);
+					if ( ! $(".horizon-" + host).length ) {
 						var next = deployer_metric("cpu", data[i]);
 						d3.select("#chart").call(function(div) {
-							div.selectAll(".horizon-" + data[i])
+							div.selectAll(".horizon-" + host)
 							.data([next])
 							.enter().append("div")
-							.attr("class", "horizon horizon-" + data[i])
+							.attr("class", "horizon horizon-" + host)
+							.attr("data-host", host)
 							.call(context.horizon()
 									.height(50)
 									.extent([0,100])
 									.format(d3.format(".2f"))
-									.title("Cpu for " + data[i]));
-
+									.title("Cpu for " + host));
 							div.append("div")
-							.attr("class", "rule")
-							.call(context.rule());
+    						    .attr("class", "details details-" + host).append("p").text("foo");
+							div.append("div")
+								.attr("class", "rule")
+								.call(context.rule());
 						});
 					}
 				}
+				$(".horizon").click(expandDetails);
 			});
 };
-
 var resetGraphs = function () {
 	d3.selectAll(".horizon").call(context.horizon().remove).remove(); 
 	d3.selectAll(".axis").remove();
@@ -66,7 +80,6 @@ var resetGraphs = function () {
 		d3.selectAll(".horizon .value").style("right", i === null ? null : context.size() - i + "px");
 	});
 };
-
 var debouncer = function(func , timeout) {
 	var timeoutID , timeout = timeout || 200;
 	return function () {
