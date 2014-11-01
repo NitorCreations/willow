@@ -37,6 +37,7 @@ var initGraphs = function () {
 			+ "?start=" + start
 			+ "&stop=" + stop 
 			+ "&type=cpu", function(data) {
+				data.sort();
 				if (!data) return new Error("unable to load data");
 				for (var i=0; i<data.length; i++) {
 					var host = data[i].substring(5);
@@ -52,7 +53,7 @@ var initGraphs = function () {
 									.height(50)
 									.extent([0,100])
 									.format(d3.format(".2f"))
-									.title("Cpu for " + host));
+									.title("CPU: " + host));
 							div.append("div")
     						    .attr("class", "details details-" + host).append("p").text("foo");
 							div.append("div")
