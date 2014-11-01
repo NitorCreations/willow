@@ -158,7 +158,6 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 			rec.setThrown(e);
 			logger.log(rec);
 		}
-
 	}
 	private void addCodeCache(JmxMessage ret) throws IOException, MalformedObjectNameException {
 		ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=Code Cache");

@@ -27,7 +27,7 @@ import com.nitorcreations.willow.utils.HostUtil;
 public class MetricsServlet implements Servlet {
 	private static Node node;
 
-	Map<String, Metric> metrics = new HashMap<String, Metric>();
+	Map<String, Class<? extends Metric>> metrics = new HashMap<>();
 	ServletConfig config;
 	private SecureRandom random = new SecureRandom();
 	private Settings settings;
@@ -35,13 +35,13 @@ public class MetricsServlet implements Servlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		this.config = config;
-		metrics.put("/heap", new HeapMemoryMetric());
-		metrics.put("/mem", new PhysicalMemoryMetric());
-		metrics.put("/requests", new RequestCountMetric());
-		metrics.put("/latency", new RequestDurationMetric());
-		metrics.put("/tags", new TagsList());
-		metrics.put("/cpu", new CpuBusyMetric());
-		metrics.put("/hosts", new HostsMetric());
+		metrics.put("/heap", HeapMemoryMetric.class);
+		metrics.put("/mem", PhysicalMemoryMetric.class);
+		metrics.put("/requests", RequestCountMetric.class);
+		metrics.put("/latency", RequestDurationMetric.class);
+		metrics.put("/tags", TagsList.class);
+		metrics.put("/cpu", CpuBusyMetric.class);
+		metrics.put("/hosts", HostsMetric.class);
 		setupElasticSearch(config.getServletContext());
 	}
 	@Override
@@ -55,15 +55,20 @@ public class MetricsServlet implements Servlet {
 			return;
 		}
 		String metricKey = ((HttpServletRequest)req).getPathInfo();
-		Metric metric = metrics.get(metricKey);
-		if (metric == null) {
+		Class<? extends Metric> metricClass = metrics.get(metricKey);
+		if (metricClass == null) {
 			((HttpServletResponse)res).sendError(404, "Metric " + metricKey + " not found");
 			return;
 		}
-		Object data = metric.calculateMetric(getClient(), (HttpServletRequest)req);
-		res.setContentType("application/json");
-		Gson out = new Gson();
-		res.getOutputStream().write(out.toJson(data).getBytes());
+		Metric metric;
+		try {
+			metric = metricClass.newInstance();
+			Object data = metric.calculateMetric(getClient(), (HttpServletRequest)req);
+			res.setContentType("application/json");
+			Gson out = new Gson();
+			res.getOutputStream().write(out.toJson(data).getBytes());
+		} catch (InstantiationException | IllegalAccessException e) {
+		}
 	}
 	@Override
 	public String getServletInfo() {

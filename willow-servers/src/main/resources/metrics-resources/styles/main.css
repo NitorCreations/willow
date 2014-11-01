@@ -1,7 +1,6 @@
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
-  margin: 30px auto;
-  width: 1280px;
+  margin: 30px 50px;
   position: relative;
 }
 
@@ -90,27 +89,24 @@ header {
   right: 0;
 }
 
-.horizon-mem {
+.horizon {
   border-bottom: solid 1px #000;
   overflow: hidden;
   position: relative;
-}
-
-.horizon-mem {
   border-top: solid 1px #000;
   border-bottom: solid 1px #000;
 }
 
-.horizon-mem + .horizon-mem {
+.horizon + .horizon {
   border-top: none;
 }
 
-.horizon-mem canvas {
+.horizon canvas {
   display: block;
 }
 
-.horizon-mem .title,
-.horizon-mem .value {
+.horizon .title,
+.horizon .value {
   bottom: 0;
   line-height: 30px;
   margin: 0 6px;
@@ -119,99 +115,15 @@ header {
   white-space: nowrap;
 }
 
-.horizon-mem .title {
+.horizon .title {
   left: 0;
 }
 
-.horizon-mem .value {
+.horizon .value {
   right: 0;
-}
-
-.horizon-req {
-  border-bottom: solid 1px #000;
-  overflow: hidden;
-  position: relative;
-}
-
-.horizon-req {
-  border-top: solid 1px #000;
-  border-bottom: solid 1px #000;
-}
-
-.horizon-req + .horizon-req {
-  border-top: none;
-}
-
-.horizon-req canvas {
-  display: block;
-}
-
-.horizon-req .title,
-.horizon-req .value {
-  bottom: 0;
-  line-height: 30px;
-  margin: 0 6px;
-  position: absolute;
-  text-shadow: 0 1px 0 rgba(255,255,255,.5);
-  white-space: nowrap;
-}
-
-.horizon-req .title {
-  left: 0;
-}
-
-.horizon-req .value {
-  right: 0;
-}
-.horizon-req .value::after {
-  content: "req/s";
-}
-
-.horizon-lat {
-  border-bottom: solid 1px #000;
-  overflow: hidden;
-  position: relative;
-}
-
-.horizon-lat {
-  border-top: solid 1px #000;
-  border-bottom: solid 1px #000;
-}
-
-.horizon-lat + .horizon-lat {
-  border-top: none;
-}
-
-.horizon-lat canvas {
-  display: block;
-}
-
-.horizon-lat .title,
-.horizon-lat .value {
-  bottom: 0;
-  line-height: 30px;
-  margin: 0 6px;
-  position: absolute;
-  text-shadow: 0 1px 0 rgba(255,255,255,.5);
-  white-space: nowrap;
-}
-
-.horizon-lat .title {
-  left: 0;
-}
-
-.horizon-lat .value {
-  right: 0;
-}
-.horizon-lat .value::after {
-  content: "ms";
 }
 
 .line {
   background: #000;
   z-index: 2;
-}
-
-#chart {
-  width: 1200px;
 }
