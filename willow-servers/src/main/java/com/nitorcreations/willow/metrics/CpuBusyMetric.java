@@ -2,6 +2,8 @@ package com.nitorcreations.willow.metrics;
 
 import java.util.List;
 
+import org.elasticsearch.action.search.SearchResponse;
+
 
 public class CpuBusyMetric extends SimpleMetric<CpuData> {
 	CpuData prevValues;
@@ -11,6 +13,12 @@ public class CpuBusyMetric extends SimpleMetric<CpuData> {
 		CpuData ret = new CpuData(this, results.get(0).longValue(), results.get(1).longValue());
 		if (prevValues == null) prevValues = ret;
 		return ret;
+	}
+	@Override
+	protected void readResponse(SearchResponse response) {
+		prevValues = null;
+		prevRes = 0D;
+		super.readResponse(response);
 	}
 	@Override
 	public String getType() {
