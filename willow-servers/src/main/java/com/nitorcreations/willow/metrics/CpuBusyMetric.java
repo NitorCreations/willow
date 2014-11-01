@@ -47,6 +47,6 @@ public class CpuBusyMetric extends SimpleMetric<CpuData> {
 	}
 	@Override
 	protected Double fillMissingValue() {
-		return prevRes;
+		return 0D;
 	}
 }
