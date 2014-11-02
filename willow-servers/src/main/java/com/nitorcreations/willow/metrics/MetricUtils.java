@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public abstract class AbstractMetric implements Metric {
-	protected String[] getIndexes(long start, long end) {
+public abstract class MetricUtils {
+	public static String[] getIndexes(long start, long end) {
 		ArrayList<String> ret = new ArrayList<>();
 		Calendar startCal = Calendar.getInstance();
 		startCal.setTime(new Date(start));
 		startCal.set(Calendar.SECOND, 1);
 		startCal.set(Calendar.MINUTE, 0);
 		startCal.set(Calendar.HOUR_OF_DAY, 0);
-
 		Calendar endCal = Calendar.getInstance();
 		endCal.setTime(new Date(end));
 		

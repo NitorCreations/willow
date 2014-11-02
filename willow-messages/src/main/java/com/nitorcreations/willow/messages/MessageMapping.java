@@ -21,7 +21,7 @@ public class MessageMapping {
 	MessagePack msgpack = new MessagePack();
 	private final Logger logger = Logger.getLogger(this.getClass().getName());
 	public enum MessageType {
-		PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS, HASH;
+		PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS, HASH, NET;
 		public String lcName() {
 			return toString().toLowerCase();
 		}
@@ -42,6 +42,7 @@ public class MessageMapping {
 		messageTypes.put(MessageType.ACCESS, AccessLogEntry.class);
 		messageTypes.put(MessageType.LONGSTATS, LongStatisticsMessage.class);
 		messageTypes.put(MessageType.HASH, HashMessage.class);
+		messageTypes.put(MessageType.NET, NetInterface.class);
 		
 
 		for (java.util.Map.Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {

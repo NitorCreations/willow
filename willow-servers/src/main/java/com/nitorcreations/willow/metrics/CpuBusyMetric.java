@@ -2,23 +2,15 @@ package com.nitorcreations.willow.metrics;
 
 import java.util.List;
 
-import org.elasticsearch.action.search.SearchResponse;
 
-
-public class CpuBusyMetric extends SimpleMetric<CpuData> {
+public class CpuBusyMetric extends SimpleMetric<CpuData,Long> {
 	CpuData prevValues;
 	double prevRes=0D;
 	@Override
-	protected CpuData getValue(List<Number> results) {
-		CpuData ret = new CpuData(this, results.get(0).longValue(), results.get(1).longValue());
+	protected CpuData getValue(List<Long> results) {
+		CpuData ret = new CpuData(((Number)results.get(0)).longValue(), ((Number)results.get(1)).longValue());
 		if (prevValues == null) prevValues = ret;
 		return ret;
-	}
-	@Override
-	protected void readResponse(SearchResponse response) {
-		prevValues = null;
-		prevRes = 0D;
-		super.readResponse(response);
 	}
 	@Override
 	public String getType() {
@@ -29,7 +21,7 @@ public class CpuBusyMetric extends SimpleMetric<CpuData> {
 		return new String[] {"idle", "total" };
 	}
 	@Override
-	protected Double estimateValue(List<CpuData> preceeding, Long stepTime) {
+	protected Double estimateValue(List<CpuData> preceeding, long stepTime, long stepLen) {
 		CpuData last = preceeding.get(preceeding.size() - 1);
 		long idleEnd = last.idle;
 		long totalEnd = last.total;

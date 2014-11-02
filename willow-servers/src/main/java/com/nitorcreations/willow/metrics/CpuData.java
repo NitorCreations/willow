@@ -1,12 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
 class CpuData {
-	/**
-	 * 
-	 */
-	private final CpuBusyMetric CpuData;
-	public CpuData(CpuBusyMetric cpuBusyMetric, long idle, long total) {
-		CpuData = cpuBusyMetric;
+	public CpuData(long idle, long total) {
 		this.idle = idle;
 		this.total = total;
 	}

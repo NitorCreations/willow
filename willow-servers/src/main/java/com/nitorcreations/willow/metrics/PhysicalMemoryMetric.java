@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
 
-public class PhysicalMemoryMetric extends SimpleMetric {
+public class PhysicalMemoryMetric extends SimpleMetric<Double,Double> {
 
 	@Override
 	public String getType() {
