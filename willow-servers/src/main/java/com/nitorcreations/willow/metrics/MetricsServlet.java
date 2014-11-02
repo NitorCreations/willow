@@ -27,7 +27,7 @@ import com.nitorcreations.willow.utils.HostUtil;
 public class MetricsServlet implements Servlet {
 	private static Node node;
 
-	Map<String, Class<? extends Metric>> metrics = new HashMap<>();
+	Map<String, Class<? extends Metric<?>>> metrics = new HashMap<>();
 	ServletConfig config;
 	private SecureRandom random = new SecureRandom();
 	private Settings settings;
@@ -35,13 +35,13 @@ public class MetricsServlet implements Servlet {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		this.config = config;
-		metrics.put("/heap", HeapMemoryMetric.class);
+		metrics.put("/hosts", HostTagMetric.class);
+		metrics.put("/cpu", CpuBusyMetric.class);
 		metrics.put("/mem", PhysicalMemoryMetric.class);
+		metrics.put("/net", NetworkMetric.class);
+		metrics.put("/heap", HeapMemoryMetric.class);
 		metrics.put("/requests", RequestCountMetric.class);
 		metrics.put("/latency", RequestDurationMetric.class);
-		metrics.put("/tags", TagsList.class);
-		metrics.put("/cpu", CpuBusyMetric.class);
-		metrics.put("/hosts", HostsMetric.class);
 		setupElasticSearch(config.getServletContext());
 	}
 	@Override

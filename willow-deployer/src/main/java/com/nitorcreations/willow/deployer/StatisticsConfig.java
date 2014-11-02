@@ -10,6 +10,7 @@ public class StatisticsConfig {
 	private final long intervalMem;
 	private final long intervalJmx;
 	private final long intervalDisks;
+	private final long intervalNet;
 
 	public StatisticsConfig() {
 		this.intervalProcs = TimeUnit.SECONDS.toMillis(5);
@@ -17,6 +18,7 @@ public class StatisticsConfig {
 		this.intervalProcCpus = TimeUnit.SECONDS.toMillis(5);
 		this.intervalMem = TimeUnit.SECONDS.toMillis(5);
 		this.intervalJmx = TimeUnit.SECONDS.toMillis(5);
+		this.intervalNet = TimeUnit.SECONDS.toMillis(5);
 		this.intervalDisks = TimeUnit.MINUTES.toMillis(1);
 	}
 	public StatisticsConfig(long intervalProcs
@@ -24,13 +26,15 @@ public class StatisticsConfig {
 			, long intervalProcCpus
 			, long intervalMem
 			, long intervalJmx
-			, long intervalDisks) {
+			, long intervalDisks
+			, long intervalNet) {
 		this.intervalProcs = intervalProcs;
 		this.intervalCpus = intervalCpus;
 		this.intervalProcCpus = intervalProcCpus;
 		this.intervalMem = intervalMem;
 		this.intervalJmx = intervalJmx;
 		this.intervalDisks = intervalDisks;
+		this.intervalNet = intervalNet;
 	}
 
 	public long getIntervalProcs() {
@@ -56,8 +60,11 @@ public class StatisticsConfig {
 	public long getIntervalDisks() {
 		return intervalDisks;
 	}
+	public long getIntervalNet() {
+		return intervalNet;
+	}
 	public long shortest() {
-		return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, intervalProcs);
+		return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, intervalProcs, intervalNet);
 	}
 	private static long min(long ... vals) {
 		long ret = Long.MAX_VALUE;
@@ -66,5 +73,4 @@ public class StatisticsConfig {
 		}
 		return ret;
 	}
-
 }

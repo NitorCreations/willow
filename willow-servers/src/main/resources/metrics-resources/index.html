@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Willow monitoring</title>
     <meta charset="utf-8">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="scripts/d3.js" charset="utf-8"></script>
@@ -9,19 +10,15 @@
     <link type="text/css" rel="stylesheet" href="styles/main.css">
  </head>
  <body>
+   <a href="?metric=cpu">cpu</a>
+   <a href="?metric=mem">mem</a>
+   <a href="?metric=net">net</a>
    <div id="chart"></div>
    <script type="text/javascript">
    resetGraphs();
    var refresh = window.setInterval(initGraphs, 3000);
    $(window).resize(debouncer(function (e) {
 	    window.clearInterval(refresh);
-		size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) - 100;
-		start = stop - (step * size);
-		context.stop();
-		context = cubism.context()
-			.step(step)
-			.size(size)
-			.start();
 		resetGraphs(); 
 		refresh = window.setInterval(initGraphs, 3000);
 	}));

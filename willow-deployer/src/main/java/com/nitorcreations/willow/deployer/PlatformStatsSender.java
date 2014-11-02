@@ -12,6 +12,7 @@ import org.hyperic.sigar.Cpu;
 import org.hyperic.sigar.FileSystem;
 import org.hyperic.sigar.FileSystemUsage;
 import org.hyperic.sigar.Mem;
+import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.Sigar;
@@ -20,6 +21,7 @@ import org.hyperic.sigar.SigarException;
 import com.nitorcreations.willow.messages.CPU;
 import com.nitorcreations.willow.messages.DiskUsage;
 import com.nitorcreations.willow.messages.Memory;
+import com.nitorcreations.willow.messages.NetInterface;
 import com.nitorcreations.willow.messages.Processes;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
@@ -49,10 +51,10 @@ public class PlatformStatsSender implements Runnable {
 		long nextCpus =  System.currentTimeMillis() + conf.getIntervalCpus();
 		long nextMem =  System.currentTimeMillis() + conf.getIntervalMem();
 		long nextDisks = System.currentTimeMillis() + conf.getIntervalDisks();
+		long nextNet = System.currentTimeMillis() + conf.getIntervalNet();
 		ProcStat pStat;
 		DiskUsage[] dStat;
 		Cpu cStat;
-		ProcCpu pCStat;
 		Mem mem;
 		while (running.get()) {
 			long now = System.currentTimeMillis();
@@ -119,6 +121,23 @@ public class PlatformStatsSender implements Runnable {
 					logger.log(rec);
 				}
 				nextDisks = nextDisks + conf.getIntervalDisks();
+			}
+			if (now > nextNet) {
+				try {
+					for (String iface : sigar.getNetInterfaceList()) {
+						NetInterfaceStat stat = sigar.getNetInterfaceStat(iface);
+						NetInterface net = new NetInterface();
+						net.setName(iface);
+						PropertyUtils.copyProperties(net, stat);
+						transmitter.queue(net);
+					}
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextNet = nextNet + conf.getIntervalNet();
 			}
 			try {
 				TimeUnit.MILLISECONDS.sleep(conf.shortest());

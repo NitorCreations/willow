@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
 
-public class HeapMemoryMetric extends SimpleMetric {
+public class HeapMemoryMetric extends SimpleMetric<Long,Long> {
 
 	@Override
 	public String getType() {
@@ -12,5 +12,4 @@ public class HeapMemoryMetric extends SimpleMetric {
 	public String[] requiresFields() {
 		return new String[] { "heapMemory" };
 	}
-
 }
