@@ -54,7 +54,7 @@ public abstract class  SimpleMetric<L,T> implements Metric<List<TimePoint>> {
 		SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop))
 				.setTypes(getType())
 				.setSearchType(SearchType.QUERY_AND_FETCH)
-				.setSize((int)(stop - start)/100)
+				.setSize((int)(stop - start)/10)
 				.addField("timestamp")
 				.addFields(requiresFields());
 		BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")

@@ -5,7 +5,6 @@ import java.util.concurrent.Callable;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public interface LaunchMethod extends Callable<Integer> {
-	public static final String ENV_KEY_DEPLOYER_IDENTIFIER = "DEPLOYER_IDENTIFIER";
 	
 	public enum TYPE {
 		DEPENDENCY(DependencyLauncher.class), NATIVE(NativeLauncher.class), JAVA(JavaLauncher.class);

@@ -35,7 +35,6 @@ if [ -z "$JAVA_HOME" ]; then
     JAVA_HOME=$(java -cp $DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.JavaHome)
   fi
 fi
-
 if [ -d $JAVA_HOME/../lib ]; then
  JAVA_LIB=$(cd $JAVA_HOME/../lib; pwd)
 elif [ -d $JAVA_HOME/lib ]; then
@@ -46,8 +45,9 @@ else
 fi
 
 JAVA_TOOLS=$JAVA_LIB/tools.jar
-export W_DEPLOYER_NAME=$2
-
+W_DEPLOYER_NAME=$2
+DEPLOYER_IDENTIFIER=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c32; echo)
+export W_DEPLOYER_NAME DEPLOYER_IDENTIFIER JAVA_TOOLS JAVA_HOME
 case $1 in 
 start)
   shift

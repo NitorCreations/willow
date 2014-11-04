@@ -1,6 +1,10 @@
 package com.nitorcreations.willow.deployer;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -13,16 +17,19 @@ import org.hyperic.sigar.FileSystem;
 import org.hyperic.sigar.FileSystemUsage;
 import org.hyperic.sigar.Mem;
 import org.hyperic.sigar.NetInterfaceStat;
+import org.hyperic.sigar.NetStat;
 import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
 import com.nitorcreations.willow.messages.CPU;
+import com.nitorcreations.willow.messages.DiskIO;
 import com.nitorcreations.willow.messages.DiskUsage;
 import com.nitorcreations.willow.messages.Memory;
 import com.nitorcreations.willow.messages.NetInterface;
 import com.nitorcreations.willow.messages.Processes;
+import com.nitorcreations.willow.messages.TcpInfo;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class PlatformStatsSender implements Runnable {
@@ -52,10 +59,14 @@ public class PlatformStatsSender implements Runnable {
 		long nextMem =  System.currentTimeMillis() + conf.getIntervalMem();
 		long nextDisks = System.currentTimeMillis() + conf.getIntervalDisks();
 		long nextNet = System.currentTimeMillis() + conf.getIntervalNet();
+		long nextNetStat = System.currentTimeMillis() + conf.getIntervalNetStat();
+		long nextDiskIO =  System.currentTimeMillis() + conf.getIntervalDiskIO();
 		ProcStat pStat;
 		DiskUsage[] dStat;
+		Map<String, DiskIO> dIO = new HashMap<>();
 		Cpu cStat;
 		Mem mem;
+		NetStat netStat;
 		while (running.get()) {
 			long now = System.currentTimeMillis();
 			FileSystem[] fileSystems;
@@ -87,6 +98,20 @@ public class PlatformStatsSender implements Runnable {
 				}
 				nextCpus = nextCpus + conf.getIntervalCpus();
 			}
+			if (now > nextNetStat) {
+				try {
+					netStat = sigar.getNetStat();
+					TcpInfo msg = new TcpInfo();
+					PropertyUtils.copyProperties(msg, netStat);
+					transmitter.queue(msg);
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get CPU statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextNetStat = nextNetStat + conf.getIntervalNetStat();
+			}
 			if (now > nextMem) {
 				try {
 					mem = sigar.getMem();
@@ -100,6 +125,37 @@ public class PlatformStatsSender implements Runnable {
 					logger.log(rec);
 				}
 				nextMem = nextMem + conf.getIntervalMem();
+			}
+			if (now > nextDiskIO) {
+				try {
+					fileSystems = sigar.getFileSystemList();
+					dIO.clear();
+					for (FileSystem nextFs : fileSystems) {
+						if (!dIO.containsKey(nextFs.getDevName())) {
+							org.hyperic.sigar.DiskUsage next = null;
+							try {
+								next = sigar.getDiskUsage(nextFs.getDevName());
+							} catch (SigarException e) {
+							}
+							if (next != null) {
+								DiskIO nextMsg = new DiskIO();
+								PropertyUtils.copyProperties(nextMsg, next);
+								nextMsg.setName(nextFs.getDirName());
+								nextMsg.setDevice(nextFs.getDevName());
+								dIO.put(nextMsg.getDevice(), nextMsg);
+							}
+						}
+					}
+					for (DiskIO next : dIO.values()) {
+						transmitter.queue(next);
+					}
+				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
+						NoSuchMethodException e) {
+					LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
+					rec.setThrown(e);
+					logger.log(rec);
+				}
+				nextDiskIO = nextDiskIO + conf.getIntervalDiskIO();
 			}
 			if (now > nextDisks) {
 				try {

@@ -38,6 +38,9 @@ public class MetricsServlet implements Servlet {
 		metrics.put("/hosts", HostTagMetric.class);
 		metrics.put("/cpu", CpuBusyMetric.class);
 		metrics.put("/mem", PhysicalMemoryMetric.class);
+		metrics.put("/diskio", DiskIOMetric.class);
+		metrics.put("/disk", DiskStatusMetric.class);
+		metrics.put("/tcpinfo", ConnectionsMetric.class);
 		metrics.put("/net", NetworkMetric.class);
 		metrics.put("/heap", HeapMemoryMetric.class);
 		metrics.put("/requests", RequestCountMetric.class);
