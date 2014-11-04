@@ -4,7 +4,8 @@
     <title>Willow monitoring</title>
     <meta charset="utf-8">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script type="text/javascript" src="scripts/d3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
     <script type="text/javascript" src="scripts/cubism.js"></script>
     <script type="text/javascript" src="scripts/willow.js"></script>
     <link type="text/css" rel="stylesheet" href="styles/main.css">
@@ -13,6 +14,8 @@
    <a href="?metric=cpu">cpu</a>
    <a href="?metric=mem">mem</a>
    <a href="?metric=net">net</a>
+   <a href="?metric=diskio">io</a>
+   <a href="?metric=tcpinfo">connections</a>
    <div id="chart"></div>
    <script type="text/javascript">
    resetGraphs();

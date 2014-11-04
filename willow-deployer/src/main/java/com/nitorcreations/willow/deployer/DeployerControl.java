@@ -5,7 +5,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_PARENT_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.LaunchMethod.ENV_KEY_DEPLOYER_IDENTIFIER;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_KEY_DEPLOYER_IDENTIFIER;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -84,28 +84,23 @@ public class DeployerControl {
 		//Stop
 		try {
 			Sigar sigar = new Sigar();
-			ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);
-			long minStart = Long.MAX_VALUE;
-			long firstPid = 0;
+			String myId = System.getenv(ENV_KEY_DEPLOYER_IDENTIFIER);
 			long mypid = 0;
+			long firstPid = 0;
+			ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);
 			long[] pids = q.find(sigar);
 			if (pids.length > 1) {
-				for (long pid : pids) {
-					ProcTime time = sigar.getProcTime(pid);
-					if (time.getStartTime() < minStart) {
-						minStart = time.getStartTime();
-						mypid = firstPid;
-						firstPid = pid;
-					} else {
-						mypid = pid;
-					}
+				if (myId != null && !myId.isEmpty()) {
+					q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".eq=" + myId);
+					mypid = q.findProcess(sigar);
+				} else {
+					mypid = youngestOf(pids);
 				}
-				MBeanServerConnection server = getMBeanServerConnection(firstPid);
-				MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class); 
-				try {
-					proxy.stop();
-				} catch (Throwable e) {
-					log.info("JMX stop failed - terminating");
+				for (long pid : pids) {
+					if (pid != mypid) {
+						firstPid = pid;
+						break;
+					}
 				}
 			} else {
 				mypid = pids[0];
@@ -116,6 +111,13 @@ public class DeployerControl {
 				termTimeout = Long.valueOf(timeOutEnv);
 			}
 			if (firstPid > 0) {
+				MBeanServerConnection server = getMBeanServerConnection(firstPid);
+				MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class); 
+				try {
+					proxy.stop();
+				} catch (Throwable e) {
+					log.info("JMX stop failed - terminating");
+				}
 				//Processes with old deployer as parent
 				killWithQuery("State.Ppid.eq=" + firstPid, termTimeout, mypid);
 			}
@@ -131,6 +133,24 @@ public class DeployerControl {
 			rec.setThrown(e);
 			log.log(rec);
 		}
+	}
+	protected long youngestOf(long[] pids) throws SigarException {
+		Sigar sigar = new Sigar();
+		long maxStart = Long.MIN_VALUE;
+		if (pids.length > 1) {
+			long ret=0;
+			for (long pid : pids) {
+				ProcTime time = sigar.getProcTime(pid);
+				if (time.getStartTime() > maxStart) {
+					maxStart = time.getStartTime();
+					ret = pid;
+				}
+			}
+			return ret;
+		} else {
+			return pids[0];
+		}
+		
 	}
 	protected Set<String> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
 		Sigar sigar = new Sigar();

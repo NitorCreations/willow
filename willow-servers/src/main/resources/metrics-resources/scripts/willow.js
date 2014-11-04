@@ -9,7 +9,9 @@ var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74
 var metricMap = {
 		"cpu" : { "title" : "cpu: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : defaultColors },
 		"mem" : { "title" : "mem: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : defaultColors },
-		"net" : { "title" : "net: ", "format" : d3.format(".2fkB"), "extent": undefined, colors : defaultColors }
+		"net" : { "title" : "net: ", "format" : d3.format(".2f"), "extent": undefined, colors : defaultColors },
+		"diskio" : { "title" : "io: ", "format" : d3.format(".2f"), "extent": undefined, colors : defaultColors },
+		"tcpinfo" : { "title" : "conn: ", "format" : d3.format(".0f"), "extent": undefined, colors : defaultColors }
 }
 
 function getQueryVariable(variable) {

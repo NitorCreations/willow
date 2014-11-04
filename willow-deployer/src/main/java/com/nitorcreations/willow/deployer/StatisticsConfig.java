@@ -11,6 +11,8 @@ public class StatisticsConfig {
 	private final long intervalJmx;
 	private final long intervalDisks;
 	private final long intervalNet;
+	private final long intervalDiskIO;
+	private final long intervalNetStat;
 
 	public StatisticsConfig() {
 		this.intervalProcs = TimeUnit.SECONDS.toMillis(5);
@@ -19,7 +21,9 @@ public class StatisticsConfig {
 		this.intervalMem = TimeUnit.SECONDS.toMillis(5);
 		this.intervalJmx = TimeUnit.SECONDS.toMillis(5);
 		this.intervalNet = TimeUnit.SECONDS.toMillis(5);
+		this.intervalNetStat = TimeUnit.SECONDS.toMillis(5);
 		this.intervalDisks = TimeUnit.MINUTES.toMillis(1);
+		this.intervalDiskIO = TimeUnit.SECONDS.toMillis(5);
 	}
 	public StatisticsConfig(long intervalProcs
 			, long intervalCpus
@@ -27,7 +31,9 @@ public class StatisticsConfig {
 			, long intervalMem
 			, long intervalJmx
 			, long intervalDisks
-			, long intervalNet) {
+			, long intervalNet
+			, long intervalNetStat
+			, long intervalDiskIO) {
 		this.intervalProcs = intervalProcs;
 		this.intervalCpus = intervalCpus;
 		this.intervalProcCpus = intervalProcCpus;
@@ -35,6 +41,8 @@ public class StatisticsConfig {
 		this.intervalJmx = intervalJmx;
 		this.intervalDisks = intervalDisks;
 		this.intervalNet = intervalNet;
+		this.intervalNetStat = intervalNetStat;
+		this.intervalDiskIO = intervalDiskIO;
 	}
 
 	public long getIntervalProcs() {
@@ -64,7 +72,7 @@ public class StatisticsConfig {
 		return intervalNet;
 	}
 	public long shortest() {
-		return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, intervalProcs, intervalNet);
+		return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, intervalProcs, intervalNet, intervalNetStat, intervalDiskIO);
 	}
 	private static long min(long ... vals) {
 		long ret = Long.MAX_VALUE;
@@ -72,5 +80,11 @@ public class StatisticsConfig {
 			if (next < ret) ret = next;
 		}
 		return ret;
+	}
+	public long getIntervalDiskIO() {
+		return intervalDiskIO;
+	}
+	public long getIntervalNetStat() {
+		return intervalNetStat;
 	}
 }
