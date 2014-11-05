@@ -1,5 +1,5 @@
 var step = 3e4;
-var size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) - 100;
+var size;
 
 var context = cubism.context()
 				.step(step)
@@ -85,7 +85,7 @@ var initGraphs = function () {
 			});
 };
 var resetGraphs = function () {
-	size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) - 100;
+	size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 	start = stop - (step * size);
 	context.stop();
 	context = cubism.context()
@@ -125,3 +125,14 @@ var debouncer = function(func , timeout) {
 		} , timeout );
 	}
 };
+var shuffleNavigation = function() {
+	$(".nav .container a").attr("class", "");
+	$("#" + metric).attr("class", "pagename current");
+	$("#" + metric).prependTo(".nav .container");
+}
+var refresh = window.setInterval(initGraphs, 3000);
+$(window).resize(debouncer(function (e) {
+	    window.clearInterval(refresh);
+		resetGraphs(); 
+		refresh = window.setInterval(initGraphs, 3000);
+}));
