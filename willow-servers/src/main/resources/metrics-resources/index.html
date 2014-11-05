@@ -11,20 +11,19 @@
     <link type="text/css" rel="stylesheet" href="styles/main.css">
  </head>
  <body>
-   <a href="?metric=cpu">cpu</a>
-   <a href="?metric=mem">mem</a>
-   <a href="?metric=net">net</a>
-   <a href="?metric=diskio">io</a>
-   <a href="?metric=tcpinfo">connections</a>
-   <div id="chart"></div>
+   <nav class="nav" tabindex="-1" onclick="this.focus()">
+     <div class="container">
+       <a id="cpu" href="?metric=cpu">cpu</a>
+       <a id="mem" href="?metric=mem">mem</a>
+       <a id="net" href="?metric=net">net</a>
+       <a id="diskio" href="?metric=diskio">io</a>
+       <a id="tcpinfo" href="?metric=tcpinfo">connections</a>
+     </div>
+   </nav>
+   <div id="chart" class="mainchart"></div>
    <script type="text/javascript">
    resetGraphs();
-   var refresh = window.setInterval(initGraphs, 3000);
-   $(window).resize(debouncer(function (e) {
-	    window.clearInterval(refresh);
-		resetGraphs(); 
-		refresh = window.setInterval(initGraphs, 3000);
-	}));
+   shuffleNavigation();
    </script>
  </body>
 </html>
