@@ -1,6 +1,5 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_PARENT_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_AUTORESTART;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
@@ -12,7 +11,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_KEY_DEPLOYER_IDENTIFIER;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_IDENTIFIER;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +70,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 		long stopTrying = System.currentTimeMillis() + 1000 * 60;
 		while (System.currentTimeMillis() < stopTrying) {
 			try {
-				ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".eq=" + PROCESS_IDENTIFIER);
+				ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_IDENTIFIER + ".eq=" + PROCESS_IDENTIFIER);
 				return q.findProcess(sigar);
 			} catch (Throwable e) {
 				try {
@@ -103,17 +102,14 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			}
 			name = launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME)
 					+ "." +  launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
-			String parentName = launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME);
 			boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
 			running.set(autoRestart);
 			Logger log = Logger.getLogger(name);
 			ProcessBuilder pb = new ProcessBuilder(args);
 			LinkedHashMap<String, String> copyEnv = new LinkedHashMap<>(System.getenv());
-			copyEnv.remove(PROPERTY_KEY_DEPLOYER_NAME);
 			pb.environment().putAll(copyEnv);
 			pb.environment().putAll(extraEnv);
-			pb.environment().put(ENV_KEY_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
-			pb.environment().put(ENV_DEPLOYER_PARENT_NAME, parentName);
+			pb.environment().put(ENV_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
 			if (!(workingDir.exists() || workingDir.mkdirs())) {
 				throw new RuntimeException("Failed to create working directory");
 			}

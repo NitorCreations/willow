@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NEW_MD5=%%MD5%%
+MD5=%%MD5%%
 
 if [ "$1" = "-d" ]; then
   shift
@@ -13,26 +13,25 @@ if [ "$1" = "-d" ]; then
   DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT" 
 fi
 
-if [ -z "$DEPLOYER_HOME" ]; then
-  DEPLOYER_HOME=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
+if [ -z "$W_DEPLOYER_HOME" ]; then
+  W_DEPLOYER_HOME=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
 fi
 
-if [ -r $DEPLOYER_HOME/deployer.jar.md5 ]; then
-  OLD_MD5=$(cat $DEPLOYER_HOME/deployer.jar.md5 | cut -d " " -f 1)
+mkdir -p $W_DEPLOYER_HOME/lib
+if [ ! -d $W_DEPLOYER_HOME/lib ]; then
+  echo "Failed to create deployer lib directory"
+  exit 1
 fi
 
-if [ "$NEW_MD5" != "$OLD_MD5" ]; then
-  ARCHIVE=$(awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0)
-  tail -n+$ARCHIVE $0 > $DEPLOYER_HOME/deployer.jar
-  echo "$NEW_MD5  deployer.jar" > $DEPLOYER_HOME/deployer.jar.md5
-fi
+W_DEPLOYER_JAR=$W_DEPLOYER_HOME/lib/$MD5.jar
+tail -n+%%ARCHIVE_START%% $0 > $W_DEPLOYER_JAR
 
 if [ -z "$JAVA_HOME" ]; then
   if ! which java > /dev/null; then
     echo "No java or java on PATH"
     exit 1
   else
-    JAVA_HOME=$(java -cp $DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.JavaHome)
+    JAVA_HOME=$(java -cp $W_DEPLOYER_JAR com.nitorcreations.willow.deployer.JavaHome)
   fi
 fi
 if [ -d $JAVA_HOME/../lib ]; then
@@ -46,20 +45,19 @@ fi
 
 JAVA_TOOLS=$JAVA_LIB/tools.jar
 W_DEPLOYER_NAME=$2
-DEPLOYER_IDENTIFIER=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c32; echo)
-export W_DEPLOYER_NAME DEPLOYER_IDENTIFIER JAVA_TOOLS JAVA_HOME
+export W_DEPLOYER_NAME W_DEPLOYER_HOME W_DEPLOYER_JAR
 case $1 in 
 start)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Main "$@"
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Main "$@"
   ;;
 stop)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Stop "$@"
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Stop "$@"
   ;;
 status)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$DEPLOYER_HOME/deployer.jar com.nitorcreations.willow.deployer.Status "$@"
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Status "$@"
   ;;
 *)
   echo "usage $0 {start|stop|status} [role] url [url [...]]"
@@ -67,5 +65,3 @@ status)
   ;;
 esac
 
-
-__ARCHIVE_BELOW__
