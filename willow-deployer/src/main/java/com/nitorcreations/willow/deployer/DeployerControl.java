@@ -1,11 +1,10 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_PARENT_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_KEY_DEPLOYER_IDENTIFIER;
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -21,8 +20,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -84,27 +81,19 @@ public class DeployerControl {
 		//Stop
 		try {
 			Sigar sigar = new Sigar();
-			String myId = System.getenv(ENV_KEY_DEPLOYER_IDENTIFIER);
-			long mypid = 0;
+			long mypid = sigar.getPid();
 			long firstPid = 0;
 			ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);
 			long[] pids = q.find(sigar);
 			if (pids.length > 1) {
-				if (myId != null && !myId.isEmpty()) {
-					q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".eq=" + myId);
-					mypid = q.findProcess(sigar);
-				} else {
-					mypid = youngestOf(pids);
-				}
 				for (long pid : pids) {
 					if (pid != mypid) {
 						firstPid = pid;
 						break;
 					}
 				}
-			} else {
-				mypid = pids[0];
 			}
+			if (mypid <= 0) throw new RuntimeException("Failed to resolve own pid");
 			String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
 			long termTimeout = 60000;
 			if (timeOutEnv != null) {
@@ -122,12 +111,7 @@ public class DeployerControl {
 				killWithQuery("State.Ppid.eq=" + firstPid, termTimeout, mypid);
 			}
 			//Old deployer identified by deployerName in environment
-			killWithQuery("Env." + ENV_DEPLOYER_NAME + ".sw=" + deployerName, termTimeout, mypid);
-			//Processes with deployer name in Parent Environment variable
-			killWithQuery("Env." + ENV_DEPLOYER_PARENT_NAME + ".eq=" + deployerName, termTimeout, mypid);
-			//Stranded child processes - parent name init or parend pid 1
-			killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Name.Peq=init", termTimeout, mypid);
-			killWithQuery("Env." + ENV_KEY_DEPLOYER_IDENTIFIER + ".re=.*,State.Ppid.eq=1", termTimeout, mypid);
+			killWithQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, termTimeout, mypid);
 		} catch (Throwable e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to kill old deployer");
 			rec.setThrown(e);
@@ -269,11 +253,11 @@ public class DeployerControl {
 		System.exit(1);
 	}
 	protected static void extractNativeLib() {
-		String localRepo = System.getenv(ENV_DEPLOYER_LOCAL_REPOSITORY);
-		if (localRepo == null) {
-          localRepo = System.getProperty("user.home") + File.separator + ".deployer" + File.separator + "repository";
+		String deployerHome = System.getenv(ENV_DEPLOYER_HOME);
+		if (deployerHome == null) {
+          deployerHome = System.getProperty("user.home") + File.separator + ".deployer" + File.separator + "repository";
 		}
-		File libDir = new File(new File(localRepo), "lib");
+		File libDir = new File(new File(deployerHome), "lib");
 		System.setProperty("java.library.path", libDir.getAbsolutePath());
 		String arch = System.getProperty("os.arch");
 		String os = System.getProperty("os.name").toLowerCase();

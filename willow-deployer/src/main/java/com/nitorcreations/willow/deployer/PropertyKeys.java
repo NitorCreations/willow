@@ -44,10 +44,10 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_PROPERTIES_FILENAME             = "deployer.properties.filename";
 	public static final String PROPERTY_KEY_DEPLOYER_NAME                   = "deployer.name";
 	public static final String PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX           = "deployer.launch.index";
-	public static final String ENV_DEPLOYER_TERM_TIMEOUT                    = "DEPLOYER_TERM_TIMEOUT";
-	public static final String ENV_DEPLOYER_LOCAL_REPOSITORY                = "DEPLOYER_LOCAL_REPOSITORY";
+	public static final String ENV_DEPLOYER_TERM_TIMEOUT                    = "W_DEPLOYER_TERM_TIMEOUT";
+	public static final String ENV_DEPLOYER_LOCAL_REPOSITORY                = "W_DEPLOYER_LOCAL_REPOSITORY";
+	public static final String ENV_DEPLOYER_HOME                            = "W_DEPLOYER_HOME";
 	public static final String ENV_DEPLOYER_NAME                            = "W_DEPLOYER_NAME";
-	public static final String ENV_DEPLOYER_PARENT_NAME                     = "W_DEPLOYER_PARENT_NAME";
-	public static final String ENV_KEY_DEPLOYER_IDENTIFIER                  = "DEPLOYER_IDENTIFIER";
+	public static final String ENV_DEPLOYER_IDENTIFIER                      = "W_DEPLOYER_IDENTIFIER";
 
 }
