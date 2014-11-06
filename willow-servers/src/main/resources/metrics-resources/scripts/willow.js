@@ -5,6 +5,7 @@ var context = cubism.context()
 				.step(step)
 				.size(size)
 				.start();
+var charts = {};
 var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
 var metricMap = {
 		"cpu" : { "title" : "cpu: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : defaultColors },
@@ -38,17 +39,49 @@ var deployer_metric = function(name, tag) {
 		});
 	}, name += "");
 };
-var expandDetails = function() {
-  	var element = ".details-" + $(this).attr("data-host");
+var expandDetails = function(e) {
+	var host = $(this).attr("data-host");
+  	var element = ".details-" + host;
   	if ($(element).attr("data-expanded")) {
   		$(element).slideUp("slow", function() {
+  			d3.selectAll(".row-" + host + " div svg").remove();
+  			d3.selectAll(".row-" + host + " div").remove();
+  			d3.selectAll(".row-" + host).remove();
+  			$(window).unbind("resize", charts["fs-" + host].update);
+  			delete charts["fs-" + host];
   			$(this).removeAttr("data-expanded");
   		});
   	} else {
+  		$(element).append('<div class="row row-' + host + '">');
+  		$(".row-" + host).append('<div class="fs-' + host + ' col c6" style="height:300px">')
+	  	$(".fs-" + host).append("<svg>");
+	    var stopFs = new Date().getTime();
+	    
+	    d3.json("/metrics/disk?tag=host_test1&stop=" + stopFs, function(data) {
+	       var divHost = host;
+	 	   nv.addGraph(function() {
+	 		    var chart = nv.models.multiBarHorizontalChart()
+	 		      .margin({top: 30, right: 20, bottom: 50, left: 75})
+	 		      .tooltips(false)
+	 		      .showControls(false)
+	 		      .stacked(true);
+	 	
+	 		    chart.yAxis
+	 		        .tickFormat(d3.format('.3s'));
+	 	
+	 	        d3.select('.fs-'  + divHost + ' svg')
+	 		        .datum(data)
+	 		        .call(chart);
+	 			charts["fs-" + host] = chart;
+	 		    $(window).resize(chart.update);
+	 		    return chart;
+	 		});
+	    });
   		$(element).slideDown("slow", function() {
   			$(this).attr("data-expanded", "true");
   		});
     }
+	e.stopPropagation();
 };
 var initGraphs = function () {
 	var stop = new Date().getTime();
@@ -57,6 +90,7 @@ var initGraphs = function () {
 			+ "?start=" + start
 			+ "&stop=" + stop 
 			+ "&type=" + metric, function(data) {
+				$(".horizon").unbind("click");
 				data.sort();
 				if (!data) return new Error("unable to load data");
 				for (var i=0; i<data.length; i++) {
@@ -77,7 +111,7 @@ var initGraphs = function () {
 									.format(metricSettings.format)
 									.title(metricSettings.title + host));
 							div.append("div")
-    						    .attr("class", "details details-" + host).append("p").text("foo");
+    						    .attr("class", "details details-" + host);
 						});
 					}
 				}
