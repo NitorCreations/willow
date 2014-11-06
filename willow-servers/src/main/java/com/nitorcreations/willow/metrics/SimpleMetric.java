@@ -51,7 +51,7 @@ public abstract class  SimpleMetric<L,T> implements Metric<List<TimePoint>> {
 		long stop = Long.parseLong(req.getParameter("stop"));
 		int step = Integer.parseInt(req.getParameter("step"));
 		String[] tags = req.getParameterValues("tag");
-		SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop))
+		SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop, client))
 				.setTypes(getType())
 				.setSearchType(SearchType.QUERY_AND_FETCH)
 				.setSize((int)(stop - start)/10)
