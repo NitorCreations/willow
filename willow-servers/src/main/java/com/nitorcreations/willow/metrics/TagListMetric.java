@@ -24,7 +24,7 @@ public abstract class TagListMetric implements Metric<List<String>> {
 		long start = Long.parseLong(req.getParameter("start"));
 		long stop = Long.parseLong(req.getParameter("stop"));
 		String type = req.getParameter("type");
-		SearchResponse response = client.prepareSearch(MetricUtils.getIndexes(start, stop))
+		SearchResponse response = client.prepareSearch(MetricUtils.getIndexes(start, stop, client))
 				.setTypes(type)
 				.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")
 						.from(start)

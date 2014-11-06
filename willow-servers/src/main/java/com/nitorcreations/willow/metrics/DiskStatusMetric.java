@@ -27,7 +27,7 @@ public class DiskStatusMetric implements Metric<List<SeriesData<String, Long>>>{
 		long stop = Long.parseLong(req.getParameter("stop"));
 		long start = stop - TimeUnit.DAYS.toMillis(1);
 		String[] tags = req.getParameterValues("tag");
-		SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop))
+		SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop, client))
 				.setTypes("disk")
 				.addField("timestamp")
 				.addField("name")
