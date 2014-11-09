@@ -161,10 +161,9 @@ public class Main extends DeployerControl implements MainMBean {
 			launcher.setProperties(launchProps);
 			executor.submit(launcher);
 			children.add(launcher);
-			long pid = launcher.getProcessId();
 			if (transmitter != null) {
 				try {
-					ProcessStatSender statsSender = new ProcessStatSender(transmitter, getMBeanServerConnection(launcher.getProcessId()), pid, new StatisticsConfig());
+					ProcessStatSender statsSender = new ProcessStatSender(transmitter, getMBeanServerConnection(launcher.getProcessId()), launcher, new StatisticsConfig());
 					Thread statThread = new Thread(statsSender, "ProcessStatistics");
 					statThread.start();
 					stats.add(statsSender);

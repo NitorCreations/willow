@@ -38,13 +38,15 @@ import com.nitorcreations.willow.messages.WebSocketTransmitter;
 public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private MBeanServerConnection mBeanServerConnection;
-	private long pid;
+	private final long pid;
 	private AtomicBoolean running = new AtomicBoolean(true);
+	private final LaunchMethod child;
 
-	public ProcessStatSender(WebSocketTransmitter transmitter, MBeanServerConnection mBeanServerConnection, long pid, StatisticsConfig conf) {
+	public ProcessStatSender(WebSocketTransmitter transmitter, MBeanServerConnection mBeanServerConnection, LaunchMethod child, StatisticsConfig conf) {
 		super(transmitter, conf);
 		this.mBeanServerConnection = mBeanServerConnection;
-		this.pid = pid;
+		this.pid = child.getProcessId();
+		this.child = child;
 	}
 	@Override
 	public void run() {
@@ -60,6 +62,7 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 					pCStat = sigar.getProcCpu(pid);
 					ProcessCPU  msg = new ProcessCPU();
 					PropertyUtils.copyProperties(msg, pCStat);
+					msg.setChildName(child.getName());
 					transmitter.queue(msg);
 				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
 						NoSuchMethodException e) {
@@ -69,11 +72,11 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 				}
 				nextProcCpus = nextProcCpus + conf.getIntervalProcCpus();
 			}
-			
 			if (mBeanServerConnection != null) {
 				if (now > nextJmx) {
 					try {
 						JmxMessage msg = getJmxStats();
+						msg.setChildName(child.getName());
 						if (msg != null) {
 							transmitter.queue(msg);
 						}
