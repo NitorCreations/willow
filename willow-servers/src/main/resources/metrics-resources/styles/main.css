@@ -17,7 +17,7 @@ header {
 
 .axis {
   font: 10px sans-serif;
-  position: fixed;
+  position: relative;
   pointer-events: none;
   z-index: 2;
 }
@@ -135,7 +135,7 @@ header {
 .details {
     display: none;
     padding: 50px;
-    background-color: #FFF;
+    background-color: .axi;
     z-index: 3;
     position: relative;
 }

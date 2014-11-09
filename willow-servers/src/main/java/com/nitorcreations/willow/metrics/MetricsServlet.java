@@ -58,12 +58,12 @@ public class MetricsServlet implements Servlet {
 			return;
 		}
 		String metricKey = ((HttpServletRequest)req).getPathInfo();
-		Class<? extends Metric> metricClass = metrics.get(metricKey);
+		Class<? extends Metric<?>> metricClass = metrics.get(metricKey);
 		if (metricClass == null) {
 			((HttpServletResponse)res).sendError(404, "Metric " + metricKey + " not found");
 			return;
 		}
-		Metric metric;
+		Metric<?> metric;
 		try {
 			metric = metricClass.newInstance();
 			Object data = metric.calculateMetric(getClient(), (HttpServletRequest)req);
