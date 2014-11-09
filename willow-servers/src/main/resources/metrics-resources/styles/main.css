@@ -135,7 +135,7 @@ header {
 .details {
     display: none;
     padding: 50px;
-    background-color: .axi;
+    background-color: #FFF;
     z-index: 3;
     position: relative;
 }

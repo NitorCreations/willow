@@ -56,6 +56,7 @@ public class HeapMemoryMetric extends FullMessageMetric<JmxMessage, Long,Long> {
 						toAdd.x = nextAdd;
 						toAdd.y = 0L;
 						nextValues.values.add(i, toAdd);
+						break;
 					}
 				}
 			}
