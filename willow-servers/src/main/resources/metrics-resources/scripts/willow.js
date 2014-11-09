@@ -55,9 +55,11 @@ var expandDetails = function(e) {
   		$(element).append('<div class="row row-' + host + '">');
   		$(".row-" + host).append('<div class="fs-' + host + ' col c6" style="height:300px">')
 	  	$(".fs-" + host).append("<svg>");
-	    var stopFs = new Date().getTime();
+  		$(".row-" + host).append('<div class="heap-' + host + ' col c6" style="height:300px">')
+	  	$(".heap-" + host).append("<svg>");
+	    var host_stop = new Date().getTime();
 	    
-	    d3.json("/metrics/disk?tag=host_test1&stop=" + stopFs, function(data) {
+	    d3.json("/metrics/disk?tag=host_" + host + "&stop=" + host_stop, function(data) {
 	       var divHost = host;
 	 	   nv.addGraph(function() {
 	 		    var chart = nv.models.multiBarHorizontalChart()
@@ -76,6 +78,25 @@ var expandDetails = function(e) {
 	 		    $(window).resize(chart.update);
 	 		    return chart;
 	 		});
+	    });
+	    var host_start = host_stop - (1000 * 60 * 60 * 3); 
+	    d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, function(data) {
+	    	var divHost = host;
+	    	nv.addGraph(function() {
+	    	  var chart = nv.models.lineWithFocusChart();
+	    	  chart.xAxis
+	    	      .tickFormat(d3.format(',f'));
+	    	  chart.yAxis
+	    	      .tickFormat(d3.format(',.2s'));
+	    	  chart.y2Axis
+	    	      .tickFormat(d3.format(',.2s'));
+	 	      d3.select('.heap-'  + divHost + ' svg')
+	    	      .datum(data)
+	    	      .transition().duration(500)
+	    	      .call(chart);
+	 		    $(window).resize(chart.update);
+	    	  return chart;
+	    	});
 	    });
   		$(element).slideDown("slow", function() {
   			$(this).attr("data-expanded", "true");
