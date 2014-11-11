@@ -98,6 +98,7 @@ public class TestPropertyMerge {
 		assertEquals("env_test/settings/node-group/appservers.properties", res.getProperty("included.file[6]"));
 		assertEquals("env_test/settings/node/appserver.properties", res.getProperty("included.file[7]"));
 		assertEquals("env_test/settings/component/webfront.properties", res.getProperty("included.file[8]"));
+		assertEquals("431", res.getProperty("test.scripting"));
 	}
 	@Test
 	public void testMerge2() {
