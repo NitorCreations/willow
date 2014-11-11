@@ -21,11 +21,19 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.script.SimpleBindings;
+
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 public class MergeableProperties extends Properties {
 	public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
 	public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
+	public static final Pattern SCRIPT_REGEX = Pattern.compile("(.*?)(\\<script\\>(.*?)\\<\\/script\\>)");
 	public static final String URL_PREFIX_CLASSPATH = "classpath:";
 	public static final String INCLUDE_PROPERTY = "include.properties";
 	private Logger log = Logger.getLogger(getClass().getName());
@@ -33,11 +41,13 @@ public class MergeableProperties extends Properties {
 	private static final long serialVersionUID = -2166886363149152785L;
 	private LinkedHashMap<String, String> table = new LinkedHashMap<>();
 	private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
+	ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
 	
 	protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, String ... prefixes) {
 		super(defaults);
 		table.putAll(values);
 		this.prefixes = prefixes;
+		Bindings bind = new SimpleBindings();
 	}
 	public MergeableProperties() {
 		super();
@@ -65,9 +75,33 @@ public class MergeableProperties extends Properties {
 		LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
 		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
 		for (Entry<String, String> next : table.entrySet()) {
-			finalTable.put(sub.replace(next.getKey()), sub.replace(next.getValue()));
+			String key = sub.replace(next.getKey());
+			String value = sub.replace(next.getValue());
+			finalTable.put(key, value);
+		}
+		for (Entry<String, String> next : table.entrySet()) {
+			String key = evaluate(sub.replace(next.getKey()));
+			String value = evaluate(sub.replace(next.getValue()));
+			finalTable.put(key, value);
 		}
 		table = finalTable;
+	}
+	private String evaluate(String replace) {
+		Matcher m = SCRIPT_REGEX.matcher(replace);
+		StringBuffer ret = new StringBuffer();
+		int end = 0;
+		engine.put("self", table);
+		while (m.find()) {
+			ret.append(m.group(1));
+			try {
+				ret.append(engine.eval(m.group(3).toString()));
+			} catch (ScriptException e) {
+				ret.append(m.group(2));
+			}
+			end = m.end();
+		}
+		ret.append(replace.substring(end));
+		return ret.toString();
 	}
 	public void deObfuscate(PropertySource source, String obfuscatedPrefix) {
 		if (obfuscatedPrefix == null) return;
