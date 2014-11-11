@@ -27,6 +27,18 @@ function getQueryVariable(variable) {
 
 var metric = getQueryVariable("metric") ? getQueryVariable("metric") : "cpu"; 
 
+var kiloBytesToString = function (bytes) {
+    var fmt = d3.format('.0f');
+    if (bytes < 1024) {
+        return fmt(bytes) + 'kB';
+    } else if (bytes < 1024 * 1024) {
+        return fmt(bytes / 1024) + 'MB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+        return fmt(bytes / 1024 / 1024) + 'GB';
+    } else {
+        return fmt(bytes / 1024 / 1024 / 1024) + 'TB';
+    }
+}
 var deployer_metric = function(name, tag) {
 	var hostTag = tag;
 	return context.metric(function(start, stop, step, callback) {
@@ -69,7 +81,7 @@ var expandDetails = function(e) {
 	 		      .stacked(true);
 	 	
 	 		    chart.yAxis
-	 		        .tickFormat(d3.format('.3s'));
+	 		        .tickFormat(kiloBytesToString);
 	 	
 	 	        d3.select('.fs-'  + divHost + ' svg')
 	 		        .datum(data)
@@ -83,12 +95,12 @@ var expandDetails = function(e) {
 	    d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, function(data) {
 	    	var divHost = host;
 	    	nv.addGraph(function() {
-	    	  var chart = nv.models.lineWithFocusChart();
+	    	  var chart = nv.models.lineChart();
 	    	  chart.xAxis
-	    	      .tickFormat(d3.format(',f'));
+		    	  .tickFormat(function(d) {
+		              return d3.time.format('%X')(new Date(d))
+		            });
 	    	  chart.yAxis
-	    	      .tickFormat(d3.format(',.2s'));
-	    	  chart.y2Axis
 	    	      .tickFormat(d3.format(',.2s'));
 	 	      d3.select('.heap-'  + divHost + ' svg')
 	    	      .datum(data)
