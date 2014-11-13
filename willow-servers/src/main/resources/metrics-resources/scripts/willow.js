@@ -1,10 +1,28 @@
 var step = 3e4;
 var size;
-
+var isDragging = false;
+var dragStart = 0;
+var detailsStart = -1;
+var detailsStop = -1;
+var moveSelection = function() {
+	if ($(".selection").is(":visible")) {
+		var nowLeft = $(".selection").offset().left;
+		if (nowLeft > 0) {
+			$(".selection").offset({ top: 50, left: nowLeft - 1 });
+		} else {
+			var nowWidth = $(".selection").width();
+			if (nowWidth > 1) {
+				$(".selection").width(nowWidth - 1);
+			}
+		}
+	}
+}
 var context = cubism.context()
 				.step(step)
 				.size(size)
+				.on("change", moveSelection)
 				.start();
+var mouseDownTarget = null;
 var charts = {};
 var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
 var metricMap = {
@@ -15,7 +33,7 @@ var metricMap = {
 		"tcpinfo" : { "title" : "conn: ", "format" : d3.format(".0f"), "extent": undefined, colors : defaultColors }
 }
 
-function getQueryVariable(variable) {
+var getQueryVariable = function(variable) {
        var query = window.location.search.substring(1);
        var vars = query.split("&");
        for (var i=0;i<vars.length;i++) {
@@ -24,19 +42,21 @@ function getQueryVariable(variable) {
        }
        return(false);
 }
-
 var metric = getQueryVariable("metric") ? getQueryVariable("metric") : "cpu"; 
-
-var kiloBytesToString = function (bytes) {
+var xToTime = function(pageX) {
+	var timeStart = context.scale.domain()[0].getTime();
+	return timeStart + (pageX * step);
+}
+var kiloBytesToString = function (kbytes) {
     var fmt = d3.format('.0f');
-    if (bytes < 1024) {
-        return fmt(bytes) + 'kB';
-    } else if (bytes < 1024 * 1024) {
-        return fmt(bytes / 1024) + 'MB';
-    } else if (bytes < 1024 * 1024 * 1024) {
-        return fmt(bytes / 1024 / 1024) + 'GB';
+    if (kbytes < 1024) {
+        return fmt(kbytes) + 'kB';
+    } else if (kbytes < 1024 * 1024) {
+        return fmt(kbytes / 1024) + 'MB';
+    } else if (kbytes < 1024 * 1024 * 1024) {
+        return fmt(kbytes / 1024 / 1024) + 'GB';
     } else {
-        return fmt(bytes / 1024 / 1024 / 1024) + 'TB';
+        return fmt(kbytes / 1024 / 1024 / 1024) + 'TB';
     }
 }
 var deployer_metric = function(name, tag) {
@@ -51,8 +71,16 @@ var deployer_metric = function(name, tag) {
 		});
 	}, name += "");
 };
+var updateCharts = function() {
+	var chartId;
+	for (chartId in charts) {
+		if (charts.hasOwnProperty(chartId)) {
+			charts[chartId].update();
+		}
+	}
+};
 var expandDetails = function(e) {
-	var host = $(this).attr("data-host");
+	var host = $(mouseDownTarget).attr("data-host");
   	var element = ".details-" + host;
   	if ($(element).attr("data-expanded")) {
   		$(element).slideUp("slow", function() {
@@ -60,7 +88,9 @@ var expandDetails = function(e) {
   			d3.selectAll(".row-" + host + " div").remove();
   			d3.selectAll(".row-" + host).remove();
   			$(window).unbind("resize", charts["fs-" + host].update);
+  			$(window).unbind("resize", charts["heap-" + host].update);
   			delete charts["fs-" + host];
+  			delete charts["heap-" + host];
   			$(this).removeAttr("data-expanded");
   		});
   	} else {
@@ -69,7 +99,10 @@ var expandDetails = function(e) {
 	  	$(".fs-" + host).append("<svg>");
   		$(".row-" + host).append('<div class="heap-' + host + ' col c6" style="height:300px">')
 	  	$(".heap-" + host).append("<svg>");
-	    var host_stop = new Date().getTime();
+  		var host_stop = detailsStop;
+  		if (host_stop < 0) {
+	      host_stop = new Date().getTime();
+  		}
 	    
 	    d3.json("/metrics/disk?tag=host_" + host + "&stop=" + host_stop, function(data) {
 	       var divHost = host;
@@ -79,10 +112,8 @@ var expandDetails = function(e) {
 	 		      .tooltips(false)
 	 		      .showControls(false)
 	 		      .stacked(true);
-	 	
 	 		    chart.yAxis
 	 		        .tickFormat(kiloBytesToString);
-	 	
 	 	        d3.select('.fs-'  + divHost + ' svg')
 	 		        .datum(data)
 	 		        .call(chart);
@@ -91,7 +122,10 @@ var expandDetails = function(e) {
 	 		    return chart;
 	 		});
 	    });
-	    var host_start = host_stop - (1000 * 60 * 60 * 3); 
+	    var host_start = detailsStart;
+	    if (host_start < 0) {
+	      host_start = host_stop - (1000 * 60 * 60 * 3);
+	    }
 	    d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, function(data) {
 	    	var divHost = host;
 	    	nv.addGraph(function() {
@@ -106,7 +140,8 @@ var expandDetails = function(e) {
 	    	      .datum(data)
 	    	      .transition().duration(500)
 	    	      .call(chart);
-	 		    $(window).resize(chart.update);
+	 			charts["heap-" + host] = chart;
+	 		   $(window).resize(chart.update);
 	    	  return chart;
 	    	});
 	    });
@@ -116,6 +151,46 @@ var expandDetails = function(e) {
     }
 	e.stopPropagation();
 };
+var isDraggingMouseDown = function(e) {
+	mouseDownTarget = e.currentTarget;
+	$(window).mousemove(function(e) {
+		if (!isDragging) {
+	      isDragging = true;
+		  dragStart = e.pageX;
+		} else {
+		  $(".selection").show();
+		  $(".selection").width(Math.abs(dragStart - e.pageX));
+		  $(".selection").offset({ top: 50, left: Math.min(dragStart, e.pageX) });
+		  detailsStart = xToTime($(".selection").offset().left);
+		  detailsStop = xToTime($(".selection").offset().left + $(".selection").width());
+		}
+	});
+	$(window).mouseup(isDraggingMouseUp);
+	e.stopPropagation();
+};
+var isDraggingMouseUp = function(e) {
+	$(window).unbind("mousemove");
+	$(window).unbind("mouseup");
+	var host = $(mouseDownTarget).attr("data-host");
+  	var element = ".details-" + host;
+	if (!isDragging || ! $(element).attr("data-expanded")) {
+		expandDetails(e);
+		if (!isDragging) {
+			$(".selection").hide();
+		}
+	} else if (isDragging) {
+	    d3.json("/metrics/disk?tag=host_" + host + "&stop=" + detailsStop, function(data) {
+ 	        d3.select('.fs-'  + host + ' svg').datum(data);
+	 		updateCharts();
+        });
+	    d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, function(data) {
+	 	    d3.select('.heap-'  + host + ' svg').datum(data);
+	 		updateCharts();
+	    });
+	}
+	isDragging = false;
+	e.stopPropagation();
+};
 var initGraphs = function () {
 	var stop = new Date().getTime();
 	var start = stop - (step * size);
@@ -123,7 +198,7 @@ var initGraphs = function () {
 			+ "?start=" + start
 			+ "&stop=" + stop 
 			+ "&type=" + metric, function(data) {
-				$(".horizon").unbind("click");
+				$(".horizon").unbind("mousedown");
 				data.sort();
 				if (!data) return new Error("unable to load data");
 				for (var i=0; i<data.length; i++) {
@@ -148,7 +223,7 @@ var initGraphs = function () {
 						});
 					}
 				}
-				$(".horizon").click(expandDetails);
+				$(".horizon").mousedown(isDraggingMouseDown);
 			});
 };
 var resetGraphs = function () {
@@ -158,8 +233,9 @@ var resetGraphs = function () {
 	context = cubism.context()
 		.step(step)
 		.size(size)
+		.on("change", moveSelection)
 		.start();
-	$(".horizon").unbind("click");
+	$(".horizon").unbind("mousedown");
 	d3.selectAll(".horizon").call(context.horizon().remove).remove(); 
 	d3.selectAll(".details").remove();
 	d3.selectAll(".axis").remove();
@@ -180,6 +256,10 @@ var resetGraphs = function () {
 		div.append("div")
 		.attr("class", "rule")
 		.call(context.rule());
+	});
+	d3.select("#chart").call(function(div) {
+		div.append("div")
+		.attr("class", "selection");
 	});
 };
 var debouncer = function(func , timeout) {

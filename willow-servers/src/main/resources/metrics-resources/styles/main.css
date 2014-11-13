@@ -131,7 +131,15 @@ header {
   z-index: 2;
   top: 50px !important;
 }
-
+.selection {
+	background: #BAE4B3;
+	opacity: 0.3;
+    top: 50px;
+	z-index: 1;
+	position: absolute;
+	display: none;
+	height: 100%;
+}
 .details {
     display: none;
     padding: 50px;
