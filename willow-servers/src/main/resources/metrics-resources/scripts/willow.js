@@ -4,6 +4,11 @@ var isDragging = false;
 var dragStart = 0;
 var detailsStart = -1;
 var detailsStop = -1;
+if (typeof String.prototype.startsWith != 'function') {
+	  String.prototype.startsWith = function (str){
+	    return this.indexOf(str) == 0;
+	  };
+}
 var moveSelection = function() {
 	if ($(".selection").is(":visible")) {
 		var nowLeft = $(".selection").offset().left;
@@ -24,10 +29,13 @@ var context = cubism.context()
 				.start();
 var mouseDownTarget = null;
 var charts = {};
+var hosts = [];
+var intervals = {};
 var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
+var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
 var metricMap = {
-		"cpu" : { "title" : "cpu: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : defaultColors },
-		"mem" : { "title" : "mem: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : defaultColors },
+		"cpu" : { "title" : "cpu: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : cpuColors },
+		"mem" : { "title" : "mem: ", "format" : d3.format(".2f"), "extent": [0, 100], colors : cpuColors },
 		"net" : { "title" : "net: ", "format" : d3.format(".2f"), "extent": undefined, colors : defaultColors },
 		"diskio" : { "title" : "io: ", "format" : d3.format(".2f"), "extent": undefined, colors : defaultColors },
 		"tcpinfo" : { "title" : "conn: ", "format" : d3.format(".0f"), "extent": undefined, colors : defaultColors }
@@ -71,10 +79,10 @@ var deployer_metric = function(name, tag) {
 		});
 	}, name += "");
 };
-var updateCharts = function() {
+var updateCharts = function(prefix) {
 	var chartId;
 	for (chartId in charts) {
-		if (charts.hasOwnProperty(chartId)) {
+		if (chartId.startsWith(prefix) && charts.hasOwnProperty(chartId)) {
 			charts[chartId].update();
 		}
 	}
@@ -168,25 +176,37 @@ var isDraggingMouseDown = function(e) {
 	$(window).mouseup(isDraggingMouseUp);
 	e.stopPropagation();
 };
+var updateChart = function(host, prefix) {
+	var divHost = host;
+	return function(data) {
+  			d3.select('.' + prefix  + divHost + ' svg').datum(data);
+  			updateCharts(prefix);
+  		};
+};
 var isDraggingMouseUp = function(e) {
 	$(window).unbind("mousemove");
 	$(window).unbind("mouseup");
 	var host = $(mouseDownTarget).attr("data-host");
   	var element = ".details-" + host;
 	if (!isDragging || ! $(element).attr("data-expanded")) {
-		expandDetails(e);
 		if (!isDragging) {
 			$(".selection").hide();
+			detailsStart = -1;
+			detailsStop = -1;
 		}
-	} else if (isDragging) {
-	    d3.json("/metrics/disk?tag=host_" + host + "&stop=" + detailsStop, function(data) {
- 	        d3.select('.fs-'  + host + ' svg').datum(data);
-	 		updateCharts();
-        });
-	    d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, function(data) {
-	 	    d3.select('.heap-'  + host + ' svg').datum(data);
-	 		updateCharts();
-	    });
+		expandDetails(e);
+	} 
+	if (isDragging) {
+		for (var i=0; i<hosts.length; i++) {
+			var nextHost = hosts[i];
+		  	var element = ".details-" + nextHost;
+		  	if ($(element).attr("data-expanded")) {
+		  		d3.json("/metrics/disk?tag=host_" + nextHost+ "&stop=" + detailsStop, 
+		  				updateChart(nextHost, "fs-"));
+		  		d3.json("/metrics/heap?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, 
+		  				updateChart(nextHost, "heap-"));
+		  	}
+		}
 	}
 	isDragging = false;
 	e.stopPropagation();
@@ -194,6 +214,9 @@ var isDraggingMouseUp = function(e) {
 var initGraphs = function () {
 	var stop = new Date().getTime();
 	var start = stop - (step * size);
+	while(hosts.length > 0) {
+	    hosts.pop();
+	}
 	d3.json("/metrics/hosts"
 			+ "?start=" + start
 			+ "&stop=" + stop 
@@ -203,6 +226,7 @@ var initGraphs = function () {
 				if (!data) return new Error("unable to load data");
 				for (var i=0; i<data.length; i++) {
 					var host = data[i].substring(5);
+					hosts.push(host);
 					if ( ! $(".horizon-" + host).length ) {
 						var metricSettings = $(metricMap).attr(metric);
 						var next = deployer_metric(metric, data[i]);
