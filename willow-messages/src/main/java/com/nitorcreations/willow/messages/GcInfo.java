@@ -4,6 +4,7 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class GcInfo {
+	String name;
 	long collectionCount;
 	long collectionTime;
 	public long getCollectionCount() {
@@ -17,5 +18,11 @@ public class GcInfo {
 	}
 	public void setCollectionTime(long collectionTime) {
 		this.collectionTime = collectionTime;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 }

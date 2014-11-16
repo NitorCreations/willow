@@ -25,6 +25,13 @@ public class MessageMapping {
 		public String lcName() {
 			return toString().toLowerCase();
 		}
+		public static String[] lcNames() {
+			List<String> ret = new ArrayList<>();
+			for (MessageType next : MessageType.values()) {
+				ret.add(next.lcName());
+			}
+			return ret.toArray(new String[ret.size()]);
+		}
 	}
 
 	private Map<MessageType, Class<? extends AbstractMessage>> messageTypes = new HashMap<MessageMapping.MessageType, Class<? extends AbstractMessage>>();
