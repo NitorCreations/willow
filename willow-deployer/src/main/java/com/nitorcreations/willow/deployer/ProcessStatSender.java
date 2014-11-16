@@ -114,6 +114,7 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 		for (ObjectInstance next : gcs) {
 			GcInfo gi = new GcInfo();
 			try {
+				gi.setName((String)mBeanServerConnection.getAttribute(next.getObjectName(), "Name"));
 				gi.setCollectionCount(((Number)mBeanServerConnection.getAttribute(next.getObjectName(), "CollectionCount")).longValue());
 				gi.setCollectionTime(((Number)mBeanServerConnection.getAttribute(next.getObjectName(), "CollectionTime")).longValue());
 				ret.gcInfo.add(gi);

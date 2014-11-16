@@ -15,7 +15,6 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 public abstract class TagListMetric implements Metric<List<String>> {
 	
 	private final String tagPrefix;
-	
 	public TagListMetric(String tagPrefix) {
 		this.tagPrefix = tagPrefix;
 	}

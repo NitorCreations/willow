@@ -6,6 +6,7 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.GenericServlet;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -24,7 +25,8 @@ import org.elasticsearch.node.NodeBuilder;
 import com.google.gson.Gson;
 import com.nitorcreations.willow.utils.HostUtil;
 
-public class MetricsServlet implements Servlet {
+public class MetricsServlet extends GenericServlet implements Servlet {
+	private static final long serialVersionUID = -6704365246281136504L;
 	private static Node node;
 
 	Map<String, Class<? extends Metric<?>>> metrics = new HashMap<>();
@@ -45,6 +47,7 @@ public class MetricsServlet implements Servlet {
 		metrics.put("/heap", HeapMemoryMetric.class);
 		metrics.put("/requests", RequestCountMetric.class);
 		metrics.put("/latency", RequestDurationMetric.class);
+		metrics.put("/types", MessageTypesMetric.class);
 		setupElasticSearch(config.getServletContext());
 	}
 	@Override
@@ -71,6 +74,7 @@ public class MetricsServlet implements Servlet {
 			Gson out = new Gson();
 			res.getOutputStream().write(out.toJson(data).getBytes());
 		} catch (InstantiationException | IllegalAccessException e) {
+			log("Failed to create metric", e);
 		}
 	}
 	@Override
