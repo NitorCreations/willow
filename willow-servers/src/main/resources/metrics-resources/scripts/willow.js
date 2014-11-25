@@ -107,9 +107,9 @@ var expandDetails = function(e) {
 	  	$(".fs-" + host).append("<svg>");
   		$(".row-" + host).append('<div class="heap-' + host + ' col c6" style="height:300px">')
 	  	$(".heap-" + host).append("<svg>");
-  		var host_stop = detailsStop;
+  		var host_stop = parseInt(detailsStop);
   		if (host_stop < 0) {
-	      host_stop = new Date().getTime();
+	      host_stop = parseInt(new Date().getTime());
   		}
 	    
 	    d3.json("/metrics/disk?tag=host_" + host + "&stop=" + host_stop, function(data) {
@@ -130,9 +130,9 @@ var expandDetails = function(e) {
 	 		    return chart;
 	 		});
 	    });
-	    var host_start = detailsStart;
+	    var host_start = parseInt(detailsStart);
 	    if (host_start < 0) {
-	      host_start = host_stop - (1000 * 60 * 60 * 3);
+	      host_start = parseInt(host_stop - (1000 * 60 * 60 * 3));
 	    }
 	    d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, function(data) {
 	    	var divHost = host;

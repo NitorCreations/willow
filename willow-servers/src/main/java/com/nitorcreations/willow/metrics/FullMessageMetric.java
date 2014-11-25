@@ -29,7 +29,6 @@ import com.google.gson.Gson;
 public abstract class FullMessageMetric<T extends AbstractMessage, X, Y extends Comparable<Y>> implements Metric<Collection<SeriesData<X, Y>>> {
 	protected SortedMap<Long, T> rawData;
 	private final Class<T> type;
-	private static final MessageMapping map = new MessageMapping();
 	@SuppressWarnings("unchecked")
 	public FullMessageMetric() {
 	       this.type = (Class<T>)
@@ -52,7 +51,7 @@ public abstract class FullMessageMetric<T extends AbstractMessage, X, Y extends 
 		int step = Integer.parseInt(req.getParameter("step"));
 		String[] tags = req.getParameterValues("tag");
 		SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop, client))
-				.setTypes(new MessageMapping().map(type).lcName())
+				.setTypes(MessageMapping.map(type).lcName())
 				.setSearchType(SearchType.QUERY_AND_FETCH)
 				.setSize((int)(stop - start)/10);
 		BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")

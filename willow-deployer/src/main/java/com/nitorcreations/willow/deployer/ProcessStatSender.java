@@ -62,7 +62,7 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 					pCStat = sigar.getProcCpu(pid);
 					ProcessCPU  msg = new ProcessCPU();
 					PropertyUtils.copyProperties(msg, pCStat);
-					msg.setChildName(child.getName());
+					msg.addTags("category_processcpu_" + child.getName());
 					transmitter.queue(msg);
 				} catch (SigarException | IllegalAccessException | InvocationTargetException | 
 						NoSuchMethodException e) {
@@ -76,7 +76,7 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 				if (now > nextJmx) {
 					try {
 						JmxMessage msg = getJmxStats();
-						msg.setChildName(child.getName());
+						msg.addTags("category_jmx_" + child.getName());
 						if (msg != null) {
 							transmitter.queue(msg);
 						}

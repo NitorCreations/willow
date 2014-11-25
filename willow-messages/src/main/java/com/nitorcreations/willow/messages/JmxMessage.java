@@ -17,7 +17,6 @@ public class JmxMessage extends AbstractMessage {
 	long unloadedClassCount;
 	long startTime;
 	long uptime;
-	String childName;
 	
 	public long getUnloadedClassCount() {
 		return unloadedClassCount;
@@ -78,12 +77,6 @@ public class JmxMessage extends AbstractMessage {
 	}
 	public void setMemoryPoolUsage(Map<String, Long> memoryPoolUsage) {
 		this.memoryPoolUsage = memoryPoolUsage;
-	}
-	public String getChildName() {
-		return childName;
-	}
-	public void setChildName(String childName) {
-		this.childName = childName;
 	}
 	public List<ThreadInfoMessage> threads = new ArrayList<ThreadInfoMessage>();
 	public List<GcInfo> gcInfo = new ArrayList<GcInfo>();
