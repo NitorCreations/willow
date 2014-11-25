@@ -10,8 +10,7 @@ public class ProcessCPU extends AbstractMessage {
 	long user;
 	long sys;
 	long total;
-	String childName;
-	
+
 	public double getPercent() {
 		return percent;
 	}
@@ -48,11 +47,4 @@ public class ProcessCPU extends AbstractMessage {
 	public void setTotal(long total) {
 		this.total = total;
 	}
-	public String getChildName() {
-		return childName;
-	}
-	public void setChildName(String childName) {
-		this.childName = childName;
-	}
-	
 }

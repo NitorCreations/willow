@@ -22,9 +22,9 @@ public abstract class TagListMetric implements Metric<List<String>> {
 	public List<String> calculateMetric(Client client, HttpServletRequest req) {
 		long start = Long.parseLong(req.getParameter("start"));
 		long stop = Long.parseLong(req.getParameter("stop"));
-		String type = req.getParameter("type");
+		String[] types = req.getParameterValues("type");
 		SearchResponse response = client.prepareSearch(MetricUtils.getIndexes(start, stop, client))
-				.setTypes(type)
+				.setTypes(types)
 				.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp")
 						.from(start)
 						.to(stop)))

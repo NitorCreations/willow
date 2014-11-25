@@ -10,16 +10,23 @@ import com.nitorcreations.willow.messages.JmxMessage;
 
 
 public class HeapMemoryMetric extends FullMessageMetric<JmxMessage, Long,Long> {
-
+	private static final String categoryPrefix = "category_jmx_";
 	@Override
 	protected void addValue(Map<String, SeriesData<Long, Long>> values,
 			List<JmxMessage> preceeding, long stepTime, long stepLen) {
 		HashMap<String, List<Long>> data = new HashMap<>();
 		for (JmxMessage next : preceeding) {
-			List<Long> nextData =data.get(next.getChildName());
+			String childName = "";
+			for (String nextTag : next.tags) {
+				if (nextTag.startsWith(categoryPrefix)) {
+					childName = nextTag.substring(categoryPrefix.length());
+					break;
+				}
+			}
+			List<Long> nextData =data.get(childName);
 			if (nextData == null) {
 				nextData = new ArrayList<Long>();
-				data.put(next.getChildName(), nextData);
+				data.put(childName, nextData);
 			}
 			nextData.add(next.getHeapMemory());
 		}

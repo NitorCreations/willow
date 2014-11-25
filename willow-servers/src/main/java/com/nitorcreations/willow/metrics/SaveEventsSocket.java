@@ -3,6 +3,7 @@ package com.nitorcreations.willow.metrics;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +32,6 @@ public class SaveEventsSocket {
     private Session session;
     private String path;
 	private List<String> tags;
-	private String tagJson="";
     
     public SaveEventsSocket() {
         this.closeLatch = new CountDownLatch(1);
@@ -54,12 +54,10 @@ public class SaveEventsSocket {
         this.session = session;
         path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
         tags  = session.getUpgradeRequest().getParameterMap().get("tag");
-		if (tags != null && !tags.isEmpty()) {
-			tagJson = "\"tags\":" + new Gson().toJson(tags) + ",";
-		}
     }
      
-    @OnWebSocketMessage
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@OnWebSocketMessage
     public void messageReceived(byte buf[], int offset, int length) {
     	try {
     		Gson gson = new Gson();
@@ -68,10 +66,25 @@ public class SaveEventsSocket {
     			Object stored = msgObject;
     			if (type == MessageType.LONGSTATS) {
     				stored = ((LongStatisticsMessage)msgObject).getMap();
+    				String instance = (String) ((Map)stored).get("instance");
+    				if (instance == null || instance.isEmpty()) {
+    					((Map)stored).put("instance", path);
+    				}
+    				((Map)stored).put("tags", tags);
     			} else if (type == MessageType.HASH) {
     				stored = ((HashMessage)msgObject).getMap();
+    				String instance = (String) ((Map)stored).get("instance");
+    				if (instance == null || instance.isEmpty()) {
+    					((Map)stored).put("instance", path);
+    				}
+    				((Map)stored).put("tags", tags);
+    			} else {
+    				if (msgObject.instance == null || msgObject.instance.isEmpty()) {
+    					msgObject.instance = path;
+    				}
+    				msgObject.addTags(tags);
     			}
-    			String source = "{ \"instance\":\"" + path + "\"," + tagJson + gson.toJson(stored).substring(1);
+    			String source = gson.toJson(stored);
     			System.out.println(type.lcName() + ": " + source);
     			IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName())
     					.setSource(source)

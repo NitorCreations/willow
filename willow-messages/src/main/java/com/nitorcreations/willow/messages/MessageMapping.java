@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import net.jpountz.lz4.LZ4Compressor;
@@ -16,6 +17,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.Packer;
 import org.msgpack.unpacker.BufferUnpacker;
+
 
 public class MessageMapping {
 	MessagePack msgpack = new MessagePack();
@@ -34,10 +36,9 @@ public class MessageMapping {
 		}
 	}
 
-	private Map<MessageType, Class<? extends AbstractMessage>> messageTypes = new HashMap<MessageMapping.MessageType, Class<? extends AbstractMessage>>();
-	private Map<Class<? extends AbstractMessage>, MessageType> messageClasses = new HashMap<Class<? extends AbstractMessage>, MessageType>();
-
-	public MessageMapping() {
+	private static Map<MessageType, Class<? extends AbstractMessage>> messageTypes = new ConcurrentHashMap<>(new HashMap<MessageMapping.MessageType, Class<? extends AbstractMessage>>());
+	private static Map<Class<? extends AbstractMessage>, MessageType> messageClasses = new ConcurrentHashMap<>(new HashMap<Class<? extends AbstractMessage>, MessageType>());
+	static {
 		messageTypes.put(MessageType.PROC, Processes.class);
 		messageTypes.put(MessageType.CPU, CPU.class);
 		messageTypes.put(MessageType.MEM, Memory.class);
@@ -52,11 +53,12 @@ public class MessageMapping {
 		messageTypes.put(MessageType.NET, NetInterface.class);
 		messageTypes.put(MessageType.DISKIO, DiskIO.class);
 		messageTypes.put(MessageType.TCPINFO, TcpInfo.class);
-		
 
 		for (java.util.Map.Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
 			messageClasses.put(next.getValue(), next.getKey());
 		}
+	}
+	public MessageMapping() {
 		registerTypes(msgpack);
 	}
 
@@ -70,11 +72,11 @@ public class MessageMapping {
 		msgpack.register(DeployerMessage.class);
 	}
 
-	public Class<? extends AbstractMessage> map(int type) {
+	public static Class<? extends AbstractMessage> map(int type) {
 		return messageTypes.get(MessageType.values()[type]);
 	}
 
-	public MessageType map(Class<?> msgclass) {
+	public static MessageType map(Class<?> msgclass) {
 		return messageClasses.get(msgclass);
 	}
 
