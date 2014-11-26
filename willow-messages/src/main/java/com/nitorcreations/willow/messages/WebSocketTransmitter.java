@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -40,22 +42,14 @@ public class WebSocketTransmitter {
 		}
 		return ret;
 	}
-	public static WebSocketTransmitter getSingleton(Properties properties) throws URISyntaxException {
-		String statUri = properties.getProperty("statistics.uri", properties.getProperty("deployer.statistics.uri", "ws://localhost:5120/statistics"));
-		long flushInterval = Long.parseLong(properties.getProperty("statistics.flushinterval", properties.getProperty("deployer.statistics.flushinterval", "5000")));
-		return getSingleton(flushInterval, statUri);
-	}
-	
 	public WebSocketTransmitter(long flushInterval, String uri) throws URISyntaxException {
 		this(flushInterval, new URI(uri));
 	}
-	
 	public WebSocketTransmitter(long flushInterval, URI statUri) {
 		this.flushInterval = flushInterval;
 		this.uri = statUri;
 		logger.info(String.format("Configured to transmit to %s every %d milliseconds", uri.toString(), flushInterval));
 	}
-
 	public void start() {
 		if (!workerThread.isAlive()) {
 			workerThread.start();
@@ -81,46 +75,53 @@ public class WebSocketTransmitter {
 		}
 		return true;
 	}
-	
 	@WebSocket
 	public class Worker implements Runnable {
 		private boolean running=true;
 		private final ArrayList<AbstractMessage> send = new ArrayList<AbstractMessage>();
 		private Session wsSession;
+        private WebSocketClient client = new WebSocketClient();
 		@Override
 		public void run() {
 			synchronized (this) {
-				try {
-					connect();
-				} catch (Exception e) {
-					throw new RuntimeException("Failed to connect to " + uri.toString(), e);
-				}
 				while (running) {
 					try {
-						this.wait(flushInterval);
-						if (wsSession == null) continue;
-						doSend();
-					} catch (IOException e) {
-						LogRecord rec = new LogRecord(Level.INFO, "Exception while sending messages");
-						rec.setThrown(e);
-						logger.log(rec);
-					} catch (InterruptedException e) {
-						LogRecord rec = new LogRecord(Level.INFO, "Interrupted");
-						rec.setThrown(e);
-						logger.log(rec);
 						try {
-							doSend();
-						} catch (IOException e1) {
-							LogRecord rec2 = new LogRecord(Level.INFO, "Exception while sending messages");
-							rec2.setThrown(e);
-							logger.log(rec2);
+							if ((!client.isRunning() && !client.isStarting()) || client.isFailed()) {
+								connect();
+							}
+						} catch (Exception e) {
+							throw new RuntimeException("Failed to connect to " + uri.toString(), e);
 						}
-						return;
+						try {
+							this.wait(flushInterval);
+							if (wsSession == null) continue;
+							doSend();
+						} catch (IOException e) {
+							LogRecord rec = new LogRecord(Level.INFO, "Exception while sending messages");
+							rec.setThrown(e);
+							logger.log(rec);
+						} catch (InterruptedException e) {
+							LogRecord rec = new LogRecord(Level.INFO, "Interrupted");
+							rec.setThrown(e);
+							logger.log(rec);
+							try {
+								doSend();
+							} catch (IOException e1) {
+								LogRecord rec2 = new LogRecord(Level.INFO, "Exception while sending messages");
+								rec2.setThrown(e);
+								logger.log(rec2);
+							}
+							return;
+						}
+					} catch (Exception e) {
+						LogRecord rec2 = new LogRecord(Level.INFO, "Exception while sending messages");
+						rec2.setThrown(e);
+						logger.log(rec2);
 					}
 				}
 			}
 		}
-		
 		private void doSend() throws IOException {
 			queue.drainTo(send);
 			if (send.size() > 0) {
@@ -138,42 +139,66 @@ public class WebSocketTransmitter {
 				this.running = false;
 				this.notifyAll();
 			}
+			
 			this.wsSession.close();
+			try {
+				client.stop();
+			} catch (Exception e) {
+				LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to stop");
+				rec.setThrown(e);
+				logger.log(rec);
+			}
+			client.destroy();
 		}
-
 		private void connect() throws Exception {
-	        WebSocketClient client = new WebSocketClient();
+	        wsSession = null;
+			client = new WebSocketClient();
 	        client.start();
 	        ClientUpgradeRequest request = new ClientUpgradeRequest();
-	        client.connect(this, uri, request);
-	        logger.info(String.format("Connecting to : %s", uri));
 	        synchronized (this) {
-	        	while (wsSession == null) {
-	        		this.wait(500);
+	        	Future<Session> future = client.connect(this, uri, request);
+	        	logger.info(String.format("Connecting to : %s", uri));
+	        	try {
+	        		wsSession = future.get();
+	        	} catch (Exception e) {
+    				LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to connect");
+    				rec.setThrown(e);
+    				logger.log(rec);
+	    	    	try {
+	    				client.stop();
+	    				client.destroy();
+	    			} catch (Exception e1) {
+	    				LogRecord rec2 = new LogRecord(Level.INFO, "Exception while trying to disconnect");
+	    				rec2.setThrown(e1);
+	    				logger.log(rec2);
+	    			}
+	        		
 	        	}
 	        }
 	    }
-		@OnWebSocketConnect
-	    public void onConnect(Session session) {
-	    	synchronized (this) {
-	            logger.info(String.format("Got connect: %s", session));
-	            this.wsSession = session;
-	            this.notifyAll();
-			}
-	    }
-	 
 	    @OnWebSocketClose
 	    public void onClose(int statusCode, String reason) {
 	    	logger.info(String.format("Connection closed: %d - %s", statusCode, reason));
-	        this.wsSession = null;
-	        try {
-				connect();
+	    	try {
+				client.stop();
+				client.destroy();
 			} catch (Exception e) {
-				LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to reconnect");
+				LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to handle socket close");
+				rec.setThrown(e);
+				logger.log(rec);
+			}
+	    }
+	    @OnWebSocketError
+	    public void onError(Session wsSession, Throwable err) {
+	    	logger.info(String.format("Connection error: %s - %s", wsSession, err.getMessage()));
+	    	try {
+				client.stop();
+				client.destroy();
+			} catch (Exception e) {
+				LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to handle socket error");
 				rec.setThrown(e);
 				logger.log(rec);
 			}
 	    }
 	}
-
 }

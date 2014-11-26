@@ -40,7 +40,6 @@ var metricMap = {
 		"diskio" : { "title" : "io: ", "format" : d3.format(".2f"), "extent": undefined, colors : defaultColors },
 		"tcpinfo" : { "title" : "conn: ", "format" : d3.format(".0f"), "extent": undefined, colors : defaultColors }
 }
-
 var getQueryVariable = function(variable) {
        var query = window.location.search.substring(1);
        var vars = query.split("&");
@@ -111,7 +110,6 @@ var expandDetails = function(e) {
   		if (host_stop < 0) {
 	      host_stop = parseInt(new Date().getTime());
   		}
-	    
 	    d3.json("/metrics/disk?tag=host_" + host + "&stop=" + host_stop, function(data) {
 	       var divHost = host;
 	 	   nv.addGraph(function() {

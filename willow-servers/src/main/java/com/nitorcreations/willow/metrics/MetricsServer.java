@@ -142,8 +142,8 @@ public class MetricsServer {
     
     private RequestLogHandler createAccessLogHandler() throws URISyntaxException {
         RequestLogHandler requestLogHandler = new RequestLogHandler();
-    	if (System.getProperty("accesslog.websocket") != null) {
-    		WebsocketRequestLog requestLog = new WebsocketRequestLog(2000, System.getProperty("accesslog.websocket"));
+    	if (System.getProperty("wslogging.url") != null) {
+    		WebsocketRequestLog requestLog = new WebsocketRequestLog(2000, System.getProperty("wslogging.url"));
     		requestLogHandler.setRequestLog(requestLog);
     		requestLog.setPreferProxiedForAddress(true);
     	} else {
