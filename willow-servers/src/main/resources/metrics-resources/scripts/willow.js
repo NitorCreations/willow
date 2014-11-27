@@ -101,11 +101,19 @@ var expandDetails = function(e) {
   			$(this).removeAttr("data-expanded");
   		});
   	} else {
-  		$(element).append('<div class="row row-' + host + '">');
-  		$(".row-" + host).append('<div class="fs-' + host + ' col c6" style="height:300px">')
+  		$(element).append('<div class="row row-' + host + ' row1-' + host + '">');
+  		$(".row1-" + host).append('<div class="fs-' + host + ' col c6" style="height:200px">')
 	  	$(".fs-" + host).append("<svg>");
-  		$(".row-" + host).append('<div class="heap-' + host + ' col c6" style="height:300px">')
+  		$(".row1-" + host).append('<div class="heap-' + host + ' col c6" style="height:200px">')
 	  	$(".heap-" + host).append("<svg>");
+  		$(element).append('<div class="row row-' + host + ' row2-' + host + '">');
+  		$(".row2-" + host).append('<div class="access-' + host + ' col c6" style="height:200px">')
+	  	$(".access-" + host).append("<svg>");
+  		$(".row2-" + host).append('<div class="login-' + host + ' col c6" style="height:200px">')
+	  	$(".login-" + host).append('<a class="btn btn-b smooth login">Login</a>');
+  		$(".login-" + host).on("click", function() {
+  			window.open("/terminal-resources/?user=pasi&host=localhost");
+  		});
   		var host_stop = parseInt(detailsStop);
   		if (host_stop < 0) {
 	      host_stop = parseInt(new Date().getTime());
@@ -147,6 +155,29 @@ var expandDetails = function(e) {
 	    	      .transition().duration(500)
 	    	      .call(chart);
 	 			charts["heap-" + host] = chart;
+	 		   $(window).resize(chart.update);
+	    	  return chart;
+	    	});
+	    });
+	    d3.json("/metrics/access?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, function(data) {
+	    	var divHost = host;
+	    	nv.addGraph(function() {
+	    	  var chart =  nv.models.multiBarChart()
+	    	  	  .margin({top: 30, right: 20, bottom: 50, left: 75})
+	 		      .showControls(false)
+	 		      .stacked(true);
+
+	    	  chart.xAxis
+		    	  .tickFormat(function(d) {
+		              return d3.time.format('%X')(new Date(d))
+		            });
+	    	  chart.yAxis
+     	        .tickFormat(d3.format('0f'));
+	 	      d3.select('.access-'  + divHost + ' svg')
+	    	      .datum(data)
+	    	      .transition().duration(500)
+	    	      .call(chart);
+	 			charts["access-" + host] = chart;
 	 		   $(window).resize(chart.update);
 	    	  return chart;
 	    	});
@@ -203,6 +234,8 @@ var isDraggingMouseUp = function(e) {
 		  				updateChart(nextHost, "fs-"));
 		  		d3.json("/metrics/heap?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, 
 		  				updateChart(nextHost, "heap-"));
+		  		d3.json("/metrics/access?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, 
+		  				updateChart(nextHost, "access-"));
 		  	}
 		}
 	}

@@ -43,30 +43,4 @@ public class HeapMemoryMetric extends FullMessageMetric<JmxMessage, Long,Long> {
 			result.values.add(nextPoint);
 		}
 	}
-
-	@Override
-	protected void fillMissingValues(
-			Map<String, SeriesData<Long, Long>> values, List<Long> stepTimes,
-			long stepLen) {
-		for (SeriesData<Long, Long> nextValues : values.values()) {
-			Map<Long, Long> valueMap = nextValues.pointsAsMap();
-			List<Long> addX = new ArrayList<>();
-			for (Long nextStep : stepTimes) {
-				if (!valueMap.containsKey(nextStep)) {
-					addX.add(nextStep);
-				}
-			}
-			for (Long nextAdd : addX) {
-				for (int i = 0; i<nextValues.values.size(); i++) {
-					if (nextValues.values.get(i).x.longValue() > nextAdd) {
-						Point<Long, Long> toAdd = new Point<>();
-						toAdd.x = nextAdd;
-						toAdd.y = 0L;
-						nextValues.values.add(i, toAdd);
-						break;
-					}
-				}
-			}
-		}
-	}
 }

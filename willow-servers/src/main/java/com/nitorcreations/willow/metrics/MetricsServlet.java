@@ -45,6 +45,7 @@ public class MetricsServlet extends GenericServlet implements Servlet {
 		metrics.put("/tcpinfo", ConnectionsMetric.class);
 		metrics.put("/net", NetworkMetric.class);
 		metrics.put("/heap", HeapMemoryMetric.class);
+		metrics.put("/access", AccessLogMetric.class);
 		metrics.put("/requests", RequestCountMetric.class);
 		metrics.put("/latency", RequestDurationMetric.class);
 		metrics.put("/types", MessageTypesMetric.class);

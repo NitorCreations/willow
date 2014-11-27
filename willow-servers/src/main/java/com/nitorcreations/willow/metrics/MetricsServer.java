@@ -34,6 +34,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import ch.qos.logback.classic.LoggerContext;
 
 import com.nitorcreations.willow.common.PropertyServlet;
+import com.nitorcreations.willow.common.TestServlet;
 
 public class MetricsServer {
     final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -58,17 +59,17 @@ public class MetricsServer {
         setupStatistics(context);
         setupTerminal(context);
         setupProxy(context);
+        if ("dev".equals(env)) {
+        	setupTest(context);
+        }
         setupHandlers(server, context);
         server.start();
         long end = currentTimeMillis();
         LOG.info("Succesfully started Jetty on port {} in {} seconds in environment {}", port, (end - start) / 1000.0, env);
-        LOG.info("Web site available at http://localhost:" + port + "/");
-        LOG.info("REST API available at http://localhost:" + port + "/rest");
-        LOG.info("Metrics and health checks available at http://localhost:" + port + "/metrics");
         return server;
     }
     
-    private void setupResourceBases(final ServletContextHandler context, String ... resourceBases) throws IOException {
+	private void setupResourceBases(final ServletContextHandler context, String ... resourceBases) throws IOException {
     	List<String> resources = new ArrayList<>();
     	for (String next : resourceBases) {
     		int i=1;
@@ -129,14 +130,16 @@ public class MetricsServer {
         ServletHolder holder = context.addServlet(PropertyServlet.class, "/properties/*");
         holder.setInitOrder(2);
     }
-
+    private void setupTest(ServletContextHandler context) {
+        LOG.info("Enable test servlet");
+    	context.addServlet(TestServlet.class, "/test/*");
+	}
     private void setupStatistics(final ServletContextHandler context) {
         LOG.info("Enable statistics servlet");
     	context.addServlet(StatisticsServlet.class, "/statistics/*");
     }
-
     private void setupTerminal(final ServletContextHandler context) {
-        LOG.info("Enable statistics servlet");
+        LOG.info("Enable terminal servlet");
     	context.addServlet(TerminalServlet.class, "/terminal/*");
     }
     

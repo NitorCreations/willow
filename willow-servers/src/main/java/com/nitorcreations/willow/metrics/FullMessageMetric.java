@@ -9,6 +9,7 @@ import com.nitorcreations.willow.messages.MessageMapping;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -26,7 +27,7 @@ import org.elasticsearch.search.SearchHit;
 
 import com.google.gson.Gson;
 
-public abstract class FullMessageMetric<T extends AbstractMessage, X, Y extends Comparable<Y>> implements Metric<Collection<SeriesData<X, Y>>> {
+public abstract class FullMessageMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> implements Metric<Collection<SeriesData<X, Y>>> {
 	protected SortedMap<Long, T> rawData;
 	private final Class<T> type;
 	@SuppressWarnings("unchecked")
@@ -65,7 +66,7 @@ public abstract class FullMessageMetric<T extends AbstractMessage, X, Y extends 
 		SearchResponse response = builder.setQuery(query).get();
 		readResponse(response);
 		int len = (int)((stop - start)/step) + 1;
-		Map<String, SeriesData<X, Y>> ret = new HashMap<String, SeriesData<X, Y>>();
+		Map<String, SeriesData<X, Y>> ret = new LinkedHashMap<String, SeriesData<X, Y>>();
 		if (rawData.isEmpty()) return ret.values();
 		List<Long> retTimes = new ArrayList<Long>();
 		long curr=start;
@@ -85,7 +86,32 @@ public abstract class FullMessageMetric<T extends AbstractMessage, X, Y extends 
 		return ret.values();
 	}
 	protected abstract void addValue(Map<String, SeriesData<X, Y>> values, List<T> preeceding, long stepTime, long stepLen);
-	protected abstract void fillMissingValues(Map<String, SeriesData<X, Y>> values, List<Long> stepTimes, long stepLen);
+	@SuppressWarnings("unchecked")
+	protected void fillMissingValues(
+			Map<String, SeriesData<X, Y>> ret, List<Long> retTimes,
+			long stepLen) {
+		for (SeriesData<X, Y> nextValues : ret.values()) {
+			Map<X, Y> valueMap = nextValues.pointsAsMap();
+			List<Long> addX = new ArrayList<>();
+			for (Long nextStep : retTimes) {
+				if (!valueMap.containsKey(nextStep)) {
+					addX.add(nextStep);
+				}
+			}
+			Object zero = 0;
+			for (Long nextAdd : addX) {
+				for (int i = 0; i<nextValues.values.size(); i++) {
+					if (nextValues.values.get(i).x.compareTo((X) nextAdd) > 0) {
+						Point<X, Y> toAdd = new Point<>();
+						toAdd.x = (X)nextAdd;
+						toAdd.y = (Y)zero;
+						nextValues.values.add(i, toAdd);
+						break;
+					}
+				}
+			}
+		}
+	}
 	protected Y median(List<Y> data) {
 		Collections.sort(data);
 		return data.get(data.size()/2);
