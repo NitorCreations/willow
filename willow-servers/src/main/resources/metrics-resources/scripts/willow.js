@@ -159,7 +159,7 @@ var expandDetails = function(e) {
 	    	  return chart;
 	    	});
 	    });
-	    d3.json("/metrics/access?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, function(data) {
+	    d3.json("/metrics/access?tag=host_" + host + "&step=60000&start=" + host_start + "&stop=" + host_stop, function(data) {
 	    	var divHost = host;
 	    	nv.addGraph(function() {
 	    	  var chart =  nv.models.multiBarChart()
