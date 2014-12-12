@@ -37,6 +37,7 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_GLOB             = ".extract.glob";
 	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB        = ".extract.skip.glob";
 	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB      = ".extract.filter.glob";
+	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE        = ".extract.overwrite";
 	public static final String PROPERTY_KEY_REMOTE_REPOSITORY               = "deployer.remote.repository";
 	public static final String PROPERTY_KEY_STATISTICS_URI                  = "deployer.statistics.uri";
 	public static final String PROPERTY_KEY_STATISTICS_FLUSHINTERVAL        = "deployer.statistics.flushinterval";

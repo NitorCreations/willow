@@ -9,6 +9,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.BufferedInputStream;
@@ -141,6 +142,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			}
 		}
 		File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
+		boolean overwrite = "false".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE)) ? false : true;
 		String extractRoot = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, workDir.getAbsolutePath()) ;
 		File root = new File(extractRoot);
 		if (!root.isAbsolute()) {
@@ -186,7 +188,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			}
 			FileUtil.copy(in, target);
 			if (extractGlob != null || skipExtractGlob != null) {
-				extractFile(target, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob);
+				extractFile(target, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
 			}
 			if (md5 != null && Arrays.equals(md5, md5in.digest())) {
 				logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
@@ -203,14 +205,14 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		return true;
 	}
 	private void extractFile(File archive, Map<String, String> replaceTokens, File root, 
-			String extractGlob, String skipExtractGlob, String filterGlob) throws CompressorException, IOException, ArchiveException {
+			String extractGlob, String skipExtractGlob, String filterGlob, boolean overwrite) throws CompressorException, IOException, ArchiveException {
 		String lcFileName = archive.getName().toLowerCase();
 		Set<PathMatcher> extractMatchers = getGlobMatchers(extractGlob);
 		Set<PathMatcher> skipMatchers = getGlobMatchers(skipExtractGlob);
 		Set<PathMatcher> filterMatchers = getGlobMatchers(filterGlob);
 		if (lcFileName.endsWith(".zip")) {
 			try (ZipFile source = new ZipFile(archive)) {
-				extractZip(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+				extractZip(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 			}
 		} else {
 			try (InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024)) {
@@ -218,12 +220,12 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 						lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
 					try (InputStream compressed = cfactory.createCompressorInputStream(in)) {
 						try (ArchiveInputStream source = factory.createArchiveInputStream(compressed)) {
-							extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+							extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 						}
 					}
 				} else {
 					try (ArchiveInputStream source = factory.createArchiveInputStream(in)) {
-						extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+						extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 					}
 				}
 			}
@@ -232,11 +234,11 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 	private void extractZip(ZipFile zipFile, File destFolder,
 			Map<String, String> replaceTokens,
 			Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers,
-			Set<PathMatcher> filterMatchers) throws IOException {
+			Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
 		Enumeration<ZipArchiveEntry> en = zipFile.getEntries();
 		while (en.hasMoreElements()) {
 			ZipArchiveEntry nextEntry = en.nextElement();
-			extractEntry(zipFile.getInputStream(nextEntry), (ArchiveEntry) nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+			extractEntry(zipFile.getInputStream(nextEntry), (ArchiveEntry) nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 		}
 		
 	}
@@ -253,12 +255,13 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		if (!root.isAbsolute()) {
 			root = new File(workDir.getCanonicalFile(), extractRoot);
 		}
+		boolean overwrite = "false".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE)) ? false : true;
 		String extractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB) ;
 		String skipExtractGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
 		String filterGlob = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
 		try {
 			if (extractGlob != null || skipExtractGlob != null) {
-				extractFile(artifactFile, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob);
+				extractFile(artifactFile, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
 			}
 		} catch (CompressorException | IOException | ArchiveException e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract artifact " + artifact);
@@ -295,12 +298,13 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		}
 		return permissions;
 	}
-	private void extractEntry(InputStream is, ArchiveEntry entry, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers) throws IOException {
+	private void extractEntry(InputStream is, ArchiveEntry entry, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
 		File dest = new File(destFolder, entry.getName()).getCanonicalFile();
 		if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {
 			if (entry.isDirectory()) {
 				dest.mkdirs();
 			} else {
+				if (dest.exists() && !overwrite) return;
 				dest.getParentFile().mkdirs();
 				if (globMatches(entry.getName(), filterMatchers)) {
 					FileUtil.filterStream(is, dest, replaceTokens);
@@ -339,11 +343,11 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			}
 		}
 	}
-	private void extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers) throws IOException {
+	private void extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
 		try {
 			ArchiveEntry entry;
 			while((entry =  is.getNextEntry()) != null) {
-				extractEntry(is, entry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers);
+				extractEntry(is, entry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 			}
 		} catch (IOException e) {
 			throw e;
