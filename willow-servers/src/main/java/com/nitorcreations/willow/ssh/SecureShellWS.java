@@ -29,7 +29,7 @@ import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 @WebSocket
 public class SecureShellWS {
 	private Session session;
-	private Channel shell;
+	private ChannelShell shell;
 	private  JSch jsch = new JSch();
 	private com.jcraft.jsch.Session jschSession;
 	private CountDownLatch closeLatch;
@@ -70,8 +70,9 @@ public class SecureShellWS {
 			jschSession = jsch.getSession(user, host, 22);
 			jschSession.setConfig(config);
 			jschSession.connect(60000);
-			shell = jschSession.openChannel("shell");
-			((ChannelShell) shell).setPtyType("vt102");
+			shell = (ChannelShell) jschSession.openChannel("shell");
+			shell.setAgentForwarding(true);
+			shell.setPtyType("vt102");
 			shell.connect();
 		} catch (JSchException e) {
 			e.printStackTrace();
