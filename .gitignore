@@ -6,3 +6,8 @@ release.properties
 .project
 .settings
 .classpath
+
+# Intellij
+.idea/
+*.iml
+*.iws
