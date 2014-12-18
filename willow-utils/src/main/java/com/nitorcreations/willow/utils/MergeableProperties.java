@@ -83,19 +83,21 @@ public class MergeableProperties extends Properties {
 	}
 
 	private void postMerge() {
-		LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
-		StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
-		for (Entry<String, String> next : table.entrySet()) {
-			String key = sub.replace(next.getKey());
-			String value = sub.replace(next.getValue());
-			finalTable.put(key, value);
+		boolean changed = true;
+		while (changed) {
+			changed = false;
+			LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
+			StrSubstitutor sub = new StrSubstitutor(table, "${", "}", '\\');
+			for (Entry<String, String> next : table.entrySet()) {
+				String origKey = next.getKey();
+				String origValue = next.getValue();
+				String key = sub.replace(origKey);
+				String value = sub.replace(origValue);
+				finalTable.put(key, value);
+				changed = changed || !origKey.equals(key) ||  !origValue.equals(value);
+			}
+			table = finalTable;
 		}
-		for (Entry<String, String> next : table.entrySet()) {
-			String key = evaluate(sub.replace(next.getKey()), finalTable);
-			String value = evaluate(sub.replace(next.getValue()), finalTable);
-			finalTable.put(key, value);
-		}
-		table = finalTable;
 	}
 
 	private String evaluate(String replace,
@@ -196,7 +198,7 @@ public class MergeableProperties extends Properties {
 		String v = resolveIndexes((String) value);
 		StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');
 		k = sub.replace(k);
-		v = sub.replace(v);
+		v = evaluate(sub.replace(v), table);
 		String prev = table.get(k);
 		if (prev != null && table.get(k + ".appendchar") != null) {
 			return table.put(k, prev + table.get(k + ".appendchar") + v);
