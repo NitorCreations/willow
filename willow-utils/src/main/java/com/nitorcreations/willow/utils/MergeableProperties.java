@@ -21,12 +21,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 
@@ -53,26 +50,21 @@ public class MergeableProperties extends Properties {
 		super(defaults);
 		table.putAll(values);
 		this.prefixes = prefixes;
-		Bindings bind = new SimpleBindings();
 	}
-
 	public MergeableProperties() {
 		super();
 		defaults = new Properties();
 		prefixes = new String[] { "classpath:" };
 	}
-
 	public MergeableProperties(String... prefixes) {
 		super();
 		defaults = new Properties();
 		this.prefixes = prefixes;
 	}
-
 	public Properties merge(String name) {
 		merge0(name);
 		return this;
 	}
-
 	public Properties merge(Properties prev, String name) {
 		if (prev != null) {
 			putAll(prev);
@@ -81,7 +73,6 @@ public class MergeableProperties extends Properties {
 		postMerge();
 		return this;
 	}
-
 	private void postMerge() {
 		boolean changed = true;
 		while (changed) {
@@ -99,7 +90,6 @@ public class MergeableProperties extends Properties {
 			table = finalTable;
 		}
 	}
-
 	private String evaluate(String replace) {
 		Matcher m = SCRIPT_REGEX.matcher(replace);
 		StringBuffer ret = new StringBuffer();
@@ -119,7 +109,6 @@ public class MergeableProperties extends Properties {
 		ret.append(replace.substring(end));
 		return ret.toString();
 	}
-
 	public void deObfuscate(PropertySource source, String obfuscatedPrefix) {
 		if (obfuscatedPrefix == null)
 			return;
@@ -137,7 +126,6 @@ public class MergeableProperties extends Properties {
 		}
 		table = finalTable;
 	}
-
 	private InputStream getUrlInputStream(String url) throws IOException {
 		InputStream in = null;
 		if (url.startsWith(URL_PREFIX_CLASSPATH)) {
@@ -154,7 +142,6 @@ public class MergeableProperties extends Properties {
 		}
 		return in;
 	}
-
 	private void merge0(String name) {
 		put(INCLUDE_PROPERTY + ".appendchar", "|");
 		try (InputStream in = getUrlInputStream(name)) {
@@ -182,7 +169,6 @@ public class MergeableProperties extends Properties {
 			}
 		}
 	}
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public Set<Entry<Object, Object>> entrySet() {
@@ -190,7 +176,6 @@ public class MergeableProperties extends Properties {
 		Set ret = table.entrySet();
 		return (Set<Entry<Object, Object>>) ret;
 	}
-
 	@Override
 	public Object put(Object key, Object value) {
 		String k = resolveIndexes((String) key);
@@ -205,7 +190,6 @@ public class MergeableProperties extends Properties {
 			return table.put(k, v);
 		}
 	}
-
 	protected String resolveIndexes(String original) {
 		String ret = original;
 		Matcher m = ARRAY_REFERENCE_REGEX.matcher(ret);
@@ -241,24 +225,20 @@ public class MergeableProperties extends Properties {
 		}
 		return ret;
 	}
-
 	@Override
 	public Enumeration<Object> keys() {
 		return new ObjectIteratorEnumertion(table.keySet().iterator());
 	}
-
 	@Override
 	public Object get(Object key) {
 		return table.get(key);
 	}
-
 	@Override
 	public String getProperty(String key) {
 		String oval = table.get(key);
 		return ((oval == null) && (defaults != null)) ? defaults
 				.getProperty(key) : oval;
 	}
-
 	public List<String> getArrayProperty(String key, String suffix) {
 		int i = 0;
 		if (suffix == null)
@@ -271,80 +251,64 @@ public class MergeableProperties extends Properties {
 		}
 		return ret;
 	}
-
 	public List<String> getArrayProperty(String key) {
 		return getArrayProperty(key, null);
 	}
-
 	public void putAll(MergeableProperties toMerge) {
 		for (Entry<String, String> next : toMerge.table.entrySet()) {
 			put(next.getKey(), next.getValue());
 		}
 	}
-
 	public Set<Entry<String, String>> backingEntrySet() {
 		return table.entrySet();
 	}
-
 	public Map<String, String> backingTable() {
 		return table;
 	}
-
 	@Override
 	public Object remove(Object key) {
 		return table.remove((String) key);
 	}
-
 	@Override
 	public String toString() {
 		return table.toString();
 	}
-
 	@Override
 	public Enumeration<?> propertyNames() {
 		return new ObjectIteratorEnumertion(table.keySet().iterator());
 	}
-
 	@Override
 	public Set<String> stringPropertyNames() {
 		return table.keySet();
 	}
-
 	@Override
 	public synchronized int size() {
 		return table.size();
 	}
-
 	@Override
 	public synchronized boolean isEmpty() {
 		return table.isEmpty() && defaults.isEmpty();
 	}
-
 	@Override
 	public synchronized Enumeration<Object> elements() {
 		return null;
 	}
-
 	@Override
 	public synchronized boolean contains(Object value) {
 		return table.containsValue(value) || defaults.containsValue(value);
 	}
-
 	@Override
 	public synchronized boolean containsKey(Object key) {
 		return table.containsKey(key) || defaults.containsKey(key);
 	}
-
 	@Override
 	public synchronized Object clone() {
 		return new MergeableProperties(defaults, table, prefixes);
 	}
-
 	@Override
 	public Set<Object> keySet() {
 		return new LinkedHashSet<Object>(table.values());
 	}
-
 	public Collection<Object> values() {
 		return new LinkedHashSet<Object>(table.values());
 	}
