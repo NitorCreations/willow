@@ -157,6 +157,7 @@ public class MergeableProperties extends Properties {
 	private void merge0(String name) {
 		put(INCLUDE_PROPERTY + ".appendchar", "|");
 		try (InputStream in = getUrlInputStream(name)) {
+			if (in == null) throw new IOException();
 			load(in);
 		} catch (IOException e) {
 			for (String nextPrefix : prefixes) {
