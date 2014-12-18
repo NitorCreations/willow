@@ -100,20 +100,19 @@ public class MergeableProperties extends Properties {
 		}
 	}
 
-	private String evaluate(String replace,
-			LinkedHashMap<String, String> finalTable) {
+	private String evaluate(String replace) {
 		Matcher m = SCRIPT_REGEX.matcher(replace);
 		StringBuffer ret = new StringBuffer();
 		int end = 0;
 		engine.put("self", table);
-		engine.put("result", finalTable);
 		while (m.find()) {
 			ret.append(m.group(1));
 			try {
 				ret.append(engine.eval(m.group(3).toString()));
 			} catch (ScriptException e) {
 				ret.append(m.group(2));
-				e.printStackTrace();
+				LogRecord rec = new LogRecord(Level.INFO, "Failed to execute javascript");
+				rec.setThrown(e);
 			}
 			end = m.end();
 		}
@@ -198,7 +197,7 @@ public class MergeableProperties extends Properties {
 		String v = resolveIndexes((String) value);
 		StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');
 		k = sub.replace(k);
-		v = evaluate(sub.replace(v), table);
+		v = evaluate(sub.replace(v));
 		String prev = table.get(k);
 		if (prev != null && table.get(k + ".appendchar") != null) {
 			return table.put(k, prev + table.get(k + ".appendchar") + v);
