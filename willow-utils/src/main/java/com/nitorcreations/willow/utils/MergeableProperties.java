@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -94,7 +95,7 @@ public class MergeableProperties extends Properties {
 		Matcher m = SCRIPT_REGEX.matcher(replace);
 		StringBuffer ret = new StringBuffer();
 		int end = 0;
-		engine.put("self", table);
+		engine.put("self", this);
 		while (m.find()) {
 			ret.append(m.group(1));
 			try {
@@ -103,6 +104,7 @@ public class MergeableProperties extends Properties {
 				ret.append(m.group(2));
 				LogRecord rec = new LogRecord(Level.INFO, "Failed to execute javascript");
 				rec.setThrown(e);
+				log.log(rec);
 			}
 			end = m.end();
 		}
@@ -189,6 +191,10 @@ public class MergeableProperties extends Properties {
 		} else {
 			return table.put(k, v);
 		}
+	}
+	@Override
+	public Object setProperty(String key, String value) {
+		return put(key, value);
 	}
 	protected String resolveIndexes(String original) {
 		String ret = original;
@@ -307,7 +313,7 @@ public class MergeableProperties extends Properties {
 	}
 	@Override
 	public Set<Object> keySet() {
-		return new LinkedHashSet<Object>(table.values());
+		return new LinkedHashSet<Object>(table.keySet());
 	}
 	public Collection<Object> values() {
 		return new LinkedHashSet<Object>(table.values());
