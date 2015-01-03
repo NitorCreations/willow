@@ -130,7 +130,10 @@ public class Main extends DeployerControl implements MainMBean {
 		for (MergeableProperties launchProps : launchPropertiesList) {
 			LaunchMethod launcher = null;
 			try {
-				launcher = LaunchMethod.TYPE.valueOf(launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + PROPERTY_KEY_METHOD)).getLauncher();
+				String method =  launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + PROPERTY_KEY_METHOD);
+				if (method != null && LaunchMethod.TYPE.valueOf(method) != null) {
+					launcher = LaunchMethod.TYPE.valueOf(method).getLauncher();
+				}
 			} catch (Throwable t) {
 				usage(t);
 			}
@@ -158,9 +161,11 @@ public class Main extends DeployerControl implements MainMBean {
 			} catch (Exception e) {
 				usage(e);
 			}
-			launcher.setProperties(launchProps);
-			executor.submit(launcher);
-			children.add(launcher);
+			if (launcher != null) {
+				launcher.setProperties(launchProps);
+				executor.submit(launcher);
+				children.add(launcher);
+			}
 			if (transmitter != null) {
 				try {
 					ProcessStatSender statsSender = new ProcessStatSender(transmitter, getMBeanServerConnection(launcher.getProcessId()), launcher, new StatisticsConfig());
@@ -170,6 +175,9 @@ public class Main extends DeployerControl implements MainMBean {
 				} catch (Exception e) {
 					usage(e);
 				}
+			}
+			if (transmitter == null && launcher == null) {
+				System.exit(0);
 			}
 		}
 		i++;
@@ -201,9 +209,11 @@ public class Main extends DeployerControl implements MainMBean {
 						lastThrown = e;
 					}
 				}
+				launcher.destroyChild();
 				i++;
 			}
 		}
+		exec.shutdownNow();
 		if (lastThrown != null) throw lastThrown;
 	}
 	public void setupLogging() {
@@ -247,10 +257,12 @@ public class Main extends DeployerControl implements MainMBean {
 					log.warning("Destroy failed: " + e.getMessage());
 				}
 			}
+			stopexec.shutdownNow();
 		}
 		for (PlatformStatsSender next : stats) {
 			next.stop();
 		}
+		executor.shutdownNow();
 	}
 
 	@Override
