@@ -176,11 +176,12 @@ public class Main extends DeployerControl implements MainMBean {
 					usage(e);
 				}
 			}
-			if (transmitter == null && launcher == null) {
-				System.exit(0);
-			}
+			i++;
 		}
-		i++;
+		if (transmitter == null && children.isEmpty()) {
+			System.exit(0);
+		}
+
 	}
 	public static void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
 		ExecutorService exec = Executors.newFixedThreadPool(1);
