@@ -39,9 +39,13 @@ public class PropertiesMojo extends AbstractMojo {
 		Properties tmp = new Properties();
 		tmp.putAll(project.getProperties());
 		for (Entry<Object,Object> next : project.getProperties().entrySet()) {
-			String value = System.getProperty((String)next.getKey());
+			String key = (String)next.getKey();
+			String value = System.getProperty(key);
 			if (value != null) {
-				tmp.put(next.getKey(), value);
+				tmp.put(key, value);
+				if (!"false".equals(System.getProperty(key + ".readonly"))) {
+					tmp.put(key + ".readonly", "true");
+				}
 			}
 		}
 		MergeableProperties p = new MergeableProperties(prefixes);
