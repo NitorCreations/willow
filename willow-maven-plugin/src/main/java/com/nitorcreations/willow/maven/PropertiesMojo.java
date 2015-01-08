@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map.Entry;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -36,6 +37,12 @@ public class PropertiesMojo extends AbstractMojo {
 		}
 		MergeableProperties p = new MergeableProperties(prefixes);
 		p.merge(project.getProperties(), rootProperties);
+		for (Entry<Object,Object> next : project.getProperties().entrySet()) {
+			String value = System.getProperty((String)next.getKey());
+			if (value != null) {
+				p.put(next.getKey(), value);
+			}
+		}
 		try (OutputStream out = new FileOutputStream(outputFile)){
 			p.store(out, String.format("Artifact properties for %s", project.getArtifact().toString()));
 			out.flush();
