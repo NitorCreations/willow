@@ -32,6 +32,7 @@ public interface PropertyKeys {
 	public static final String PROPERTY_KEY_DOWNLOAD_DIRECTORY              = "deployer.download.directory";
 	public static final String PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT        = "deployer.download.artifact";
 	public static final String PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5             = ".md5";
+	public static final String PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5      = ".ignore.md5";
 	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_INTERPOLATE_GLOB = ".extract.interpolate.glob";
 	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_ROOT             = ".extract.root";
 	public static final String PROPERTY_KEY_SUFFIX_EXTRACT_GLOB             = ".extract.glob";
