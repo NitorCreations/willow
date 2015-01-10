@@ -43,7 +43,7 @@ public class PropertiesMojo extends AbstractMojo {
 			String value = System.getProperty(key);
 			if (value != null) {
 				tmp.put(key, value);
-				if (!"false".equals(System.getProperty(key + ".readonly"))) {
+				if (!"false".equalsIgnoreCase(System.getProperty(key + ".readonly"))) {
 					tmp.put(key + ".readonly", "true");
 				}
 			}

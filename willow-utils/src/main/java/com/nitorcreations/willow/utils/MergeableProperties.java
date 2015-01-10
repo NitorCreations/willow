@@ -186,7 +186,7 @@ public class MergeableProperties extends Properties {
 		k = sub.replace(k);
 		v = evaluate(sub.replace(v));
 		String prev = table.get(k);
-		if (prev != null && "true".equals(table.get(k + ".readonly"))) {
+		if (prev != null && "true".equalsIgnoreCase(table.get(k + ".readonly"))) {
 			return prev;
 		}
 		if (prev != null && table.get(k + ".appendchar") != null) {
