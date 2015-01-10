@@ -5,6 +5,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT;
@@ -139,6 +140,9 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			} catch (IOException | DecoderException e) {
 				LogRecord rec = new LogRecord(Level.INFO, "No md5 sum available" + urlMd5);
 				logger.log(rec);
+				if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
+					throw new IOException("Failed to get a valid md5sum for " + url, e);
+				}
 			}
 		}
 		File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
@@ -192,8 +196,8 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			}
 			if (md5 != null && Arrays.equals(md5, md5in.digest())) {
 				logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
-			} else if (md5 != null){
-				throw new IOException("MD5 Sum does not match " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(md5in.digest()));
+			} else if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
+				throw new IOException("MD5 Sum does not match for " + url + " - " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(md5in.digest()));
 			}
 		} catch (IOException | CompressorException | ArchiveException 
 				| NoSuchAlgorithmException e) {
