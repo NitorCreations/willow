@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,13 +34,16 @@ public class FileUtil {
 		return count;
 	}
 	public static long filterStream(InputStream original, File target, Map<String, String> replaceTokens) throws IOException {
-		return filterStream(original, new FileOutputStream(target), replaceTokens);
+		try (OutputStream out = new FileOutputStream(target)) {
+			return filterStream(original, out, replaceTokens);
+		}
 	}
 
 	public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens) throws IOException {
-		InputStream in = new ReplaceStringsInputStream(original, replaceTokens);
-		OutputStream bOut = new BufferedOutputStream(out, BUFFER_LEN);
-		return copyByteByByte(in, bOut);
+		try (InputStream in = new ReplaceStringsInputStream(new BufferedInputStream(original, BUFFER_LEN), replaceTokens);
+				OutputStream bOut = new BufferedOutputStream(out, BUFFER_LEN)) {
+			return copyByteByByte(in, bOut);
+		}
 	}
 
 	public static long copyByteByByte(InputStream in, OutputStream out) throws IOException {
