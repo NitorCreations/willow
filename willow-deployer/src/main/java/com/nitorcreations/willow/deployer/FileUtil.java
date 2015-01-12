@@ -33,9 +33,7 @@ public class FileUtil {
 		return count;
 	}
 	public static long filterStream(InputStream original, File target, Map<String, String> replaceTokens) throws IOException {
-		InputStream in = new ReplaceStringsInputStream(original, replaceTokens);
-		OutputStream out = new BufferedOutputStream(new FileOutputStream(target), 8 * 1024);
-		return copyByteByByte(in, out);
+		return filterStream(original, new FileOutputStream(target), replaceTokens);
 	}
 
 	public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens) throws IOException {
