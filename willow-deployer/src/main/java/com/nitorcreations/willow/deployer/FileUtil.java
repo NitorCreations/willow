@@ -11,7 +11,7 @@ import java.util.Map;
 import org.codehaus.swizzle.stream.ReplaceStringsInputStream;
 
 public class FileUtil {
-	public static final int BUFFER_LEN = 4 * 1024;
+	public static final int BUFFER_LEN = 8 * 1024;
 	public static String getFileName(String name) {
 		int lastSeparator = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
 		return name.substring(lastSeparator + 1);
@@ -38,7 +38,7 @@ public class FileUtil {
 
 	public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens) throws IOException {
 		InputStream in = new ReplaceStringsInputStream(original, replaceTokens);
-		OutputStream bOut = new BufferedOutputStream(out, 8 * 1024);
+		OutputStream bOut = new BufferedOutputStream(out, BUFFER_LEN);
 		return copyByteByByte(in, bOut);
 	}
 
