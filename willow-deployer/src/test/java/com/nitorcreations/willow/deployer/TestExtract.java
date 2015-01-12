@@ -3,6 +3,8 @@ package com.nitorcreations.willow.deployer;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import org.junit.Test;
 
@@ -10,7 +12,7 @@ import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class TestExtract {
 	@Test
-	public void testExtract() {
+	public void testExtract() throws IOException {
 		MergeableProperties props = new MergeableProperties();
 		props.setProperty("deployer.download.directory", "target/test-download");
 		props.setProperty("deployer.download.url[]", "file:./target/test-classes/test.zip");
@@ -31,5 +33,8 @@ public class TestExtract {
 		res = new File("target/test2-extract/bin/cm");
 		assertTrue(res.exists());
 		assertTrue(res.canExecute());
+		for (String line : Files.readAllLines(res.toPath())) {
+			assertFalse(line.contains("@coremedia.admin.user@"));
+		}
 	}
 }

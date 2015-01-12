@@ -82,8 +82,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 	public Integer call() {
 		Map<String, String> replaceTokens = new HashMap<>();
 		for (Entry<Object,Object> nextEntry : properties.entrySet()) {
-			replaceTokens.put("${" + nextEntry.getKey() + "}", (String)nextEntry.getValue());
-			replaceTokens.put("@" + nextEntry.getKey() + "@", (String)nextEntry.getValue());
+			replaceTokens.put((String)nextEntry.getKey(), (String)nextEntry.getValue());
 		}
 		int i = 0;
 		int retries = 0;
