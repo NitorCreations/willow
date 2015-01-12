@@ -182,22 +182,24 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 			} else {
 				target = File.createTempFile("deployer.download", fileName);
 			}
-			InputStream in;
-			MD5SumInputStream md5in = null;
-			if (md5 != null) {
-				md5in = new MD5SumInputStream(conn.getInputStream());
-				in = md5in;
-			} else {
-				in = conn.getInputStream();
-			}
-			FileUtil.copy(in, target);
-			if (extractGlob != null || skipExtractGlob != null) {
-				extractFile(target, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
-			}
-			if (md5 != null && Arrays.equals(md5, md5in.digest())) {
-				logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
-			} else if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
-				throw new IOException("MD5 Sum does not match for " + url + " - " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(md5in.digest()));
+			try (InputStream bIn = new BufferedInputStream(conn.getInputStream(), FileUtil.BUFFER_LEN)) {
+				InputStream in = null;
+				MD5SumInputStream md5in = null;
+				if (md5 != null) {
+					md5in = new MD5SumInputStream(bIn);
+					in = md5in;
+				} else {
+					in = bIn;
+				}
+				FileUtil.copy(in, target);
+				if (md5 != null && Arrays.equals(md5, md5in.digest())) {
+					logger.info(url + " md5 sum ok " + Hex.encodeHexString(md5));
+				} else if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
+					throw new IOException("MD5 Sum does not match for " + url + " - " + Hex.encodeHexString(md5) + " != " + Hex.encodeHexString(md5in.digest()));
+				}
+				if (extractGlob != null || skipExtractGlob != null) {
+					extractFile(target, replaceTokens, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
+				}
 			}
 		} catch (IOException | CompressorException | ArchiveException 
 				| NoSuchAlgorithmException e) {
