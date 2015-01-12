@@ -145,7 +145,6 @@ public class MergeableProperties extends Properties {
 		return in;
 	}
 	private void merge0(String name) {
-		put(INCLUDE_PROPERTY + ".appendchar", "|");
 		try (InputStream in = getUrlInputStream(name)) {
 			if (in == null) throw new IOException();
 			load(in);
@@ -159,15 +158,6 @@ public class MergeableProperties extends Properties {
 							"Failed to render url: " + url);
 					this.log.log(rec);
 				}
-			}
-		}
-		String include = (String) remove(INCLUDE_PROPERTY);
-		if (include != null && !include.isEmpty()) {
-			for (String nextInclude : include.split("\\|")) {
-				if (log.isLoggable(Level.FINE)) {
-					log.fine("Including file: " + nextInclude);
-				}
-				merge0(nextInclude);
 			}
 		}
 	}
@@ -188,6 +178,10 @@ public class MergeableProperties extends Properties {
 		String prev = table.get(k);
 		if (prev != null && "true".equalsIgnoreCase(table.get(k + ".readonly"))) {
 			return prev;
+		}
+		if (INCLUDE_PROPERTY.equals(k)) {
+			merge0(v);
+			return null;
 		}
 		if (prev != null && table.get(k + ".appendchar") != null) {
 			return table.put(k, prev + table.get(k + ".appendchar") + v);
