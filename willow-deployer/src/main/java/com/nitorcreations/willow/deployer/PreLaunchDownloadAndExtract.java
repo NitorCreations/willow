@@ -72,7 +72,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
 		this.properties = properties;
 	}
 	public Integer call() {
-		ExecutorService executor = Executors.newFixedThreadPool(5);
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		int downloads = 0;
 		int i=0;
 		String nextUrl=null;
