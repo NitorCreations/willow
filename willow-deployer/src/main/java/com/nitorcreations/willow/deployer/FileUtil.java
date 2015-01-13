@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.codehaus.swizzle.stream.DelimitedTokenReplacementInputStream;
-import org.codehaus.swizzle.stream.StringTokenHandler;
+import com.nitorcreations.willow.utils.ReplaceTokensInputStream;
+
 
 public class FileUtil {
 	public static final int BUFFER_LEN = 8 * 1024;
@@ -41,12 +41,9 @@ public class FileUtil {
 	}
 
 	public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens) throws IOException {
-		try (InputStream in =
-				new DelimitedTokenReplacementInputStream(
-						new DelimitedTokenReplacementInputStream(
-								new BufferedInputStream(original, BUFFER_LEN),
-								"@", "@", new ReplaceTokenHandler("@", "@", replaceTokens))
-						, "${", "}", new ReplaceTokenHandler("${", "}", replaceTokens));
+		try (InputStream in = new ReplaceTokensInputStream(
+				new BufferedInputStream(original, BUFFER_LEN),replaceTokens, 
+				ReplaceTokensInputStream.MAVEN_DELIMITERS);
 				OutputStream bOut = new BufferedOutputStream(out, BUFFER_LEN)) {
 			return copyByteByByte(in, bOut);
 		}
@@ -77,22 +74,6 @@ public class FileUtil {
 					if (out != null) out.close();
 				}
 			}
-		}
-	}
-	private static class ReplaceTokenHandler extends StringTokenHandler {
-		private Map<String, String> tokens;
-		private String start;
-		private String end;
-		public ReplaceTokenHandler(String start, String end, Map<String, String> tokens) {
-			this.tokens = tokens;
-			this.start = start;
-			this.end = end;
-		}
-		@Override
-		public String handleToken(String token) throws IOException {
-			String val = tokens.get(token);
-			if (val != null) return val;
-			return start + token + end;
 		}
 	}
 }

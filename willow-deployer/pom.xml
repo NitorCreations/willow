@@ -102,10 +102,6 @@
       <artifactId>commons-compress</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.swizzle</groupId>
-      <artifactId>swizzle-stream</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun</groupId>
       <artifactId>tools</artifactId>
       <scope>system</scope>
