@@ -7,7 +7,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
-
+import static com.nitorcreations.willow.deployer.FileUtil.*;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +43,7 @@ public class UrlDownloader implements Callable<File> {
 		this.url = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index);
 		int queryIndex = url.lastIndexOf("?");
 		if (queryIndex < 0) queryIndex = url.length();
-		fileName = FileUtil.getFileName(url);
+		fileName = getFileName(url);
 		logger = Logger.getLogger(fileName);
 	}
 	
@@ -66,7 +66,7 @@ public class UrlDownloader implements Callable<File> {
 						target = new File(workDir, finalPath).getCanonicalFile();
 					}
 					File finalDir = target.getParentFile();
-					if (!finalDir.exists() || finalDir.mkdirs()) {
+					if (!createDir(finalDir)) {
 						throw new IOException("Failed to create final download directory " + finalDir.getAbsolutePath());
 					}
 				} else  if (downloadDir != null) {
@@ -74,7 +74,7 @@ public class UrlDownloader implements Callable<File> {
 					if (!downloadDirFile.isAbsolute()) {
 						downloadDirFile = new File(workDir, downloadDir).getCanonicalFile();
 					}
-					if (!(downloadDirFile.exists() || downloadDirFile.mkdirs())) {
+					if (!createDir(downloadDirFile)) {
 						throw new IOException("Failed to create final download directory " + downloadDirFile.getAbsolutePath());
 					}
 					target = new File(downloadDirFile, fileName);
