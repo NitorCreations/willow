@@ -27,7 +27,8 @@ public class ReplaceTokensInputStream extends FilterInputStream {
 	private int longestDelimeterLength = 0;
 	private boolean streamExhausted = false;
 	private List<Integer> available = new ArrayList<>();
-	private int end = 0;
+	private int length = 0;
+	private int start = 0;
 	private final byte[] buffer;
 	public static final StartEndDelimeters AT_DELIMITERS = new StartEndDelimeters("@", "@");
 	public static final StartEndDelimeters CURLY_DELIMITERS = new StartEndDelimeters("${", "}");
@@ -68,10 +69,10 @@ public class ReplaceTokensInputStream extends FilterInputStream {
 		}
 		if (!streamExhausted) {
 			append(superRead());
-		} else if (end < 1) {
+		} else if (length < 1) {
 			return -1;
 		} else {
-			shift(end, true);
+			shift(length, true);
 			return available.remove(0);
 		}
 		String bufferStr = getBufferString();
@@ -90,29 +91,55 @@ public class ReplaceTokensInputStream extends FilterInputStream {
 				}
 				return available.remove(0);
 			}
-			if (end == buffer.length) break;
+			if (length == buffer.length) break;
 			append(superRead());
 			bufferStr = getBufferString();
 		} while (matchToken == null && !streamExhausted);
-		if (end < 1 && available.isEmpty()) return -1;
+		if (length < 1 && available.isEmpty()) return -1;
 		shift(1, true);
 		return available.remove(0);
 	}
 	private void append(int next) {
 		if (next != -1) {
-			buffer[end] = (byte)(next & 0xFF);
-			++end;
+			buffer[(start + length) % buffer.length] = (byte)(next & 0xFF);
+			++length;
 		}
 	}
 	private void shift(int shift, boolean makeAvailable) {
-		for (int i=shift; i<=end;i++) {
-			if (makeAvailable) {
-				available.add((int)buffer[i-shift] & 0xFF);
+		int doShift = Math.min(length, shift);
+		if (makeAvailable) {
+			for (int i=0; i<doShift;i++) {
+				available.add((int)buffer[(start + i) % buffer.length] & 0xFF);
 			}
-			if (i==end) break;
-			buffer[i-shift] = buffer[i];
 		}
-		end-=shift;
+		length-=doShift;
+		start = (start + doShift) % buffer.length;
+	}
+	private String getBufferString() {
+		StringBuilder ret = new StringBuilder();
+		int firstLen = Math.min(buffer.length - start, length);
+		ret.append(new String(buffer, start, firstLen, charset));
+		if (firstLen < length) {
+			ret.append(new String(buffer, 0, length - firstLen, charset));
+		}
+		return ret.toString();
+	}
+	private void eatUpToAndIncluding(int startLen, String delimiter, boolean makeAvailable) {
+		shift(startLen, makeAvailable);
+		while (!getBufferString().startsWith(delimiter)) {
+			shift(1, makeAvailable);
+		}
+		shift(delimiter.getBytes(charset).length, makeAvailable);
+	}
+	private List<StartEndDelimeters> getPotentialMatches(String bufferStr) {
+		List<StartEndDelimeters> ret = new ArrayList<>();
+		for (StartEndDelimeters next : delimiters) {
+			int len = Math.min(next.start.length(), bufferStr.length());
+			if (next.start.substring(0, len).equals(bufferStr.subSequence(0, len))) {
+				ret.add(next);
+			}
+		}
+		return ret;
 	}
 	private String getMatchToken(String bufferStr, List<StartEndDelimeters> potentialMatches) {
 		for (StartEndDelimeters next : potentialMatches.toArray(new StartEndDelimeters[potentialMatches.size()])) {
@@ -122,7 +149,7 @@ public class ReplaceTokensInputStream extends FilterInputStream {
 				if (endIndex > 0) {
 					String ret = tokens.get(bufferStr.substring(next.start.length(), endIndex));
 					if (ret != null) {
-						shift(endIndex + next.end.length(), false);
+						eatUpToAndIncluding(next.start.getBytes(charset).length, next.end, false);
 						return ret;
 					}
 				}
@@ -138,18 +165,5 @@ public class ReplaceTokensInputStream extends FilterInputStream {
 			streamExhausted = true;
 		}
 		return ret;
-	}
-	private List<StartEndDelimeters> getPotentialMatches(String bufferStr) {
-		List<StartEndDelimeters> ret = new ArrayList<>();
-		for (StartEndDelimeters next : delimiters) {
-			int len = Math.min(next.start.length(), bufferStr.length());
-			if (next.start.substring(0, len).equals(bufferStr.subSequence(0, len))) {
-				ret.add(next);
-			}
-		}
-		return ret;
-	}
-	private String getBufferString() {
-		return new String(buffer, 0, end, charset);
 	}
 }
