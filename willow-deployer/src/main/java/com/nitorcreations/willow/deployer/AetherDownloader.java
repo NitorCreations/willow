@@ -1,10 +1,12 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -23,13 +25,23 @@ import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 
-public class AetherDownloader {
+public class AetherDownloader implements Callable<File> {
 	private String localRepo;
 	private String remoteRepo;
 	private LocalRepository local;
 	private RemoteRepository remote;
 	private RepositorySystem system;
 
+	private final String artifact;
+	public AetherDownloader() {
+		this.artifact = null;
+	}
+	public AetherDownloader(Properties properties, String index) {
+		setProperties(properties);
+		this.artifact = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index);
+		int queryIndex = artifact.lastIndexOf("?");
+		if (queryIndex < 0) queryIndex = artifact.length();
+	}
 	public File downloadArtifact(String artifactCoords) {
 		Dependency dependency = new Dependency( new DefaultArtifact( artifactCoords ), "runtime" );
 		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
@@ -76,5 +88,10 @@ public class AetherDownloader {
 		system = GuiceRepositorySystemFactory.newRepositorySystem();
 		local = new LocalRepository(localRepo);
 		remote = new RemoteRepository.Builder("deployer" , "default", remoteRepo).build();
+	}
+	@Override
+	public File call() throws Exception {
+		if (artifact == null) return null;
+		return downloadArtifact(artifact);
 	}
 }

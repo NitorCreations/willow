@@ -36,6 +36,7 @@ import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.RuntimeErrorException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -172,13 +173,21 @@ public class DeployerControl {
 			downloads.add(executor.submit(downloader));
 		}
 		int i=1;
+		boolean failures = false;
 		for (Future<Integer> next : downloads) {
 			try {
-				log.info("Download " + i++ + " got " + next.get() + " items");
+				int nextSuccess = next.get();
+				if (nextSuccess > -1) {
+					log.info("Download " + i++ + " got " +  nextSuccess + " items");
+				} else {
+					log.info("Download " + i++ + " failed (" + -nextSuccess + " attempted)");
+					failures = true;
+				}
 			} catch (InterruptedException | ExecutionException e) {
 				log.warning("Download failed: " + e.getMessage());
 			}
 		}
+		if (failures) throw new RuntimeException("Some downloads failed - check logs");
 	}
 	public MBeanServerConnection getMBeanServerConnection(long lvmid) throws Exception {
 		String host = null;
