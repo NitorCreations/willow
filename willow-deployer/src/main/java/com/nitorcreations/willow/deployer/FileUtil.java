@@ -16,7 +16,9 @@ public class FileUtil {
 	public static final int BUFFER_LEN = 8 * 1024;
 	public static String getFileName(String name) {
 		int lastSeparator = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
-		return name.substring(lastSeparator + 1);
+		int queryIndex = name.lastIndexOf("?");
+		if (queryIndex < 0) queryIndex = name.length();
+		return name.substring(lastSeparator + 1, queryIndex);
 	}
 	public static long copy(InputStream in, File target) throws IOException {
 		try (OutputStream out = new FileOutputStream(target)){
