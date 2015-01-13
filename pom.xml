@@ -238,11 +238,6 @@
         <version>3.3.2</version>
       </dependency>
       <dependency>
-        <groupId>org.codehaus.swizzle</groupId>
-        <artifactId>swizzle-stream</artifactId>
-        <version>1.6.2</version>
-      </dependency>
-      <dependency>
         <groupId>org.msgpack</groupId>
         <artifactId>msgpack</artifactId>
         <version>${msgpack.version}</version>
