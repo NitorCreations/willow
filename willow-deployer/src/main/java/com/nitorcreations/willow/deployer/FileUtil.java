@@ -14,8 +14,8 @@ import com.nitorcreations.willow.utils.ReplaceTokensInputStream;
 
 public class FileUtil {
 	public static final int BUFFER_LEN = 8 * 1024;
-	public static synchronized boolean createDir(File dir) {
-		return dir.exists() || dir.mkdirs();
+	public static boolean createDir(File dir) {
+		return  dir.mkdirs() || dir.exists();
 	}
 	public static String getFileName(String name) {
 		int lastSeparator = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
