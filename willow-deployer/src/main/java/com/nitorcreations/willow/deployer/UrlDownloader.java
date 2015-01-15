@@ -46,9 +46,8 @@ public class UrlDownloader implements Callable<File> {
 		fileName = getFileName(url);
 		logger = Logger.getLogger(fileName);
 	}
-	
 	@Override
-	public File call() {
+	public File call() throws IOException {
 		if (url == null) return null;
 		int retries = Integer.parseInt(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_RETRIES, 
 				properties.getProperty(PROPERTY_KEY_DOWNLOAD_RETRIES, "3")));
@@ -106,12 +105,17 @@ public class UrlDownloader implements Callable<File> {
 				}
 				break;
 			} catch (IOException | NoSuchAlgorithmException e) {
+				tryNo++;
+				target = null;
 				LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract " + url);
 				rec.setThrown(e);
 				logger.log(rec);
-				tryNo++;
+				if (tryNo <= retries) {
+					logger.log(Level.WARNING, "Retrying (" + tryNo + ")s");
+				}
 			}
 		}
+		if (target == null) throw new IOException("Failed to download " + url);
 		return target;
 	}
 }

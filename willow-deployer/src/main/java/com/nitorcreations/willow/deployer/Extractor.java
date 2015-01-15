@@ -172,10 +172,10 @@ public class Extractor implements Callable<Boolean> {
 		File dest = new File(destFolder, entry.getName()).getCanonicalFile();
 		if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {
 			if (entry.isDirectory()) {
-				dest.mkdirs();
+				FileUtil.createDir(dest);
 			} else {
 				if (dest.exists() && !overwrite) return;
-				dest.getParentFile().mkdirs();
+				FileUtil.createDir(dest.getParentFile());
 				if (globMatches(entry.getName(), filterMatchers)) {
 					FileUtil.filterStream(is, dest, replaceTokens);
 				} else {
