@@ -14,8 +14,8 @@ import com.nitorcreations.willow.utils.ReplaceTokensInputStream;
 
 public class FileUtil {
 	public static final int BUFFER_LEN = 8 * 1024;
-	public static boolean createDir(File dir) {
-		return  dir.mkdirs() || dir.exists();
+	public static synchronized boolean createDir(File dir) {
+		return   dir.exists() || dir.mkdirs();
 	}
 	public static String getFileName(String name) {
 		int lastSeparator = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
@@ -24,7 +24,7 @@ public class FileUtil {
 		return name.substring(lastSeparator + 1, queryIndex);
 	}
 	public static long copy(InputStream in, File target) throws IOException {
-		try (OutputStream out = new FileOutputStream(target)){
+		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(target), BUFFER_LEN)) {
 			return copy(in, out);
 		}
 	}

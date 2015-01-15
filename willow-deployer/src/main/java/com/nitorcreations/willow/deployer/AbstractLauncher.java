@@ -110,7 +110,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 			pb.environment().putAll(copyEnv);
 			pb.environment().putAll(extraEnv);
 			pb.environment().put(ENV_DEPLOYER_IDENTIFIER, PROCESS_IDENTIFIER);
-			if (!(workingDir.exists() || workingDir.mkdirs())) {
+			if (!FileUtil.createDir(workingDir)) {
 				throw new RuntimeException("Failed to create working directory");
 			}
 			pb.directory(workingDir);

@@ -145,10 +145,10 @@ public class Main extends DeployerControl implements MainMBean {
 				propsFile = new File(workDir, propsName);
 			}
 			File propsDir = propsFile.getParentFile();
-			if (!(propsDir.exists() || propsDir.mkdirs())) {
+			if (!FileUtil.createDir(propsDir)) {
 				usage("Unable to create properties directory " + workDir.getAbsolutePath());
 			}
-			if (!(workDir.exists() || workDir.mkdirs())) {
+			if (!FileUtil.createDir(workDir)) {
 				usage("Unable to create work directory " + workDir.getAbsolutePath());
 			}
 			try {

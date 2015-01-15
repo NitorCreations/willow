@@ -276,7 +276,7 @@ public class DeployerControl {
 		File libFile = new File(libDir, libName);
 		if (!(libFile.exists() && libFile.canExecute())) {
 			InputStream lib = Main.class.getClassLoader().getResourceAsStream(libInJarName);
-			libDir.mkdirs();
+			FileUtil.createDir(libDir);
 			if (lib != null) {
 				try (OutputStream out = new FileOutputStream(libFile)) {
 					byte[] buffer = new byte[1024];
