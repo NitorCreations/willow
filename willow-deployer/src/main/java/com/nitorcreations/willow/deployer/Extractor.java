@@ -33,6 +33,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -51,7 +52,11 @@ public class Extractor implements Callable<Boolean> {
 	private final String prefix;
 	private final File target;
 	private final Logger logger;
+	private static final Pattern zipFilesPattern = Pattern.compile(".*?\\.zip$|.*?\\.jar$|.*?\\.war$|.*?\\.ear$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern compressedPattern = Pattern.compile(".*?\\.gz$|.*?\\.tgz$|.*?\\.z$|.*?\\.bz2$|.*?\\.lzma$|.*?\\.arj$|.*?\\.deflate$");
 
+	
+	
 	private final ArchiveStreamFactory factory = new ArchiveStreamFactory();
 	private final CompressorStreamFactory cfactory = new CompressorStreamFactory();
 	private static Map<Integer, PosixFilePermission> perms = new HashMap<Integer, PosixFilePermission>();
@@ -92,54 +97,65 @@ public class Extractor implements Callable<Boolean> {
 			if (!root.isAbsolute()) {
 				root = new File(workDir.getCanonicalFile(), extractRoot).getCanonicalFile();
 			}
+			int entries=0;
 			if (extractGlob != null || skipExtractGlob != null) {
-				extractFile(target, replaceParameters, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
+				entries = extractFile(target, replaceParameters, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
 			}
+			logger.log(Level.INFO, "Extracted " + entries + " entries");
 			return true;
-		} catch (IOException | CompressorException | ArchiveException e) {
+		} catch (Exception e) {
 			LogRecord rec = new LogRecord(Level.WARNING, "Failed to extract " + target.getAbsolutePath());
 			rec.setThrown(e);
 			logger.log(rec);
 			return false;
 		}
 	}
-	private void extractFile(File archive, Map<String, String> replaceTokens, File root, 
+	private int extractFile(File archive, Map<String, String> replaceTokens, File root, 
 			String extractGlob, String skipExtractGlob, String filterGlob, boolean overwrite) throws CompressorException, IOException, ArchiveException {
-		String lcFileName = archive.getName().toLowerCase();
 		Set<PathMatcher> extractMatchers = getGlobMatchers(extractGlob);
 		Set<PathMatcher> skipMatchers = getGlobMatchers(skipExtractGlob);
 		Set<PathMatcher> filterMatchers = getGlobMatchers(filterGlob);
-		if (lcFileName.endsWith(".zip")) {
+		if (zipFilesPattern.matcher(archive.getName()).matches()) {
 			try (ZipFile source = new ZipFile(archive)) {
-				extractZip(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
+				return extractZip(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 			}
 		} else {
 			try (InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024)) {
-				if (lcFileName.endsWith("z") ||	lcFileName.endsWith("bz2") || lcFileName.endsWith("lzma") ||
-						lcFileName.endsWith("arj") || lcFileName.endsWith("deflate")) {
+				if (compressedPattern.matcher(archive.getName()).matches()) {
 					try (InputStream compressed = cfactory.createCompressorInputStream(in)) {
 						try (ArchiveInputStream source = factory.createArchiveInputStream(compressed)) {
-							extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
+							return extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 						}
 					}
 				} else {
 					try (ArchiveInputStream source = factory.createArchiveInputStream(in)) {
-						extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
+						return extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
 					}
 				}
 			}
 		}
 	}
-	private void extractZip(ZipFile zipFile, File destFolder,
+	private int extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
+		ArchiveEntry entry;
+		int entries=0;
+		while((entry =  is.getNextEntry()) != null) {
+			extractEntry(is, entry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
+			entries++;
+		}
+		return entries;
+	}
+	private int extractZip(ZipFile zipFile, File destFolder,
 			Map<String, String> replaceTokens,
 			Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers,
 			Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
 		Enumeration<ZipArchiveEntry> en = zipFile.getEntries();
+		int entries = 0;
 		while (en.hasMoreElements()) {
 			ZipArchiveEntry nextEntry = en.nextElement();
 			extractEntry(zipFile.getInputStream(nextEntry), (ArchiveEntry) nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
+			entries++;
 		}
-		
+		return entries;
 	}
 	private boolean globMatches(String path, Set<PathMatcher> matchers) {
 		for (PathMatcher next : matchers) {
@@ -210,22 +226,6 @@ public class Extractor implements Callable<Boolean> {
 						}
 					}
 				}
-			}
-		}
-	}
-	private void extractArchive(ArchiveInputStream is, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
-		try {
-			ArchiveEntry entry;
-			while((entry =  is.getNextEntry()) != null) {
-				extractEntry(is, entry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
-			}
-		} catch (IOException e) {
-			throw e;
-		} finally {
-			try {
-				is.close();
-			} catch (IOException e) {
-				throw e;
 			}
 		}
 	}
