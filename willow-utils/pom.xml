@@ -19,5 +19,33 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.nitorcreations</groupId>
+      <artifactId>core-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>com.jcraft</groupId>
+       <artifactId>jsch</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>com.jcraft</groupId>
+       <artifactId>jsch.agentproxy.core</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>com.jcraft</groupId>
+       <artifactId>jsch.agentproxy.connector-factory</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>com.jcraft</groupId>
+       <artifactId>jsch.agentproxy.sshagent</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>com.jcraft</groupId>
+       <artifactId>jsch.agentproxy.jsch</artifactId>
+    </dependency>
   </dependencies>
 </project>
