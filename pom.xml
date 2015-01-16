@@ -299,6 +299,31 @@
         <scope>system</scope>
         <systemPath>${java.home}/../lib/tools.jar</systemPath>
       </dependency>
+      <dependency>
+         <groupId>com.jcraft</groupId>
+         <artifactId>jsch</artifactId>
+         <version>0.1.51</version>
+      </dependency>
+      <dependency>
+         <groupId>com.jcraft</groupId>
+         <artifactId>jsch.agentproxy.core</artifactId>
+         <version>0.0.7</version>
+      </dependency>
+      <dependency>
+         <groupId>com.jcraft</groupId>
+         <artifactId>jsch.agentproxy.connector-factory</artifactId>
+         <version>0.0.7</version>
+      </dependency>
+      <dependency>
+         <groupId>com.jcraft</groupId>
+         <artifactId>jsch.agentproxy.sshagent</artifactId>
+         <version>0.0.7</version>
+      </dependency>
+      <dependency>
+         <groupId>com.jcraft</groupId>
+         <artifactId>jsch.agentproxy.jsch</artifactId>
+         <version>0.0.7</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <reporting>
