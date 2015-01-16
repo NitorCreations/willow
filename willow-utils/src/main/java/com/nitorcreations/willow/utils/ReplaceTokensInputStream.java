@@ -89,11 +89,22 @@ public class ReplaceTokensInputStream extends FilterInputStream {
 				for (byte next : matchToken.getBytes(charset)) {
 					available.add((int)next & 0xFF);
 				}
-				return available.remove(0);
+				if (available.size() > 0) {
+					return available.remove(0);
+				}
 			}
 			if (length == buffer.length) break;
 			append(superRead());
 			bufferStr = getBufferString();
+			if (matchToken != null) {
+				// Returned empty token value and did not have available bytes. Need to reset and try again
+				matchToken = null;
+				potentialMatches = getPotentialMatches(bufferStr);
+				if (potentialMatches.isEmpty()) {
+					shift(1, true);
+					return available.remove(0);
+				}
+			}
 		} while (matchToken == null && !streamExhausted);
 		if (length < 1 && available.isEmpty()) return -1;
 		shift(1, true);
