@@ -24,8 +24,10 @@ public class FileUtil {
 		return name.substring(lastSeparator + 1, queryIndex);
 	}
 	public static long copy(InputStream in, File target) throws IOException {
-		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(target), BUFFER_LEN)) {
-			return copy(in, out);
+		try (FileOutputStream out = new FileOutputStream(target)) {
+			long lenght = copy(in, out);
+			out.getFD().sync();
+			return lenght;
 		}
 	}
 	public static long copy(InputStream in, OutputStream out) throws IOException {
@@ -40,26 +42,30 @@ public class FileUtil {
 		return count;
 	}
 	public static long filterStream(InputStream original, File target, Map<String, String> replaceTokens) throws IOException {
-		try (OutputStream out = new FileOutputStream(target)) {
+		try (FileOutputStream out = new FileOutputStream(target)) {
 			return filterStream(original, out, replaceTokens);
 		}
 	}
-
-	public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens) throws IOException {
+	public static long filterStream(InputStream original, FileOutputStream out, Map<String, String> replaceTokens) throws IOException {
 		try (InputStream in = new ReplaceTokensInputStream(
 				new BufferedInputStream(original, BUFFER_LEN),replaceTokens, 
-				ReplaceTokensInputStream.MAVEN_DELIMITERS);
-				OutputStream bOut = new BufferedOutputStream(out, BUFFER_LEN)) {
-			return copyByteByByte(in, bOut);
+				ReplaceTokensInputStream.MAVEN_DELIMITERS)) {
+			long length = copyByteByByte(in, out);
+			return length;
 		}
 	}
-
 	public static long copyByteByByte(InputStream in, OutputStream out) throws IOException {
+		BufferedOutputStream bOut = null;
+		if (out instanceof BufferedOutputStream) {
+			bOut = (BufferedOutputStream) out;
+		} else {
+			bOut = new BufferedOutputStream(out, BUFFER_LEN);
+		}
 		try {
 			long i = 0;
 			int b;
 			while ((b = in.read()) != -1) {
-				out.write(b);
+				bOut.write(b);
 				i++;
 			}
 			return i;
@@ -67,7 +73,10 @@ public class FileUtil {
 			throw e;
 		} finally {
 			try {
-				out.flush();
+				bOut.flush();
+				if (out instanceof FileOutputStream) {
+					((FileOutputStream)out).getFD().sync();
+				}
 			} catch (IOException e0) {
 				throw e0;
 			} finally {
@@ -76,7 +85,7 @@ public class FileUtil {
 				} catch (IOException e1) {
 					throw e1;
 				} finally {
-					if (out != null) out.close();
+					if (bOut != null) bOut.close();
 				}
 			}
 		}
