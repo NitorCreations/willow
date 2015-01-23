@@ -29,42 +29,39 @@ import com.google.gson.Gson;
  * class to send output to web socket client
  */
 public class SentOutputTask implements Runnable {
+  private final Gson gson = new Gson();
+  Session session;
+  InputStream output;
 
+  public SentOutputTask(Session session, InputStream output) {
+    this.session = session;
+    this.output = output;
+  }
 
-	private final Gson gson = new Gson();
-	Session session;
-	InputStream output;
-
-	public SentOutputTask(Session session, InputStream output) {
-		this.session = session;
-		this.output = output;
-	}
-
-	public void run() {
-		byte[] buf = new byte[BUFFER_LEN];
-
-		while (session.isOpen()) {
-			int read;
-			try {
-				while ((read = output.read(buf)) != -1) {
-					try {
-						if (read > 0) {
-							SessionOutput out = new SessionOutput(new String(buf, 0, read, Charset.forName("UTF-8")));
-							String json = gson.toJson(out);
-							this.session.getRemote().sendString(json);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					try {
-						Thread.sleep(50);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+  public void run() {
+    byte[] buf = new byte[BUFFER_LEN];
+    while (session.isOpen()) {
+      int read;
+      try {
+        while ((read = output.read(buf)) != -1) {
+          try {
+            if (read > 0) {
+              SessionOutput out = new SessionOutput(new String(buf, 0, read, Charset.forName("UTF-8")));
+              String json = gson.toJson(out);
+              this.session.getRemote().sendString(json);
+            }
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          try {
+            Thread.sleep(50);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 }

@@ -24,86 +24,80 @@ import com.nitorcreations.willow.messages.MessageMapping.MessageType;
 
 @WebSocket
 public class SaveEventsSocket {
-    private final CountDownLatch closeLatch;
-    private final MessageMapping mapping = new MessageMapping();
-    private final Client client = MetricsServlet.getClient();
-    
-    @SuppressWarnings("unused")
-    private Session session;
-    private String path;
-	private List<String> tags;
-    
-    public SaveEventsSocket() {
-        this.closeLatch = new CountDownLatch(1);
+  private final CountDownLatch closeLatch;
+  private final MessageMapping mapping = new MessageMapping();
+  private final Client client = MetricsServlet.getClient();
+  @SuppressWarnings("unused")
+  private Session session;
+  private String path;
+  private List<String> tags;
+
+  public SaveEventsSocket() {
+    this.closeLatch = new CountDownLatch(1);
+  }
+
+  public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
+    return this.closeLatch.await(duration, unit);
+  }
+
+  @OnWebSocketClose
+  public void onClose(int statusCode, String reason) {
+    System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
+    this.session = null;
+    this.closeLatch.countDown();
+  }
+
+  @OnWebSocketConnect
+  public void onConnect(Session session) {
+    System.out.printf("Got connect: %s%n", session);
+    this.session = session;
+    path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
+    tags = session.getUpgradeRequest().getParameterMap().get("tag");
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @OnWebSocketMessage
+  public void messageReceived(byte buf[], int offset, int length) {
+    try {
+      Gson gson = new Gson();
+      for (AbstractMessage msgObject : mapping.decode(buf, offset, length)) {
+        MessageType type = mapping.map(msgObject.getClass());
+        Object stored = msgObject;
+        if (type == MessageType.LONGSTATS) {
+          stored = ((LongStatisticsMessage) msgObject).getMap();
+          String instance = (String) ((Map) stored).get("instance");
+          if (instance == null || instance.isEmpty()) {
+            ((Map) stored).put("instance", path);
+          }
+          ((Map) stored).put("tags", tags);
+        } else if (type == MessageType.HASH) {
+          stored = ((HashMessage) msgObject).getMap();
+          String instance = (String) ((Map) stored).get("instance");
+          if (instance == null || instance.isEmpty()) {
+            ((Map) stored).put("instance", path);
+          }
+          ((Map) stored).put("tags", tags);
+        } else {
+          if (msgObject.instance == null || msgObject.instance.isEmpty()) {
+            msgObject.instance = path;
+          }
+          msgObject.addTags(tags);
+        }
+        String source = gson.toJson(stored);
+        System.out.println(type.lcName() + ": " + source);
+        IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(1000);
+        if (!resp.isCreated()) {
+          System.out.println("Failed to create index for " + source);
+        }
+      }
+    } catch (Throwable e) {
+      e.printStackTrace();
     }
- 
-    public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
-        return this.closeLatch.await(duration, unit);
-    }
- 
-    @OnWebSocketClose
-    public void onClose(int statusCode, String reason) {
-        System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
-        this.session = null;
-        this.closeLatch.countDown();
-    }
- 
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
-        System.out.printf("Got connect: %s%n", session);
-        this.session = session;
-        path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
-        tags  = session.getUpgradeRequest().getParameterMap().get("tag");
-    }
-     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	@OnWebSocketMessage
-    public void messageReceived(byte buf[], int offset, int length) {
-    	try {
-    		Gson gson = new Gson();
-    		for (AbstractMessage msgObject : mapping.decode(buf, offset, length)) {
-    			MessageType type = mapping.map(msgObject.getClass());
-    			Object stored = msgObject;
-    			if (type == MessageType.LONGSTATS) {
-    				stored = ((LongStatisticsMessage)msgObject).getMap();
-    				String instance = (String) ((Map)stored).get("instance");
-    				if (instance == null || instance.isEmpty()) {
-    					((Map)stored).put("instance", path);
-    				}
-    				((Map)stored).put("tags", tags);
-    			} else if (type == MessageType.HASH) {
-    				stored = ((HashMessage)msgObject).getMap();
-    				String instance = (String) ((Map)stored).get("instance");
-    				if (instance == null || instance.isEmpty()) {
-    					((Map)stored).put("instance", path);
-    				}
-    				((Map)stored).put("tags", tags);
-    			} else {
-    				if (msgObject.instance == null || msgObject.instance.isEmpty()) {
-    					msgObject.instance = path;
-    				}
-    				msgObject.addTags(tags);
-    			}
-    			String source = gson.toJson(stored);
-    			System.out.println(type.lcName() + ": " + source);
-    			IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName())
-    					.setSource(source)
-    					.execute()
-    					.actionGet(1000);
-    			if (!resp.isCreated()) {
-    				System.out.println("Failed to create index for " + source);
-    			}
-    		}
-    	} catch (Throwable e) {
-    		e.printStackTrace();
-    	}
-    }
-    
-    private static String getIndex(long timestamp) {
-    	Calendar cal = Calendar.getInstance();
-    	cal.setTime(new Date(timestamp));
-    	return String.format("%04d", cal.get(Calendar.YEAR)) + "-" + 
-				String.format("%02d", cal.get(Calendar.MONTH) + 1) + "-" +
-				String.format("%02d", cal.get(Calendar.DAY_OF_MONTH));
-    }
+  }
+
+  private static String getIndex(long timestamp) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(new Date(timestamp));
+    return String.format("%04d", cal.get(Calendar.YEAR)) + "-" + String.format("%02d", cal.get(Calendar.MONTH) + 1) + "-" + String.format("%02d", cal.get(Calendar.DAY_OF_MONTH));
+  }
 }

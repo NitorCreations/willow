@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Willow monitoring</title>
-    <meta charset="utf-8">
-    <link type="text/css" rel="stylesheet" href="styles/common.css">
-    <link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
-    <link type="text/css" rel="stylesheet" href="styles/main.css">
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="scripts/stream_layers.js" charset="utf-8"></script>
-    <script type="text/javascript" src="scripts/cubism.js"></script>
-    <script type="text/javascript" src="scripts/willow.js"></script>
-    <script type="text/javascript" src="https://raw.githubusercontent.com/douglascrockford/JSON-js/master/json2.js"></script>
- </head>
- <body>
-   <div id="chart">
-     <svg style='height:500px'> </svg>
-   </div>
-   <script type="text/javascript">
+<head>
+<title>Willow monitoring</title>
+<meta charset="utf-8">
+<link type="text/css" rel="stylesheet" href="styles/common.css">
+<link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
+<link type="text/css" rel="stylesheet" href="styles/main.css">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/stream_layers.js"
+	charset="utf-8"></script>
+<script type="text/javascript" src="scripts/cubism.js"></script>
+<script type="text/javascript" src="scripts/willow.js"></script>
+<script type="text/javascript"
+	src="https://raw.githubusercontent.com/douglascrockford/JSON-js/master/json2.js"></script>
+</head>
+<body>
+	<div id="chart">
+		<svg style='height: 500px'> </svg>
+	</div>
+	<script type="text/javascript">
    var stop = new Date().getTime();
    d3.json("/metrics/disk?tag=host_test1&stop=" + stop, function(data) {
 	   nv.addGraph(function() {
@@ -40,5 +42,5 @@
 		});
    });
    </script>
- </body>
+</body>
 </html>

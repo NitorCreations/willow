@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Willow monitoring</title>
-    <meta charset="utf-8">
-    <title>Willow monitoring</title>
-    <meta charset="utf-8">
-    <link type="text/css" rel="stylesheet" href="styles/common.css">
-    <link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
-    <link type="text/css" rel="stylesheet" href="styles/main.css">
-    <script type="text/javascript" src="scripts/jquery.js" charset="utf-8"></script>
-    <script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
-    <script type="text/javascript" src="scripts/cubism.js"></script>
-    <script type="text/javascript" src="scripts/willow.js"></script>
- </head>
- <body>
-   <nav class="nav" tabindex="-1" onclick="this.focus()">
-     <div class="container">
-       <a id="cpu" href="?metric=cpu">cpu</a>
-       <a id="mem" href="?metric=mem">mem</a>
-       <a id="net" href="?metric=net">net</a>
-       <a id="diskio" href="?metric=diskio">io</a>
-       <a id="tcpinfo" href="?metric=tcpinfo">connections</a>
-     </div>
-   </nav>
-   <div id="chart" class="mainchart"></div>
-   <script type="text/javascript">
+<head>
+<title>Willow monitoring</title>
+<meta charset="utf-8">
+<title>Willow monitoring</title>
+<meta charset="utf-8">
+<link type="text/css" rel="stylesheet" href="styles/common.css">
+<link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
+<link type="text/css" rel="stylesheet" href="styles/main.css">
+<script type="text/javascript" src="scripts/jquery.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/cubism.js"></script>
+<script type="text/javascript" src="scripts/willow.js"></script>
+</head>
+<body>
+	<nav class="nav" tabindex="-1" onclick="this.focus()">
+		<div class="container">
+			<a id="cpu" href="?metric=cpu">cpu</a> <a id="mem" href="?metric=mem">mem</a>
+			<a id="net" href="?metric=net">net</a> <a id="diskio"
+				href="?metric=diskio">io</a> <a id="tcpinfo" href="?metric=tcpinfo">connections</a>
+		</div>
+	</nav>
+	<div id="chart" class="mainchart"></div>
+	<script type="text/javascript">
    resetGraphs();
    shuffleNavigation();
    </script>
- </body>
+</body>
 </html>
