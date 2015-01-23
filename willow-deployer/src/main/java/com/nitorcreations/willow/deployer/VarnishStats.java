@@ -13,63 +13,63 @@ import com.nitorcreations.willow.messages.LongStatisticsMessage;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class VarnishStats implements Runnable {
-	private final WebSocketTransmitter transmitter;
-	private final long interval;
-	private boolean running=true;
+  private final WebSocketTransmitter transmitter;
+  private final long interval;
+  private boolean running = true;
 
-	public VarnishStats(WebSocketTransmitter transmitter, long interval) {
-		this.transmitter = transmitter;
-		this.interval = interval;
-	}
+  public VarnishStats(WebSocketTransmitter transmitter, long interval) {
+    this.transmitter = transmitter;
+    this.interval = interval;
+  }
 
-	public void run() {
-		synchronized (this) {
-			while (running) {
-				try {
-					this.wait(interval);
-					send();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+  public void run() {
+    synchronized (this) {
+      while (running) {
+        try {
+          this.wait(interval);
+          send();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
 
-	public void stop() {
-		synchronized (this) {
-			running = false;
-			this.notifyAll();
-		}
-	}
+  public void stop() {
+    synchronized (this) {
+      running = false;
+      this.notifyAll();
+    }
+  }
 
-	public void send() {
-		ProcessBuilder pb = new ProcessBuilder("/usr/bin/varnishstat", "-j");
-		pb.environment().putAll(System.getenv());
-		try {
-			Process p = pb.start();
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			ByteArrayOutputStream err = new ByteArrayOutputStream();
-			StreamPumper stdout = new StreamPumper(p.getInputStream(), out);
-			StreamPumper stderr = new StreamPumper(p.getErrorStream(), err);
-			new Thread(stdout, "stdout").start();
-			new Thread(stderr, "stderr").start();
-			if (p.waitFor() == 0) {
-				Map<String, Long> values = new LinkedHashMap<String, Long>();
-				JsonObject j = new JsonParser().parse(new String(out.toByteArray())).getAsJsonObject();
-				for (Entry<String,JsonElement> entry : j.entrySet()) {
-					if (entry.getValue().isJsonObject()) {
-						values.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsLong());
-					}
-				}
-				LongStatisticsMessage send = new LongStatisticsMessage();
-				send.setMap(values);
-				transmitter.queue(send);
-			} else {
-				System.out.write(out.toByteArray());
-				System.err.write(err.toByteArray());
-			}
-		} catch (InterruptedException | IOException e) {
-			e.printStackTrace();
-		}
-	}
+  public void send() {
+    ProcessBuilder pb = new ProcessBuilder("/usr/bin/varnishstat", "-j");
+    pb.environment().putAll(System.getenv());
+    try {
+      Process p = pb.start();
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      ByteArrayOutputStream err = new ByteArrayOutputStream();
+      StreamPumper stdout = new StreamPumper(p.getInputStream(), out);
+      StreamPumper stderr = new StreamPumper(p.getErrorStream(), err);
+      new Thread(stdout, "stdout").start();
+      new Thread(stderr, "stderr").start();
+      if (p.waitFor() == 0) {
+        Map<String, Long> values = new LinkedHashMap<String, Long>();
+        JsonObject j = new JsonParser().parse(new String(out.toByteArray())).getAsJsonObject();
+        for (Entry<String, JsonElement> entry : j.entrySet()) {
+          if (entry.getValue().isJsonObject()) {
+            values.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsLong());
+          }
+        }
+        LongStatisticsMessage send = new LongStatisticsMessage();
+        send.setMap(values);
+        transmitter.queue(send);
+      } else {
+        System.out.write(out.toByteArray());
+        System.err.write(err.toByteArray());
+      }
+    } catch (InterruptedException | IOException e) {
+      e.printStackTrace();
+    }
+  }
 }

@@ -4,22 +4,23 @@ import java.util.Collections;
 import java.util.List;
 
 public class ConnectionsMetric extends SimpleMetric<Integer, Integer> {
+  @Override
+  public String getType() {
+    return "tcpinfo";
+  }
 
-	@Override
-	public String getType() {
-		return "tcpinfo";
-	}
-	@Override
-	public String[] requiresFields() {
-		return new String[] { "tcpInboundTotal", "tcpOutboundTotal" };
-	}
-	@Override
-	protected Integer getValue(List<Integer> arr) {
-		return (arr.get(0).intValue() + arr.get(1).intValue());
-	}
-	@Override
-	protected Integer estimateValue(List<Integer> preceeding, long stepTime, long stepLen) {
-		return Collections.max(preceeding);
-	}
+  @Override
+  public String[] requiresFields() {
+    return new String[] { "tcpInboundTotal", "tcpOutboundTotal" };
+  }
 
+  @Override
+  protected Integer getValue(List<Integer> arr) {
+    return (arr.get(0).intValue() + arr.get(1).intValue());
+  }
+
+  @Override
+  protected Integer estimateValue(List<Integer> preceeding, long stepTime, long stepLen) {
+    return Collections.max(preceeding);
+  }
 }

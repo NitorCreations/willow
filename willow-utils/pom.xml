@@ -28,24 +28,24 @@
       <artifactId>velocity</artifactId>
     </dependency>
     <dependency>
-       <groupId>com.jcraft</groupId>
-       <artifactId>jsch</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch</artifactId>
     </dependency>
     <dependency>
-       <groupId>com.jcraft</groupId>
-       <artifactId>jsch.agentproxy.core</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.core</artifactId>
     </dependency>
     <dependency>
-       <groupId>com.jcraft</groupId>
-       <artifactId>jsch.agentproxy.connector-factory</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.connector-factory</artifactId>
     </dependency>
     <dependency>
-       <groupId>com.jcraft</groupId>
-       <artifactId>jsch.agentproxy.sshagent</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.sshagent</artifactId>
     </dependency>
     <dependency>
-       <groupId>com.jcraft</groupId>
-       <artifactId>jsch.agentproxy.jsch</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.jsch</artifactId>
     </dependency>
   </dependencies>
 </project>

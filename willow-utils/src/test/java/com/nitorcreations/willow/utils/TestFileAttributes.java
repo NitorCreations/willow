@@ -9,14 +9,13 @@ import java.nio.file.attribute.AclFileAttributeView;
 import org.junit.Test;
 
 public class TestFileAttributes {
-	@Test
-	public void testAcl() throws IOException {
-		/*
-		File pom = new File("pom.xml");
-		AclFileAttributeView acl = Files.getFileAttributeView(pom.toPath(), AclFileAttributeView.class);
-		for (AclEntry next : acl.getAcl()) {
-			System.out.println(next);
-		}*/
-	}
-
+  @Test
+  public void testAcl() throws IOException {
+    /*
+    File pom = new File("pom.xml");
+    AclFileAttributeView acl = Files.getFileAttributeView(pom.toPath(), AclFileAttributeView.class);
+    for (AclEntry next : acl.getAcl()) {
+    	System.out.println(next);
+    }*/
+  }
 }

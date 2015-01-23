@@ -6,31 +6,35 @@ import java.util.Date;
 import java.util.TimeZone;
 
 public class TimePoint {
-	private String time;
-	private Number value;
+  private String time;
+  private Number value;
 
-	public TimePoint(long millis, Number value) {
-		TimeZone tz = TimeZone.getTimeZone("UTC");
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-		df.setTimeZone(tz);
-		time = df.format(new Date(millis));
-		this.value = value;
-	}
+  public TimePoint(long millis, Number value) {
+    TimeZone tz = TimeZone.getTimeZone("UTC");
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    df.setTimeZone(tz);
+    time = df.format(new Date(millis));
+    this.value = value;
+  }
 
-	public String getTime() {
-		return time;
-	}
-	public void setTime(String time) {
-		this.time = time;
-	}
-	public Number getValue() {
-		return value;
-	}
-	public void setValue(Number value) {
-		this.value = value;
-	}
-	@Override
-	public String toString() {
-		return "{ \"time\": " + value.toString() + " }";
-	}
+  public String getTime() {
+    return time;
+  }
+
+  public void setTime(String time) {
+    this.time = time;
+  }
+
+  public Number getValue() {
+    return value;
+  }
+
+  public void setValue(Number value) {
+    this.value = value;
+  }
+
+  @Override
+  public String toString() {
+    return "{ \"time\": " + value.toString() + " }";
+  }
 }
