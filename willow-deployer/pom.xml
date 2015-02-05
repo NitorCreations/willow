@@ -167,6 +167,52 @@
           </plugin>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
+            <artifactId>rpm-maven-plugin</artifactId>
+            <version>2.1.2</version>
+            <executions>
+              <execution>
+                <id>generate-rpm</id>
+                <goals>
+                  <goal>attached-rpm</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <license>Apache v2.0</license>
+              <distribution>Willow</distribution>
+              <group>Application/System</group>
+              <changelogFile>src/main/resources/changelog</changelogFile>
+              <mappings>
+                <mapping>
+                  <directory>/usr/bin</directory>
+                  <filemode>755</filemode>
+                  <username>root</username>
+                  <groupname>root</groupname>
+                  <sources>
+                    <source>
+                      <location>target/deployer.sh</location>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>/var/lib/deployer</directory>
+                  <filemode>644</filemode>
+                  <username>root</username>
+                  <groupname>root</groupname>
+                  <sources>
+                    <source>
+                      <location>target</location>
+                      <includes>
+                        <include>deployer-uber-*.jar</include>
+                      </includes>
+                    </source>
+                  </sources>
+                </mapping>
+              </mappings>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
             <version>1.9.1</version>
             <executions>
