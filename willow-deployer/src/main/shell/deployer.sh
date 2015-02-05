@@ -15,16 +15,26 @@ fi
 
 if [ -z "$W_DEPLOYER_HOME" ]; then
   W_DEPLOYER_HOME=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
+  if [ "$W_DEPLOYER_HOME" = "/usr/bin" ]; then
+    W_DEPLOYER_HOME="$HOME/.deployer"
+    W_DEPLOYER_LIB="/var/lib/deployer"
+  else
+    W_DEPLOYER_LIB="$W_DEPLOYER_HOME/lib"
+  fi
+else
+  W_DEPLOYER_LIB="$W_DEPLOYER_HOME/lib"
 fi
 
-mkdir -p $W_DEPLOYER_HOME/lib
-if [ ! -d $W_DEPLOYER_HOME/lib ]; then
-  echo "Failed to create deployer lib directory"
-  exit 1
+if [ ! -d "$W_DEPLOYER_LIB" ]; then 
+  mkdir -p "$W_DEPLOYER_LIB"
+  if [ ! -d "$W_DEPLOYER_LIB" ]; then
+    echo "Failed to create deployer lib directory"
+    exit 1
+  fi
 fi
 
-W_DEPLOYER_JAR=$W_DEPLOYER_HOME/lib/$MD5.jar
-tail -n+%%ARCHIVE_START%% $0 > $W_DEPLOYER_JAR
+W_DEPLOYER_JAR=$W_DEPLOYER_LIB/deployer-uber-$MD5.jar
+flock "$W_DEPLOYER_LIB" bash -c "if ! [ -r \"$W_DEPLOYER_JAR\" ]; then tail -n+%%ARCHIVE_START%% \"${BASH_SOURCE[0]}\" > \"$W_DEPLOYER_JAR\"; fi"
 
 if [ -z "$JAVA_HOME" ]; then
   if ! which java > /dev/null; then
