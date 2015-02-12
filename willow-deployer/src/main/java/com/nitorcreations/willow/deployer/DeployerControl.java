@@ -269,12 +269,25 @@ public class DeployerControl {
     System.setProperty("java.library.path", libDir.getAbsolutePath());
     String arch = System.getProperty("os.arch");
     String os = System.getProperty("os.name").toLowerCase();
-    // libsigar-amd64-linux-1.6.4.so
-    String libInJarName = "libsigar-" + arch + "-" + os + "-1.6.4.so";
-    String libName = "libsigar-" + arch + "-" + os + ".so";
-    File libFile = new File(libDir, libName);
+    StringBuilder libName = new StringBuilder();
+    if (os.contains("win")) {
+      libName.append("sigar-");
+    } else {
+      libName.append("libsigar-");
+    }
+    libName.append(arch);
+    if (os.contains("win")) {
+      libName.append("-winnt").append(".dll");
+    } else if (os.contains("mac") || os.contains("darwin")) {
+      libName.append("-macosx.dylib");
+    } else if (os.contains("sunos")) {
+      libName.append("-solaris.so");
+    } else {
+      libName.append("-").append(os).append(".so");
+    }
+    File libFile = new File(libDir, libName.toString());
     if (!(libFile.exists() && libFile.canExecute())) {
-      InputStream lib = Main.class.getClassLoader().getResourceAsStream(libInJarName);
+      InputStream lib = Main.class.getClassLoader().getResourceAsStream(libName.toString());
       FileUtil.createDir(libDir);
       if (lib != null) {
         try (OutputStream out = new FileOutputStream(libFile)) {

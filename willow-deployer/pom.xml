@@ -63,11 +63,6 @@
       <artifactId>sigar</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.fusesource</groupId>
-      <artifactId>sigar</artifactId>
-      <classifier>native</classifier>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
       <artifactId>websocket-client</artifactId>
     </dependency>
