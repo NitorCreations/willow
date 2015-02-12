@@ -69,8 +69,12 @@ status)
   shift
   exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Status "$@"
   ;;
+jmxoperation)
+  shift
+  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.JMXOperation "$@"
+  ;;
 *)
-  echo "usage $0 {start|stop|status} [role] url [url [...]]"
+  echo "usage $0 {start|stop|status|jmxoperation} [role] url [url [...]]"
   exit 1
   ;;
 esac
