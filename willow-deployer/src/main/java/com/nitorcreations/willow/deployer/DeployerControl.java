@@ -84,19 +84,9 @@ public class DeployerControl {
     try {
       Sigar sigar = new Sigar();
       long mypid = sigar.getPid();
-      long firstPid = 0;
-      ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);
-      long[] pids = q.find(sigar);
-      if (pids.length > 1) {
-        for (long pid : pids) {
-          if (pid != mypid) {
-            firstPid = pid;
-            break;
-          }
-        }
-      }
       if (mypid <= 0)
         throw new RuntimeException("Failed to resolve own pid");
+      long firstPid = findOldDeployerPid(deployerName);
       String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
       long termTimeout = 60000;
       if (timeOutEnv != null) {
@@ -121,43 +111,23 @@ public class DeployerControl {
       log.log(rec);
     }
   }
-
-  protected long youngestOf(long[] pids) throws SigarException {
-    Sigar sigar = new Sigar();
-    long maxStart = Long.MIN_VALUE;
-    if (pids.length > 1) {
-      long ret = 0;
-      for (long pid : pids) {
-        ProcTime time = sigar.getProcTime(pid);
-        if (time.getStartTime() > maxStart) {
-          maxStart = time.getStartTime();
-          ret = pid;
-        }
-      }
-      return ret;
-    } else {
-      return pids[0];
-    }
-  }
-
-  protected Set<String> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
+  protected static Set<Long> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
     Sigar sigar = new Sigar();
     ProcessQuery q = ProcessQueryFactory.getInstance().getQuery(query);
     long[] pids = q.find(sigar);
-    Set<String> pidSet = new HashSet<>();
+    Set<Long> pidSet = new HashSet<>();
     for (long next : pids) {
       if (next != mypid)
-        pidSet.add(String.valueOf(next));
+        pidSet.add(next);
     }
     return pidSet;
-  }
-
-  protected void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
+  }    
+  protected static void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
     long start = System.currentTimeMillis();
-    Set<String> pids = getPidsExcludingMyPid(query, mypid);
+    Set<Long> pids = getPidsExcludingMyPid(query, mypid);
     while (pids.size() > 0) {
-      for (String nextpid : pids) {
-        KillProcess.termProcess(nextpid);
+      for (Long nextpid : pids) {
+        KillProcess.termProcess(nextpid.toString());
       }
       Thread.sleep(500);
       pids = getPidsExcludingMyPid(query, mypid);
@@ -165,14 +135,13 @@ public class DeployerControl {
         break;
     }
     while (pids.size() > 0) {
-      for (String nextpid : pids) {
-        KillProcess.killProcess(nextpid);
+      for (Long nextpid : pids) {
+        KillProcess.killProcess(nextpid.toString());
       }
       Thread.sleep(500);
       pids = getPidsExcludingMyPid(query, mypid);
     }
   }
-
   protected void download() {
     List<Future<Integer>> downloads = new ArrayList<>();
     for (Properties launchProps : launchPropertiesList) {
@@ -197,33 +166,10 @@ public class DeployerControl {
     if (failures)
       throw new RuntimeException("Some downloads failed - check logs");
   }
-
   public MBeanServerConnection getMBeanServerConnection(long lvmid) throws Exception {
-    String host = null;
-    MonitoredHost monitoredHost = MonitoredHost.getMonitoredHost(host);
-    log.fine("Inspecting VM " + lvmid);
-    MonitoredVm vm = null;
-    String vmidString = "//" + lvmid + "?mode=r";
-    try {
-      VmIdentifier id = new VmIdentifier(vmidString);
-      vm = monitoredHost.getMonitoredVm(id, 0);
-    } catch (URISyntaxException e) {
-      // Should be able to generate valid URLs
-      assert false;
-    } catch (Exception e) {} finally {
-      if (vm == null) {
-        return null;
-      }
-    }
-    log.finer("VM " + lvmid + " is a our vm");
-    Monitor command = vm.findByName("sun.rt.javaCommand");
-    String lcCommandStr = command.getValue().toString().toLowerCase();
-    log.finer("Command for beanserver VM " + lvmid + ": " + lcCommandStr);
     try {
       VirtualMachine attachedVm = VirtualMachine.attach("" + lvmid);
       String home = attachedVm.getSystemProperties().getProperty("java.home");
-      // Normally in ${java.home}/jre/lib/management-agent.jar but might
-      // be in ${java.home}/lib in build environments.
       File f = Paths.get(home, "jre", "lib", "management-agent.jar").toFile();
       if (!f.exists()) {
         f = Paths.get(home, "lib", "management-agent.jar").toFile();
@@ -245,7 +191,6 @@ public class DeployerControl {
       JMXServiceURL url = new JMXServiceURL(address);
       JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
       MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-      vm.detach();
       return mbsc;
     } catch (AttachNotSupportedException x) {
       log.log(Level.WARNING, "Not attachable", x);
@@ -254,12 +199,10 @@ public class DeployerControl {
     }
     return null;
   }
-
   protected void usage(String error) {
     System.err.println(error);
     System.exit(1);
   }
-
   protected static void extractNativeLib() {
     String deployerHome = System.getenv(ENV_DEPLOYER_HOME);
     if (deployerHome == null) {
@@ -313,7 +256,6 @@ public class DeployerControl {
       }
     }
   }
-
   private static Proxy resolveProxy(String proto, String hostName) throws MalformedURLException {
     String proxyUrl = System.getenv(proto.toLowerCase() + "_proxy");
     if (proxyUrl == null) {
@@ -332,7 +274,6 @@ public class DeployerControl {
       return null;
     }
   }
-
   protected static boolean noProxyMatches(String host, String noProxy) {
     if (noProxy == null)
       return false;
@@ -347,7 +288,6 @@ public class DeployerControl {
     }
     return false;
   }
-
   protected MergeableProperties getURLProperties(String url) {
     MergeableProperties launchProperties = new MergeableProperties();
     try {
@@ -367,7 +307,6 @@ public class DeployerControl {
     }
     return launchProperties;
   }
-
   protected void populateProperties(String[] args) {
     if (args.length != (launchPropertiesList.size() + 1))
       ;
@@ -378,5 +317,24 @@ public class DeployerControl {
       next.setProperty(PROPERTY_KEY_DEPLOYER_NAME, deployerName);
       launchPropertiesList.add(next);
     }
+  }
+  protected static Set<Long> findChildPids(String deployerName) throws SigarException {
+    Sigar sigar = new Sigar();
+    long mypid = sigar.getPid();
+    return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
+      ",Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
+  }
+  protected static long findOldDeployerPid(String deployerName) throws SigarException {
+    Sigar sigar = new Sigar();
+    long mypid = sigar.getPid();
+    Set<Long> children = findChildPids(deployerName);
+    Set<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, mypid);
+    if (pids.isEmpty()) {
+      return -1;
+    }
+    for (Long next : pids) {
+      if (!children.contains(next)) return next;
+    }
+    return -1;
   }
 }
