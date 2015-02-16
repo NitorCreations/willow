@@ -15,7 +15,6 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.Proxy.Type;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Paths;
@@ -36,21 +35,13 @@ import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.RuntimeErrorException;
-import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.hyperic.sigar.ProcTime;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
-
-import sun.jvmstat.monitor.Monitor;
-import sun.jvmstat.monitor.MonitoredHost;
-import sun.jvmstat.monitor.MonitoredVm;
-import sun.jvmstat.monitor.VmIdentifier;
 
 import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.utils.MergeableProperties;
@@ -59,8 +50,10 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
+import sun.management.ConnectorAddressLink;
+
+@SuppressWarnings("restriction")
 public class DeployerControl {
-  private static final String LOCAL_CONNECTOR_ADDRESS_PROP = "com.sun.management.jmxremote.localConnectorAddress";
   protected final static Logger log = Logger.getLogger("deployer");
   protected final ExecutorService executor = Executors.newFixedThreadPool(10);
   protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
@@ -166,9 +159,17 @@ public class DeployerControl {
     if (failures)
       throw new RuntimeException("Some downloads failed - check logs");
   }
-  public MBeanServerConnection getMBeanServerConnection(long lvmid) throws Exception {
-    try {
-      VirtualMachine attachedVm = VirtualMachine.attach("" + lvmid);
+  public static MBeanServerConnection getMBeanServerConnection(long pid) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException  {
+      String address = ConnectorAddressLink.importFrom((int) pid);
+      if (address == null) {
+          startManagementAgent(pid);
+          address = ConnectorAddressLink.importFrom((int) pid);
+      }
+      JMXServiceURL jmxUrl = new JMXServiceURL(address);
+      return JMXConnectorFactory.connect(jmxUrl).getMBeanServerConnection();
+  }
+  private static void startManagementAgent(long pid) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
+      VirtualMachine attachedVm = VirtualMachine.attach("" + pid);
       String home = attachedVm.getSystemProperties().getProperty("java.home");
       File f = Paths.get(home, "jre", "lib", "management-agent.jar").toFile();
       if (!f.exists()) {
@@ -178,26 +179,8 @@ public class DeployerControl {
         }
       }
       String agent = f.getCanonicalPath();
-      log.finer("Found agent for VM " + lvmid + ": " + agent);
-      try {
-        attachedVm.loadAgent(agent, "com.sun.management.jmxremote");
-      } catch (AgentLoadException x) {
-        return null;
-      } catch (AgentInitializationException x) {
-        return null;
-      }
-      Properties agentProps = attachedVm.getAgentProperties();
-      String address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
-      JMXServiceURL url = new JMXServiceURL(address);
-      JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
-      MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-      return mbsc;
-    } catch (AttachNotSupportedException x) {
-      log.log(Level.WARNING, "Not attachable", x);
-    } catch (IOException x) {
-      log.log(Level.WARNING, "Failed to get JMX connection", x);
-    }
-    return null;
+      System.out.println("Loading " + agent + " into target VM...");
+      attachedVm.loadAgent(agent);
   }
   protected void usage(String error) {
     System.err.println(error);
