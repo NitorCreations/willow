@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -12,6 +13,7 @@ import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.hyperic.sigar.Sigar;
@@ -26,13 +28,13 @@ public class JMXOperation extends DeployerControl {
     }
     List<String> argList = Arrays.asList(args);
     String first = argList.remove(0);
-    MBeanServerConnection server = null;
+    JMXConnector conn = null;
     boolean directPid = false;
     try {
       if (first.matches("\\d+")) {
-        server = getMBeanServerConnection(Long.parseLong(first));
+        conn = getJMXConnector(Long.parseLong(first));
       }
-      if (server == null) {
+      if (conn == null) {
         deployerName = first;
         Sigar sigar = new Sigar();
         long mypid = sigar.getPid();
@@ -47,21 +49,22 @@ public class JMXOperation extends DeployerControl {
           log.log(rec);
           System.exit(1);
         }
-        server = getMBeanServerConnection(firstPid);
+        conn = getJMXConnector(firstPid);
       } else {
         directPid = true;
       }
-      if (server == null) {
+      if (conn == null) {
         LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
         log.log(rec);
         System.exit(1);
       }
+      MBeanServerConnection server = conn.getMBeanServerConnection();
       if (!directPid) {
         MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
         long childPid = proxy.getChildPid(argList.get(0));
         if (childPid > 0) {
-          server = getMBeanServerConnection(childPid);
-          if (server == null) {
+          conn = getJMXConnector(childPid);
+          if (conn == null) {
             LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer child" + deployerName
               + "::"  + argList.get(0));
             log.log(rec);
@@ -108,6 +111,14 @@ public class JMXOperation extends DeployerControl {
       rec.setThrown(e);
       log.log(rec);
       System.exit(1);
+    } finally {
+      if (conn != null) {
+        try {
+          conn.close();
+        } catch (IOException e) {
+          log.fine("Failed to close JMXConnection");
+        }
+      }
     }
   }
 }
