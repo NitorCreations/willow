@@ -296,4 +296,24 @@ public class Main extends DeployerControl implements MainMBean {
     e.printStackTrace();
     super.usage(e.getMessage());
   }
+
+  @Override
+  public String[] getChildNames() {
+    ArrayList<String> ret = new ArrayList<>();
+    for (LaunchMethod next : children) {
+      ret.add(next.getName());
+    }
+    return ret.toArray(new String[ret.size()]);
+  }
+
+  @Override
+  public long getChildPid(String childName) {
+    if (childName == null || childName.isEmpty()) return -1;
+    for (LaunchMethod next : children) {
+      if (childName.equals(next.getName())) {
+        return next.getProcessId();
+      }
+    }
+    return -1;
+  }
 }
