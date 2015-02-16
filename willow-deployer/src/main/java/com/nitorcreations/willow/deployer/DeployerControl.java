@@ -35,6 +35,7 @@ import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
@@ -86,9 +87,9 @@ public class DeployerControl {
         termTimeout = Long.valueOf(timeOutEnv);
       }
       if (firstPid > 0) {
-        MBeanServerConnection server = getMBeanServerConnection(firstPid);
-        MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
-        try {
+        try (JMXConnector conn = getJMXConnector(firstPid)) {
+          MBeanServerConnection server = conn.getMBeanServerConnection();
+          MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
           proxy.stop();
         } catch (Throwable e) {
           log.info("JMX stop failed - terminating");
@@ -159,14 +160,19 @@ public class DeployerControl {
     if (failures)
       throw new RuntimeException("Some downloads failed - check logs");
   }
-  public static MBeanServerConnection getMBeanServerConnection(long pid) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException  {
+  public static JMXConnector getJMXConnector(long pid) {
+    try {
       String address = ConnectorAddressLink.importFrom((int) pid);
       if (address == null) {
           startManagementAgent(pid);
           address = ConnectorAddressLink.importFrom((int) pid);
       }
       JMXServiceURL jmxUrl = new JMXServiceURL(address);
-      return JMXConnectorFactory.connect(jmxUrl).getMBeanServerConnection();
+      return JMXConnectorFactory.connect(jmxUrl);
+    } catch (IOException | AttachNotSupportedException | AgentLoadException | AgentInitializationException e) {
+      log.info("Failed to create JMXConnector to " + pid + ": " + e.getMessage());
+      return null;
+    }
   }
   private static void startManagementAgent(long pid) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
       VirtualMachine attachedVm = VirtualMachine.attach("" + pid);
@@ -179,8 +185,9 @@ public class DeployerControl {
         }
       }
       String agent = f.getCanonicalPath();
-      System.out.println("Loading " + agent + " into target VM...");
+      log.info("Loading " + agent + " into target VM...");
       attachedVm.loadAgent(agent);
+      attachedVm.detach();
   }
   protected void usage(String error) {
     System.err.println(error);

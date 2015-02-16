@@ -7,6 +7,7 @@ import java.util.logging.LogRecord;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
 
 import org.hyperic.sigar.ProcTime;
 import org.hyperic.sigar.Sigar;
@@ -37,9 +38,9 @@ public class Status extends DeployerControl {
             firstPid = pid;
           }
         }
-        MBeanServerConnection server = getMBeanServerConnection(firstPid);
-        MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
-        try {
+        try (JMXConnector conn = getJMXConnector(firstPid)) {
+          MBeanServerConnection server = conn.getMBeanServerConnection();
+          MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
           System.out.println(proxy.getStatus());
           System.exit(0);
         } catch (Throwable e) {
