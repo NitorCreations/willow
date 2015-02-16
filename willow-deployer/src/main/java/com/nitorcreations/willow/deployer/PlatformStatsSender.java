@@ -1,9 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,7 +16,6 @@ import org.hyperic.sigar.FileSystemUsage;
 import org.hyperic.sigar.Mem;
 import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.NetStat;
-import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;

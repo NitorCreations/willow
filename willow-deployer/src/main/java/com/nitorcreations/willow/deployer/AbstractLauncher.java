@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_IDENTIFIER;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_AUTORESTART;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
@@ -11,7 +12,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_IDENTIFIER;
 
 import java.io.File;
 import java.io.IOException;
