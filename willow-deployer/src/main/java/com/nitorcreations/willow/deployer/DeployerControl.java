@@ -1,9 +1,9 @@
 package com.nitorcreations.willow.deployer;
 
+import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,14 +44,14 @@ import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
+import sun.management.ConnectorAddressLink;
+
 import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
-
-import sun.management.ConnectorAddressLink;
 
 @SuppressWarnings("restriction")
 public class DeployerControl {
