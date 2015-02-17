@@ -30,11 +30,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -43,7 +40,6 @@ import javax.management.NotCompliantMBeanException;
 
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
-import com.nitorcreations.willow.utils.SimpleFormatter;
 
 public class Main extends DeployerControl implements MainMBean {
   private List<PlatformStatsSender> stats = new ArrayList<>();
@@ -67,7 +63,6 @@ public class Main extends DeployerControl implements MainMBean {
   public void doMain(String[] args) {
     if (args.length < 2)
       usage("At least two arguments expected: {name} {launch.properties}");
-    setupLogging();
     populateProperties(args);
     MergeableProperties mergedProperties = new MergeableProperties();
     for (int i = launchPropertiesList.size() - 1; i >= 0; i--) {
@@ -219,19 +214,6 @@ public class Main extends DeployerControl implements MainMBean {
     if (lastThrown != null)
       throw lastThrown;
   }
-
-  public void setupLogging() {
-    Logger rootLogger = Logger.getLogger("");
-    for (Handler nextHandler : rootLogger.getHandlers()) {
-      rootLogger.removeHandler(nextHandler);
-    }
-    Handler console = new ConsoleHandler();
-    console.setLevel(Level.INFO);
-    console.setFormatter(new SimpleFormatter());
-    rootLogger.addHandler(console);
-    rootLogger.setLevel(Level.INFO);
-  }
-
   public void stop() {
     for (LaunchMethod next : children) {
       next.stopRelaunching();

@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -48,6 +50,7 @@ import sun.management.ConnectorAddressLink;
 
 import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.utils.MergeableProperties;
+import com.nitorcreations.willow.utils.SimpleFormatter;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
@@ -63,7 +66,8 @@ public class DeployerControl {
   static {
     try {
       OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
-    } catch (MalformedObjectNameException e) {
+      setupLogging();
+    } catch (Throwable e) {
       e.printStackTrace();
       assert false;
     }
@@ -185,7 +189,7 @@ public class DeployerControl {
         }
       }
       String agent = f.getCanonicalPath();
-      log.info("Loading " + agent + " into target VM...");
+      log.fine("Loading " + agent + " into target VM...");
       attachedVm.loadAgent(agent);
       attachedVm.detach();
   }
@@ -326,5 +330,16 @@ public class DeployerControl {
       if (!children.contains(next)) return next;
     }
     return -1;
+  }
+  public static void setupLogging() {
+    Logger rootLogger = Logger.getLogger("");
+    for (Handler nextHandler : rootLogger.getHandlers()) {
+      rootLogger.removeHandler(nextHandler);
+    }
+    Handler console = new ConsoleHandler();
+    console.setLevel(Level.INFO);
+    console.setFormatter(new SimpleFormatter());
+    rootLogger.addHandler(console);
+    rootLogger.setLevel(Level.INFO);
   }
 }
