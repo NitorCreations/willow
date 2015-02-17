@@ -2,6 +2,7 @@ package com.nitorcreations.willow.deployer;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -26,7 +27,7 @@ public class JMXOperation extends DeployerControl {
     if (args.length < 3) {
       usage("Usage: JMXOperation {pid|deployerName [childName]} objectName operationName [arguments...]");
     }
-    List<String> argList = Arrays.asList(args);
+    List<String> argList = new ArrayList<>(Arrays.asList(args));
     String first = argList.remove(0);
     JMXConnector conn = null;
     boolean directPid = false;
@@ -36,6 +37,7 @@ public class JMXOperation extends DeployerControl {
       }
       if (conn == null) {
         deployerName = first;
+        extractNativeLib();
         Sigar sigar = new Sigar();
         long mypid = sigar.getPid();
         if (mypid <= 0) {
