@@ -18,6 +18,7 @@ import javax.management.remote.JMXConnector;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
 
 public class JMXOperation extends DeployerControl {
   public static void main(String[] args) {
@@ -28,54 +29,8 @@ public class JMXOperation extends DeployerControl {
       usage("Usage: JMXOperation {pid|deployerName [childName]} objectName operationName [arguments...]");
     }
     List<String> argList = new ArrayList<>(Arrays.asList(args));
-    String first = argList.remove(0);
-    JMXConnector conn = null;
-    boolean directPid = false;
-    try {
-      if (first.matches("\\d+")) {
-        conn = getJMXConnector(Long.parseLong(first));
-      }
-      if (conn == null) {
-        deployerName = first;
-        extractNativeLib();
-        Sigar sigar = new Sigar();
-        long mypid = sigar.getPid();
-        if (mypid <= 0) {
-          LogRecord rec = new LogRecord(Level.WARNING, "Failed resolve own pid");
-          log.log(rec);
-          System.exit(1);
-        }
-        long firstPid = findOldDeployerPid(deployerName);
-        if (firstPid <= 0) {
-          LogRecord rec = new LogRecord(Level.WARNING, "Failed to find pid for deployer " + deployerName);
-          log.log(rec);
-          System.exit(1);
-        }
-        conn = getJMXConnector(firstPid);
-      } else {
-        directPid = true;
-      }
-      if (conn == null) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
-        log.log(rec);
-        System.exit(1);
-      }
+    try (JMXConnector conn = resoveConnection(argList)) {
       MBeanServerConnection server = conn.getMBeanServerConnection();
-      if (!directPid) {
-        MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
-        long childPid = proxy.getChildPid(argList.get(0));
-        if (childPid > 0) {
-          conn = getJMXConnector(childPid);
-          if (conn == null) {
-            LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer child" + deployerName
-              + "::"  + argList.get(0));
-            log.log(rec);
-            System.exit(1);
-          }
-          argList.remove(0);
-
-        }
-      }    
       ObjectName objectName = new ObjectName(argList.remove(0));
       String operationName = argList.remove(0);
       MBeanInfo mBeanInfo;
@@ -113,14 +68,67 @@ public class JMXOperation extends DeployerControl {
       rec.setThrown(e);
       log.log(rec);
       System.exit(1);
+    }
+  }
+  private JMXConnector resoveConnection(List<String> argList) {
+    String first = argList.remove(0);
+    JMXConnector conn = null;
+    JMXConnector childConn = null;
+    if (first.matches("\\d+")) {
+      conn = getJMXConnector(Long.parseLong(first));
+    }
+    if (conn != null) return conn;
+    deployerName = first;
+    extractNativeLib();
+    Sigar sigar = new Sigar();
+    long mypid = sigar.getPid();
+    if (mypid <= 0) {
+      LogRecord rec = new LogRecord(Level.WARNING, "Failed resolve own pid");
+      log.log(rec);
+      System.exit(1);
+    }
+    try {
+      long firstPid = findOldDeployerPid(deployerName);
+      if (firstPid <= 0) {
+        LogRecord rec = new LogRecord(Level.WARNING, "Failed to find pid for deployer " + deployerName);
+        log.log(rec);
+        System.exit(1);
+      }
+      conn = getJMXConnector(firstPid);
+      if (conn == null) {
+        LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
+        log.log(rec);
+        System.exit(1);
+      }
+      MBeanServerConnection server = conn.getMBeanServerConnection();
+      MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
+      long childPid = proxy.getChildPid(argList.get(0));
+      if (childPid > 0) {
+        childConn = getJMXConnector(childPid);
+        if (childConn == null) {
+          LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer child" + deployerName
+              + "::"  + argList.get(0));
+          log.log(rec);
+          System.exit(1);
+        } else {
+          argList.remove(0);
+          return childConn;
+        }
+      } else {
+        return conn;
+      }
+    } catch (SigarException | IOException e) {
+      log.info("Failed to resolve JMXConnector: " + e.getMessage());
+      System.exit(1);
     } finally {
-      if (conn != null) {
+      if (conn != null && childConn != null) {
         try {
           conn.close();
         } catch (IOException e) {
-          log.fine("Failed to close JMXConnection");
+          log.info("Failed to close JMXConnector: " + e.getMessage());
         }
       }
     }
+    return null;
   }
 }
