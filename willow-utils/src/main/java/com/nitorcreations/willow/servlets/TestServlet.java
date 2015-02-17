@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.common;
+package com.nitorcreations.willow.servlets;
 
 import java.io.IOException;
 import java.util.Random;

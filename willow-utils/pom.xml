@@ -47,5 +47,10 @@
       <groupId>com.jcraft</groupId>
       <artifactId>jsch.agentproxy.jsch</artifactId>
     </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 </project>

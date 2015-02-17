@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.metrics;
+package com.nitorcreations.logging.jetty;
 
 import java.net.URISyntaxException;
 
