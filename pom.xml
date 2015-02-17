@@ -28,6 +28,7 @@
     <module>willow-deployer</module>
     <module>willow-utils</module>
     <module>willow-simulate</module>
+    <module>willow-logging</module>
     <module>willow-maven-plugin</module>
   </modules>
   <licenses>
@@ -202,16 +203,6 @@
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.nitorcreations</groupId>
-        <artifactId>willow-messages</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.nitorcreations</groupId>
-        <artifactId>willow-utils</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils-core</artifactId>
         <version>1.8.3</version>
@@ -263,6 +254,11 @@
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.eclipse.jetty.websocket</groupId>
         <artifactId>websocket-server</artifactId>
         <version>${jetty.version}</version>
@@ -270,6 +266,11 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-proxy</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
@@ -323,6 +324,12 @@
         <groupId>com.jcraft</groupId>
         <artifactId>jsch.agentproxy.jsch</artifactId>
         <version>0.0.7</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

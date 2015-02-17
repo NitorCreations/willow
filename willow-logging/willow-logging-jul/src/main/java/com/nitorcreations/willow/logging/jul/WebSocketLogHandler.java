@@ -1,10 +1,13 @@
-package com.nitorcreations.willow.messages;
+package com.nitorcreations.willow.logging.jul;
 
 import java.net.URISyntaxException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
+
+import com.nitorcreations.willow.messages.LogMessage;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class WebSocketLogHandler extends Handler {
   WebSocketTransmitter transmitter;

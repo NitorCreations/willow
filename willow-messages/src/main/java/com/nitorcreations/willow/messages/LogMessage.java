@@ -6,9 +6,6 @@ import java.util.logging.LogRecord;
 
 import org.msgpack.annotation.Message;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.IThrowableProxy;
-import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 
 @Message
 public class LogMessage extends AbstractMessage {
@@ -35,17 +32,15 @@ public class LogMessage extends AbstractMessage {
     this.stackTrace = stackTrace;
   }
 
-  public LogMessage(ILoggingEvent entry) {
-    this.thread = entry.getThreadName();
-    this.level = entry.getLevel().toString();
-    this.logger = entry.getLoggerName();
-    this.message = entry.getFormattedMessage();
-    final IThrowableProxy throwableProxy = entry.getThrowableProxy();
-    if (throwableProxy != null) {
-      this.stackTrace = ThrowableProxyUtil.asString(throwableProxy);
-    }
+  public LogMessage(LogMessageAdapter entry) {
+    this.logEntryTimeStamp = entry.getLogEntryTimeStamp();
+    this.thread = entry.getThread();
+    this.level = entry.getLevel();
+    this.logger = entry.getLogger();
+    this.message = entry.getMessage();
+    this.stackTrace = entry.getStackTrace();
   }
-
+  
   public LogMessage(LogRecord entry) {
     this.thread = Integer.toString(entry.getThreadID());
     this.level = entry.getLevel().toString();
