@@ -16,6 +16,7 @@ import com.jcraft.jsch.agentproxy.AgentProxyException;
 import com.jcraft.jsch.agentproxy.Connector;
 import com.jcraft.jsch.agentproxy.ConnectorFactory;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
+import com.nitorcreations.willow.utils.Obfuscator;
 
 public class SftpURLConnection extends URLConnection {
   private final Logger log = Logger.getLogger(getClass().getCanonicalName());
@@ -60,6 +61,9 @@ public class SftpURLConnection extends URLConnection {
       int port = url.getPort() > 0 ? url.getPort() : url.getDefaultPort();
       session = jsch.getSession(userInfo[0], url.getHost(), port);
       if (userInfo.length > 1) {
+        if (userInfo[1].startsWith("obf:")) {
+          userInfo[1] = new Obfuscator().decrypt(userInfo[1].substring(4));
+        }
         session.setPassword(userInfo[1]);
       }
       Properties config = new Properties();
