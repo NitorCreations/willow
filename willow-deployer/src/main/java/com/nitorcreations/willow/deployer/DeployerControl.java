@@ -35,7 +35,6 @@ import java.util.logging.Logger;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -49,6 +48,7 @@ import org.hyperic.sigar.ptql.ProcessQueryFactory;
 import sun.management.ConnectorAddressLink;
 
 import com.nitorcreations.core.utils.KillProcess;
+import com.nitorcreations.willow.protocols.Register;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 import com.sun.tools.attach.AgentInitializationException;
@@ -67,6 +67,7 @@ public class DeployerControl {
     try {
       OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
       setupLogging();
+      Register.doIt();
     } catch (Throwable e) {
       e.printStackTrace();
       assert false;
