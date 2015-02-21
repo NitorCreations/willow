@@ -99,6 +99,10 @@
       <artifactId>commons-compress</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.sun</groupId>
       <artifactId>tools</artifactId>
       <scope>system</scope>
