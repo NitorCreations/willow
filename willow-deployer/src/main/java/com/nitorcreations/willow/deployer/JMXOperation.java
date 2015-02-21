@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import javax.enterprise.inject.New;
 import javax.management.JMX;
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
@@ -17,8 +19,13 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 
 import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+
+import com.google.gson.Gson;
+
+import javax.management.Attribute;
 
 public class JMXOperation extends DeployerControl {
   public static void main(String[] args) {
@@ -33,8 +40,7 @@ public class JMXOperation extends DeployerControl {
       MBeanServerConnection server = conn.getMBeanServerConnection();
       ObjectName objectName = new ObjectName(argList.remove(0));
       String operationName = argList.remove(0);
-      MBeanInfo mBeanInfo;
-      mBeanInfo = server.getMBeanInfo(objectName);
+      MBeanInfo mBeanInfo = server.getMBeanInfo(objectName);
       MBeanOperationInfo[] operations = mBeanInfo.getOperations();
       for (MBeanOperationInfo operation : operations) {
         if (operation.getName().equals(operationName)) {
@@ -62,9 +68,28 @@ public class JMXOperation extends DeployerControl {
           }
         }
       }
-      System.out.println("No operation found with name " + operationName + " and " + argList.size() + " argument(s)");
+      for (MBeanAttributeInfo attr : mBeanInfo.getAttributes()) {
+        if (attr.getName().equals(operationName)) {
+          if (argList.size() == 0) {
+            System.out.println(new Gson().toJson(server.getAttribute(objectName, attr.getName())));
+            System.exit(0);
+          } else if (attr.isWritable()){
+            Class clazz = ClassUtils.getClass(attr.getType());
+            Object val = null;
+            if (clazz.isArray()) {
+              val = ConvertUtils.convert(argList.toArray(), clazz);
+            } else {
+              val = ConvertUtils.convert(argList.get(0), clazz);
+            }
+            Attribute newAttr = new Attribute(attr.getName(), val);
+            server.setAttribute(objectName, newAttr);
+            System.exit(0);
+          }
+        }
+      }
+      System.out.println("No operation/attribute found with name " + operationName + " and " + argList.size() + " argument(s)");
     } catch (Throwable e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
+      LogRecord rec = new LogRecord(Level.WARNING, "Failed to issue jmxoperation to deployer " + deployerName);
       rec.setThrown(e);
       log.log(rec);
       System.exit(1);
