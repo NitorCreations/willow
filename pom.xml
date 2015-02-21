@@ -46,6 +46,7 @@
     <wagonVersion>1.0</wagonVersion>
     <msgpack.version>0.6.11</msgpack.version>
     <jetty.version>9.2.3.v20140905</jetty.version>
+    <slf4j.version>1.7.6</slf4j.version>
   </properties>
   <distributionManagement>
     <snapshotRepository>
@@ -281,12 +282,17 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>log4j-over-slf4j</artifactId>
-        <version>1.7.6</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jul-to-slf4j</artifactId>
-        <version>1.7.6</version>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>com.nitorcreations</groupId>
