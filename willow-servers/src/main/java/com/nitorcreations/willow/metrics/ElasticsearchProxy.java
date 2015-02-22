@@ -3,10 +3,12 @@ package com.nitorcreations.willow.metrics;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.jetty.proxy.ProxyServlet;
 
+@Singleton
 public class ElasticsearchProxy extends ProxyServlet {
   private static final long serialVersionUID = -1295459728251583300L;
 

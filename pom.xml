@@ -47,6 +47,9 @@
     <msgpack.version>0.6.11</msgpack.version>
     <jetty.version>9.2.3.v20140905</jetty.version>
     <slf4j.version>1.7.6</slf4j.version>
+    <findbugs.version>3.0.0</findbugs.version>
+    <sisu.version>0.3.0.M1</sisu.version>
+    <guice.version>3.0</guice.version>
   </properties>
   <distributionManagement>
     <snapshotRepository>
@@ -335,6 +338,22 @@
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>3.1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject.extensions</groupId>
+        <artifactId>guice-servlet</artifactId>
+        <version>${guice.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.inject</artifactId>
+        <version>${sisu.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${findbugs.version}</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>

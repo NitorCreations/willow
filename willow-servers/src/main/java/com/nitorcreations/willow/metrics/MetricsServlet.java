@@ -6,6 +6,7 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Singleton;
 import javax.servlet.GenericServlet;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -13,6 +14,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,7 +27,8 @@ import org.elasticsearch.node.NodeBuilder;
 import com.google.gson.Gson;
 import com.nitorcreations.willow.utils.HostUtil;
 
-public class MetricsServlet extends GenericServlet implements Servlet {
+@Singleton
+public class MetricsServlet extends HttpServlet {
   private static final long serialVersionUID = -6704365246281136504L;
   private static Node node;
   Map<String, Class<? extends Metric<?>>> metrics = new HashMap<>();

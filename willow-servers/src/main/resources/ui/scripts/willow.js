@@ -195,7 +195,7 @@ var expandDetails = function(e) {
         $(".row2-" + host).append('<div class="login-' + host + ' col c6" style="height:200px">')
         $(".login-" + host).append('<a class="btn btn-b smooth login">Login</a>');
         $(".login-" + host).on("click", function() {
-              window.open("/terminal-resources/?user=pasi&host=localhost");
+              window.open("/terminal/?user=pasi&host=localhost");
         });
         d3.json("/metrics/disk?tag=host_" + host + "&stop=" + host_stop, fsGraphCallback(host));
         d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, heapGraphCallback(host));

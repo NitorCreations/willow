@@ -14,8 +14,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
+
+import javax.servlet.DispatcherType;
 
 import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
@@ -27,70 +30,59 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.sisu.space.SpaceModule;
+import org.eclipse.sisu.space.URLClassSpace;
+import org.eclipse.sisu.wire.WireModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import ch.qos.logback.classic.LoggerContext;
-
+import com.google.inject.Guice;
+import com.google.inject.servlet.GuiceFilter;
 import com.nitorcreations.logging.jetty.WebsocketRequestLog;
-import com.nitorcreations.willow.servlets.PropertyServlet;
-import com.nitorcreations.willow.servlets.TestServlet;
 
 public class MetricsServer {
-  final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
   private static final Logger LOG = LoggerFactory.getLogger(MetricsServer.class);
 
   public static void main(final String... args) throws Exception {
-    new MetricsServer().start(getInteger("port", 5120), getProperty("env", "dev"), getProperty("static.resources", ""));
+    ClassLoader classloader = MetricsServer.class.getClassLoader();
+    Guice.createInjector(new WireModule(new SpaceModule(new URLClassSpace(classloader)), new ApplicationServletModule()));
+    new MetricsServer().start(getInteger("port", 5120));
   }
 
-  public Server start(final int port, final String env, String staticResources) throws Exception {
+  public void start(final int port) throws Exception {
     long start = currentTimeMillis();
     SLF4JBridgeHandler.removeHandlersForRootLogger();
     SLF4JBridgeHandler.install();
-    setProperty("env", env);
     killProcessUsingPort(port);
     Server server = setupServer();
     setupServerConnector(server, port);
-    ServletContextHandler context = setupServletContextHandler();
-    setupResourceBases(context, "terminal-resources", "metrics-resources");
-    setupMetrics(context);
-    setupProperties(context);
-    setupStatistics(context);
-    setupTerminal(context);
-    setupProxy(context);
-    if ("dev".equals(env)) {
-      setupTest(context);
+    ServletContextHandler servletContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+    servletContextHandler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+    ServletHolder holder = servletContextHandler.addServlet(DefaultServlet.class, "/");
+    holder.setInitParameter("dirAllowed", "false");
+    holder.setInitParameter("gzip", "false");
+    ArrayList<String> resources = new ArrayList<>();
+    for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources("resource-root.marker"); urls.hasMoreElements();) {
+      URL url = urls.nextElement();
+      resources.add(url.toString().replace("resource-root.marker", ""));
     }
-    setupHandlers(server, context);
-    server.start();
-    long end = currentTimeMillis();
-    LOG.info("Succesfully started Jetty on port {} in {} seconds in environment {}", port, (end - start) / 1000.0, env);
-    return server;
-  }
-
-  private void setupResourceBases(final ServletContextHandler context, String... resourceBases) throws IOException {
-    List<String> resources = new ArrayList<>();
-    for (String next : resourceBases) {
-      int i = 1;
-      String index = next + "/index.html";
-      for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources(index); urls.hasMoreElements();) {
-        URL url = urls.nextElement();
-        resources.add(url.toString().replace(index, ""));
+    servletContextHandler.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
+    setupHandlers(server, servletContextHandler);
+    try {
+      server.start();
+      long end = currentTimeMillis();
+      LOG.info("Succesfully started Jetty on port {} in {} seconds", port, (end - start) / 1000.0);
+      server.join();
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        server.stop();
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      LOG.info("Resources included from : " + resources.toString());
-      context.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
-      ServletHolder holder = context.addServlet(DefaultServlet.class, "/" + next + "/*");
-      holder.setInitParameter("dirAllowed", "false");
-      holder.setInitParameter("gzip", "false");
-      holder.setDisplayName("terminal-resources");
-      holder.setInitOrder(i++);
-    }
-  }
-
-  private void setupProxy(ServletContextHandler context) {
-    context.addServlet(ElasticsearchProxy.class, "/search/*");
+    }    
   }
 
   private Server setupServer() {
@@ -107,43 +99,11 @@ public class MetricsServer {
     server.addConnector(connector);
   }
 
-  private ServletContextHandler setupServletContextHandler() {
-    ServletContextHandler context = new ServletContextHandler(NO_SESSIONS | NO_SECURITY);
-    context.setDisplayName("metrics");
-    context.setStopTimeout(SECONDS.toMillis(10));
-    return context;
-  }
-
   private void setupHandlers(final Server server, final ServletContextHandler context) throws URISyntaxException {
     HandlerCollection handlers = new HandlerCollection();
     server.setHandler(handlers);
     handlers.addHandler(context);
     handlers.addHandler(createAccessLogHandler());
-  }
-
-  private void setupMetrics(final ServletContextHandler context) {
-    ServletHolder holder = context.addServlet(MetricsServlet.class, "/metrics/*");
-    holder.setInitOrder(1);
-  }
-
-  private void setupProperties(final ServletContextHandler context) {
-    ServletHolder holder = context.addServlet(PropertyServlet.class, "/properties/*");
-    holder.setInitOrder(2);
-  }
-
-  private void setupTest(ServletContextHandler context) {
-    LOG.info("Enable test servlet");
-    context.addServlet(TestServlet.class, "/test/*");
-  }
-
-  private void setupStatistics(final ServletContextHandler context) {
-    LOG.info("Enable statistics servlet");
-    context.addServlet(StatisticsServlet.class, "/statistics/*");
-  }
-
-  private void setupTerminal(final ServletContextHandler context) {
-    LOG.info("Enable terminal servlet");
-    context.addServlet(TerminalServlet.class, "/terminal/*");
   }
 
   private RequestLogHandler createAccessLogHandler() throws URISyntaxException {

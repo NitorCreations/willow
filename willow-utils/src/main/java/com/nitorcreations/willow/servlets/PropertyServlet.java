@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map.Entry;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -20,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.PropertySource;
 
-public class PropertyServlet extends HttpServlet implements Servlet {
+public class PropertyServlet extends HttpServlet {
   private static final long serialVersionUID = -7870102334063578984L;
   ServletConfig config;
   PropertySource propertySource;
