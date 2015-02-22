@@ -7,8 +7,9 @@ import javax.servlet.GenericServlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
 
-public class TestServlet extends GenericServlet {
+public class TestServlet extends HttpServlet {
   private static final long serialVersionUID = 6630375757617553307L;
   int min = 5;
   int max = 45000;

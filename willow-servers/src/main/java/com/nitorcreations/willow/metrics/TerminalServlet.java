@@ -2,11 +2,14 @@ package com.nitorcreations.willow.metrics;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Singleton;
+
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import com.nitorcreations.willow.ssh.SecureShellWS;
 
+@Singleton
 public class TerminalServlet extends WebSocketServlet {
   private static final long serialVersionUID = -7940037116569261919L;
 
