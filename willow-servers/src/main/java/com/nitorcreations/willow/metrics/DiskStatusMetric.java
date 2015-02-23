@@ -1,13 +1,13 @@
 package com.nitorcreations.willow.metrics;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -19,7 +19,9 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.sort.SortOrder;
 
-public class DiskStatusMetric implements Metric<List<SeriesData<String, Long>>> {
+
+@Named("/disk")
+public class DiskStatusMetric implements Metric {
   @Override
   public List<SeriesData<String, Long>> calculateMetric(Client client, HttpServletRequest req) {
     long stop = Long.parseLong(req.getParameter("stop"));

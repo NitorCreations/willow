@@ -3,6 +3,9 @@ package com.nitorcreations.willow.metrics;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Named;
+
+@Named("/tcpinfo")
 public class ConnectionsMetric extends SimpleMetric<Integer, Integer> {
   @Override
   public String getType() {
