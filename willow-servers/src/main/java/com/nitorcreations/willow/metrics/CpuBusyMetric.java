@@ -2,6 +2,9 @@ package com.nitorcreations.willow.metrics;
 
 import java.util.List;
 
+import javax.inject.Named;
+
+@Named("/cpu")
 public class CpuBusyMetric extends SimpleMetric<CpuData, Long> {
   CpuData prevValues;
   double prevRes = 0D;

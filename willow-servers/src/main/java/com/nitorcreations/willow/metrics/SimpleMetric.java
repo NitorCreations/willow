@@ -18,7 +18,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
-public abstract class SimpleMetric<L, T> implements Metric<List<TimePoint>> {
+public abstract class SimpleMetric<L, T> implements Metric {
   protected SortedMap<Long, L> rawData;
   private Map<String, SearchHitField> fields;
 

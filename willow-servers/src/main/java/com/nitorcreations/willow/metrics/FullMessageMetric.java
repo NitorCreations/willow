@@ -27,7 +27,7 @@ import org.elasticsearch.search.SearchHit;
 
 import com.google.gson.Gson;
 
-public abstract class FullMessageMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> implements Metric<Collection<SeriesData<X, Y>>> {
+public abstract class FullMessageMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> implements Metric {
   protected SortedMap<Long, T> rawData;
   private final Class<T> type;
 

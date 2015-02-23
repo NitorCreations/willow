@@ -2,6 +2,9 @@ package com.nitorcreations.willow.metrics;
 
 import java.util.List;
 
+import javax.inject.Named;
+
+@Named("/latency")
 public class RequestDurationMetric extends SimpleMetric<Number, Long> {
   @Override
   public String getType() {

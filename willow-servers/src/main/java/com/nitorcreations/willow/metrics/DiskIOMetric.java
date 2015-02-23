@@ -1,9 +1,13 @@
 package com.nitorcreations.willow.metrics;
 
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.inject.Named;
+
+@Named("/diskio")
 public class DiskIOMetric extends SimpleMetric<DiskIOData, Object> {
   private HashMap<String, DiskIOData> prevValues = new HashMap<>();
 

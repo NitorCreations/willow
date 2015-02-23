@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.inject.Named;
+
+@Named("/net")
 public class NetworkMetric extends SimpleMetric<NetData, Object> {
   private HashMap<String, NetData> prevValues = new HashMap<>();
 

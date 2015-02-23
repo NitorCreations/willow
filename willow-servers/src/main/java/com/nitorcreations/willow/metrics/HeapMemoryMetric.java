@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.inject.Named;
+
 import com.nitorcreations.willow.messages.JmxMessage;
 
+@Named("/heap")
 public class HeapMemoryMetric extends FullMessageMetric<JmxMessage, Long, Long> {
   private static final String categoryPrefix = "category_jmx_";
 

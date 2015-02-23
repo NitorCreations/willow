@@ -4,12 +4,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.elasticsearch.client.Client;
 
 import com.nitorcreations.willow.messages.AccessLogEntry;
 
+@Named("/access")
 public class AccessLogMetric extends FullMessageMetric<AccessLogEntry, Long, Long> {
   long[] limits = new long[] { 10L, 100L, 1000L, 10000L };
 

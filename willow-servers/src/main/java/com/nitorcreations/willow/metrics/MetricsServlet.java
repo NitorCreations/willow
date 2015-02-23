@@ -1,14 +1,16 @@
 package com.nitorcreations.willow.metrics;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.servlet.GenericServlet;
-import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -25,32 +27,30 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
 import com.google.gson.Gson;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.nitorcreations.willow.utils.HostUtil;
 
 @Singleton
 public class MetricsServlet extends HttpServlet {
   private static final long serialVersionUID = -6704365246281136504L;
   private static Node node;
-  Map<String, Class<? extends Metric<?>>> metrics = new HashMap<>();
   ServletConfig config;
   private SecureRandom random = new SecureRandom();
   private Settings settings;
 
+  @Inject
+  protected Injector injector;
+  private final Map<String, Metric> metrics;
+  
+  @Inject
+  public MetricsServlet(Map<String, Metric> metrics) {
+    this.metrics = new HashMap<>(metrics);
+  }
+  
   @Override
   public void init(ServletConfig config) throws ServletException {
     this.config = config;
-    metrics.put("/hosts", HostTagMetric.class);
-    metrics.put("/cpu", CpuBusyMetric.class);
-    metrics.put("/mem", PhysicalMemoryMetric.class);
-    metrics.put("/diskio", DiskIOMetric.class);
-    metrics.put("/disk", DiskStatusMetric.class);
-    metrics.put("/tcpinfo", ConnectionsMetric.class);
-    metrics.put("/net", NetworkMetric.class);
-    metrics.put("/heap", HeapMemoryMetric.class);
-    metrics.put("/access", AccessLogMetric.class);
-    metrics.put("/requests", RequestCountMetric.class);
-    metrics.put("/latency", RequestDurationMetric.class);
-    metrics.put("/types", MessageTypesMetric.class);
     setupElasticSearch(config.getServletContext());
   }
 
@@ -66,20 +66,19 @@ public class MetricsServlet extends HttpServlet {
       return;
     }
     String metricKey = ((HttpServletRequest) req).getPathInfo();
-    Class<? extends Metric<?>> metricClass = metrics.get(metricKey);
-    if (metricClass == null) {
-      ((HttpServletResponse) res).sendError(404, "Metric " + metricKey + " not found");
+    Metric metric = metrics.get(metricKey);
+    if (metric == null) {
+      ((HttpServletResponse) res).sendError(404, "Metric with key " + metricKey + " not found");
       return;
     }
-    Metric<?> metric;
     try {
-      metric = metricClass.newInstance();
+      metric = metric.getClass().newInstance();
       Object data = metric.calculateMetric(getClient(), (HttpServletRequest) req);
       res.setContentType("application/json");
       Gson out = new Gson();
       res.getOutputStream().write(out.toJson(data).getBytes());
     } catch (InstantiationException | IllegalAccessException e) {
-      log("Failed to create metric", e);
+      throw new IOException(e);
     }
   }
 
@@ -120,7 +119,6 @@ public class MetricsServlet extends HttpServlet {
       return defaultVal;
     return ret;
   }
-
   public String randomNodeId() {
     return new BigInteger(130, random).toString(32);
   }

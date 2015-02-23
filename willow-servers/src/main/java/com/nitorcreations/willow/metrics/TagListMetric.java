@@ -12,7 +12,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 
-public abstract class TagListMetric implements Metric<List<String>> {
+public abstract class TagListMetric implements Metric {
   private final String tagPrefix;
 
   public TagListMetric(String tagPrefix) {
