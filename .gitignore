@@ -11,3 +11,6 @@ release.properties
 .idea/
 *.iml
 *.iws
+*.log
+data
+application.properties
