@@ -74,16 +74,16 @@ public class PropertyServlet extends HttpServlet {
     }
     MergeableProperties seed = new MergeableProperties();
     for (Entry<String, String[]> next : ((HttpServletRequest) req).getParameterMap().entrySet()) {
-      seed.setProperty(next.getKey(), StringUtils.join(next.getValue(), ","));
+      seed.setProperty(next.getKey(), StringUtils.join(next.getValue(), ",").replaceAll("</?script>", ""));
     }
     Enumeration<String> it = ((HttpServletRequest) req).getHeaderNames();
     while (it.hasMoreElements()) {
       String key = it.nextElement();
       String value = ((HttpServletRequest) req).getHeader(key);
-      seed.setProperty(key.toLowerCase(), value);
+      seed.setProperty(key.toLowerCase(), value.replaceAll("</?script>", ""));
     }
     ServletContext ctx = getServletContext();
-    seed.setProperty("path", ((HttpServletRequest) req).getPathInfo());
+    seed.setProperty("path", ((HttpServletRequest) req).getPathInfo().replaceAll("</?script>", ""));
     seed.setProperty("context", ctx.getContextPath());
     res.setContentType("text/plain;charset=utf-8");
     ((HttpServletResponse) res).setStatus(200);
