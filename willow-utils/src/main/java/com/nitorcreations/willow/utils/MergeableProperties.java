@@ -179,7 +179,6 @@ public class MergeableProperties extends Properties {
         String url = nextPrefix + name;
         try (InputStream in1 = getUrlInputStream(url)) {
           load(in1);
-          return;
         } catch (IOException e1) {
           LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
           this.log.log(rec);
