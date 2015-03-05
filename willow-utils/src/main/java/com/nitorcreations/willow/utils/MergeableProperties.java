@@ -40,33 +40,53 @@ public class MergeableProperties extends Properties {
   private LinkedHashMap<String, String> table = new LinkedHashMap<>();
   private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
   ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
+  private final boolean allowScripts;
 
-  protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, String... prefixes) {
+  protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, boolean allowScripts, String... prefixes) {
     super(defaults);
     table.putAll(values);
     this.prefixes = prefixes;
+    this.allowScripts = allowScripts;
   }
 
-  public MergeableProperties() {
+  protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, String... prefixes) {
+    this(defaults, values, true, prefixes);
+  }
+
+  public MergeableProperties(boolean allowScripts) {
     super();
     defaults = new Properties();
     prefixes = new String[] { "classpath:" };
+    this.allowScripts = allowScripts;
   }
 
-  public MergeableProperties(String... prefixes) {
+  public MergeableProperties() {
+    this(true);
+  }
+
+  public MergeableProperties(boolean allowScipts, String... prefixes) {
     super();
     defaults = new Properties();
     this.prefixes = prefixes;
+    this.allowScripts = allowScipts;
+  }
+  public MergeableProperties(String... prefixes) {
+    this(true, prefixes);
   }
 
   public Properties merge(String name) {
     merge0(name);
+    postMerge();
     return this;
   }
 
   public Properties merge(Properties prev, String name) {
     if (prev != null) {
-      putAll(prev);
+      if (prev instanceof MergeableProperties) {
+        putAll((MergeableProperties)prev);
+      } else {
+        putAll(prev);
+      }
     }
     merge0(name);
     postMerge();
@@ -159,6 +179,7 @@ public class MergeableProperties extends Properties {
         String url = nextPrefix + name;
         try (InputStream in1 = getUrlInputStream(url)) {
           load(in1);
+          return;
         } catch (IOException e1) {
           LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
           this.log.log(rec);
@@ -177,7 +198,7 @@ public class MergeableProperties extends Properties {
 
   @Override
   public Object put(Object key, Object value) {
-    return put(key, value, true);
+    return put(key, value, allowScripts);
   }
   public Object put(Object key, Object value, boolean allowEval) {
     String k = resolveIndexes((String) key);
@@ -190,7 +211,10 @@ public class MergeableProperties extends Properties {
       return prev;
     }
     if (INCLUDE_PROPERTY.equals(k)) {
-      merge0(v);
+      //Don't allow include if eval is disallowed
+      if (allowEval) {
+        merge0(v);
+      }
       return null;
     }
     if (prev != null && table.get(k + ".appendchar") != null) {
@@ -278,8 +302,9 @@ public class MergeableProperties extends Properties {
   }
 
   public void putAll(MergeableProperties toMerge) {
+    boolean allowScripts = this.allowScripts && toMerge.allowScripts;
     for (Entry<String, String> next : toMerge.table.entrySet()) {
-      put(next.getKey(), next.getValue());
+      put(next.getKey(), next.getValue(), allowScripts);
     }
   }
 
@@ -338,7 +363,7 @@ public class MergeableProperties extends Properties {
 
   @Override
   public synchronized Object clone() {
-    return new MergeableProperties(defaults, table, prefixes);
+    return new MergeableProperties(defaults, table, allowScripts, prefixes);
   }
 
   @Override
