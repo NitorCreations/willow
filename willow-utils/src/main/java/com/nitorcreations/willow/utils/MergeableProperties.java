@@ -91,7 +91,7 @@ public class MergeableProperties extends Properties {
     }
   }
 
-  private String evaluate(String replace) {
+  private String evaluate(String replace, boolean allowEval) {
     Matcher m = SCRIPT_REGEX.matcher(replace);
     StringBuffer ret = new StringBuffer();
     int end = 0;
@@ -99,7 +99,11 @@ public class MergeableProperties extends Properties {
     while (m.find()) {
       ret.append(m.group(1));
       try {
-        ret.append(engine.eval(m.group(3).toString()));
+        if (allowEval) {
+          ret.append(engine.eval(m.group(3).toString()));
+        } else {
+          ret.append(m.group(3).toString());
+        }
       } catch (ScriptException e) {
         ret.append(m.group(2));
         LogRecord rec = new LogRecord(Level.INFO, "Failed to execute javascript");
@@ -173,11 +177,14 @@ public class MergeableProperties extends Properties {
 
   @Override
   public Object put(Object key, Object value) {
+    return put(key, value, true);
+  }
+  public Object put(Object key, Object value, boolean allowEval) {
     String k = resolveIndexes((String) key);
     String v = resolveIndexes((String) value);
     StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');
     k = sub.replace(k);
-    v = evaluate(sub.replace(v));
+    v = evaluate(sub.replace(v), allowEval);
     String prev = table.get(k);
     if (prev != null && "true".equalsIgnoreCase(table.get(k + ".readonly"))) {
       return prev;
@@ -196,6 +203,9 @@ public class MergeableProperties extends Properties {
   @Override
   public Object setProperty(String key, String value) {
     return put(key, value);
+  }
+  public Object setProperty(String key, String value, boolean allowEval) {
+    return put(key, value, allowEval);
   }
 
   protected String resolveIndexes(String original) {
