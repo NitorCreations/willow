@@ -45,7 +45,7 @@
     <mavenVersion>3.1.0</mavenVersion>
     <wagonVersion>1.0</wagonVersion>
     <msgpack.version>0.6.11</msgpack.version>
-    <jetty.version>9.2.3.v20140905</jetty.version>
+    <jetty.version>9.3.0.M2</jetty.version>
     <slf4j.version>1.7.6</slf4j.version>
     <findbugs.version>3.0.0</findbugs.version>
     <sisu.version>0.3.0.M1</sisu.version>
@@ -338,7 +338,6 @@
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>3.1.0</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>com.google.inject.extensions</groupId>
