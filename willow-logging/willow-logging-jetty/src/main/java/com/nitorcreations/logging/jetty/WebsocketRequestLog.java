@@ -29,7 +29,7 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
   }
 
   @Override
-  public void log(Request request, Response response) {
+  public void log(Request request, int status, long written) {
     if (transmitter == null)
       init();
     AccessLogEntry msg = new AccessLogEntry();
@@ -49,13 +49,12 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
     }
     msg.timestamp = request.getTimeStamp();
     msg.setMethod(request.getMethod());
-    msg.setUri(request.getUri().toString());
+    msg.setUri(request.getRequestURI().toString());
     msg.setProtocol(request.getProtocol());
-    int status = response.getStatus();
     if (status <= 0)
       status = 404;
     msg.setStatus(status);
-    msg.setResponseLength(response.getLongContentLength());
+    msg.setResponseLength(written);
     long now = System.currentTimeMillis();
     msg.setDuration(now - request.getTimeStamp());
     msg.setReferrer(request.getHeader(HttpHeader.REFERER.toString()));
@@ -75,4 +74,5 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
     }
     transmitter.start();
   }
+
 }
