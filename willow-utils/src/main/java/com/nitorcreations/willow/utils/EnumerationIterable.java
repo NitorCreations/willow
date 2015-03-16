@@ -21,6 +21,10 @@ public class EnumerationIterable<T> implements Iterable<T> {
   		public T next() {
   			return enumeration.nextElement();
   		}
+      @Override
+      public void remove() {
+        throw new UnsupportedOperationException("Remove not supported in underlying enumeration");
+      }
   	};
   }
 }
