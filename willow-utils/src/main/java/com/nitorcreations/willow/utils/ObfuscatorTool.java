@@ -50,7 +50,20 @@ public class ObfuscatorTool {
       keyFile.setReadable(true, true);
       keyFile.setWritable(true, true);
     }
-    Obfuscator obf = new Obfuscator(keyFile);
+    Obfuscator.KeyDigest digest = Obfuscator.KeyDigest.MD5;
+    if (System.getProperty("digest") != null) {
+      try {
+        digest = Obfuscator.KeyDigest.valueOf(System.getProperty("digest"));
+      } catch (Throwable t)  {}
+    }
+    int iterations = 1;
+    if (System.getProperty("iterations") != null) {
+      try {
+        iterations = Integer.parseInt(System.getProperty("iterations"));
+      } catch (Throwable t)  {}
+    }
+    String key = Obfuscator.getFileMaster(keyFile, digest);
+    Obfuscator obf = new Obfuscator(key, digest, iterations);
     if (System.getProperty("decrypt") == null) {
       for (Entry<String, String> next : in.backingEntrySet()) {
         String value = next.getValue();
