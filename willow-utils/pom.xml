@@ -53,4 +53,35 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.nitorcreations.willow.utils.ObfuscatorTool</mainClass>
+                </transformer>
+              </transformers>
+              <finalName>obfuscator</finalName>
+              <artifactSet>
+                <includes>
+                  <include>com.nitorcreations:willow-utils:*</include>
+                  <include>org.apache.commons:commons-lang3:*</include>
+                </includes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
