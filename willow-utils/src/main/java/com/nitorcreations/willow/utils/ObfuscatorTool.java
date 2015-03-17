@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 public class ObfuscatorTool {
   private static String obfuscatedPrefix="OBF:";
-  public static final Pattern ENCRYPTED_TOKEN_PATTERN = Pattern.compile("^\\$?\\{(.+)?\\}.*$");
+  public static final Pattern ENCRYPTED_TOKEN_PATTERN = Pattern.compile("^([^\\$\\{]*)\\$?\\{([^\\{]*)\\}(.*)$");
 
   public static void main(String[] args) throws FileNotFoundException, IOException {
     if (args.length == 0) usage("At least one argument expected");
@@ -87,7 +87,7 @@ public class ObfuscatorTool {
         }
         Matcher m = ENCRYPTED_TOKEN_PATTERN.matcher(value);
         if (m.matches()) {
-          outProps.put(next.getKey(), prefix + obf.decrypt(m.group(1)));
+          outProps.put(next.getKey(), prefix + m.group(1) + obf.decrypt(m.group(2)) + m.group(3));
         } else {
           outProps.put(next.getKey(), next.getValue());
         }
