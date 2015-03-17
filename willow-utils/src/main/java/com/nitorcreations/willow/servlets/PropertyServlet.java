@@ -60,7 +60,11 @@ public class PropertyServlet extends HttpServlet {
       ((HttpServletResponse) res).sendError(405, "Only GET allowed");
       return;
     }
-    String rootProperties = ((HttpServletRequest) req).getPathInfo().substring(1);
+    String path = ((HttpServletRequest) req).getPathInfo();
+    if (path == null) {
+      path = ((HttpServletRequest) req).getServletPath();
+    }
+	String rootProperties = path.substring(1);
     MergeableProperties mrg = null;
     if (config.getInitParameter("property.roots") != null) {
       String roots = config.getInitParameter("property.roots");
@@ -83,7 +87,7 @@ public class PropertyServlet extends HttpServlet {
       seed.setProperty(key.toLowerCase(), value, false);
     }
     ServletContext ctx = getServletContext();
-    seed.setProperty("path", ((HttpServletRequest) req).getPathInfo(), false);
+    seed.setProperty("path", path, false);
     seed.setProperty("context", ctx.getContextPath(), false);
     res.setContentType("text/plain;charset=utf-8");
     ((HttpServletResponse) res).setStatus(200);
