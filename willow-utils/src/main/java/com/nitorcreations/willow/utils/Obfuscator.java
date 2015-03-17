@@ -111,17 +111,15 @@ public class Obfuscator {
     try {
       out = Cipher.getInstance(CIPHER);
       out.init(Cipher.ENCRYPT_MODE, key);
-      ByteArrayOutputStream inputBytes = new ByteArrayOutputStream();
-      inputBytes.write(getSalt());
-      inputBytes.write((byte) 0xca);
-      inputBytes.write((byte) 0xfe);
-      inputBytes.write((byte) 0xba);
-      inputBytes.write((byte) 0xbe);
-      inputBytes.write(value.getBytes(Charset.forName("UTF-8")));
-      byte[] input = inputBytes.toByteArray();
+      byte[] input = value.getBytes("UTF-8");
       for (int i = 0; i < digestIterations; i++) {
         bOut = new ByteArrayOutputStream();
         cOut = new CipherOutputStream(bOut, out);
+        cOut.write(getSalt());
+        cOut.write((byte) 0xca);
+        cOut.write((byte) 0xfe);
+        cOut.write((byte) 0xba);
+        cOut.write((byte) 0xbe);
         cOut.write(input);
         cOut.flush();
         cOut.close();
@@ -148,7 +146,11 @@ public class Obfuscator {
         cIn.write(input);
         cIn.close();
         result = bIn.toByteArray();
-        input = result;
+        if (result.length <= (SALT_LENGTH + 4) || result[SALT_LENGTH] != (byte) 0xca || result[SALT_LENGTH + 1] != (byte) 0xfe || result[SALT_LENGTH + 2] != (byte) 0xba || result[SALT_LENGTH + 3] != (byte) 0xbe) {
+          return null;
+        }
+        input = new byte[result.length - SALT_LENGTH - 4];
+        System.arraycopy(result, SALT_LENGTH + 4, input, 0, input.length);
       }
       if (result.length <= (SALT_LENGTH + 4) || result[SALT_LENGTH] != (byte) 0xca || result[SALT_LENGTH + 1] != (byte) 0xfe || result[SALT_LENGTH + 2] != (byte) 0xba || result[SALT_LENGTH + 3] != (byte) 0xbe) {
         return null;
