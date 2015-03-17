@@ -358,6 +358,10 @@ public class MergeableProperties extends Properties {
   public synchronized boolean containsKey(Object key) {
     return table.containsKey(key) || defaults.containsKey(key);
   }
+  @Override
+  public synchronized void clear() {
+    table.clear();
+  }
 
   @Override
   public synchronized Object clone() {

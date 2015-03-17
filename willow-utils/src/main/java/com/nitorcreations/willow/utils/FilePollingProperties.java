@@ -23,7 +23,7 @@ public class FilePollingProperties {
   public FilePollingProperties(final File source, final PropertyChangeListerner listener) throws IOException {
     properties = new MergeableProperties();
     properties.load(new FileInputStream(source));
-    final Path sourcePath = source.getParentFile().toPath();
+    final Path sourcePath = source.getAbsoluteFile().getParentFile().toPath();
     try {
       final WatchService watcher = FileSystems.getDefault().newWatchService();
       sourcePath.register(watcher, ENTRY_MODIFY, ENTRY_CREATE, ENTRY_DELETE);
@@ -44,7 +44,8 @@ public class FilePollingProperties {
               }
               @SuppressWarnings("unchecked")
               WatchEvent<Path> ev = (WatchEvent<Path>)event;
-              if (!ev.context().equals(sourcePath)) {
+              Path context = ev.context();
+              if (!context.equals(source.toPath())) {
                 continue;
               }
               if (kind == ENTRY_DELETE) {
@@ -79,6 +80,11 @@ public class FilePollingProperties {
                 }
               }
             }
+            boolean valid = key.reset();
+            if (!valid) {
+              break;
+            }
+            continue;
           }
         }
       }).start();
@@ -89,5 +95,23 @@ public class FilePollingProperties {
     synchronized (properties) {
       return (MergeableProperties) properties.clone();
     }
+  }
+  public static void main(String[] args) throws IOException {
+    new FilePollingProperties(new File(args[0]), new PropertyChangeListerner() {
+      @Override
+      public void propertyValueChanged(String key, String newValue, String oldValue) {
+        System.out.println("CHANGE: " + key + " = " + oldValue + " => " + newValue);
+      }
+
+      @Override
+      public void propertyRemoved(String key, String value) {
+        System.out.println("REMOVED: " + key + " = " + value);
+      }
+
+      @Override
+      public void propertyAdded(String key, String value) {
+        System.out.println("ADDED: " + key + " = " + value);
+      }
+    });
   }
 }
