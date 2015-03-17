@@ -1,0 +1,93 @@
+package com.nitorcreations.willow.utils;
+
+import static java.nio.file.StandardWatchEventKinds.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.Map.Entry;
+
+public class FilePollingProperties {
+  public interface PropertyChangeListerner {
+    public void propertyValueChanged(String key, String newValue, String oldValue);
+    public void propertyAdded(String key, String value);
+    public void propertyRemoved(String key, String value);
+  }
+  private final MergeableProperties properties;
+  
+  public FilePollingProperties(final File source, final PropertyChangeListerner listener) throws IOException {
+    properties = new MergeableProperties();
+    properties.load(new FileInputStream(source));
+    final Path sourcePath = source.getParentFile().toPath();
+    try {
+      final WatchService watcher = FileSystems.getDefault().newWatchService();
+      sourcePath.register(watcher, ENTRY_MODIFY, ENTRY_CREATE, ENTRY_DELETE);
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          for (;;) {
+            WatchKey key = null;
+            try {
+              key = watcher.take();
+            } catch (InterruptedException x) {
+              return;
+            }
+            for (WatchEvent<?> event: key.pollEvents()) {
+              WatchEvent.Kind<?> kind = event.kind();
+              if (kind == OVERFLOW) {
+                  continue;
+              }
+              @SuppressWarnings("unchecked")
+              WatchEvent<Path> ev = (WatchEvent<Path>)event;
+              if (!ev.context().equals(sourcePath)) {
+                continue;
+              }
+              if (kind == ENTRY_DELETE) {
+                for (Entry<String, String> next : properties.backingEntrySet()) {
+                  listener.propertyRemoved(next.getKey(), next.getValue());
+                }
+                properties.clear();
+              } else {
+                MergeableProperties newProps = new MergeableProperties();
+                try {
+                  newProps.load(new FileInputStream(source));
+                  MergeableProperties oldProps ;
+                  synchronized (properties) {
+                    oldProps = (MergeableProperties) properties.clone();
+                    properties.clear();
+                    properties.putAll(newProps);
+                  }
+                  for (Entry<String, String> next : newProps.backingEntrySet()) {
+                      if (oldProps.containsKey(next.getKey())) {
+                        if (!oldProps.getProperty(next.getKey()).equals(next.getValue())) {
+                          listener.propertyValueChanged(next.getKey(), next.getValue(), oldProps.getProperty(next.getKey()));
+                        }
+                        oldProps.remove(next.getKey());
+                      } else {
+                        listener.propertyAdded(next.getKey(), next.getValue());
+                      }
+                    }
+                    for (Entry<String, String> next : oldProps.backingEntrySet()) {
+                      listener.propertyRemoved(next.getKey(), next.getValue());
+                    }
+                } catch (IOException e) {
+                }
+              }
+            }
+          }
+        }
+      }).start();
+    } catch (Exception e) {
+    }
+  }
+  public MergeableProperties getProperties() {
+    synchronized (properties) {
+      return (MergeableProperties) properties.clone();
+    }
+  }
+}
