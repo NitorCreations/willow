@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -24,7 +27,7 @@ public class PropertyServlet extends HttpServlet {
   ServletConfig config;
   PropertySource propertySource;
   String obfuscatedPrefix = "obfuscated:";
-
+  Logger log = Logger.getLogger(PropertyServlet.class.getName());
   @Override
   public void init(ServletConfig config) throws ServletException {
     this.config = config;
@@ -42,9 +45,11 @@ public class PropertyServlet extends HttpServlet {
         Class<? extends PropertySource> propertySourceClass = (Class<? extends PropertySource>) Class.forName(propertySourceClassName);
         propertySource = propertySourceClass.newInstance();
       } catch (ClassNotFoundException e) {
-        log("PropertySource class " + propertySourceClassName + " not found");
+        log.info("PropertySource class " + propertySourceClassName + " not found");
       } catch (InstantiationException | IllegalAccessException e) {
-        log("Unable to instantiate PropertySource class " + propertySourceClassName, e);
+        LogRecord rec = new LogRecord(Level.INFO, "Unable to instantiate PropertySource class " + propertySourceClassName);
+        rec.setThrown(e);
+        log.log(rec);
       }
     }
   }
