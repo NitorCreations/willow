@@ -42,7 +42,7 @@ public class Obfuscator {
   private final int digestIterations;
 
   public Obfuscator() throws IOException {
-    String defaultMaster = System.getProperty("user.home") + File.separator + ".omaster" + File.separator + ".data" + File.pathSeparator + "md5";
+    String defaultMaster = System.getProperty("user.home") + File.separator + ".omaster" + File.separator + ".data";
     String masterPwdLocation = System.getProperty("o.datamaster", defaultMaster);
     File masterFile = new File(masterPwdLocation);
     if (!masterFile.exists()) {
@@ -106,22 +106,27 @@ public class Obfuscator {
     Key key;
     Cipher out;
     CipherOutputStream cOut;
-    ByteArrayOutputStream bOut;
+    ByteArrayOutputStream bOut = null;
     key = new SecretKeySpec(bkey, "AES");
     try {
       out = Cipher.getInstance(CIPHER);
       out.init(Cipher.ENCRYPT_MODE, key);
-      byte[] input = value.getBytes(Charset.forName("UTF-8"));
-      bOut = new ByteArrayOutputStream();
-      cOut = new CipherOutputStream(bOut, out);
-      cOut.write(getSalt());
-      cOut.write((byte) 0xca);
-      cOut.write((byte) 0xfe);
-      cOut.write((byte) 0xba);
-      cOut.write((byte) 0xbe);
-      cOut.write(input);
-      cOut.flush();
-      cOut.close();
+      ByteArrayOutputStream inputBytes = new ByteArrayOutputStream();
+      inputBytes.write(getSalt());
+      inputBytes.write((byte) 0xca);
+      inputBytes.write((byte) 0xfe);
+      inputBytes.write((byte) 0xba);
+      inputBytes.write((byte) 0xbe);
+      inputBytes.write(value.getBytes(Charset.forName("UTF-8")));
+      byte[] input = inputBytes.toByteArray();
+      for (int i = 0; i < digestIterations; i++) {
+        bOut = new ByteArrayOutputStream();
+        cOut = new CipherOutputStream(bOut, out);
+        cOut.write(input);
+        cOut.flush();
+        cOut.close();
+        input = bOut.toByteArray();
+      }
       return printBase64Binary(bOut.toByteArray());
     } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
       e.printStackTrace();
@@ -131,20 +136,20 @@ public class Obfuscator {
 
   public String decrypt(String skey, String encrypted) {
     byte[] bkey = getKeyBytes(skey);
-    Key key;
-    Cipher in;
-    CipherOutputStream cIn;
-    ByteArrayOutputStream bIn;
-    key = new SecretKeySpec(bkey, "AES");
+    Key key = new SecretKeySpec(bkey, "AES");
     try {
-      in = Cipher.getInstance(CIPHER);
+      Cipher in = Cipher.getInstance(CIPHER);
       in.init(Cipher.DECRYPT_MODE, key);
       byte[] input = parseBase64Binary(encrypted);
-      bIn = new ByteArrayOutputStream();
-      cIn = new CipherOutputStream(bIn, in);
-      cIn.write(input);
-      cIn.close();
-      byte[] result = bIn.toByteArray();
+      byte[] result = new byte[0];
+      for (int i=0; i < digestIterations; i++) {
+        ByteArrayOutputStream bIn = new ByteArrayOutputStream();
+        CipherOutputStream cIn = new CipherOutputStream(bIn, in);
+        cIn.write(input);
+        cIn.close();
+        result = bIn.toByteArray();
+        input = result;
+      }
       if (result.length <= (SALT_LENGTH + 4) || result[SALT_LENGTH] != (byte) 0xca || result[SALT_LENGTH + 1] != (byte) 0xfe || result[SALT_LENGTH + 2] != (byte) 0xba || result[SALT_LENGTH + 3] != (byte) 0xbe) {
         return null;
       }
