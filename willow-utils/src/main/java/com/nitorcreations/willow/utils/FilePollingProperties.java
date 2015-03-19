@@ -4,6 +4,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -11,6 +12,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FilePollingProperties {
   public interface PropertyChangeListerner {
@@ -18,11 +21,40 @@ public class FilePollingProperties {
     public void propertyAdded(String key, String value);
     public void propertyRemoved(String key, String value);
   }
+  public static class LoggingPropertyChangeListener implements PropertyChangeListerner {
+    private final Logger log;
+    private final Level level;
+    public LoggingPropertyChangeListener(String loggerName, Level level) {
+      this.log = Logger.getLogger(loggerName);
+      this.level = level;
+    }
+    @Override
+    public void propertyValueChanged(String key, String newValue, String oldValue) {
+      log.log(level, "CHANGE: " + key + " = " + oldValue + " => " + newValue);
+    }
+
+    @Override
+    public void propertyRemoved(String key, String value) {
+      log.log(level, "REMOVED: " + key + " = " + value);
+    }
+
+    @Override
+    public void propertyAdded(String key, String value) {
+      log.log(level, "ADDED: " + key + " = " + value);
+    }
+  }
   private final MergeableProperties properties;
-  
-  public FilePollingProperties(final File source, final PropertyChangeListerner listener) throws IOException {
+
+  public FilePollingProperties(final File source) {
+    this(source, new LoggingPropertyChangeListener(FilePollingProperties.class.getName(), Level.FINE));
+  }
+  public FilePollingProperties(final File source, final PropertyChangeListerner listener) {
     properties = new MergeableProperties();
-    properties.load(new FileInputStream(source));
+    try {
+      properties.load(new FileInputStream(source));
+    } catch (IOException e) {
+      //Noop
+    }
     final Path sourcePath = source.getAbsoluteFile().getParentFile().toPath();
     try {
       final WatchService watcher = FileSystems.getDefault().newWatchService();
@@ -97,21 +129,6 @@ public class FilePollingProperties {
     }
   }
   public static void main(String[] args) throws IOException {
-    new FilePollingProperties(new File(args[0]), new PropertyChangeListerner() {
-      @Override
-      public void propertyValueChanged(String key, String newValue, String oldValue) {
-        System.out.println("CHANGE: " + key + " = " + oldValue + " => " + newValue);
-      }
-
-      @Override
-      public void propertyRemoved(String key, String value) {
-        System.out.println("REMOVED: " + key + " = " + value);
-      }
-
-      @Override
-      public void propertyAdded(String key, String value) {
-        System.out.println("ADDED: " + key + " = " + value);
-      }
-    });
+    new FilePollingProperties(new File(args[0]), new LoggingPropertyChangeListener("main", Level.INFO));
   }
 }
