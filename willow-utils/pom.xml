@@ -60,6 +60,7 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
+            <id>obfuscator</id>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
@@ -80,13 +81,8 @@
               </artifactSet>
             </configuration>
           </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
           <execution>
+            <id>poller</id>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
