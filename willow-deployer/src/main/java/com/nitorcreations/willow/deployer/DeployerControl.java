@@ -328,14 +328,16 @@ public class DeployerControl {
       return -1;
     }
     for (Long next : pids) {
-      String name = sigar.getProcExe(next).getName();
-      if (name.endsWith(".exe")) {
-        name = name.substring(0, name.length() - 4);
+      if (!children.contains(next)) {
+        String name = sigar.getProcExe(next).getName();
+        if (name.endsWith(".exe")) {
+          name = name.substring(0, name.length() - 4);
+        }
+        if (name.endsWith("w")) {
+          name = name.substring(0, name.length() - 1);
+        }
+        if (name.endsWith("java")) return next;
       }
-      if (name.endsWith("w")) {
-        name = name.substring(0, name.length() - 1);
-      }
-      if (!children.contains(next) && name.endsWith("java")) return next;
     }
     return -1;
   }
