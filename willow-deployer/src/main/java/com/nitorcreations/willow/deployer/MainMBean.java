@@ -5,4 +5,5 @@ public interface MainMBean {
   public String getStatus();
   public String[] getChildNames();
   public long getChildPid(String childName);
+  public void restartChild(String childName);
 }

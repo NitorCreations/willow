@@ -30,14 +30,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
+import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.AbstractStreamPumper;
 import com.nitorcreations.willow.utils.LoggingStreamPumper;
@@ -55,6 +58,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
   protected File workingDir;
   protected String keyPrefix;
   protected AtomicBoolean running = new AtomicBoolean(true);
+  protected AtomicLong pid = new AtomicLong(-1);
   protected AbstractStreamPumper stdout, stderr;
   private String name;
 
@@ -64,15 +68,25 @@ public abstract class AbstractLauncher implements LaunchMethod {
   }
   private ExecutorService executor = Executors.newSingleThreadExecutor();
   private int restarts = 0;
+  private Logger log;
 
   public long getProcessId() {
+    if (pid.get() > 0) {
+      return pid.get();
+    }
     Sigar sigar = new Sigar();
     long stopTrying = System.currentTimeMillis() + 1000 * 60;
-    while (System.currentTimeMillis() < stopTrying) {
+    while (pid.get() < 0 && System.currentTimeMillis() < stopTrying) {
       try {
         ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_IDENTIFIER + ".eq=" + PROCESS_IDENTIFIER);
-        return q.findProcess(sigar);
+        long newPid = q.findProcess(sigar);
+        if (newPid > 0) {
+          pid.set(newPid);
+          return pid.get();
+        }
+      } catch (SigarException e) {
       } catch (Throwable e) {
+        e.printStackTrace();
         try {
           Thread.sleep(500);
         } catch (InterruptedException e1) {}
@@ -105,7 +119,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
       name = launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME) + "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
       boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
       running.set(autoRestart);
-      Logger log = Logger.getLogger(name);
+      log = Logger.getLogger(name);
       ProcessBuilder pb = new ProcessBuilder(args);
       LinkedHashMap<String, String> copyEnv = new LinkedHashMap<>(System.getenv());
       pb.environment().putAll(copyEnv);
@@ -127,6 +141,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
         }
         new Thread(stdout, name + "-child-stdout-pumper").start();
         new Thread(stderr, name + "-child-sdrerr-pumper").start();
+        getProcessId();
         try {
           if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
             Main.runHooks(PROPERTY_KEY_PREFIX_POST_START, Collections.singletonList(launchProperties), false);
@@ -137,6 +152,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
           log.log(rec);
         }
         returnValue.set(child.waitFor());
+        pid.set(-1);
       } catch (IOException e) {
         LogRecord rec = new LogRecord(Level.WARNING, "Failed to start  process");
         rec.setThrown(e);
@@ -174,21 +190,38 @@ public abstract class AbstractLauncher implements LaunchMethod {
 
   @Override
   public int destroyChild() throws InterruptedException {
+    long timeout = Long.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_TERM_TIMEOUT, "30"));
     if (child != null) {
       child.destroy();
     }
+    try {
+      child.waitFor(timeout, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      if (log != null) {
+        log.info("Child did not stop on term");
+      }      
+    } finally {
+      if (pid.get() > 0) {
+        try {
+          KillProcess.killProcess(Long.toString(pid.get()));
+        } catch (IOException e) {
+          if (log != null) {
+            LogRecord rec = new LogRecord(Level.INFO, "Failed to kill child " + getName());
+            rec.setThrown(e);
+            log.log(rec);
+          }
+        }
+      }
+    }
+    pid.set(-1);
     if (stderr != null) {
       stderr.stop();
     }
     if (stdout != null) {
       stdout.stop();
     }
-    executor.shutdown();
-    long timeout = Long.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_TERM_TIMEOUT, "30"));
-    executor.awaitTermination(timeout, TimeUnit.SECONDS);
-    executor.shutdownNow();
-    if (child != null) {
-      child.waitFor();
+    if (!running.get()) {
+      executor.shutdownNow();
     }
     return getReturnValue();
   }

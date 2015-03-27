@@ -21,18 +21,11 @@ public interface LaunchMethod extends Callable<Integer> {
       }
     }
   }
-
   public void setProperties(MergeableProperties properties);
-
   public void setProperties(MergeableProperties properties, String keyPrefix);
-
   public long getProcessId();
-
-  void stopRelaunching();
-
-  int destroyChild() throws InterruptedException;
-
-  int restarts();
-
-  String getName();
+  public void stopRelaunching();
+  public int destroyChild() throws InterruptedException;
+  public int restarts();
+  public String getName();
 }

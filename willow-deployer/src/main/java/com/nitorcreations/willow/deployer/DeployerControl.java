@@ -4,6 +4,8 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +29,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -351,5 +355,39 @@ public class DeployerControl {
     console.setFormatter(new SimpleFormatter());
     rootLogger.addHandler(console);
     rootLogger.setLevel(Level.INFO);
+  }
+  public static void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
+    ExecutorService exec = Executors.newFixedThreadPool(1);
+    Exception lastThrown = null;
+    for (MergeableProperties properties : propertiesList) {
+      int i = 0;
+      for (String nextMethod : properties.getArrayProperty(hookPrefix, PROPERTY_KEY_METHOD)) {
+        LaunchMethod launcher = null;
+        launcher = LaunchMethod.TYPE.valueOf(nextMethod).getLauncher();
+        String prefix = hookPrefix + "[" + i + "]";
+        launcher.setProperties(properties, prefix);
+        long timeout = Long.valueOf(properties.getProperty(prefix + PROPERTY_KEY_TIMEOUT, "30"));
+        Future<Integer> ret = exec.submit(launcher);
+        try {
+          int retVal = ret.get(timeout, TimeUnit.SECONDS);
+          log.info(hookPrefix + " returned " + retVal);
+          if (retVal != 0 && failFast) {
+            throw new Exception("hook " + hookPrefix + "." + i + " failed");
+          }
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+          log.info(hookPrefix + " failed: " + e.getMessage());
+          if (failFast) {
+            throw e;
+          } else {
+            lastThrown = e;
+          }
+        }
+        launcher.destroyChild();
+        i++;
+      }
+    }
+    exec.shutdownNow();
+    if (lastThrown != null)
+      throw lastThrown;
   }
 }
