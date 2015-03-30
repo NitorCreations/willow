@@ -102,12 +102,13 @@ public class DeployerControl {
           proxy.stop();
         } catch (Throwable e) {
           log.info("JMX stop failed - terminating");
+          KillProcess.killProcess(Long.toString(firstPid));
         }
         // Processes with old deployer as parent
         killWithQuery("State.Ppid.eq=" + firstPid, termTimeout, mypid);
       }
       // Old deployer identified by deployerName in environment
-      killWithQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, termTimeout, mypid);
+      //killWithQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, termTimeout, mypid);
     } catch (Throwable e) {
       LogRecord rec = new LogRecord(Level.WARNING, "Failed to kill old deployer");
       rec.setThrown(e);
