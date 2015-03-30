@@ -4,9 +4,6 @@ import static com.nitorcreations.core.utils.KillProcess.killProcessUsingPort;
 import static java.lang.Integer.getInteger;
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SECURITY;
-import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
-
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 
 import javax.inject.Named;
-import javax.inject.Singleton;
 import javax.servlet.DispatcherType;
 
 import org.eclipse.jetty.server.NCSARequestLog;
@@ -35,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.nitorcreations.logging.jetty.WebsocketRequestLog;
 

@@ -61,7 +61,7 @@ public class SaveEventsSocket {
     try {
       Gson gson = new Gson();
       for (AbstractMessage msgObject : mapping.decode(buf, offset, length)) {
-        MessageType type = mapping.map(msgObject.getClass());
+        MessageType type = MessageMapping.map(msgObject.getClass());
         Object stored = msgObject;
         if (type == MessageType.LONGSTATS) {
           stored = ((LongStatisticsMessage) msgObject).getMap();

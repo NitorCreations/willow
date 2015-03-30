@@ -11,11 +11,12 @@ import org.junit.Test;
 public class TestFileAttributes {
   @Test
   public void testAcl() throws IOException {
-    /*
     File pom = new File("pom.xml");
     AclFileAttributeView acl = Files.getFileAttributeView(pom.toPath(), AclFileAttributeView.class);
-    for (AclEntry next : acl.getAcl()) {
-    	System.out.println(next);
-    }*/
+    if (acl != null) {
+      for (AclEntry next : acl.getAcl()) {
+        System.out.println(next);
+      }
+    }
   }
 }

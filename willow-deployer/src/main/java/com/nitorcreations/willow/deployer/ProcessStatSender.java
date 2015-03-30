@@ -186,8 +186,6 @@ public class ProcessStatSender extends PlatformStatsSender implements Runnable {
 
   private void addThreads(JmxMessage ret) throws IOException, MalformedObjectNameException, InstanceNotFoundException, MBeanException, ReflectionException {
     ObjectName query = new ObjectName("java.lang:type=Threading");
-    Set<ObjectInstance> tr = server.queryMBeans(query, null);
-    ObjectInstance next = tr.iterator().next();
     ThreadMXBean threadBean = JMX.newMBeanProxy(server, query, ThreadMXBean.class);
     ret.setLiveThreads(threadBean.getThreadCount());
     long[] ids = threadBean.getAllThreadIds();

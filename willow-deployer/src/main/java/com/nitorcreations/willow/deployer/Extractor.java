@@ -40,7 +40,6 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipExtraField;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
@@ -234,7 +233,6 @@ public class Extractor implements Callable<Boolean> {
     if (m == null) {
       if (entry instanceof ZipArchiveEntry) {
         ZipArchiveEntry e = (ZipArchiveEntry) entry;
-        ZipExtraField[] ef = e.getExtraFields(true);
         int ret = (int) ((e.getExternalAttributes() >> 16) & 0xFFF);
         if (ret == 0) {
           return 0644;
