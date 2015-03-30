@@ -59,6 +59,7 @@ export W_DEPLOYER_NAME W_DEPLOYER_HOME W_DEPLOYER_JAR
 case $1 in 
 start)
   shift
+  exec 2>&1
   exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Main "$@"
   ;;
 stop)
