@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MD5=%%MD5%%
+MD5=@@MD5@@
 
 if [ "$1" = "-d" ]; then
   shift
@@ -34,7 +34,7 @@ if [ ! -d "$W_DEPLOYER_LIB" ]; then
 fi
 
 W_DEPLOYER_JAR=$W_DEPLOYER_LIB/deployer-uber-$MD5.jar
-flock "$W_DEPLOYER_LIB" bash -c "if ! [ -r \"$W_DEPLOYER_JAR\" ]; then tail -n+%%ARCHIVE_START%% \"${BASH_SOURCE[0]}\" > \"$W_DEPLOYER_JAR\"; fi"
+flock "$W_DEPLOYER_LIB" bash -c "if ! [ -r \"$W_DEPLOYER_JAR\" ]; then tail -n+@@ARCHIVE_START@@ \"${BASH_SOURCE[0]}\" > \"$W_DEPLOYER_JAR\"; fi"
 
 if [ -z "$JAVA_HOME" ]; then
   if ! which java > /dev/null; then
