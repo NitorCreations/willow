@@ -5,7 +5,11 @@ public class Register {
     String oldPkgs = System.getProperty("java.protocol.handler.pkgs");
     String newPkgs = "com.nitorcreations.willow.protocols";
     if (oldPkgs != null && !oldPkgs.isEmpty()) {
-      newPkgs += "|" + oldPkgs;
+      if (!oldPkgs.contains(newPkgs)) {
+        newPkgs += "|" + oldPkgs;
+      } else {
+        newPkgs = oldPkgs;
+      }
     }
     System.setProperty("java.protocol.handler.pkgs", newPkgs);
   }
