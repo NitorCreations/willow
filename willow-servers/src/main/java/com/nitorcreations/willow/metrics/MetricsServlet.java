@@ -1,15 +1,12 @@
 package com.nitorcreations.willow.metrics;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -28,7 +25,6 @@ import org.elasticsearch.node.NodeBuilder;
 
 import com.google.gson.Gson;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.nitorcreations.willow.utils.HostUtil;
 
 @Singleton

@@ -1,6 +1,5 @@
 package com.nitorcreations.willow.deployer;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +7,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import javax.enterprise.inject.New;
 import javax.management.JMX;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
@@ -74,7 +72,7 @@ public class JMXOperation extends DeployerControl {
             System.out.println(new Gson().toJson(server.getAttribute(objectName, attr.getName())));
             System.exit(0);
           } else if (attr.isWritable()){
-            Class clazz = ClassUtils.getClass(attr.getType());
+            Class<?> clazz = ClassUtils.getClass(attr.getType());
             Object val = null;
             if (clazz.isArray()) {
               val = ConvertUtils.convert(argList.toArray(), clazz);

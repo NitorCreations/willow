@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +17,6 @@ import java.util.logging.Logger;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -66,7 +64,7 @@ public class WebSocketTransmitter {
   }
 
   public boolean queue(AbstractMessage msg) {
-    logger.fine("Queue message type: " + msgmap.map(msg.getClass()));
+    logger.fine("Queue message type: " + MessageMapping.map(msg.getClass()));
     try {
       while (!queue.offer(msg, flushInterval * 2, TimeUnit.MILLISECONDS)) {
         logger.info("queue full, retrying");
