@@ -25,19 +25,8 @@ public class RestartChild extends DeployerControl {
     String deployerName = args[0];
     extractNativeLib();
     try {
-      Sigar sigar = new Sigar();
-      ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName);
-      long minStart = Long.MAX_VALUE;
-      long firstPid = 0;
-      long[] pids = q.find(sigar);
-      if (pids.length > 1) {
-        for (long pid : pids) {
-          ProcTime time = sigar.getProcTime(pid);
-          if (time.getStartTime() < minStart) {
-            minStart = time.getStartTime();
-            firstPid = pid;
-          }
-        }
+      long firstPid = findOldDeployerPid(deployerName);
+      if (firstPid > 0) {
         try (JMXConnector conn = getJMXConnector(firstPid)) {
           MBeanServerConnection server = conn.getMBeanServerConnection();
           MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
