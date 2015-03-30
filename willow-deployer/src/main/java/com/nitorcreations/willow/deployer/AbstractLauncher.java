@@ -25,9 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -66,7 +70,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
   public String getName() {
     return name;
   }
-  private ExecutorService executor = Executors.newSingleThreadExecutor();
+  private ExecutorService executor = Executors.newCachedThreadPool();
   private int restarts = 0;
   private Logger log;
 
@@ -195,15 +199,23 @@ public abstract class AbstractLauncher implements LaunchMethod {
       child.destroy();
     }
     try {
-      child.waitFor(timeout, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
+      Future<Boolean> waitFor = executor.submit(new Callable<Boolean>() {
+        public Boolean call() throws InterruptedException {
+          child.waitFor();
+          pid.set(-1);
+          return true;
+        }
+      });
+      waitFor.get(timeout, TimeUnit.SECONDS);
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
       if (log != null) {
-        log.info("Child did not stop on term");
-      }      
+        log.info("Child did not stop on TERM");
+      }
     } finally {
       if (pid.get() > 0) {
         try {
           KillProcess.killProcess(Long.toString(pid.get()));
+          pid.set(-1);
         } catch (IOException e) {
           if (log != null) {
             LogRecord rec = new LogRecord(Level.INFO, "Failed to kill child " + getName());
@@ -213,7 +225,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
         }
       }
     }
-    pid.set(-1);
     if (stderr != null) {
       stderr.stop();
     }
