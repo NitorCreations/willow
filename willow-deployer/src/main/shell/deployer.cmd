@@ -57,7 +57,7 @@ SET JAVA_TOOLS=%JAVA_LIB%\tools.jar
 SET W_DEPLOYER_NAME=%2
 
 IF "%1" == "start" (
-  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.Main %2 %3 %4 %5 %6 %7 %8 %9
+  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.Main %2 %3 %4 %5 %6 %7 %8 %9 2>&1
   EXIT /B
 ) ELSE IF "%1" == "stop" (
   "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.Stop %2 %3 %4 %5 %6 %7 %8 %9
