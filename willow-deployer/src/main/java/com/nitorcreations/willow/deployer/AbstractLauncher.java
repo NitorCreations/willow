@@ -9,7 +9,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNC
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
@@ -17,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +37,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
@@ -51,11 +51,12 @@ import com.nitorcreations.willow.utils.LoggingStreamPumper;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public abstract class AbstractLauncher implements LaunchMethod {
+  @Inject
+  protected WebSocketTransmitter transmitter;
   protected final String PROCESS_IDENTIFIER = new BigInteger(130, new SecureRandom()).toString(32);
   protected final Set<String> launchArgs = new LinkedHashSet<String>();
   protected MergeableProperties launchProperties;
   protected URI statUri;
-  protected WebSocketTransmitter transmitter = null;
   protected Process child;
   protected AtomicInteger returnValue = new AtomicInteger(-1);
   protected Map<String, String> extraEnv = new HashMap<>();
@@ -136,7 +137,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
       log.info(String.format("Starting %s%n", pb.command().toString()));
       try {
         child = pb.start();
-        if (transmitter != null) {
+        if (transmitter != null && transmitter.isRunning()) {
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
         } else {
@@ -252,20 +253,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
   public void setProperties(MergeableProperties properties, String keyPrefix) {
     this.keyPrefix = keyPrefix;
     launchProperties = properties;
-    try {
-      String statisticsUri = properties.getProperty(PROPERTY_KEY_STATISTICS_URI);
-      if (statisticsUri != null) {
-        statUri = new URI(statisticsUri);
-      }
-    } catch (URISyntaxException e) {}
-    try {
-      if (statUri != null) {
-        long flushInterval = Long.parseLong(properties.getProperty("statistics.flushinterval", "2000"));
-        transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri.toString());
-      }
-    } catch (URISyntaxException e) {
-      throw new RuntimeException("Failed to initialize launcher", e);
-    }
     String extraEnvKeys = properties.getProperty(keyPrefix + PROPERTY_KEY_EXTRA_ENV_KEYS);
     if (extraEnvKeys != null) {
       for (String nextKey : extraEnvKeys.split(",")) {

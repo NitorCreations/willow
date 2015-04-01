@@ -23,34 +23,42 @@ import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 public class WebSocketTransmitter {
-  private final long flushInterval;
-  private final URI uri;
+  private long flushInterval = 2000;
+  private URI uri;
+
   private final Logger logger = Logger.getLogger(this.getClass().getName());
   private final ArrayBlockingQueue<AbstractMessage> queue = new ArrayBlockingQueue<AbstractMessage>(200);
   private final Worker worker = new Worker();
   private final Thread workerThread = new Thread(worker, "websocket-transfer");
-  private static final Map<String, WebSocketTransmitter> singletonTransmitters = Collections.synchronizedMap(new HashMap<String, WebSocketTransmitter>());
   private final MessageMapping msgmap = new MessageMapping();
+  private static final Map<String, WebSocketTransmitter> singletonTransmitters = Collections.synchronizedMap(new HashMap<String, WebSocketTransmitter>());
 
-  public static WebSocketTransmitter getSingleton(long flushInterval, String uri) throws URISyntaxException {
+  public static synchronized WebSocketTransmitter getSingleton(long flushInterval, String uri) throws URISyntaxException {
     WebSocketTransmitter ret = singletonTransmitters.get(uri);
     if (ret == null) {
-      ret = new WebSocketTransmitter(flushInterval, uri);
+      ret = new WebSocketTransmitter();
+      ret.setFlushInterval(flushInterval);
+      ret.setUri(new URI(uri));
       singletonTransmitters.put(uri, ret);
     }
     return ret;
   }
 
-  public WebSocketTransmitter(long flushInterval, String uri) throws URISyntaxException {
-    this(flushInterval, new URI(uri));
+  public WebSocketTransmitter() {
   }
-
-  public WebSocketTransmitter(long flushInterval, URI statUri) {
+  public long getFlushInterval() {
+    return flushInterval;
+  }
+  public void setFlushInterval(long flushInterval) {
     this.flushInterval = flushInterval;
-    this.uri = statUri;
-    logger.info(String.format("Configured to transmit to %s every %d milliseconds", uri.toString(), flushInterval));
   }
-
+  public URI getUri() {
+    return uri;
+  }
+  public void setUri(URI uri) {
+    this.uri = uri;
+  }
+  
   public void start() {
     if (!workerThread.isAlive()) {
       workerThread.start();
@@ -61,6 +69,9 @@ public class WebSocketTransmitter {
     if (workerThread.isAlive()) {
       worker.stop();
     }
+  }
+  public boolean isRunning() {
+    return workerThread.isAlive();
   }
 
   public boolean queue(AbstractMessage msg) {

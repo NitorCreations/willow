@@ -44,6 +44,9 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.eclipse.sisu.space.SpaceModule;
+import org.eclipse.sisu.space.URLClassSpace;
+import org.eclipse.sisu.wire.WireModule;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
@@ -51,6 +54,8 @@ import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
 import sun.management.ConnectorAddressLink;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.protocols.Register;
 import com.nitorcreations.willow.utils.MergeableProperties;
@@ -66,12 +71,17 @@ public class DeployerControl {
   protected final ExecutorService executor = Executors.newFixedThreadPool(10);
   protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
   protected String deployerName;
+  protected static Injector injector;
   public static ObjectName OBJECT_NAME;
   static {
     try {
       OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
       setupLogging();
       Register.doIt();
+      injector = Guice.createInjector(
+        new WireModule(new DeployerModule(), new SpaceModule(
+            new URLClassSpace(DeployerControl.class.getClassLoader())
+            )));
     } catch (Throwable e) {
       e.printStackTrace();
       assert false;

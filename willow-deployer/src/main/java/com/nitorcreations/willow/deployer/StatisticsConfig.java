@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class StatisticsConfig {
@@ -35,6 +36,18 @@ public class StatisticsConfig {
     this.intervalNet = intervalNet;
     this.intervalNetStat = intervalNetStat;
     this.intervalDiskIO = intervalDiskIO;
+  }
+
+  public StatisticsConfig(Properties properties) {
+    this.intervalProcs = Long.parseLong(properties.getProperty("intervalProcs", "5000"));
+    this.intervalCpus = Long.parseLong(properties.getProperty("intervalCpus", "5000"));
+    this.intervalProcCpus = Long.parseLong(properties.getProperty("intervalProcCpus", "5000"));
+    this.intervalMem = Long.parseLong(properties.getProperty("intervalMem", "5000"));
+    this.intervalJmx = Long.parseLong(properties.getProperty("intervalJmx", "5000"));
+    this.intervalDisks = Long.parseLong(properties.getProperty("intervalDisks", "5000"));
+    this.intervalNet = Long.parseLong(properties.getProperty("intervalNet", "5000"));
+    this.intervalNetStat = Long.parseLong(properties.getProperty("intervalNetStat", "5000"));
+    this.intervalDiskIO = Long.parseLong(properties.getProperty("intervalDiskIO", "5000"));
   }
 
   public long getIntervalProcs() {

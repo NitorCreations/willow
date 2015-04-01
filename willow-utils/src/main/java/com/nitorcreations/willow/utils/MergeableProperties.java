@@ -152,6 +152,19 @@ public class MergeableProperties extends Properties {
     table = finalTable;
   }
 
+  public Properties getPrefixed(String prefix) {
+    Properties ret = new Properties();
+    for (Entry<String, String> next : table.entrySet()) {
+      if (next.getKey().startsWith(prefix)) {
+        String key = next.getKey().substring(prefix.length());
+        while (key.startsWith(".")) {
+          key = key.substring(1);
+        }
+        ret.put(key, next.getValue());
+      }
+    }
+    return ret;
+  }
   private InputStream getUrlInputStream(String url) throws IOException {
     InputStream in = null;
     if (url.startsWith(URL_PREFIX_CLASSPATH)) {
