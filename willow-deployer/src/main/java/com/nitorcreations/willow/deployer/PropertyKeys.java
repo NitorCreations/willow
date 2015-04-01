@@ -42,6 +42,7 @@ public interface PropertyKeys {
   public static final String PROPERTY_KEY_REMOTE_REPOSITORY = "deployer.remote.repository";
   public static final String PROPERTY_KEY_STATISTICS_URI = "deployer.statistics.uri";
   public static final String PROPERTY_KEY_STATISTICS_FLUSHINTERVAL = "deployer.statistics.flushinterval";
+  public static final String PROPERTY_KEY_PREFIX_STATISTICS = "deployer.statistics";
   public static final String PROPERTY_KEY_WORKDIR = "deployer.workdir";
   public static final String PROPERTY_KEY_PROPERTIES_FILENAME = "deployer.properties.filename";
   public static final String PROPERTY_KEY_DEPLOYER_NAME = "deployer.name";

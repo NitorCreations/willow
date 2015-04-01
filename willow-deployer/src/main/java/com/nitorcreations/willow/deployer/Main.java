@@ -11,6 +11,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_STATISTICS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
@@ -18,30 +19,49 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
+@Named
 public class Main extends DeployerControl implements MainMBean {
   private List<PlatformStatsSender> stats = new ArrayList<>();
   private List<LaunchMethod> children = new ArrayList<>();
-
+  private List<StatisticsSender> statistics = new ArrayList<>();
+  private static AtomicReference<String> statisticsUrl = new AtomicReference<>(null);
+  private static AtomicLong statisticsInterval = new AtomicLong(2000);
+  
+  @Inject
+  private Map<String, StatisticsSender> statisticSenders;
+  
+  @Inject 
+  private WebSocketTransmitter transmitter;
+  
   public Main() {}
 
   private void registerBean() {
@@ -52,9 +72,9 @@ public class Main extends DeployerControl implements MainMBean {
       e.printStackTrace();
     }
   }
-
+ 
   public static void main(String[] args) throws URISyntaxException {
-    new Main().doMain(args);
+    injector.getInstance(Main.class).doMain(args);
   }
 
   public void doMain(String[] args) {
@@ -73,27 +93,35 @@ public class Main extends DeployerControl implements MainMBean {
     }
     extractNativeLib();
     registerBean();
-    WebSocketTransmitter transmitter = null;
     String statUri = mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
     if (statUri != null && !statUri.isEmpty()) {
       try {
         long flushInterval = Long.parseLong(mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_FLUSHINTERVAL, "5000"));
-        transmitter = WebSocketTransmitter.getSingleton(flushInterval, statUri);
+        transmitter.setFlushInterval(flushInterval);
+        transmitter.setUri(new URI(statUri));
         transmitter.start();
       } catch (URISyntaxException e) {
         usage(e);
       }
     }
-    if (transmitter != null) {
-      try {
-        PlatformStatsSender statsSender = new PlatformStatsSender(transmitter, new StatisticsConfig());
-        Thread statThread = new Thread(statsSender, "PlatformStatistics");
-        statThread.start();
-        stats.add(statsSender);
-      } catch (Exception e) {
-        usage(e);
+      List<String> stats;
+      if (mergedProperties.getProperty(PROPERTY_KEY_PREFIX_STATISTICS + "[0]") == null) {
+        stats = Arrays.asList("platform", "process");
+      } else {
+        stats = mergedProperties.getArrayProperty(PROPERTY_KEY_PREFIX_STATISTICS);
       }
-    }
+      for (int i=0; i<stats.size(); i++) {
+        StatisticsSender nextStat = statisticSenders.get(stats.get(i));
+        if (nextStat != null) {
+          try {
+            nextStat = nextStat.getClass().newInstance();
+            injector.injectMembers(nextStat);
+            nextStat.setProperties(mergedProperties.getPrefixed(PROPERTY_KEY_PREFIX_STATISTICS + "[" + i + "]"));
+            statistics.add(nextStat);
+          } catch (InstantiationException | IllegalAccessException e) {
+          }
+        }
+      }
     // Download
     try {
       runHooks(PROPERTY_KEY_PREFIX_PRE_DOWNLOAD, launchPropertiesList, true);
@@ -160,19 +188,9 @@ public class Main extends DeployerControl implements MainMBean {
         executor.submit(launcher);
         children.add(launcher);
       }
-      if (transmitter != null) {
-        try {
-          ProcessStatSender statsSender = new ProcessStatSender(transmitter, launcher, new StatisticsConfig());
-          Thread statThread = new Thread(statsSender, "ProcessStatistics");
-          statThread.start();
-          stats.add(statsSender);
-        } catch (Exception e) {
-          usage(e);
-        }
-      }
       i++;
     }
-    if (transmitter == null && children.isEmpty()) {
+    if (statistics.isEmpty() && children.isEmpty()) {
       System.exit(0);
     }
   }
@@ -241,7 +259,12 @@ public class Main extends DeployerControl implements MainMBean {
     e.printStackTrace();
     super.usage(e.getMessage());
   }
-
+  public static String getStatisticsUrl() {
+    return statisticsUrl.get();
+  }
+  public static long getStatisticsInterval() {
+    return statisticsInterval.get();
+  }
   @Override
   public String[] getChildNames() {
     ArrayList<String> ret = new ArrayList<>();

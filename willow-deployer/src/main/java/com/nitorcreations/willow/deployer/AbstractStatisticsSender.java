@@ -6,7 +6,7 @@ public abstract class AbstractStatisticsSender implements StatisticsSender {
   protected AtomicBoolean running = new AtomicBoolean(true);
   
   @Override
-  public void run() {
+  public final void run() {
     while (running.get() && !Thread.currentThread().isInterrupted()) {
       execute();
     }
