@@ -68,6 +68,7 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
   private void init() {
     try {
       transmitter = WebSocketTransmitter.getSingleton(flushInterval, url);
+      transmitter.start();
     } catch (URISyntaxException e) {
       e.printStackTrace();
     }

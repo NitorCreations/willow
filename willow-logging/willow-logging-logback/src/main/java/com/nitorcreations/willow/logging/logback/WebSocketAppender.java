@@ -83,7 +83,8 @@ public class WebSocketAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
       return;
     }
     try {
-      this.transmitter = WebSocketTransmitter.getSingleton(flushInterval, uri);
+      transmitter = WebSocketTransmitter.getSingleton(flushInterval, uri);
+      transmitter.start();
       super.start();
     } catch (URISyntaxException e) {
       addError("Invalid uri for appender " + name, e);
