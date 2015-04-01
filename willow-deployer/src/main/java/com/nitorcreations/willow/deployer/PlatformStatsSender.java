@@ -152,10 +152,13 @@ public class PlatformStatsSender extends AbstractStatisticsSender implements Sta
         fileSystems = sigar.getFileSystemList();
         dStat = new DiskUsage[fileSystems.length];
         for (int i = 0; i < fileSystems.length; i++) {
-          FileSystemUsage next = sigar.getMountedFileSystemUsage(fileSystems[i].getDirName());
+          FileSystem fileSystem = fileSystems[i];
           dStat[i] = new DiskUsage();
-          PropertyUtils.copyProperties(dStat[i], next);
-          dStat[i].setName(fileSystems[i].getDirName());
+          if (fileSystem.getType() != FileSystem.TYPE_CDROM && fileSystem.getType() != FileSystem.TYPE_NETWORK) {
+            FileSystemUsage next = sigar.getMountedFileSystemUsage(fileSystem.getDirName());
+            PropertyUtils.copyProperties(dStat[i], next);
+          }
+          dStat[i].setName(fileSystem.getDirName());
         }
         for (DiskUsage next : dStat) {
           transmitter.queue(next);
