@@ -1,15 +1,12 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_IDENTIFIER;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_AUTORESTART;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_EXTRA_ENV_KEYS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_WORKDIR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TERM_TIMEOUT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_AUTORESTART;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_LAUNCH_WORKDIR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
@@ -17,7 +14,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -26,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -61,20 +56,20 @@ public abstract class AbstractLauncher implements LaunchMethod {
   protected AtomicInteger returnValue = new AtomicInteger(-1);
   protected Map<String, String> extraEnv = new HashMap<>();
   protected File workingDir;
-  protected String keyPrefix;
   protected AtomicBoolean running = new AtomicBoolean(true);
   protected AtomicLong pid = new AtomicLong(-1);
   protected AbstractStreamPumper stdout, stderr;
   private String name;
+  @Inject
+  private ExecutorService executor;
+  private int restarts = 0;
+  private Logger log;
+  private LaunchCallback callback = null;
 
   @Override
   public String getName() {
     return name;
   }
-  private ExecutorService executor = Executors.newCachedThreadPool();
-  private int restarts = 0;
-  private Logger log;
-
   public long getProcessId() {
     if (pid.get() > 0) {
       return pid.get();
@@ -90,6 +85,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
           return pid.get();
         }
       } catch (SigarException e) {
+        log.log(Level.FINE, "Failed to get PID", e);
       } catch (Throwable e) {
         e.printStackTrace();
         try {
@@ -105,23 +101,18 @@ public abstract class AbstractLauncher implements LaunchMethod {
     return launch(extraEnv, getLaunchArgs());
   }
 
-  @Override
-  public void setProperties(MergeableProperties properties) {
-    this.setProperties(properties, PROPERTY_KEY_PREFIX_LAUNCH);
-  }
-
-  protected Integer launch(String... args) {
+  protected Integer launch(LaunchCallback callback, String... args) {
     return launch(new HashMap<String, String>(), args);
   }
 
   protected Integer launch(Map<String, String> extraEnv, String... args) {
     while (running.get() && !Thread.interrupted()) {
       restarts++;
-      String autoRestartDefault = "false";
-      if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
-        autoRestartDefault = "true";
+      String autoRestartDefaultVal = "false";
+      if (callback != null) {
+        autoRestartDefaultVal = Boolean.toString(callback.autoRestartDefault());
       }
-      boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_AUTORESTART, autoRestartDefault));
+      boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_AUTORESTART, autoRestartDefaultVal));
       running.set(autoRestart);
       log = Logger.getLogger(name);
       ProcessBuilder pb = new ProcessBuilder(args);
@@ -145,34 +136,25 @@ public abstract class AbstractLauncher implements LaunchMethod {
         }
         new Thread(stdout, name + "-child-stdout-pumper").start();
         new Thread(stderr, name + "-child-sdrerr-pumper").start();
-        getProcessId();
         try {
-          if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
-            Main.runHooks(PROPERTY_KEY_PREFIX_POST_START, Collections.singletonList(launchProperties), false);
+          if (callback != null) {
+            callback.postStart();
           }
         } catch (Exception e) {
-          LogRecord rec = new LogRecord(Level.WARNING, "Failed to run post start");
-          rec.setThrown(e);
-          log.log(rec);
+          log.log(Level.WARNING, "Failed to run post start", e);
         }
         returnValue.set(child.waitFor());
         pid.set(-1);
       } catch (IOException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to start  process");
-        rec.setThrown(e);
-        log.log(rec);
+        log.log(Level.WARNING, "Failed to start  process", e);
       } catch (InterruptedException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to start process stream pumpers");
-        rec.setThrown(e);
-        log.log(rec);
+        log.log(Level.WARNING, "Failed to start process stream pumpers", e);
       } finally {
-        if (PROPERTY_KEY_PREFIX_LAUNCH.equals(keyPrefix)) {
+        if (callback != null) {
           try {
-            Main.runHooks(PROPERTY_KEY_PREFIX_POST_STOP, Collections.singletonList(launchProperties), false);
+            callback.postStop();
           } catch (Exception e) {
-            LogRecord rec = new LogRecord(Level.WARNING, "Failed to run post stop");
-            rec.setThrown(e);
-            log.log(rec);
+            log.log(Level.WARNING, "Failed to run post stop", e);
           }
         }
       }
@@ -194,7 +176,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
 
   @Override
   public int destroyChild() throws InterruptedException {
-    long timeout = Long.valueOf(launchProperties.getProperty(keyPrefix + PROPERTY_KEY_TERM_TIMEOUT, "30"));
+    long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
     if (child != null) {
       child.destroy();
     }
@@ -231,9 +213,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
     if (stdout != null) {
       stdout.stop();
     }
-    if (!running.get()) {
-      executor.shutdownNow();
-    }
     return getReturnValue();
   }
 
@@ -248,18 +227,22 @@ public abstract class AbstractLauncher implements LaunchMethod {
   protected String[] getLaunchArgs() {
     return launchArgs.toArray(new String[launchArgs.size()]);
   }
-
-  public void setProperties(MergeableProperties properties, String keyPrefix) {
-    this.keyPrefix = keyPrefix;
+  @Override
+  public void setProperties(MergeableProperties properties) {
+    setProperties(properties, null);
+  }
+  @Override
+  public void setProperties(MergeableProperties properties, LaunchCallback callback) {
+    this.callback = callback;
     launchProperties = properties;
-    String extraEnvKeys = properties.getProperty(keyPrefix + PROPERTY_KEY_EXTRA_ENV_KEYS);
+    String extraEnvKeys = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS);
     if (extraEnvKeys != null) {
       for (String nextKey : extraEnvKeys.split(",")) {
         extraEnv.put(nextKey.trim(), properties.getProperty((nextKey.trim())));
       }
     }
-    name = launchProperties.getProperty(keyPrefix, launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME) + "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
-    workingDir = new File(properties.getProperty(keyPrefix + PROPERTY_KEY_LAUNCH_WORKDIR, properties.getProperty(PROPERTY_KEY_WORKDIR, ".")));
+    name = launchProperties.getProperty("", launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME) + "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
+    workingDir = new File(properties.getProperty(PROPERTY_KEY_SUFFIX_LAUNCH_WORKDIR, properties.getProperty(PROPERTY_KEY_WORKDIR, ".")));
   }
 
   @Override

@@ -1,18 +1,27 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_DOWNLOAD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP_OLD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_DOWNLOAD;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_START;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_STATISTICS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_METHOD;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
@@ -31,6 +40,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -43,14 +54,11 @@ import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named
 public class Main extends DeployerControl implements MainMBean {
-  private List<PlatformStatsSender> stats = new ArrayList<>();
   private List<LaunchMethod> children = new ArrayList<>();
   private List<StatisticsSender> statistics = new ArrayList<>();
   private static AtomicReference<String> statisticsUrl = new AtomicReference<>(null);
@@ -88,11 +96,12 @@ public class Main extends DeployerControl implements MainMBean {
     List<String> launchUrls = mergedProperties.getArrayProperty(PROPERTY_KEY_LAUNCH_URLS);
     if (launchUrls.size() > 0) {
       launchUrls.add(0, deployerName);
-      new Main().doMain(launchUrls.toArray(new String[launchUrls.size()]));
+      injector.getInstance(Main.class).doMain(launchUrls.toArray(new String[launchUrls.size()]));
       return;
     }
     extractNativeLib();
     registerBean();
+    // Statistics
     String statUri = mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);
     if (statUri != null && !statUri.isEmpty()) {
       try {
@@ -100,28 +109,28 @@ public class Main extends DeployerControl implements MainMBean {
         transmitter.setFlushInterval(flushInterval);
         transmitter.setUri(new URI(statUri));
         transmitter.start();
+        List<String> stats;
+        if (mergedProperties.getProperty(PROPERTY_KEY_PREFIX_STATISTICS + "[0]") == null) {
+          stats = Arrays.asList("platform", "process");
+        } else {
+          stats = mergedProperties.getArrayProperty(PROPERTY_KEY_PREFIX_STATISTICS);
+        }
+        for (int i=0; i<stats.size(); i++) {
+          StatisticsSender nextStat = statisticSenders.get(stats.get(i));
+          if (nextStat != null) {
+            try {
+              nextStat = nextStat.getClass().newInstance();
+              injector.injectMembers(nextStat);
+              nextStat.setProperties(mergedProperties.getPrefixed(PROPERTY_KEY_PREFIX_STATISTICS + "[" + i + "]"));
+              statistics.add(nextStat);
+            } catch (InstantiationException | IllegalAccessException e) {
+            }
+          }
+        }
       } catch (URISyntaxException e) {
         usage(e);
       }
     }
-      List<String> stats;
-      if (mergedProperties.getProperty(PROPERTY_KEY_PREFIX_STATISTICS + "[0]") == null) {
-        stats = Arrays.asList("platform", "process");
-      } else {
-        stats = mergedProperties.getArrayProperty(PROPERTY_KEY_PREFIX_STATISTICS);
-      }
-      for (int i=0; i<stats.size(); i++) {
-        StatisticsSender nextStat = statisticSenders.get(stats.get(i));
-        if (nextStat != null) {
-          try {
-            nextStat = nextStat.getClass().newInstance();
-            injector.injectMembers(nextStat);
-            nextStat.setProperties(mergedProperties.getPrefixed(PROPERTY_KEY_PREFIX_STATISTICS + "[" + i + "]"));
-            statistics.add(nextStat);
-          } catch (InstantiationException | IllegalAccessException e) {
-          }
-        }
-      }
     // Download
     try {
       runHooks(PROPERTY_KEY_PREFIX_PRE_DOWNLOAD, launchPropertiesList, true);
@@ -149,17 +158,18 @@ public class Main extends DeployerControl implements MainMBean {
     });
     // Start
     int i = 0;
-    for (MergeableProperties launchProps : launchPropertiesList) {
+    for (final MergeableProperties launchProps : launchPropertiesList) {
       LaunchMethod launcher = null;
       try {
-        String method = launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + PROPERTY_KEY_METHOD);
-        if (method != null && LaunchMethod.TYPE.valueOf(method) != null) {
-          launcher = LaunchMethod.TYPE.valueOf(method).getLauncher();
+        String method = launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + "." + PROPERTY_KEY_SUFFIX_METHOD);
+        if (method != null && LaunchMethod.TYPE.valueOf(method.toUpperCase()) != null) {
+          launcher = injector.getInstance(LaunchMethod.TYPE.valueOf(method.toUpperCase()).getLauncher());
+        } else {
+          continue;
         }
       } catch (Throwable t) {
         usage(t);
       }
-      launchProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(i));
       File workDir = new File(launchProps.getProperty(PROPERTY_KEY_WORKDIR, "."));
       String propsName = launchProps.getProperty(PROPERTY_KEY_PROPERTIES_FILENAME, "application.properties");
       File propsFile = new File(propsName);
@@ -179,12 +189,26 @@ public class Main extends DeployerControl implements MainMBean {
         usage(e);
       }
       try {
-        Main.runHooks(PROPERTY_KEY_PREFIX_PRE_START, Collections.singletonList(launchProps), true);
+        runHooks(PROPERTY_KEY_PREFIX_PRE_START, Collections.singletonList(launchProps), true);
       } catch (Exception e) {
         usage(e);
       }
       if (launcher != null) {
-        launcher.setProperties(launchProps);
+        MergeableProperties childProps = getChildProperties(launchProps, PROPERTY_KEY_PREFIX_LAUNCH, i);
+         launcher.setProperties(childProps, new LaunchCallback() {
+          @Override
+          public void postStop() throws Exception {
+            runHooks(PROPERTY_KEY_PREFIX_POST_STOP, Collections.singletonList(launchProps), false);
+          }
+          @Override
+          public void postStart() throws Exception {
+            runHooks(PROPERTY_KEY_PREFIX_POST_START, Collections.singletonList(launchProps), false);
+          }
+          @Override
+          public boolean autoRestartDefault() {
+            return true;
+          }
+        });
         executor.submit(launcher);
         children.add(launcher);
       }
@@ -200,20 +224,29 @@ public class Main extends DeployerControl implements MainMBean {
       next.stopRelaunching();
     }
     try {
-      Main.runHooks(PROPERTY_KEY_PREFIX_SHUTDOWN, launchPropertiesList, false);
+      runHooks(PROPERTY_KEY_PREFIX_SHUTDOWN, launchPropertiesList, false);
     } catch (Exception e) {
       LogRecord rec = new LogRecord(Level.SEVERE, "Shutdown failed");
       rec.setThrown(e);
       log.log(rec);
     }
     if (children.size() > 0) {
-      final ExecutorService stopexec = Executors.newFixedThreadPool(children.size());
+      final ExecutorService stopexec = Executors.newFixedThreadPool(children.size() + statistics.size());
       List<Future<Integer>> waits = new ArrayList<>();
       for (final LaunchMethod next : children) {
         waits.add(stopexec.submit(new Callable<Integer>() {
           @Override
           public Integer call() throws Exception {
             return next.destroyChild();
+          }
+        }));
+      }
+      for (final StatisticsSender next : statistics) {
+        waits.add(stopexec.submit(new Callable<Integer>() {
+          @Override
+          public Integer call() throws Exception {
+            next.stop();
+            return 0;
           }
         }));
       }
@@ -227,10 +260,7 @@ public class Main extends DeployerControl implements MainMBean {
       }
       stopexec.shutdownNow();
     }
-    for (PlatformStatsSender next : stats) {
-      next.stop();
-    }
-    executor.shutdownNow();
+    super.stop();
   }
 
   @Override
@@ -297,5 +327,87 @@ public class Main extends DeployerControl implements MainMBean {
         }
       }
     }
+  }
+  protected void download() {
+    List<Future<Integer>> downloads = new ArrayList<>();
+    for (MergeableProperties launchProps : launchPropertiesList) {
+      if (launchProps.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[0]") != null) {
+        PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract(launchProps);
+        downloads.add(executor.submit(downloader));
+      }
+    }
+    int i = 1;
+    boolean failures = false;
+    for (Future<Integer> next : downloads) {
+      try {
+        int nextSuccess = next.get();
+        if (nextSuccess > -1) {
+          log.info("Download " + i++ + " got " + nextSuccess + " items");
+        } else {
+          log.info("Download " + i++ + " failed (" + -nextSuccess + " attempted)");
+          failures = true;
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        log.warning("Download failed: " + e.getMessage());
+      }
+    }
+    if (failures)
+      throw new RuntimeException("Some downloads failed - check logs");
+  }
+  protected void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
+    Exception lastThrown = null;
+    for (MergeableProperties properties : propertiesList) {
+      int i = 0;
+      for (String nextMethod : properties.getArrayProperty(hookPrefix, "." + PROPERTY_KEY_SUFFIX_METHOD)) {
+        LaunchMethod launcher = null;
+        launcher = injector.getInstance(LaunchMethod.TYPE.valueOf(nextMethod.toUpperCase()).getLauncher());
+        String prefix = hookPrefix + "[" + i + "]";
+        MergeableProperties childProps = getChildProperties(properties, prefix, i);
+        launcher.setProperties(childProps);
+        long timeout = Long.valueOf(properties.getProperty(prefix + PROPERTY_KEY_SUFFIX_TIMEOUT, "30"));
+        Future<Integer> ret = executor.submit(launcher);
+        try {
+          int retVal = ret.get(timeout, TimeUnit.SECONDS);
+          log.info(hookPrefix + " returned " + retVal);
+          if (retVal != 0 && failFast) {
+            throw new Exception("hook " + hookPrefix + "." + i + " failed");
+          }
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+          log.info(hookPrefix + " failed: " + e.getMessage());
+          if (failFast) {
+            throw e;
+          } else {
+            lastThrown = e;
+          }
+        }
+        launcher.destroyChild();
+        i++;
+      }
+    }
+    if (lastThrown != null)
+      throw lastThrown;
+  }
+  public static MergeableProperties getChildProperties(MergeableProperties launchProps, String prefix, int index) {
+    MergeableProperties childProps = launchProps.getPrefixed(prefix);
+    childProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(index));
+    for (String next : new String[] { 
+      PROPERTY_KEY_DEPLOYER_NAME,
+      PROPERTY_KEY_WORKDIR,
+      PROPERTY_KEY_DOWNLOAD_DIRECTORY,
+      PROPERTY_KEY_DOWNLOAD_RETRIES,
+      PROPERTY_KEY_REMOTE_REPOSITORY }) {
+      if (launchProps.get(next) != null) {
+        childProps.setProperty(next, launchProps.getProperty(next));
+      }
+    }
+    String extraEnvKeys = launchProps.getProperty(prefix + "." + PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS);
+    if (extraEnvKeys != null) {
+      for (String nextKey : extraEnvKeys.split(",")) {
+        String key = nextKey.trim();
+        childProps.put(key, launchProps.getProperty(key,  ""));
+      }
+    }
+
+    return childProps;
   }
 }

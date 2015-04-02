@@ -1,8 +1,7 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_ARTIFACT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_RESOLVE_TRANSITIVE;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_ARTIFACT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RESOLVE_TRANSITIVE;
 
 import java.io.File;
 
@@ -26,16 +25,11 @@ public class DependencyLauncher extends JavaLauncher implements LaunchMethod {
   }
 
   @Override
-  public void setProperties(MergeableProperties properties) {
-    this.setProperties(properties, PROPERTY_KEY_PREFIX_LAUNCH);
-  }
-
-  @Override
-  public void setProperties(MergeableProperties properties, String keyPrefix) {
-    super.setProperties(properties);
+  public void setProperties(MergeableProperties properties, LaunchCallback callback) {
+    super.setProperties(properties, callback);
     downloader = new AetherDownloader();
     downloader.setProperties(properties);
-    artifactCoords = properties.getProperty(PROPERTY_KEY_ARTIFACT);
-    transitive = Boolean.valueOf(properties.getProperty(PROPERTY_KEY_RESOLVE_TRANSITIVE, "false"));
+    artifactCoords = properties.getProperty(PROPERTY_KEY_SUFFIX_ARTIFACT);
+    transitive = Boolean.valueOf(properties.getProperty(PROPERTY_KEY_SUFFIX_RESOLVE_TRANSITIVE, "false"));
   }
 }

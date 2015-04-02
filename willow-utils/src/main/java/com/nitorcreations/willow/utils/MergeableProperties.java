@@ -151,9 +151,8 @@ public class MergeableProperties extends Properties {
     }
     table = finalTable;
   }
-
-  public Properties getPrefixed(String prefix) {
-    Properties ret = new Properties();
+  public MergeableProperties getPrefixed(String prefix) {
+    MergeableProperties ret = new MergeableProperties();
     for (Entry<String, String> next : table.entrySet()) {
       if (next.getKey().startsWith(prefix)) {
         String key = next.getKey().substring(prefix.length());

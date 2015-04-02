@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import javax.management.Attribute;
 import javax.management.JMX;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
@@ -22,8 +23,6 @@ import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
 import com.google.gson.Gson;
-
-import javax.management.Attribute;
 
 public class JMXOperation extends DeployerControl {
   public static void main(String[] args) {

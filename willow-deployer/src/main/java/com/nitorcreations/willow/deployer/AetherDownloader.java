@@ -1,7 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
 
 import java.io.File;
@@ -37,9 +36,9 @@ public class AetherDownloader implements Callable<File> {
     this.artifact = null;
   }
 
-  public AetherDownloader(Properties properties, String index) {
+  public AetherDownloader(Properties properties) {
     setProperties(properties);
-    this.artifact = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + index);
+    this.artifact = properties.getProperty("");
     int queryIndex = artifact.lastIndexOf("?");
     if (queryIndex < 0)
       queryIndex = artifact.length();
