@@ -1,18 +1,11 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
-
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
-
-import org.hyperic.sigar.ProcTime;
-import org.hyperic.sigar.Sigar;
-import org.hyperic.sigar.ptql.ProcessQuery;
-import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
 public class Status extends DeployerControl {
   public static void main(String[] args) {

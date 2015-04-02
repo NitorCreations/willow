@@ -4,7 +4,6 @@ import static com.nitorcreations.willow.deployer.FileUtil.createDir;
 import static com.nitorcreations.willow.deployer.FileUtil.getFileName;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
@@ -32,17 +31,15 @@ import com.nitorcreations.willow.utils.MD5SumInputStream;
 
 public class UrlDownloader implements Callable<File> {
   private final Properties properties;
-  private final String index;
   private final byte[] md5;
   private final Logger logger;
   private final String url;
   private final String fileName;
 
-  public UrlDownloader(Properties properties, String index, byte[] md5) {
+  public UrlDownloader(Properties properties, byte[] md5) {
     this.properties = properties;
-    this.index = index;
     this.md5 = md5;
-    this.url = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index);
+    this.url = properties.getProperty("");
     int queryIndex = url.lastIndexOf("?");
     if (queryIndex < 0)
       queryIndex = url.length();
@@ -54,7 +51,7 @@ public class UrlDownloader implements Callable<File> {
   public File call() throws IOException {
     if (url == null)
       return null;
-    int retries = Integer.parseInt(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_RETRIES, properties.getProperty(PROPERTY_KEY_DOWNLOAD_RETRIES, "3")));
+    int retries = Integer.parseInt(properties.getProperty(PROPERTY_KEY_SUFFIX_RETRIES, properties.getProperty(PROPERTY_KEY_DOWNLOAD_RETRIES, "3")));
     int tryNo = 1;
     File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
     File target = null;
@@ -62,7 +59,7 @@ public class UrlDownloader implements Callable<File> {
     while (tryNo <= retries) {
       try {
         URLConnection conn = new URL(url).openConnection();
-        String finalPath = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH);
+        String finalPath = properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH);
         if (finalPath != null) {
           target = new File(finalPath);
           if (!target.isAbsolute()) {
@@ -103,7 +100,7 @@ public class UrlDownloader implements Callable<File> {
               out.write((md5str + "  " + target.getName() + "\n").getBytes());
               out.flush();
             }
-          } else if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
+          } else if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
             throw new IOException("MD5 Sum does not match for " + url + " - expected: " + Hex.encodeHexString(md5) + " got: " + Hex.encodeHexString(md5in.digest()));
           }
         }

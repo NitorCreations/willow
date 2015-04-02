@@ -25,11 +25,13 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import com.nitorcreations.willow.utils.MergeableProperties;
+
 public class PreLaunchDownloadAndExtract implements Callable<Integer> {
-  private final Properties properties;
+  private final MergeableProperties properties;
   private Logger logger = Logger.getLogger(this.getClass().getName());
 
-  public PreLaunchDownloadAndExtract(Properties properties) {
+  public PreLaunchDownloadAndExtract(MergeableProperties properties) {
     this.properties = properties;
   }
 
@@ -38,15 +40,16 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
     int downloads = 0;
     List<Future<Boolean>> futures = new ArrayList<>();
     for (int i = 0; null != (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]")); i++) {
-      final String index = "[" + i + "]";
+      final Properties downloadProperties = Main.getChildProperties(properties, PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]", i);
       Future<Boolean> next = executor.submit(new Callable<Boolean>() {
         @Override
         public Boolean call() throws Exception {
-          byte[] md5 = getMd5(properties, index);
-          UrlDownloader dwn = new UrlDownloader(properties, index, md5);
+          byte[] md5 = getMd5(downloadProperties);
+          UrlDownloader dwn = new UrlDownloader(downloadProperties, md5);
           File downloaded = dwn.call();
           if (downloaded != null && downloaded.exists()) {
-            return new Extractor(properties, index, PROPERTY_KEY_PREFIX_DOWNLOAD_URL, downloaded).call();
+            downloadProperties.putAll(properties);
+            return new Extractor(downloadProperties, downloaded).call();
           } else {
             return false;
           }
@@ -55,12 +58,13 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
       futures.add(next);
     }
     for (int i = 0; null != (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]")); i++) {
-      final String index = "[" + i + "]";
+      final Properties downloadProperties = Main.getChildProperties(properties, PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]", i);
       Future<Boolean> next = executor.submit(new Callable<Boolean>() {
         @Override
         public Boolean call() throws Exception {
-          UrlDownloader dwn = new UrlDownloader(properties, index, getMd5(properties, index));
-          return new Extractor(properties, index, PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT, dwn.call()).call();
+          UrlDownloader dwn = new UrlDownloader(downloadProperties, getMd5(downloadProperties));
+          downloadProperties.putAll(properties);
+          return new Extractor(downloadProperties, dwn.call()).call();
         }
       });
       futures.add(next);
@@ -81,11 +85,11 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
     return failures ? -downloads : downloads;
   }
 
-  private byte[] getMd5(Properties properties, String index) throws IOException {
+  private byte[] getMd5(Properties properties) throws IOException {
     byte[] md5 = null;
-    String url = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index);
+    String url = properties.getProperty("");
     String urlMd5 = url + ".md5";
-    String propMd5 = properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5);
+    String propMd5 = properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5);
     if (propMd5 != null) {
       try {
         md5 = Hex.decodeHex(propMd5.toCharArray());
@@ -102,7 +106,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
       } catch (IOException | DecoderException e) {
         LogRecord rec = new LogRecord(Level.INFO, "No md5 sum available" + urlMd5);
         logger.log(rec);
-        if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + index + PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
+        if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
           throw new IOException("Failed to get a valid md5sum for " + url, e);
         }
       }

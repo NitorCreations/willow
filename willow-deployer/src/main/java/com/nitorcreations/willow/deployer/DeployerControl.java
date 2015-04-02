@@ -4,8 +4,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_METHOD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_TIMEOUT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,20 +21,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -68,7 +61,8 @@ import com.sun.tools.attach.VirtualMachine;
 @SuppressWarnings("restriction")
 public class DeployerControl {
   protected final static Logger log = Logger.getLogger("deployer");
-  protected final ExecutorService executor = Executors.newFixedThreadPool(10);
+  @Inject
+  protected ExecutorService executor;
   protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
   protected String deployerName;
   protected static Injector injector;
@@ -155,30 +149,6 @@ public class DeployerControl {
       Thread.sleep(500);
       pids = getPidsExcludingMyPid(query, mypid);
     }
-  }
-  protected void download() {
-    List<Future<Integer>> downloads = new ArrayList<>();
-    for (Properties launchProps : launchPropertiesList) {
-      PreLaunchDownloadAndExtract downloader = new PreLaunchDownloadAndExtract(launchProps);
-      downloads.add(executor.submit(downloader));
-    }
-    int i = 1;
-    boolean failures = false;
-    for (Future<Integer> next : downloads) {
-      try {
-        int nextSuccess = next.get();
-        if (nextSuccess > -1) {
-          log.info("Download " + i++ + " got " + nextSuccess + " items");
-        } else {
-          log.info("Download " + i++ + " failed (" + -nextSuccess + " attempted)");
-          failures = true;
-        }
-      } catch (InterruptedException | ExecutionException e) {
-        log.warning("Download failed: " + e.getMessage());
-      }
-    }
-    if (failures)
-      throw new RuntimeException("Some downloads failed - check logs");
   }
   public static JMXConnector getJMXConnector(long pid) {
     try {
@@ -318,9 +288,6 @@ public class DeployerControl {
     return launchProperties;
   }
   protected void populateProperties(String[] args) {
-    if (args.length != (launchPropertiesList.size() + 1))
-      ;
-    launchPropertiesList.clear();
     deployerName = args[0];
     for (int i = 1; i < args.length; i++) {
       MergeableProperties next = getURLProperties(args[i]);
@@ -367,38 +334,7 @@ public class DeployerControl {
     rootLogger.addHandler(console);
     rootLogger.setLevel(Level.INFO);
   }
-  public static void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
-    ExecutorService exec = Executors.newFixedThreadPool(1);
-    Exception lastThrown = null;
-    for (MergeableProperties properties : propertiesList) {
-      int i = 0;
-      for (String nextMethod : properties.getArrayProperty(hookPrefix, PROPERTY_KEY_METHOD)) {
-        LaunchMethod launcher = null;
-        launcher = LaunchMethod.TYPE.valueOf(nextMethod).getLauncher();
-        String prefix = hookPrefix + "[" + i + "]";
-        launcher.setProperties(properties, prefix);
-        long timeout = Long.valueOf(properties.getProperty(prefix + PROPERTY_KEY_TIMEOUT, "30"));
-        Future<Integer> ret = exec.submit(launcher);
-        try {
-          int retVal = ret.get(timeout, TimeUnit.SECONDS);
-          log.info(hookPrefix + " returned " + retVal);
-          if (retVal != 0 && failFast) {
-            throw new Exception("hook " + hookPrefix + "." + i + " failed");
-          }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-          log.info(hookPrefix + " failed: " + e.getMessage());
-          if (failFast) {
-            throw e;
-          } else {
-            lastThrown = e;
-          }
-        }
-        launcher.destroyChild();
-        i++;
-      }
-    }
-    exec.shutdownNow();
-    if (lastThrown != null)
-      throw lastThrown;
+  public void stop() {
+    executor.shutdownNow();
   }
 }

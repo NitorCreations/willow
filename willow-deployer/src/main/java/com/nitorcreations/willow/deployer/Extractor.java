@@ -46,8 +46,6 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 public class Extractor implements Callable<Boolean> {
   private final Properties properties;
-  private final String index;
-  private final String prefix;
   private final File target;
   private final Logger logger;
   private static final Pattern zipFilesPattern = Pattern.compile(".*?\\.zip$|.*?\\.jar$|.*?\\.war$|.*?\\.ear$", Pattern.CASE_INSENSITIVE);
@@ -67,10 +65,8 @@ public class Extractor implements Callable<Boolean> {
     perms.put(0400, PosixFilePermission.OWNER_READ);
   }
 
-  public Extractor(Properties properties, String index, String prefix, File target) {
+  public Extractor(Properties properties, File target) {
     this.properties = properties;
-    this.index = index;
-    this.prefix = prefix;
     this.target = target;
     logger = Logger.getLogger(target.getName());
   }
@@ -80,11 +76,11 @@ public class Extractor implements Callable<Boolean> {
     if (target == null)
       return false;
     File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
-    boolean overwrite = "false".equalsIgnoreCase(properties.getProperty(prefix + index + PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE)) ? false : true;
-    String extractRoot = properties.getProperty(prefix + index + PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, workDir.getAbsolutePath());
-    String extractGlob = properties.getProperty(prefix + index + PROPERTY_KEY_SUFFIX_EXTRACT_GLOB);
-    String skipExtractGlob = properties.getProperty(prefix + index + PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
-    String filterGlob = properties.getProperty(prefix + index + PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
+    boolean overwrite = "false".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE)) ? false : true;
+    String extractRoot = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, workDir.getAbsolutePath());
+    String extractGlob = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_GLOB);
+    String skipExtractGlob = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB);
+    String filterGlob = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB);
     File root = new File(extractRoot);
     Map<String, String> replaceParameters = new HashMap<>();
     for (Entry<Object, Object> next : properties.entrySet()) {

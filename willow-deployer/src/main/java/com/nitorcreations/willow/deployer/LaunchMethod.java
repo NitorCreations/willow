@@ -13,16 +13,12 @@ public interface LaunchMethod extends Callable<Integer> {
       this.launcher = launcher;
     }
 
-    public LaunchMethod getLauncher() {
-      try {
-        return launcher.newInstance();
-      } catch (InstantiationException | IllegalAccessException e) {
-        return null;
-      }
+    public Class<? extends LaunchMethod> getLauncher() {
+      return launcher;
     }
   }
   public void setProperties(MergeableProperties properties);
-  public void setProperties(MergeableProperties properties, String keyPrefix);
+  public void setProperties(MergeableProperties properties, LaunchCallback callback);
   public long getProcessId();
   public void stopRelaunching();
   public int destroyChild() throws InterruptedException;

@@ -1,15 +1,18 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_CLASSPATH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_JAR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_MAIN_CLASS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_ARGS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_JAVA_ARGS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_ARGS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_CLASSPATH;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_JAR;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_JAVA_ARGS;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_MAIN_CLASS;
 
 import java.io.File;
 
+import javax.inject.Named;
+
 import com.nitorcreations.willow.utils.MergeableProperties;
 
+@Named
 public class JavaLauncher extends AbstractLauncher {
   protected String mainClass = "";
   protected File launchJar = null;
@@ -25,16 +28,16 @@ public class JavaLauncher extends AbstractLauncher {
       launchArgs.add("-jar");
       launchArgs.add(launchJar.getPath());
     }
-    addLauncherArgs(launchProperties, keyPrefix + PROPERTY_KEY_PREFIX_ARGS);
+    addLauncherArgs(launchProperties, PROPERTY_KEY_SUFFIX_ARGS);
     return super.call();
   }
 
   @Override
-  public void setProperties(MergeableProperties properties, String keyPrefix) {
-    super.setProperties(properties, keyPrefix);
-    mainClass = properties.getProperty(keyPrefix + PROPERTY_KEY_MAIN_CLASS, "");
-    classPath = properties.getProperty(keyPrefix + PROPERTY_KEY_CLASSPATH, "");
-    String jarPath = properties.getProperty(keyPrefix + PROPERTY_KEY_JAR);
+  public void setProperties(MergeableProperties properties, LaunchCallback callback) {
+    super.setProperties(properties, callback);
+    mainClass = properties.getProperty(PROPERTY_KEY_SUFFIX_MAIN_CLASS, "");
+    classPath = properties.getProperty(PROPERTY_KEY_SUFFIX_CLASSPATH, "");
+    String jarPath = properties.getProperty(PROPERTY_KEY_SUFFIX_JAR);
     if (jarPath != null && !jarPath.isEmpty()) {
       launchJar = new File(jarPath);
     }
@@ -46,6 +49,6 @@ public class JavaLauncher extends AbstractLauncher {
       java = new File(javaBin, "java");
     }
     launchArgs.add(java.getAbsolutePath());
-    addLauncherArgs(properties, keyPrefix + PROPERTY_KEY_PREFIX_JAVA_ARGS);
+    addLauncherArgs(properties, PROPERTY_KEY_SUFFIX_JAVA_ARGS);
   }
 }
