@@ -103,7 +103,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
         FileUtil.copy(conn.getInputStream(), out);
         String md5Str = new String(out.toByteArray(), 0, 32);
         md5 = Hex.decodeHex(md5Str.toCharArray());
-      } catch (IOException | DecoderException e) {
+      } catch (IOException | DecoderException | NullPointerException e) {
         LogRecord rec = new LogRecord(Level.INFO, "No md5 sum available" + urlMd5);
         logger.log(rec);
         if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
