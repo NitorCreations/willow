@@ -94,7 +94,7 @@ public class Extractor implements Callable<Boolean> {
       if (extractGlob != null || skipExtractGlob != null) {
         entries = extractFile(target, replaceParameters, root, extractGlob, skipExtractGlob, filterGlob, overwrite);
       }
-      logger.log(Level.INFO, "Extracted " + entries + " entries");
+      logger.log(Level.INFO, "Processed " + entries + " entries");
       return true;
     } catch (Exception e) {
       LogRecord rec = new LogRecord(Level.WARNING, "Failed to extract " + target.getAbsolutePath());
@@ -115,7 +115,7 @@ public class Extractor implements Callable<Boolean> {
     } else {
       try (InputStream in = new BufferedInputStream(new FileInputStream(archive), 8 * 1024)) {
         if (compressedPattern.matcher(archive.getName()).matches()) {
-          try (InputStream compressed = cfactory.createCompressorInputStream(in)) {
+          try (InputStream compressed = new BufferedInputStream(cfactory.createCompressorInputStream(in), 8 * 1024)) {
             try (ArchiveInputStream source = factory.createArchiveInputStream(compressed)) {
               return extractArchive(source, root, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
             }

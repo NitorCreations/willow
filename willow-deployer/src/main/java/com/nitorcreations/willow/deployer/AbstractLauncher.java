@@ -127,13 +127,13 @@ public abstract class AbstractLauncher implements LaunchMethod {
       log.info(String.format("Starting %s%n", pb.command().toString()));
       try {
         child = pb.start();
-        if (transmitter != null && transmitter.isRunning()) {
+        /*if (transmitter != null && transmitter.isRunning()) {
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
-        } else {
+        } else {*/
           stdout = new LoggingStreamPumper(child.getInputStream(), Level.INFO, name);
           stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
-        }
+        //}
         new Thread(stdout, name + "-child-stdout-pumper").start();
         new Thread(stderr, name + "-child-sdrerr-pumper").start();
         try {

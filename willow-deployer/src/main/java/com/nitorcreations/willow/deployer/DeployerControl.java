@@ -4,6 +4,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -51,6 +53,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.protocols.Register;
+import com.nitorcreations.willow.utils.HostUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 import com.sun.tools.attach.AgentInitializationException;
@@ -70,6 +73,7 @@ public class DeployerControl {
   static {
     try {
       OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
+      System.setProperty(PROPERTY_KEY_DEPLOYER_HOST, HostUtil.getHostName());
       setupLogging();
       Register.doIt();
       injector = Guice.createInjector(
@@ -270,21 +274,7 @@ public class DeployerControl {
   }
   protected MergeableProperties getURLProperties(String url) {
     MergeableProperties launchProperties = new MergeableProperties();
-    try {
-      URL propertyURL = new URL(url);
-      Proxy p = resolveProxy(propertyURL.getProtocol(), propertyURL.getHost());
-      URLConnection conn;
-      if (p == null) {
-        conn = propertyURL.openConnection();
-      } else {
-        conn = propertyURL.openConnection(p);
-      }
-      conn.setDoInput(true);
-      conn.connect();
-      launchProperties.load(conn.getInputStream());
-    } catch (IOException e) {
-      usage(e.getMessage());
-    }
+    launchProperties.merge(System.getProperties(), url);
     return launchProperties;
   }
   protected void populateProperties(String[] args) {
@@ -333,6 +323,12 @@ public class DeployerControl {
     console.setFormatter(new SimpleFormatter());
     rootLogger.addHandler(console);
     rootLogger.setLevel(Level.INFO);
+    console.setFilter(new Filter() {
+      @Override
+      public boolean isLoggable(LogRecord record) {
+        return record.getLoggerName() == null || !record.getLoggerName().startsWith("org.eclipse.jetty.util.log");
+      }
+    });
   }
   public void stop() {
     executor.shutdownNow();

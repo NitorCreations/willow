@@ -15,6 +15,7 @@ public interface PropertyKeys {
   public static final String PROPERTY_KEY_PROPERTIES_FILENAME = "deployer.properties.filename";
   public static final String PROPERTY_KEY_DEPLOYER_NAME = "deployer.name";
   public static final String PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX = "deployer.launch.index";
+  public static final String PROPERTY_KEY_DEPLOYER_HOST = "deployer.host";
   public static final String PROPERTY_KEY_PREFIX_POST_STOP = "deployer.post.stop";
   public static final String PROPERTY_KEY_PREFIX_POST_START = "deployer.post.start";
   public static final String PROPERTY_KEY_PREFIX_PRE_START = "deployer.pre.start";
@@ -41,7 +42,6 @@ public interface PropertyKeys {
   public static final String PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5 = "md5";
   public static final String PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5 = "ignore.md5";
   public static final String PROPERTY_KEY_SUFFIX_RETRIES = "retries";
-  public static final String PROPERTY_KEY_SUFFIX_EXTRACT_INTERPOLATE_GLOB = "extract.interpolate.glob";
   public static final String PROPERTY_KEY_SUFFIX_EXTRACT_ROOT = "extract.root";
   public static final String PROPERTY_KEY_SUFFIX_EXTRACT_GLOB = "extract.glob";
   public static final String PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB = "extract.skip.glob";

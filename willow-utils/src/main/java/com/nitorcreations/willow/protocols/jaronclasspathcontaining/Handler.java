@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.protocols.self;
+package com.nitorcreations.willow.protocols.jaronclasspathcontaining;
 
 import java.io.IOException;
 import java.net.URL;
@@ -23,9 +23,9 @@ public class Handler extends URLStreamHandler {
         URL fileUrl = new URL(resource.substring(4, jarEnd));
         return fileUrl.openConnection();
       } else if (resourceUrl != null) {
-        return resourceUrl.openConnection();
+        throw new IOException("Resource " + u.getPath() + " not found in jar, unable to resolve jar");
       } else {
-        return null;
+        throw new IOException("Resource " + u.getPath() + " not found on classpath, unable to resolve jar");
       }
   }
 }
