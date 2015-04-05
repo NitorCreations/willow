@@ -10,7 +10,7 @@ if [ "$1" = "-d" ]; then
   else
     DEBUG_PORT=4444
   fi
-  DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT" 
+  DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
 fi
 
 if [ -z "$W_DEPLOYER_HOME" ]; then
@@ -25,7 +25,7 @@ else
   W_DEPLOYER_LIB="$W_DEPLOYER_HOME/lib"
 fi
 
-if [ ! -d "$W_DEPLOYER_LIB" ]; then 
+if [ ! -d "$W_DEPLOYER_LIB" ]; then
   mkdir -p "$W_DEPLOYER_LIB"
   if [ ! -d "$W_DEPLOYER_LIB" ]; then
     echo "Failed to create deployer lib directory"
@@ -56,7 +56,7 @@ fi
 JAVA_TOOLS=$JAVA_LIB/tools.jar
 W_DEPLOYER_NAME=$2
 export W_DEPLOYER_NAME W_DEPLOYER_HOME W_DEPLOYER_JAR
-case $1 in 
+case $1 in
 start)
   shift
   exec 2>&1
@@ -83,4 +83,3 @@ jmxoperation)
   exit 1
   ;;
 esac
-

@@ -11,6 +11,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKD
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +59,6 @@ public class UrlDownloader implements Callable<File> {
     String downloadDir = properties.getProperty(PROPERTY_KEY_DOWNLOAD_DIRECTORY);
     while (tryNo <= retries) {
       try {
-        URLConnection conn = new URL(url).openConnection();
         String finalPath = properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH);
         if (finalPath != null) {
           target = new File(finalPath);
@@ -82,6 +82,18 @@ public class UrlDownloader implements Callable<File> {
           target = File.createTempFile("depl.dwnld", fileName);
           target.deleteOnExit();
         }
+        File md5file = new File(target.getParentFile(), target.getName() + ".md5");
+        if (target.exists() && md5file.exists()) {
+          try (MD5SumInputStream in = new MD5SumInputStream(new FileInputStream(target))) {
+            byte[] buff = new byte[1024 * 4];
+            while (-1 < in.read(buff)) { }
+            byte[] md5sum = MD5SumInputStream.getMd5FromURL(md5file.toURI().toURL());
+            if (md5sum != null && Arrays.equals(md5, in.digest())) {
+              return target;
+            }
+          }
+        }
+        URLConnection conn = new URL(url).openConnection();
         try (InputStream bIn = new BufferedInputStream(conn.getInputStream(), FileUtil.BUFFER_LEN)) {
           InputStream in = null;
           MD5SumInputStream md5in = null;
@@ -91,11 +103,19 @@ public class UrlDownloader implements Callable<File> {
           } else {
             in = bIn;
           }
-          FileUtil.copy(in, target);
+          FileUtil.copy(in, target, new DownloadLogger() {
+            private long nextThreshold = 1024 * 1024;
+            @Override
+            public void log(long downloaded) {
+              if (downloaded > nextThreshold) {
+                nextThreshold += 1024 * 1024;
+                logger.info("Downloaded " + (downloaded >>> 20) + "MiB");
+              }
+            }
+          });
           if (md5 != null && Arrays.equals(md5, md5in.digest())) {
             String md5str = Hex.encodeHexString(md5);
             logger.info(url + " md5 sum ok " + md5str);
-            File md5file = new File(target.getParentFile(), target.getName() + ".md5");
             try (OutputStream out = new FileOutputStream(md5file)) {
               out.write((md5str + "  " + target.getName() + "\n").getBytes());
               out.flush();

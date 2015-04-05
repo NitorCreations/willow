@@ -27,39 +27,58 @@ public class FileUtil {
   }
 
   public static long copy(InputStream in, File target) throws IOException {
+    return copy(in, target, null);
+  }
+  public static long copy(InputStream in, File target, DownloadLogger logger) throws IOException {
     try (FileOutputStream out = new FileOutputStream(target)) {
-      long lenght = copy(in, out);
+      long lenght = copy(in, out, logger);
       out.getFD().sync();
       return lenght;
     }
   }
 
   public static long copy(InputStream in, OutputStream out) throws IOException {
+    return copy(in, out, null);
+  }
+  public static long copy(InputStream in, OutputStream out, DownloadLogger logger) throws IOException {
     byte[] buffer = new byte[BUFFER_LEN];
     long count = 0;
     int n = 0;
     while (-1 != (n = in.read(buffer))) {
       out.write(buffer, 0, n);
       count += n;
+      if (logger != null) {
+        logger.log(count);
+      }
     }
     out.flush();
     return count;
   }
 
   public static long filterStream(InputStream original, File target, Map<String, String> replaceTokens) throws IOException {
+    return filterStream(original, target, replaceTokens, null);
+  }
+  public static long filterStream(InputStream original, File target, Map<String, String> replaceTokens, DownloadLogger logger) throws IOException {
     try (FileOutputStream out = new FileOutputStream(target)) {
-      return filterStream(original, out, replaceTokens);
+      return filterStream(original, out, replaceTokens, logger);
     }
   }
 
   public static long filterStream(InputStream original, FileOutputStream out, Map<String, String> replaceTokens) throws IOException {
+    return filterStream(original, out, replaceTokens, null);
+  }
+  public static long filterStream(InputStream original, FileOutputStream out, Map<String, String> replaceTokens, DownloadLogger logger) throws IOException {
     try (InputStream in = new ReplaceTokensInputStream(new BufferedInputStream(original, BUFFER_LEN), replaceTokens, ReplaceTokensInputStream.MAVEN_DELIMITERS)) {
-      long length = copyByteByByte(in, out);
+      long length = copyByteByByte(in, out, logger);
       return length;
     }
   }
 
   public static long copyByteByByte(InputStream in, OutputStream out) throws IOException {
+    return copyByteByByte(in, out, null);
+  }
+
+  public static long copyByteByByte(InputStream in, OutputStream out, DownloadLogger logger) throws IOException {
     BufferedOutputStream bOut = null;
     if (out instanceof BufferedOutputStream) {
       bOut = (BufferedOutputStream) out;
@@ -72,6 +91,9 @@ public class FileUtil {
       while ((b = in.read()) != -1) {
         bOut.write(b);
         i++;
+        if (logger != null) {
+          logger.log(i);
+        }
       }
       return i;
     } catch (IOException e) {

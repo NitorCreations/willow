@@ -5,11 +5,9 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -25,6 +23,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class PreLaunchDownloadAndExtract implements Callable<Integer> {
@@ -98,12 +97,9 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
         throw new IOException("Failed to download " + url, e);
       }
     } else {
-      try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-        URLConnection conn = new URL(urlMd5).openConnection();
-        FileUtil.copy(conn.getInputStream(), out);
-        String md5Str = new String(out.toByteArray(), 0, 32);
-        md5 = Hex.decodeHex(md5Str.toCharArray());
-      } catch (IOException | DecoderException | NullPointerException e) {
+      try {
+        md5 = MD5SumInputStream.getMd5FromURL(new URL(urlMd5));
+      } catch (IOException e) {
         LogRecord rec = new LogRecord(Level.INFO, "No md5 sum available" + urlMd5);
         logger.log(rec);
         if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {

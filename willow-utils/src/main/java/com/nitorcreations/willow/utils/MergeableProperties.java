@@ -191,8 +191,7 @@ public class MergeableProperties extends Properties {
         try (InputStream in1 = getUrlInputStream(url)) {
           load(in1);
         } catch (IOException e1) {
-          LogRecord rec = new LogRecord(Level.INFO, "Failed to render url: " + url);
-          this.log.log(rec);
+          this.log.log(Level.INFO, "Failed to render url: " + url);
         }
       }
     }
