@@ -257,6 +257,7 @@
               <mappings>
                 <mapping>
                   <directory>/usr/bin</directory>
+                  <directoryIncluded>false</directoryIncluded>
                   <filemode>755</filemode>
                   <username>root</username>
                   <groupname>root</groupname>
