@@ -55,31 +55,35 @@ fi
 
 JAVA_TOOLS=$JAVA_LIB/tools.jar
 W_DEPLOYER_NAME=$2
+W_CLASSPATH=$JAVA_TOOLS:$W_DEPLOYER_JAR
+if [ -n "$W_EXTRA_CLASSPATH" ]; then
+  W_CLASSPATH="$W_CLASSPATH:$W_EXTRA_CLASSPATH"
+fi
 export W_DEPLOYER_NAME W_DEPLOYER_HOME W_DEPLOYER_JAR
 case $1 in
 start)
   shift
   exec 2>&1
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Main "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.Main "$@"
   ;;
 stop)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Stop "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.Stop "$@"
   ;;
 status)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.Status "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.Status "$@"
   ;;
 restartchild)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.RestartChild "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.RestartChild "$@"
   ;;
 jmxoperation)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG -cp $JAVA_TOOLS:$W_DEPLOYER_JAR com.nitorcreations.willow.deployer.JMXOperation "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.JMXOperation "$@"
   ;;
 *)
-  echo "usage $0 {start|stop|status|jmxoperation} [role] url [url [...]]"
+  echo "usage $0 {start|stop|status|restartchild|jmxoperation} [role] url [url [...]]"
   exit 1
   ;;
 esac
