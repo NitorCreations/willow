@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.metrics;
 
+import java.nio.charset.UnmappableCharacterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.InternalTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 
 public abstract class TagListMetric implements Metric {
@@ -26,7 +27,7 @@ public abstract class TagListMetric implements Metric {
     String[] types = req.getParameterValues("type");
     SearchResponse response = client.prepareSearch(MetricUtils.getIndexes(start, stop, client)).setTypes(types).setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(start).to(stop))).setSize(0).addAggregation(AggregationBuilders.terms("tags").field("tags").include(tagPrefix + "_.*")).get();
     ArrayList<String> ret = new ArrayList<>();
-    StringTerms agg = response.getAggregations().get("tags");
+    InternalTerms agg = response.getAggregations().get("tags");
     for (Bucket next : agg.getBuckets()) {
       ret.add(next.getKey());
     }
