@@ -123,6 +123,7 @@ public class Main extends DeployerControl implements MainMBean {
               injector.injectMembers(nextStat);
               nextStat.setProperties(mergedProperties.getPrefixed(PROPERTY_KEY_PREFIX_STATISTICS + "[" + i + "]"));
               statistics.add(nextStat);
+              executor.submit(nextStat);
             } catch (InstantiationException | IllegalAccessException e) {
             }
           }
@@ -195,7 +196,7 @@ public class Main extends DeployerControl implements MainMBean {
       }
       if (launcher != null) {
         MergeableProperties childProps = getChildProperties(launchProps, PROPERTY_KEY_PREFIX_LAUNCH, i);
-         launcher.setProperties(childProps, new LaunchCallback() {
+        launcher.setProperties(childProps, new LaunchCallback() {
           @Override
           public void postStop() throws Exception {
             runHooks(PROPERTY_KEY_PREFIX_POST_STOP, Collections.singletonList(launchProps), false);
