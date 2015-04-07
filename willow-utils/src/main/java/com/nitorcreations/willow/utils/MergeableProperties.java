@@ -180,21 +180,25 @@ public class MergeableProperties extends Properties {
     return in;
   }
 
-  private void merge0(String name) {
+  private boolean merge0(String name) {
+    boolean ret = false;
     try (InputStream in = getUrlInputStream(name)) {
       if (in == null)
         throw new IOException();
       load(in);
+      ret = true;
     } catch (IOException e) {
       for (String nextPrefix : prefixes) {
         String url = nextPrefix + name;
         try (InputStream in1 = getUrlInputStream(url)) {
           load(in1);
+          ret = true;
         } catch (IOException e1) {
           this.log.log(Level.INFO, "Failed to render url: " + url);
         }
       }
     }
+    return ret;
   }
 
   @SuppressWarnings("unchecked")
@@ -222,7 +226,9 @@ public class MergeableProperties extends Properties {
     if (INCLUDE_PROPERTY.equals(k)) {
       //Don't allow include if eval is disallowed
       if (allowEval) {
-        merge0(v);
+        if (!merge0(v)) {
+          return table.put(k, v);
+        }
       }
       return null;
     }
