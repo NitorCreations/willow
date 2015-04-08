@@ -193,7 +193,6 @@ public class PlatformStatsSender extends AbstractStatisticsSender implements Sta
 
   @Override
   public void setProperties(Properties properties) {
-    sigar = new Sigar();
     conf = new StatisticsConfig(properties);
     nextProcs = System.currentTimeMillis() + conf.getIntervalProcs();
     nextCpus = System.currentTimeMillis() + conf.getIntervalCpus();
