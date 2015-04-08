@@ -27,9 +27,13 @@ public abstract class TagListMetric implements Metric {
     String[] types = req.getParameterValues("type");
     SearchResponse response = client.prepareSearch(MetricUtils.getIndexes(start, stop, client)).setTypes(types).setQuery(QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(start).to(stop))).setSize(0).addAggregation(AggregationBuilders.terms("tags").field("tags").include(tagPrefix + "_.*")).get();
     ArrayList<String> ret = new ArrayList<>();
-    InternalTerms agg = response.getAggregations().get("tags");
-    for (Bucket next : agg.getBuckets()) {
-      ret.add(next.getKey());
+    if (response != null && response.getAggregations() != null) {
+      InternalTerms agg = response.getAggregations().get("tags");
+      if (agg != null) {
+        for (Bucket next : agg.getBuckets()) {
+          ret.add(next.getKey());
+        }
+      }
     }
     return ret;
   }
