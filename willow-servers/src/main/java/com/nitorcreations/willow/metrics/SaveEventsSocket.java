@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.metrics;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +54,9 @@ public class SaveEventsSocket {
     this.session = session;
     path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
     tags = session.getUpgradeRequest().getParameterMap().get("tag");
+    if (tags == null) {
+      tags = new ArrayList<>();
+    }
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
