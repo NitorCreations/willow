@@ -14,6 +14,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+import org.hyperic.sigar.SigarProxy;
 
 import com.nitorcreations.willow.messages.ProcessCPU;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
@@ -21,7 +22,8 @@ import com.nitorcreations.willow.messages.WebSocketTransmitter;
 @Named("process")
 public class ProcessStatSender extends AbstractStatisticsSender {
   private Logger logger = Logger.getLogger(this.getClass().getName());
-  Sigar sigar;
+  @Inject
+  protected SigarProxy sigar;
   private String childName;
   private StatisticsConfig conf;
   @Inject

@@ -23,6 +23,7 @@ import org.hyperic.sigar.NetStat;
 import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+import org.hyperic.sigar.SigarProxy;
 
 import com.nitorcreations.willow.messages.CPU;
 import com.nitorcreations.willow.messages.DiskIO;
@@ -37,7 +38,8 @@ import com.nitorcreations.willow.messages.WebSocketTransmitter;
 public class PlatformStatsSender extends AbstractStatisticsSender implements StatisticsSender {
   private Logger logger = Logger.getLogger(this.getClass().getName());
   private AtomicBoolean running = new AtomicBoolean(true);
-  private Sigar sigar;
+  @Inject
+  protected SigarProxy sigar;
   @Inject
   protected WebSocketTransmitter transmitter;
   protected StatisticsConfig conf;
