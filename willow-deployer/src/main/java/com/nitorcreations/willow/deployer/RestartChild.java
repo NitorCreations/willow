@@ -9,14 +9,13 @@ import javax.management.remote.JMXConnector;
 
 public class RestartChild extends DeployerControl {
   public static void main(String[] args) {
-    new RestartChild().doMain(args);
+    injector.getInstance(RestartChild.class).doMain(args);
   }
 
   public void doMain(String[] args) {
     if (args.length < 1)
       usage("At least one arguments expected: {role}");
     String deployerName = args[0];
-    extractNativeLib();
     try {
       long firstPid = findOldDeployerPid(deployerName);
       if (firstPid > 0) {

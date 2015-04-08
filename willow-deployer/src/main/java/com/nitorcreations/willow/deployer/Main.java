@@ -101,7 +101,6 @@ public class Main extends DeployerControl implements MainMBean {
       injector.getInstance(Main.class).doMain(launchUrls.toArray(new String[launchUrls.size()]));
       return;
     }
-    extractNativeLib();
     registerBean();
     // Statistics
     String statUri = mergedProperties.getProperty(PROPERTY_KEY_STATISTICS_URI);

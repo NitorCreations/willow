@@ -62,7 +62,6 @@ public class ProcessStatSender extends AbstractStatisticsSender {
 
   @Override
   public void setProperties(Properties properties) {
-    sigar = new Sigar();
     conf = new StatisticsConfig(properties);
     nextProcCpus = System.currentTimeMillis() + conf.getIntervalProcCpus();
     childName = properties.getProperty("childName");

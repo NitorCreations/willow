@@ -74,12 +74,11 @@ public abstract class AbstractLauncher implements LaunchMethod {
     if (pid.get() > 0) {
       return pid.get();
     }
-    Sigar sigar = new Sigar();
     long stopTrying = System.currentTimeMillis() + 1000 * 60;
     while (pid.get() < 0 && System.currentTimeMillis() < stopTrying) {
       try {
         ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("Env." + ENV_DEPLOYER_IDENTIFIER + ".eq=" + PROCESS_IDENTIFIER);
-        long newPid = q.findProcess(sigar);
+        long newPid = q.findProcess(new Sigar());
         if (newPid > 0) {
           pid.set(newPid);
           return pid.get();

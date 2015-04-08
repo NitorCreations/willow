@@ -1,23 +1,17 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -44,6 +38,7 @@ import org.eclipse.sisu.space.URLClassSpace;
 import org.eclipse.sisu.wire.WireModule;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+import org.hyperic.sigar.SigarProxy;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
@@ -53,7 +48,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.protocols.Register;
-import com.nitorcreations.willow.utils.HostUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 import com.sun.tools.attach.AgentInitializationException;
@@ -66,6 +60,8 @@ public class DeployerControl {
   protected final static Logger log = Logger.getLogger("deployer");
   @Inject
   protected ExecutorService executor;
+  @Inject
+  protected SigarProxy sigar;
   protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
   protected String deployerName;
   protected static Injector injector;
@@ -73,13 +69,14 @@ public class DeployerControl {
   static {
     try {
       OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
-      System.setProperty(PROPERTY_KEY_DEPLOYER_HOST, HostUtil.getHostName());
       setupLogging();
       Register.doIt();
       injector = Guice.createInjector(
         new WireModule(new DeployerModule(), new SpaceModule(
             new URLClassSpace(DeployerControl.class.getClassLoader())
             )));
+      System.setProperty(PROPERTY_KEY_DEPLOYER_HOST, 
+        injector.getInstance(SigarProxy.class).getNetInfo().getHostName());
     } catch (Throwable e) {
       e.printStackTrace();
       assert false;
@@ -90,10 +87,8 @@ public class DeployerControl {
     if (args.length < 1)
       usage("At least one argument expected: {name}");
     deployerName = args[0];
-    extractNativeLib();
     // Stop
     try {
-      Sigar sigar = new Sigar();
       long mypid = sigar.getPid();
       if (mypid <= 0)
         throw new RuntimeException("Failed to resolve own pid");
@@ -123,10 +118,9 @@ public class DeployerControl {
       log.log(rec);
     }
   }
-  protected static Set<Long> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
-    Sigar sigar = new Sigar();
+  protected Set<Long> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
     ProcessQuery q = ProcessQueryFactory.getInstance().getQuery(query);
-    long[] pids = q.find(sigar);
+    long[] pids = q.find(new Sigar());
     Set<Long> pidSet = new HashSet<>();
     for (long next : pids) {
       if (next != mypid)
@@ -134,7 +128,7 @@ public class DeployerControl {
     }
     return pidSet;
   }    
-  protected static void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
+  protected void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
     long start = System.currentTimeMillis();
     Set<Long> pids = getPidsExcludingMyPid(query, mypid);
     while (pids.size() > 0) {
@@ -187,59 +181,6 @@ public class DeployerControl {
     System.err.println(error);
     System.exit(1);
   }
-  protected static void extractNativeLib() {
-    String deployerHome = System.getenv(ENV_DEPLOYER_HOME);
-    if (deployerHome == null) {
-      deployerHome = System.getProperty("user.home") + File.separator + ".deployer" + File.separator + "repository";
-    }
-    File libDir = new File(new File(deployerHome), "lib");
-    System.setProperty("java.library.path", libDir.getAbsolutePath());
-    String arch = System.getProperty("os.arch");
-    String os = System.getProperty("os.name").toLowerCase();
-    StringBuilder libName = new StringBuilder();
-    if (os.contains("win")) {
-      libName.append("sigar-");
-    } else {
-      libName.append("libsigar-");
-    }
-    libName.append(arch);
-    if (os.contains("win")) {
-      libName.append("-winnt").append(".dll");
-    } else if (os.contains("mac") || os.contains("darwin")) {
-      libName.append("-macosx.dylib");
-    } else if (os.contains("sunos")) {
-      libName.append("-solaris.so");
-    } else {
-      libName.append("-").append(os).append(".so");
-    }
-    File libFile = new File(libDir, libName.toString());
-    if (!(libFile.exists() && libFile.canExecute())) {
-      InputStream lib = Main.class.getClassLoader().getResourceAsStream(libName.toString());
-      FileUtil.createDir(libDir);
-      if (lib != null) {
-        try (OutputStream out = new FileOutputStream(libFile)) {
-          byte[] buffer = new byte[1024];
-          int len;
-          while ((len = lib.read(buffer)) != -1) {
-            out.write(buffer, 0, len);
-          }
-          libFile.setExecutable(true, false);
-        } catch (FileNotFoundException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
-        } finally {
-          try {
-            lib.close();
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-        }
-      } else {
-        throw new RuntimeException("Failed to find " + libName);
-      }
-    }
-  }
   private static Proxy resolveProxy(String proto, String hostName) throws MalformedURLException {
     String proxyUrl = System.getenv(proto.toLowerCase() + "_proxy");
     if (proxyUrl == null) {
@@ -285,14 +226,35 @@ public class DeployerControl {
       launchPropertiesList.add(next);
     }
   }
-  protected static Set<Long> findChildPids(String deployerName) throws SigarException {
-    Sigar sigar = new Sigar();
+  protected Set<Long> findChildPids() throws SigarException {
+    long mypid = sigar.getPid();
+    return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+,Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
+  }
+  protected Set<Long> findChildPids(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
     return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
       ",Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
   }
-  protected static long findOldDeployerPid(String deployerName) throws SigarException {
-    Sigar sigar = new Sigar();
+  protected Set<Long> findOldDeployerPids() throws SigarException {
+    long mypid = sigar.getPid();
+    Set<Long> children = findChildPids();
+    Set<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+", mypid);
+    Set<Long> parentPids = new HashSet<>();
+    for (Long next : pids) {
+      if (!children.contains(next)) {
+        String name = sigar.getProcExe(next).getName();
+        if (name.endsWith(".exe")) {
+          name = name.substring(0, name.length() - 4);
+        }
+        if (name.endsWith("w")) {
+          name = name.substring(0, name.length() - 1);
+        }
+        if (name.endsWith("java")) parentPids.add(next);
+      }
+    }
+    return parentPids;
+  }
+  protected long findOldDeployerPid(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
     Set<Long> children = findChildPids(deployerName);
     Set<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, mypid);

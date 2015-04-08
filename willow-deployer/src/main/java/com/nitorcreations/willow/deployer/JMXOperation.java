@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import javax.inject.Singleton;
 import javax.management.Attribute;
 import javax.management.JMX;
 import javax.management.MBeanAttributeInfo;
@@ -19,14 +20,14 @@ import javax.management.remote.JMXConnector;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang3.ClassUtils;
-import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 
 import com.google.gson.Gson;
 
+@Singleton
 public class JMXOperation extends DeployerControl {
   public static void main(String[] args) {
-    new JMXOperation().doMain(args);
+    injector.getInstance(JMXOperation.class).doMain(args);
   }
   public void doMain(String[] args) {
     if (args.length < 3) {
@@ -101,8 +102,6 @@ public class JMXOperation extends DeployerControl {
     }
     if (conn != null) return conn;
     deployerName = first;
-    extractNativeLib();
-    Sigar sigar = new Sigar();
     long mypid = sigar.getPid();
     if (mypid <= 0) {
       LogRecord rec = new LogRecord(Level.WARNING, "Failed resolve own pid");
