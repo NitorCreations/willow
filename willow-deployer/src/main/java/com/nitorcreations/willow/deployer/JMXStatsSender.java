@@ -51,16 +51,10 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
     conf = new StatisticsConfig(properties);
     nextJmx = System.currentTimeMillis() + conf.getIntervalJmx();
     childName = properties.getProperty("childName");
-    if (childName == null) {
-      String[] children = main.getChildNames();
-      if (children.length > 0) {
-        childName = children[0];
-      }
-    }
   }
   @Override
   public void execute() {
-    long childPid = main.getChildPid(childName);
+    long childPid = main.getChildPid(getChildName());
     if (childPid > 0 && childPid != oldChildPid) {
       if (connector != null) {
         try {
@@ -111,6 +105,15 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
       logger.info("Process statistics interrupted");
       return;
     }
+  }
+  private String getChildName() {
+    if (childName == null) {
+      String[] children = main.getChildNames();
+      if (children.length > 0) {
+        childName = children[0];
+      }
+    }
+    return childName;
   }
   public JmxMessage getJmxStats() throws MalformedObjectNameException, IOException, ReflectionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstanceNotFoundException, MBeanException {
     JmxMessage ret = new JmxMessage();

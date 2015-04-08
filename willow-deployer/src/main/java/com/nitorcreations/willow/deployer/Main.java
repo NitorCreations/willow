@@ -49,6 +49,7 @@ import java.util.logging.LogRecord;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -58,6 +59,7 @@ import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named
+@Singleton
 public class Main extends DeployerControl implements MainMBean {
   private List<LaunchMethod> children = new ArrayList<>();
   private List<StatisticsSender> statistics = new ArrayList<>();
