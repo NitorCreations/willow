@@ -62,8 +62,11 @@ IF "%1" == "start" (
 ) ELSE IF "%1" == "stop" (
   "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.Stop %2 %3 %4 %5 %6 %7 %8 %9
   EXIT /B
+) ELSE IF "%1" == "list" (
+  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.List %2 %3 %4 %5 %6 %7 %8 %9
+  EXIT /B
 ) ELSE IF "%1" == "status" (
-  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.Status %2 %3 %4 %5 %6 %7 %8 %9
+  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.List %2 %3 %4 %5 %6 %7 %8 %9
   EXIT /B
 ) ELSE IF "%1" == "restartchild" (
   "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.RestartChild %2 %3 %4 %5 %6 %7 %8 %9
@@ -72,7 +75,7 @@ IF "%1" == "start" (
   "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.JMXOperation %2 %3 %4 %5 %6 %7 %8 %9
   EXIT /B
 ) ELSE (
-  ECHO usage %0 {start^|stop^|status^|restartchild^|jmxoperation} [role] url [url [...]]
+  ECHO usage %0 {start^|stop^|list^|status^|restartchild^|jmxoperation} [role] url [url [...]]
   EXIT /B 1
 )
 

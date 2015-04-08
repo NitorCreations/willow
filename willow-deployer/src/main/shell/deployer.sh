@@ -87,7 +87,7 @@ jmxoperation)
   exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.JMXOperation "$@"
   ;;
 *)
-  echo "usage $0 {start|stop|status|restartchild|jmxoperation} [role] url [url [...]]"
+  echo "usage $0 {start|stop|list|status|restartchild|jmxoperation} [role] url [url [...]]"
   exit 1
   ;;
 esac
