@@ -72,11 +72,11 @@ stop)
   ;;
 list)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.List "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.GetList "$@"
   ;;
 status)
   shift
-  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.List "$@"
+  exec $JAVA_HOME/bin/java $DEBUG $W_JAVA_OPTS -cp $W_CLASSPATH com.nitorcreations.willow.deployer.GetList "$@"
   ;;
 restartchild)
   shift

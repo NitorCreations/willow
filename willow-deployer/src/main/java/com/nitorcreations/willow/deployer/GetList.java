@@ -9,9 +9,9 @@ import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 
-public class List extends DeployerControl {
+public class GetList extends DeployerControl {
   public static void main(String[] args) {
-    injector.getInstance(List.class).doMain(args);
+    injector.getInstance(GetList.class).doMain(args);
   }
 
   public void doMain(String[] args) {
