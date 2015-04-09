@@ -23,7 +23,7 @@ public class MessageMapping {
   private final Logger logger = Logger.getLogger(this.getClass().getName());
 
   public enum MessageType {
-    PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS, HASH, NET, TCPINFO, DISKIO;
+    PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS, HASH, NET, TCPINFO, DISKIO, THREADDUMP;
     public String lcName() {
       return toString().toLowerCase();
     }
@@ -53,6 +53,7 @@ public class MessageMapping {
     messageTypes.put(MessageType.NET, NetInterface.class);
     messageTypes.put(MessageType.DISKIO, DiskIO.class);
     messageTypes.put(MessageType.TCPINFO, TcpInfo.class);
+    messageTypes.put(MessageType.THREADDUMP, ThreadDumpMessage.class);
     for (java.util.Map.Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
       messageClasses.put(next.getValue(), next.getKey());
     }
@@ -66,6 +67,10 @@ public class MessageMapping {
     msgpack.register(Thread.State.class);
     msgpack.register(ThreadInfoMessage.class);
     msgpack.register(GcInfo.class);
+    msgpack.register(StackTraceData.class);
+    msgpack.register(LockData.class);
+    msgpack.register(MonitorData.class);
+    msgpack.register(ThreadData.class);
     for (Class<?> next : messageTypes.values()) {
       msgpack.register(next);
     }

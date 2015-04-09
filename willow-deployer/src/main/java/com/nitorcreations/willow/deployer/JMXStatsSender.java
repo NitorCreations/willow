@@ -3,7 +3,6 @@ package com.nitorcreations.willow.deployer;
 import java.io.IOException;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashSet;
 import java.util.Properties;
@@ -25,78 +24,43 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
-import javax.management.remote.JMXConnector;
 
 import com.nitorcreations.willow.messages.GcInfo;
 import com.nitorcreations.willow.messages.JmxMessage;
-import com.nitorcreations.willow.messages.ThreadInfoMessage;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 @Named("jmx")
-public class JMXStatsSender extends AbstractStatisticsSender implements StatisticsSender {
+public class JMXStatsSender extends AbstractJMXStatisticsSender {
   private Logger logger = Logger.getLogger(this.getClass().getName());
   private long nextJmx;
   private StatisticsConfig conf;
   @Inject
   protected WebSocketTransmitter transmitter;
-  @Inject
-  protected Main main;
-  private String childName;
-  private long oldChildPid = -2;
-  private MBeanServerConnection server;
-  private JMXConnector connector;
 
   @Override
   public void setProperties(Properties properties) {
+    super.setProperties(properties);
     conf = new StatisticsConfig(properties);
     nextJmx = System.currentTimeMillis() + conf.getIntervalJmx();
-    childName = properties.getProperty("childName");
   }
   @Override
   public void execute() {
-    long childPid = main.getChildPid(getChildName());
-    if (childPid > 0 && childPid != oldChildPid) {
-      if (connector != null) {
+    MBeanServerConnection server = getMBeanServerConnection();
+    long now = System.currentTimeMillis();
+    if (server != null) {
+      if (now > nextJmx) {
         try {
-          connector.close();
-        } catch (IOException e) { }
-        connector = null;
-      }
-    }
-    if (childPid > 0) {
-      try {
-        if (connector == null) {
-          connector = DeployerControl.getJMXConnector(childPid);
-        }
-        if (connector != null) {
-          oldChildPid = childPid;
-          server = connector.getMBeanServerConnection();
-          long now = System.currentTimeMillis();
-          if (server != null) {
-            if (now > nextJmx) {
-              try {
-                JmxMessage msg = getJmxStats();
-                if (msg != null) {
-                  msg.addTags("category_jmx_" + childName);
-                  transmitter.queue(msg);
-                }
-              } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
-                LogRecord rec = new LogRecord(Level.WARNING, "Failed to get JMX statistics");
-                rec.setThrown(e);
-                logger.log(rec);
-              }
-              nextJmx = nextJmx + conf.getIntervalJmx();
-            }
+          JmxMessage msg = getJmxStats();
+          if (msg != null) {
+            msg.addTags("category_jmx_" + getChildName());
+            transmitter.queue(msg);
           }
+        } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
+          LogRecord rec = new LogRecord(Level.WARNING, "Failed to get JMX statistics");
+          rec.setThrown(e);
+          logger.log(rec);
         }
-        if (!running.get()) throw new Exception();
-      } catch (Exception e) {
-        if (connector != null) {
-          try {
-            connector.close();
-          } catch (IOException e1) { }
-          connector = null;
-        }
+        nextJmx = nextJmx + conf.getIntervalJmx();
       }
     }
     try {
@@ -106,15 +70,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
       return;
     }
   }
-  private String getChildName() {
-    if (childName == null) {
-      String[] children = main.getChildNames();
-      if (children.length > 0) {
-        childName = children[0];
-      }
-    }
-    return childName;
-  }
+
   public JmxMessage getJmxStats() throws MalformedObjectNameException, IOException, ReflectionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstanceNotFoundException, MBeanException {
     JmxMessage ret = new JmxMessage();
     Set<String> poolNames = addGc(ret);
@@ -127,6 +83,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
   }
 
   private Set<String> addGc(JmxMessage ret) throws MalformedObjectNameException, IOException {
+    MBeanServerConnection server = getMBeanServerConnection();
     ObjectName query = new ObjectName("java.lang:type=GarbageCollector,*");
     Set<ObjectInstance> gcs = server.queryMBeans(query, null);
     LinkedHashSet<String> poolNames = new LinkedHashSet<String>();
@@ -153,6 +110,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
   }
 
   private void addPools(JmxMessage ret, Set<String> poolNames) throws MalformedObjectNameException, IOException {
+    MBeanServerConnection server = getMBeanServerConnection();
     for (String nextPool : poolNames) {
       ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=" + nextPool);
       Set<ObjectInstance> memPool = server.queryMBeans(query, null);
@@ -169,6 +127,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
   }
 
   private void addMemory(JmxMessage ret) throws MalformedObjectNameException, IOException {
+    MBeanServerConnection server = getMBeanServerConnection();
     ObjectName query = new ObjectName("java.lang:type=Memory");
     Set<ObjectInstance> mem = server.queryMBeans(query, null);
     ObjectInstance next = mem.iterator().next();
@@ -183,6 +142,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
   }
 
   private void addCodeCache(JmxMessage ret) throws IOException, MalformedObjectNameException {
+    MBeanServerConnection server = getMBeanServerConnection();
     ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=Code Cache");
     Set<ObjectInstance> cc = server.queryMBeans(query, null);
     ObjectInstance next = cc.iterator().next();
@@ -196,6 +156,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
   }
 
   private void addUptime(JmxMessage ret) throws MalformedObjectNameException {
+    MBeanServerConnection server = getMBeanServerConnection();
     ObjectName query = new ObjectName("java.lang:type=Runtime");
     RuntimeMXBean runtimeBean = JMX.newMBeanProxy(server, query, RuntimeMXBean.class);
     ret.setStartTime(runtimeBean.getStartTime());
@@ -203,6 +164,7 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
   }
 
   private void addClassloading(JmxMessage ret) throws MalformedObjectNameException {
+    MBeanServerConnection server = getMBeanServerConnection();
     ObjectName query = new ObjectName("java.lang:type=ClassLoading");
     ClassLoadingMXBean clBean = JMX.newMBeanProxy(server, query, ClassLoadingMXBean.class);
     ret.setLoadedClassCount(clBean.getLoadedClassCount());
