@@ -16,6 +16,7 @@ import org.hyperic.sigar.SigarProxy;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
+import com.nitorcreations.willow.deployer.download.FileUtil;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class DeployerModule extends AbstractModule {

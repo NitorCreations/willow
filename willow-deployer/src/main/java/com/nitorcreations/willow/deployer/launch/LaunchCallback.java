@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.launch;
 
 public interface LaunchCallback {
   public boolean autoRestartDefault();

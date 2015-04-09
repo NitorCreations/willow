@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.statistics;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;

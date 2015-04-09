@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.statistics;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
@@ -14,6 +14,7 @@ import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.SigarProxy;
 
+import com.nitorcreations.willow.deployer.Main;
 import com.nitorcreations.willow.messages.ProcessCPU;
 
 @Named("process")

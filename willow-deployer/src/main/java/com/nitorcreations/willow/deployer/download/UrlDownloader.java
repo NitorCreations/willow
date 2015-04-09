@@ -1,13 +1,13 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.download;
 
-import static com.nitorcreations.willow.deployer.FileUtil.createDir;
-import static com.nitorcreations.willow.deployer.FileUtil.getFileName;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
+import static com.nitorcreations.willow.deployer.download.FileUtil.createDir;
+import static com.nitorcreations.willow.deployer.download.FileUtil.getFileName;
 
 import java.io.BufferedInputStream;
 import java.io.File;

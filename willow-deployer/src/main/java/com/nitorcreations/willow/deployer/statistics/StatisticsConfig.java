@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.statistics;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;

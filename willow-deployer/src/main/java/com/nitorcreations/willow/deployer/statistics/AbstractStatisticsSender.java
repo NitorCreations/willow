@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.statistics;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;

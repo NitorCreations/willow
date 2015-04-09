@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.download;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
+import com.nitorcreations.willow.deployer.Main;
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.MergeableProperties;
 

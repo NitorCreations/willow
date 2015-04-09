@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.launch;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_ARGS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_BINARY;
