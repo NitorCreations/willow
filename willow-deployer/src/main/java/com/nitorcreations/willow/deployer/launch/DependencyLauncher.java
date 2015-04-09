@@ -1,10 +1,11 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.launch;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_ARTIFACT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RESOLVE_TRANSITIVE;
 
 import java.io.File;
 
+import com.nitorcreations.willow.deployer.download.AetherDownloader;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class DependencyLauncher extends JavaLauncher implements LaunchMethod {

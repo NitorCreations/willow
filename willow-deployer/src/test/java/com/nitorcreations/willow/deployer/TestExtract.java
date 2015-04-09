@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 
 import org.junit.Test;
 
+import com.nitorcreations.willow.deployer.download.PreLaunchDownloadAndExtract;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class TestExtract {

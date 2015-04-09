@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.download;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

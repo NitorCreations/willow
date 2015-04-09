@@ -1,10 +1,13 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.statistics;
 
 import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
+
+import com.nitorcreations.willow.deployer.DeployerControl;
+import com.nitorcreations.willow.deployer.Main;
 
 /**
  * Abstract base class for statistics senders that use JMX to connect to the child process.

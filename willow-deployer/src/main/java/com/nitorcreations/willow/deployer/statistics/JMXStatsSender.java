@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.deployer.statistics;
 
 import java.io.IOException;
 import java.lang.management.ClassLoadingMXBean;
