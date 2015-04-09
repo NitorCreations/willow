@@ -14,6 +14,8 @@ public class StatisticsServlet extends WebSocketServlet {
   @Override
   public void configure(WebSocketServletFactory factory) {
     factory.getPolicy().setIdleTimeout(TimeUnit.MINUTES.toMillis(10));
+    factory.getPolicy().setMaxBinaryMessageBufferSize(1024 * 1024);
+    factory.getPolicy().setMaxBinaryMessageSize(1024 * 1024 * 5);
     factory.register(SaveEventsSocket.class);
   }
 }
