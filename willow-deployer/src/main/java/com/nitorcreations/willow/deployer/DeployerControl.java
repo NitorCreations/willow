@@ -118,10 +118,10 @@ public class DeployerControl {
       log.log(rec);
     }
   }
-  protected Set<Long> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
+  protected List<Long> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
     ProcessQuery q = ProcessQueryFactory.getInstance().getQuery(query);
     long[] pids = q.find(new Sigar());
-    Set<Long> pidSet = new HashSet<>();
+    List<Long> pidSet = new ArrayList<>();
     for (long next : pids) {
       if (next != mypid)
         pidSet.add(next);
@@ -130,7 +130,7 @@ public class DeployerControl {
   }    
   protected void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
     long start = System.currentTimeMillis();
-    Set<Long> pids = getPidsExcludingMyPid(query, mypid);
+    List<Long> pids = getPidsExcludingMyPid(query, mypid);
     while (pids.size() > 0) {
       for (Long nextpid : pids) {
         KillProcess.termProcess(nextpid.toString());
@@ -226,22 +226,20 @@ public class DeployerControl {
       launchPropertiesList.add(next);
     }
   }
-  protected Set<Long> findChildPids() throws SigarException {
+  protected List<Long> findChildPids() throws SigarException {
     long mypid = sigar.getPid();
     return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+,Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
   }
-  protected Set<Long> findChildPids(String deployerName) throws SigarException {
+  protected List<Long> findChildPids(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
     return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
       ",Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
   }
-  protected Set<Long> findOldDeployerPids() throws SigarException {
+  protected List<Long> findOldDeployerPids() throws SigarException {
     long mypid = sigar.getPid();
-    Set<Long> children = findChildPids();
-    Set<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+", mypid);
-    Set<Long> parentPids = new HashSet<>();
+    List<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+,Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
+    List<Long> parentPids = new ArrayList<>();
     for (Long next : pids) {
-      if (!children.contains(next)) {
         String name = sigar.getProcExe(next).getName();
         if (name.endsWith(".exe")) {
           name = name.substring(0, name.length() - 4);
@@ -249,20 +247,20 @@ public class DeployerControl {
         if (name.endsWith("w")) {
           name = name.substring(0, name.length() - 1);
         }
-        if (name.endsWith("java")) parentPids.add(next);
-      }
+        if (name.endsWith("java")) {
+          parentPids.add(next);
+        }
     }
     return parentPids;
   }
   protected long findOldDeployerPid(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
-    Set<Long> children = findChildPids(deployerName);
-    Set<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, mypid);
+    List<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName + 
+      ",Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
     if (pids.isEmpty()) {
       return -1;
     }
     for (Long next : pids) {
-      if (!children.contains(next)) {
         String name = sigar.getProcExe(next).getName();
         if (name.endsWith(".exe")) {
           name = name.substring(0, name.length() - 4);
@@ -270,8 +268,9 @@ public class DeployerControl {
         if (name.endsWith("w")) {
           name = name.substring(0, name.length() - 1);
         }
-        if (name.endsWith("java")) return next;
-      }
+        if (name.endsWith("java")) {
+          return next;
+        }
     }
     return -1;
   }

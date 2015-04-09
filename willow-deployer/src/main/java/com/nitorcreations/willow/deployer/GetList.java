@@ -1,6 +1,8 @@
 package com.nitorcreations.willow.deployer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -18,9 +20,9 @@ public class GetList extends DeployerControl {
 
   public void doMain(String[] args) {
     try {
-      Set<Long> firstPids;
+      List<Long> firstPids;
       if (args.length > 0) {
-        firstPids = new HashSet<>();
+        firstPids = new ArrayList<>();
         for (String next : args) {
           long nextPid = findOldDeployerPid(next);
           if (nextPid > 0) {

@@ -41,7 +41,7 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
    * @return MBean server connection.
    */
   protected MBeanServerConnection getMBeanServerConnection() {
-    long childPid = main.getChildPid(getChildName());
+    long childPid = main.getFirstJavaChildPid(getChildName());
     if (childPid > 0 && childPid != oldChildPid) {
       if (connector != null) {
         try {
