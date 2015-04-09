@@ -5,10 +5,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import javax.inject.Singleton;
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 
+@Singleton
 public class GetList extends DeployerControl {
   public static void main(String[] args) {
     injector.getInstance(GetList.class).doMain(args);
