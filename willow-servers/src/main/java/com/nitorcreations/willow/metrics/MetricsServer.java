@@ -4,6 +4,8 @@ import static com.nitorcreations.core.utils.KillProcess.killProcessUsingPort;
 import static java.lang.Integer.getInteger;
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.TimeUnit.MINUTES;
+
+import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.Enumeration;
 import javax.inject.Named;
 import javax.servlet.DispatcherType;
 
+import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -31,25 +34,25 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.nitorcreations.logging.jetty.WebsocketRequestLog;
 
 @Named
-@org.eclipse.sisu.EagerSingleton
 public class MetricsServer {
   private static final Logger LOG = LoggerFactory.getLogger(MetricsServer.class);
 
   public static void main(final String... args) throws Exception {
     ClassLoader classloader = MetricsServer.class.getClassLoader();
-    Guice.createInjector(
+    Injector injector = Guice.createInjector(
       new WireModule(new ApplicationServletModule(),
         new SpaceModule(
           new URLClassSpace(classloader)
           )));
+    injector.getInstance(MetricsServer.class).start(getInteger("port", 5120));
   }
 
   public MetricsServer() throws Exception {
-    start(getInteger("port", 5120));
   }
 
   public void start(final int port) throws Exception {
@@ -90,6 +93,9 @@ public class MetricsServer {
   private Server setupServer() {
     Server server = new Server(new QueuedThreadPool(100));
     server.setStopAtShutdown(true);
+    MBeanContainer mbContainer = new MBeanContainer(
+      ManagementFactory.getPlatformMBeanServer());
+    server.addBean(mbContainer);
     return server;
   }
 
