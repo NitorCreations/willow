@@ -17,6 +17,9 @@ public class JmxMessage extends AbstractMessage {
   long unloadedClassCount;
   long startTime;
   long uptime;
+  public List<GcInfo> gcInfo = new ArrayList<GcInfo>();
+  public Map<String, Long> memoryPoolUsage = new LinkedHashMap<String, Long>();
+  public Map<String, Long> memoryPoolPeakUsage = new LinkedHashMap<String, Long>();
 
   public long getUnloadedClassCount() {
     return unloadedClassCount;
@@ -97,8 +100,4 @@ public class JmxMessage extends AbstractMessage {
   public void setMemoryPoolUsage(Map<String, Long> memoryPoolUsage) {
     this.memoryPoolUsage = memoryPoolUsage;
   }
-  public List<ThreadInfoMessage> threads = new ArrayList<ThreadInfoMessage>();
-  public List<GcInfo> gcInfo = new ArrayList<GcInfo>();
-  public Map<String, Long> memoryPoolUsage = new LinkedHashMap<String, Long>();
-  public Map<String, Long> memoryPoolPeakUsage = new LinkedHashMap<String, Long>();
 }
