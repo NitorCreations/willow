@@ -4,10 +4,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
+
 public abstract class AbstractStatisticsSender implements StatisticsSender {
-  private Logger logger = Logger.getLogger(getClass().getName());
+  protected Logger logger = Logger.getLogger(getClass().getName());
   protected AtomicBoolean running = new AtomicBoolean(true);
-  
+
+  @Inject
+  protected WebSocketTransmitter transmitter;
+
   @Override
   public final void run() {
     while (running.get() && !Thread.currentThread().isInterrupted()) {

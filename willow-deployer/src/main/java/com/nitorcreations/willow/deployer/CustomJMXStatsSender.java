@@ -1,7 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,10 +9,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -26,26 +22,14 @@ import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.management.remote.JMXConnector;
 
 import org.apache.commons.beanutils.ConvertUtils;
 
 import com.nitorcreations.willow.messages.HashMessage;
-import com.nitorcreations.willow.messages.JmxMessage;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named("customjmx")
-public class CustomJMXStatsSender extends AbstractStatisticsSender {
-  private Logger logger = Logger.getLogger(this.getClass().getName());
-  @Inject
-  protected WebSocketTransmitter transmitter;
-  @Inject
-  protected Main main;
-  private String childName;
-  private long oldChildPid = -2;
-  private MBeanServerConnection server;
-  private JMXConnector connector;
+public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
   private long nextJmx;
   private long interval;
   private Map<String, JMXReader> props = new LinkedHashMap<>();
@@ -59,7 +43,7 @@ public class CustomJMXStatsSender extends AbstractStatisticsSender {
   }
   @Override
   public void setProperties(Properties properties) {
-    childName = properties.getProperty("childName");
+    super.setProperties(properties);
     MergeableProperties tmp = new MergeableProperties();
     tmp.putAll(properties);
     List<String> lst = tmp.getArrayProperty("property");
@@ -127,68 +111,36 @@ public class CustomJMXStatsSender extends AbstractStatisticsSender {
   }
   @Override
   public void execute() {
-    long childPid = main.getChildPid(getChildName());
-    if (childPid > 0 && childPid != oldChildPid) {
-      if (connector != null) {
+    MBeanServerConnection server = getMBeanServerConnection();
+    long now = System.currentTimeMillis();
+    if (server != null) {
+      if (now > nextJmx) {
         try {
-          connector.close();
-        } catch (IOException e) { }
-        connector = null;
-      }
-    }
-    if (childPid > 0) {
-      try {
-        if (connector == null) {
-          connector = DeployerControl.getJMXConnector(childPid);
-        }
-        if (connector != null) {
-          oldChildPid = childPid;
-          server = connector.getMBeanServerConnection();
-          long now = System.currentTimeMillis();
-          if (server != null) {
-            if (now > nextJmx) {
-              try {
-                Map<String, Object> map = new LinkedHashMap<>();
-                for (Entry<String, JMXReader> next : props.entrySet()) {
-                  Object val = next.getValue().read(server);
-                  if (val != null) {
-                    map.put(next.getKey(), val.toString());
-                  }
-                }
-                HashMessage msg = HashMessage.create(map);
-                transmitter.queue(msg);
-              } catch (Exception  e) {
-                logger.log(Level.WARNING, "Failed to get JMX statistics", e);
-              }
-              nextJmx = nextJmx + interval;
+          Map<String, Object> map = new LinkedHashMap<>();
+          for (Entry<String, JMXReader> next : props.entrySet()) {
+            Object val = next.getValue().read(server);
+            if (val != null) {
+              map.put(next.getKey(), val.toString());
             }
           }
+          if (!map.isEmpty()) {
+            HashMessage msg = HashMessage.create(map);
+            msg.addTags("category_customjmx_" + getChildName());
+            transmitter.queue(msg);
+          }
+        } catch (IOException | ReflectionException | AttributeNotFoundException
+          | InstanceNotFoundException | IntrospectionException | MBeanException
+          | ClassNotFoundException e) {
+          logger.log(Level.WARNING, "Failed to get JMX statistics", e);
         }
-        if (!running.get()) throw new Exception();
-      } catch (Exception e) {
-        if (connector != null) {
-          try {
-            connector.close();
-          } catch (IOException e1) { }
-          connector = null;
-        }
+        nextJmx = nextJmx + interval;
       }
     }
     try {
-      TimeUnit.MILLISECONDS.sleep(nextJmx - System.currentTimeMillis());
+      TimeUnit.MILLISECONDS.sleep(nextJmx - now);
     } catch (InterruptedException e) {
       logger.info("Process statistics interrupted");
       return;
     }
   }
-  private String getChildName() {
-  if (childName == null) {
-    String[] children = main.getChildNames();
-    if (children.length > 0) {
-      childName = children[0];
-    }
-  }
-  return childName;
-}
-
 }

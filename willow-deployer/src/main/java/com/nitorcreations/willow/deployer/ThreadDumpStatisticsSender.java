@@ -8,12 +8,10 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.management.MBeanServerConnection;
 
 import com.nitorcreations.willow.messages.ThreadDumpMessage;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 /**
  * Statistics sender for sending thread dumps.
@@ -26,12 +24,6 @@ import com.nitorcreations.willow.messages.WebSocketTransmitter;
 public class ThreadDumpStatisticsSender extends AbstractJMXStatisticsSender {
   private Logger logger = Logger.getLogger(getClass().getName());
   private long interval;
-
-  @Inject
-  Main main;
-
-  @Inject
-  WebSocketTransmitter webSocketTransmitter;
 
   @Override
   public void setProperties(Properties properties) {
@@ -46,7 +38,8 @@ public class ThreadDumpStatisticsSender extends AbstractJMXStatisticsSender {
       ThreadMXBean threadMXBean = getThreadMXBean();
       ThreadInfo[] threadInfo = threadMXBean.dumpAllThreads(threadMXBean.isObjectMonitorUsageSupported(), threadMXBean.isSynchronizerUsageSupported());
       ThreadDumpMessage threadDumpMessage = new ThreadDumpMessage(threadInfo);
-      this.webSocketTransmitter.queue(threadDumpMessage);
+      threadDumpMessage.addTags("category_threaddump_" + getChildName());
+      transmitter.queue(threadDumpMessage);
     } catch (InterruptedException ie) {
       logger.log(Level.INFO, "Sleep was interrupted", ie);
     } catch (IOException ie) {
