@@ -56,9 +56,7 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
             transmitter.queue(msg);
           }
         } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
-          LogRecord rec = new LogRecord(Level.WARNING, "Failed to get JMX statistics");
-          rec.setThrown(e);
-          logger.log(rec);
+          logger.log(Level.WARNING, "Failed to get JMX statistics", e);
         }
         nextJmx = nextJmx + conf.getIntervalJmx();
       }

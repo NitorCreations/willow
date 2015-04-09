@@ -5,29 +5,23 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hyperic.sigar.ProcCpu;
-import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.SigarProxy;
 
 import com.nitorcreations.willow.messages.ProcessCPU;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 @Named("process")
 public class ProcessStatSender extends AbstractStatisticsSender {
-  private Logger logger = Logger.getLogger(this.getClass().getName());
   @Inject
   protected SigarProxy sigar;
   private String childName;
   private StatisticsConfig conf;
-  @Inject
-  protected WebSocketTransmitter transmitter;
   @Inject
   protected Main main;
   private long nextProcCpus;

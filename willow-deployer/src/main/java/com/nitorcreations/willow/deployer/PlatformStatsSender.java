@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,7 +19,6 @@ import org.hyperic.sigar.Mem;
 import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.NetStat;
 import org.hyperic.sigar.ProcStat;
-import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.SigarProxy;
 
@@ -32,16 +29,11 @@ import com.nitorcreations.willow.messages.Memory;
 import com.nitorcreations.willow.messages.NetInterface;
 import com.nitorcreations.willow.messages.Processes;
 import com.nitorcreations.willow.messages.TcpInfo;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 @Named("platform")
-public class PlatformStatsSender extends AbstractStatisticsSender implements StatisticsSender {
-  private Logger logger = Logger.getLogger(this.getClass().getName());
-  private AtomicBoolean running = new AtomicBoolean(true);
+public class PlatformStatsSender extends AbstractStatisticsSender {
   @Inject
   protected SigarProxy sigar;
-  @Inject
-  protected WebSocketTransmitter transmitter;
   protected StatisticsConfig conf;
   private long nextProcs;
   private long nextCpus;
