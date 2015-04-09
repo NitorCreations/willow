@@ -88,7 +88,9 @@ public class SaveEventsSocket {
           msgObject.addTags(tags);
         }
         String source = gson.toJson(stored);
-        System.out.println(type.lcName() + ": " + source);
+        if (System.getProperty("debug") != null) {
+          System.out.println(type.lcName() + ": " + source);
+        }
         IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(1000);
         if (!resp.isCreated()) {
           System.out.println("Failed to create index for " + source);
