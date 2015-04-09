@@ -123,7 +123,7 @@ public class JMXOperation extends DeployerControl {
       }
       MBeanServerConnection server = conn.getMBeanServerConnection();
       MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
-      long childPid = proxy.getChildPid(argList.get(0));
+      long childPid = proxy.getFirstJavaChildPid(argList.get(0));
       if (childPid > 0) {
         childConn = getJMXConnector(childPid);
         if (childConn == null) {

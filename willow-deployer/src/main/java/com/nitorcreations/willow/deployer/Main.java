@@ -55,6 +55,12 @@ import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 
+import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
+import org.hyperic.sigar.ptql.MalformedQueryException;
+import org.hyperic.sigar.ptql.ProcessQuery;
+import org.hyperic.sigar.ptql.ProcessQueryFactory;
+
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
@@ -411,5 +417,37 @@ public class Main extends DeployerControl implements MainMBean {
     }
 
     return childProps;
+  }
+
+  public long getFirstJavaChildPid(String childName) {
+    return getFirstJavaChildPid(getChildPid(childName));
+  }
+  
+  public long getFirstJavaChildPid(long nextChild) {
+    if (nextChild > 0) {
+      try {
+        String name = sigar.getProcExe(nextChild).getName();
+        if (name.endsWith(".exe")) {
+          name = name.substring(0, name.length() - 4);
+        }
+        if (name.endsWith("w")) {
+          name = name.substring(0, name.length() - 1);
+        }
+        if (name.endsWith("java")) {
+          return nextChild;
+        } else {
+          ProcessQuery q = ProcessQueryFactory.getInstance().getQuery("State.Ppid.eq=" + nextChild);
+          for (long next : q.find(new Sigar())) {
+            long nextAtt = getFirstJavaChildPid(next);
+            if (nextAtt > 0) {
+              return nextAtt;
+            }
+          }
+        }
+      } catch (SigarException e) {
+        return -1;
+      }
+    }
+    return -1;
   }
 }
