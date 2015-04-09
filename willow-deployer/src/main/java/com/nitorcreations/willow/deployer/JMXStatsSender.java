@@ -121,7 +121,6 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
     addPools(ret, poolNames);
     addMemory(ret);
     addCodeCache(ret);
-    addThreads(ret);
     addUptime(ret);
     addClassloading(ret);
     return ret;
@@ -193,30 +192,6 @@ public class JMXStatsSender extends AbstractStatisticsSender implements Statisti
       LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect Code Cache statistics");
       rec.setThrown(e);
       logger.log(rec);
-    }
-  }
-
-  private void addThreads(JmxMessage ret) throws IOException, MalformedObjectNameException, InstanceNotFoundException, MBeanException, ReflectionException {
-    ObjectName query = new ObjectName("java.lang:type=Threading");
-    ThreadMXBean threadBean = JMX.newMBeanProxy(server, query, ThreadMXBean.class);
-    ret.setLiveThreads(threadBean.getThreadCount());
-    long[] ids = threadBean.getAllThreadIds();
-    for (long nextId : ids) {
-      CompositeDataSupport tInfo = (CompositeDataSupport) server.invoke(query, "getThreadInfo", new Object[] { Long.valueOf(nextId) }, new String[] { Long.TYPE.getName() });
-      ThreadInfoMessage tim = new ThreadInfoMessage();
-      tim.setBlockedCount(((Long) tInfo.get("blockedCount")).longValue());
-      tim.setBlockedTime(((Long) tInfo.get("blockedTime")).longValue());
-      tim.setInNative(((Boolean) tInfo.get("inNative")).booleanValue());
-      tim.setLockName((String) tInfo.get("lockName"));
-      tim.setLockOwnerId(((Long) tInfo.get("lockOwnerId")).longValue());
-      tim.setLockOwnerName((String) tInfo.get("lockOwnerName"));
-      tim.setSuspended(((Boolean) tInfo.get("suspended")).booleanValue());
-      tim.setThreadId(((Long) tInfo.get("threadId")).longValue());
-      tim.setThreadName((String) tInfo.get("lockOwnerName"));
-      tim.setThreadState(Thread.State.valueOf((String) tInfo.get("threadState")));
-      tim.setWaitedCount(((Long) tInfo.get("waitedCount")).longValue());
-      tim.setWaitedTime(((Long) tInfo.get("waitedTime")).longValue());
-      ret.threads.add(tim);
     }
   }
 
