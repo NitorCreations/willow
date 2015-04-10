@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.metrics;
+package com.nitorcreations.willow.servers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,6 +25,7 @@ import org.elasticsearch.node.NodeBuilder;
 
 import com.google.gson.Gson;
 import com.google.inject.Injector;
+import com.nitorcreations.willow.metrics.Metric;
 import com.nitorcreations.willow.utils.HostUtil;
 
 @Singleton
