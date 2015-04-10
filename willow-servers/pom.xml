@@ -128,7 +128,7 @@
                   implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                 <transformer
                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.nitorcreations.willow.metrics.MetricsServer</mainClass>
+                  <mainClass>com.nitorcreations.willow.servers.MetricsServer</mainClass>
                 </transformer>
               </transformers>
             </configuration>
