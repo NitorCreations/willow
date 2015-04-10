@@ -33,14 +33,12 @@ if [ ! -d "$W_DEPLOYER_LIB" ]; then
   fi
 fi
 if which flock > /dev/null; then
-  LOCK="flock"
-  LOCKDIR="$W_DEPLOYER_LIB"
+  LOCK="flock $W_DEPLOYER_LIB"
 else
   LOCK=
-  LOCKDIR=
 fi
 W_DEPLOYER_JAR=$W_DEPLOYER_LIB/deployer-uber-$MD5.jar
-$LOCK "$LOCKDIR" bash -c "if ! [ -r \"$W_DEPLOYER_JAR\" ]; then tail -n+@@ARCHIVE_START@@ \"${BASH_SOURCE[0]}\" > \"$W_DEPLOYER_JAR\"; fi"
+$LOCK bash -c "if ! [ -r \"$W_DEPLOYER_JAR\" ]; then tail -n+@@ARCHIVE_START@@ \"${BASH_SOURCE[0]}\" > \"$W_DEPLOYER_JAR\"; fi"
 
 if [ -z "$JAVA_HOME" ]; then
   if ! which java > /dev/null; then
