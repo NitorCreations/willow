@@ -1,20 +1,19 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import javax.inject.Singleton;
-
-import org.hyperic.sigar.SigarException;
+import javax.management.JMX;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
 
 @Singleton
-public class GetList extends DeployerControl {
+public class Status extends DeployerControl {
   public static void main(String[] args) {
-    injector.getInstance(GetList.class).doMain(args);
+    injector.getInstance(Status.class).doMain(args);
   }
 
   public void doMain(String[] args) {
@@ -32,14 +31,20 @@ public class GetList extends DeployerControl {
        firstPids = findOldDeployerPids();
       }
       for (long next : firstPids) {
-        System.out.println(getOldDeployerName(next));
+        try (JMXConnector conn = getJMXConnector(next)) {
+          MBeanServerConnection server = conn.getMBeanServerConnection();
+          MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
+          System.out.println(proxy.getStatus());
+          System.exit(0);
+        } catch (Throwable e) {
+          log.info("JMX Status failed");
+          e.printStackTrace();
+          System.exit(1);
+        }
       }
     } catch (Throwable e) {
       LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
       log.log(rec);
     }
-  }
-  protected String getOldDeployerName(long pid) throws SigarException {
-    return sigar.getProcEnv(pid, ENV_DEPLOYER_NAME);
   }
 }

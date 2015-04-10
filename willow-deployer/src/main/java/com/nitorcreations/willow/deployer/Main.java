@@ -57,7 +57,6 @@ import javax.management.NotCompliantMBeanException;
 
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
-import org.hyperic.sigar.ptql.MalformedQueryException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 

@@ -66,7 +66,7 @@ IF "%1" == "start" (
   "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.GetList %2 %3 %4 %5 %6 %7 %8 %9
   EXIT /B
 ) ELSE IF "%1" == "status" (
-  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.GetList %2 %3 %4 %5 %6 %7 %8 %9
+  "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.Status %2 %3 %4 %5 %6 %7 %8 %9
   EXIT /B
 ) ELSE IF "%1" == "restartchild" (
   "%JAVA_HOME%\bin\java" %DEBUG% -cp "%JAVA_TOOLS%;%W_DEPLOYER_JAR%" com.nitorcreations.willow.deployer.RestartChild %2 %3 %4 %5 %6 %7 %8 %9
