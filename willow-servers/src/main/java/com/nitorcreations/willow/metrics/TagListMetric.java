@@ -1,6 +1,5 @@
 package com.nitorcreations.willow.metrics;
 
-import java.nio.charset.UnmappableCharacterException;
 import java.util.ArrayList;
 import java.util.List;
 
