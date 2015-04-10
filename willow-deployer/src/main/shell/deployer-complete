@@ -1,0 +1,23 @@
+#!/bin/bash
+
+_willow_deployer() {
+  local HOST cur prev prevprev DEPLOYERS COMMANDS
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  prevprev=${COMP_WORDS[COMP_CWORD-2]}
+  MATCH_COMMAND="(\ |^)$prev(\ |$)"
+  if [[ "$prev" =~ .*deployer.sh ]]; then
+    COMMANDS="$($prev | cut -d{ -f2 | cut -d} -f1 | tr '|' ' ')"
+    COMPREPLY=( $(compgen -W "$COMMANDS" -- $cur) )
+  elif [[ "$prevprev" =~ .*deployer.sh ]]; then
+    COMMANDS="$($prevprev | cut -d{ -f2 | cut -d} -f1 | tr '|' ' ')"
+    if [[ "$COMMANDS" =~ $MATCH_COMMAND ]]; then
+      DEPLOYERS="$($prevprev list | tr "\n" " ")"
+      COMPREPLY=( $(compgen -W "$DEPLOYERS" -- $cur) )
+    fi
+  fi
+}
+
+complete -F _willow_deployer deployer.sh
+complete -F _willow_deployer willow-deployer.sh
+
