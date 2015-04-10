@@ -73,14 +73,22 @@ public class SaveEventsSocket {
           if (instance == null || instance.isEmpty()) {
             ((Map) stored).put("instance", path);
           }
-          ((Map) stored).put("tags", tags);
+          List<String> tmpTags = new ArrayList<>();
+          tmpTags.addAll(tags);
+          tmpTags.addAll(msgObject.tags);
+          ((Map) stored).put("tags", tmpTags);
+          ((Map) stored).put("timestamp", msgObject.timestamp);
         } else if (type == MessageType.HASH) {
           stored = ((HashMessage) msgObject).getMap();
           String instance = (String) ((Map) stored).get("instance");
           if (instance == null || instance.isEmpty()) {
             ((Map) stored).put("instance", path);
           }
-          ((Map) stored).put("tags", tags);
+          List<String> tmpTags = new ArrayList<>();
+          tmpTags.addAll(tags);
+          tmpTags.addAll(msgObject.tags);
+          ((Map) stored).put("tags", tmpTags);
+          ((Map) stored).put("timestamp", msgObject.timestamp);
         } else {
           if (msgObject.instance == null || msgObject.instance.isEmpty()) {
             msgObject.instance = path;

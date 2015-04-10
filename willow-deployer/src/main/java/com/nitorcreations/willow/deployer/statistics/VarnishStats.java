@@ -47,6 +47,7 @@ public class VarnishStats extends AbstractStatisticsSender {
           }
           LongStatisticsMessage send = new LongStatisticsMessage();
           send.setMap(values);
+          send.addTags("category_varnish");
           transmitter.queue(send);
         } else {
           logger.log(Level.INFO, "varnishstat returned " + ret + "\n" +  new String(out.toByteArray()) + "\n"
