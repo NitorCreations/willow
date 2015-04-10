@@ -2,10 +2,6 @@ package com.nitorcreations.willow.metrics;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-
-import com.nitorcreations.willow.messages.AbstractMessage;
-import com.nitorcreations.willow.messages.MessageMapping;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -25,6 +21,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 
 import com.google.gson.Gson;
+import com.nitorcreations.willow.messages.AbstractMessage;
+import com.nitorcreations.willow.messages.MessageMapping;
 
 public abstract class FullMessageMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> implements Metric {
   protected SortedMap<Long, T> rawData;
