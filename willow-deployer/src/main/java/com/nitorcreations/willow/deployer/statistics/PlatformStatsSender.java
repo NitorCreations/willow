@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,6 +17,7 @@ import org.hyperic.sigar.FileSystemUsage;
 import org.hyperic.sigar.Mem;
 import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.NetStat;
+import org.hyperic.sigar.OperatingSystem;
 import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.SigarProxy;
@@ -27,6 +27,7 @@ import com.nitorcreations.willow.messages.DiskIO;
 import com.nitorcreations.willow.messages.DiskUsage;
 import com.nitorcreations.willow.messages.Memory;
 import com.nitorcreations.willow.messages.NetInterface;
+import com.nitorcreations.willow.messages.OsInfo;
 import com.nitorcreations.willow.messages.Processes;
 import com.nitorcreations.willow.messages.TcpInfo;
 
@@ -42,6 +43,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
   private long nextNet;
   private long nextNetStat;
   private long nextDiskIO;
+  private long nextOs;
 
   public void stop() {
     running.set(false);
@@ -67,9 +69,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
         PropertyUtils.copyProperties(msg, pStat);
         transmitter.queue(msg);
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Process statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get Process statistics", e);
       }
       nextProcs = nextProcs + conf.getIntervalProcs();
     }
@@ -80,9 +80,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
         PropertyUtils.copyProperties(msg, cStat);
         transmitter.queue(msg);
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get CPU statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get CPU statistics", e);
       }
       nextCpus = nextCpus + conf.getIntervalCpus();
     }
@@ -93,9 +91,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
         PropertyUtils.copyProperties(msg, netStat);
         transmitter.queue(msg);
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get CPU statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get CPU statistics", e);
       }
       nextNetStat = nextNetStat + conf.getIntervalNetStat();
     }
@@ -106,9 +102,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
         PropertyUtils.copyProperties(msg, mem);
         transmitter.queue(msg);
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Memory statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get Memory statistics", e);
       }
       nextMem = nextMem + conf.getIntervalMem();
     }
@@ -135,9 +129,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
           transmitter.queue(next);
         }
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get Disk statistics", e);
       }
       nextDiskIO = nextDiskIO + conf.getIntervalDiskIO();
     }
@@ -158,9 +150,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
           transmitter.queue(next);
         }
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get Disk statistics", e);
       }
       nextDisks = nextDisks + conf.getIntervalDisks();
     }
@@ -174,26 +164,37 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
           transmitter.queue(net);
         }
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to get Disk statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to get Disk statistics", e);
       }
       nextNet = nextNet + conf.getIntervalNet();
       try {
         TimeUnit.MILLISECONDS.sleep(conf.shortest());
       } catch (InterruptedException e) {}
     }
+    if (now > nextOs) {
+      try {
+        OperatingSystem os = OperatingSystem.getInstance();
+        OsInfo osInfo = new OsInfo();
+        PropertyUtils.copyProperties(osInfo, os);
+        transmitter.queue(osInfo);
+      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        logger.log(Level.WARNING, "Failed to get os info", e);
+      }
+      nextOs = nextOs + conf.getIntervalOs();
+    }
   }
 
   @Override
   public void setProperties(Properties properties) {
     conf = new StatisticsConfig(properties);
-    nextProcs = System.currentTimeMillis() + conf.getIntervalProcs();
-    nextCpus = System.currentTimeMillis() + conf.getIntervalCpus();
-    nextMem = System.currentTimeMillis() + conf.getIntervalMem();
-    nextDisks = System.currentTimeMillis() + conf.getIntervalDisks();
-    nextNet = System.currentTimeMillis() + conf.getIntervalNet();
-    nextNetStat = System.currentTimeMillis() + conf.getIntervalNetStat();
-    nextDiskIO = System.currentTimeMillis() + conf.getIntervalDiskIO();
+    long now = System.currentTimeMillis();
+    nextProcs = now + TimeUnit.SECONDS.toMillis(2);
+    nextCpus = now + TimeUnit.SECONDS.toMillis(2);
+    nextMem = now + TimeUnit.SECONDS.toMillis(2);
+    nextDisks = now + TimeUnit.SECONDS.toMillis(2);
+    nextNet = now + TimeUnit.SECONDS.toMillis(2);
+    nextNetStat = now + TimeUnit.SECONDS.toMillis(2);
+    nextDiskIO = now + TimeUnit.SECONDS.toMillis(2);
+    nextOs = now + TimeUnit.SECONDS.toMillis(1);
   }
 }

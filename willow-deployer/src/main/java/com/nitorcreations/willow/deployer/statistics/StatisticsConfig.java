@@ -13,6 +13,7 @@ public class StatisticsConfig {
   private final long intervalNet;
   private final long intervalDiskIO;
   private final long intervalNetStat;
+  private final long intervalOs;
 
   public StatisticsConfig() {
     this.intervalProcs = TimeUnit.SECONDS.toMillis(5);
@@ -24,9 +25,10 @@ public class StatisticsConfig {
     this.intervalNetStat = TimeUnit.SECONDS.toMillis(5);
     this.intervalDisks = TimeUnit.MINUTES.toMillis(1);
     this.intervalDiskIO = TimeUnit.SECONDS.toMillis(5);
+    this.intervalOs = TimeUnit.MINUTES.toMillis(3);
   }
 
-  public StatisticsConfig(long intervalProcs, long intervalCpus, long intervalProcCpus, long intervalMem, long intervalJmx, long intervalDisks, long intervalNet, long intervalNetStat, long intervalDiskIO) {
+  public StatisticsConfig(long intervalProcs, long intervalCpus, long intervalProcCpus, long intervalMem, long intervalJmx, long intervalDisks, long intervalNet, long intervalNetStat, long intervalDiskIO, long intervalOs) {
     this.intervalProcs = intervalProcs;
     this.intervalCpus = intervalCpus;
     this.intervalProcCpus = intervalProcCpus;
@@ -36,6 +38,7 @@ public class StatisticsConfig {
     this.intervalNet = intervalNet;
     this.intervalNetStat = intervalNetStat;
     this.intervalDiskIO = intervalDiskIO;
+    this.intervalOs = intervalOs;
   }
 
   public StatisticsConfig(Properties properties) {
@@ -48,6 +51,7 @@ public class StatisticsConfig {
     this.intervalNet = Long.parseLong(properties.getProperty("intervalNet", "5000"));
     this.intervalNetStat = Long.parseLong(properties.getProperty("intervalNetStat", "5000"));
     this.intervalDiskIO = Long.parseLong(properties.getProperty("intervalDiskIO", "5000"));
+    this.intervalOs = Long.parseLong(properties.getProperty("intervalOs", "180000"));
   }
 
   public long getIntervalProcs() {
@@ -79,7 +83,8 @@ public class StatisticsConfig {
   }
 
   public long shortest() {
-    return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, intervalProcs, intervalNet, intervalNetStat, intervalDiskIO);
+    return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, 
+      intervalProcs, intervalNet, intervalNetStat, intervalDiskIO, intervalOs);
   }
 
   private static long min(long... vals) {
@@ -97,5 +102,9 @@ public class StatisticsConfig {
 
   public long getIntervalNetStat() {
     return intervalNetStat;
+  }
+
+  public long getIntervalOs() {
+    return intervalOs;
   }
 }
