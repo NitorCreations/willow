@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Filter;
 import java.util.logging.Handler;
@@ -44,7 +45,6 @@ import sun.management.ConnectorAddressLink;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.protocols.Register;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
@@ -103,47 +103,47 @@ public class DeployerControl {
           proxy.stop();
         } catch (Throwable e) {
           log.info("JMX stop failed - terminating");
-          KillProcess.killProcess(Long.toString(firstPid));
+          new Sigar().kill(firstPid, 9);
         }
         // Processes with old deployer as parent
         killWithQuery("State.Ppid.eq=" + firstPid, termTimeout, mypid);
       }
-      // Old deployer identified by deployerName in environment
-      //killWithQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, termTimeout, mypid);
+      // Old deployer identified by deployerName in environment excluding my pid and my parents pid
+      killWithQuery("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName, termTimeout, mypid);
     } catch (Throwable e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to kill old deployer");
-      rec.setThrown(e);
-      log.log(rec);
+      log.log(Level.WARNING, "Failed to kill old deployer", e);
     }
   }
-  protected List<Long> getPidsExcludingMyPid(String query, long mypid) throws SigarException {
+  protected List<Long> getPidsExcludingPids(String query, long mypid) throws SigarException {
     ProcessQuery q = ProcessQueryFactory.getInstance().getQuery(query);
     long[] pids = q.find(new Sigar());
+    long ppid = sigar.getProcState(mypid).getPpid();
     List<Long> pidSet = new ArrayList<>();
     for (long next : pids) {
-      if (next != mypid)
+      if (next != mypid && next != ppid) {
         pidSet.add(next);
+      }
     }
     return pidSet;
   }    
   protected void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
     long start = System.currentTimeMillis();
-    List<Long> pids = getPidsExcludingMyPid(query, mypid);
+    List<Long> pids = getPidsExcludingPids(query, mypid);
     while (pids.size() > 0) {
       for (Long nextpid : pids) {
-        KillProcess.termProcess(nextpid.toString());
+        new Sigar().kill(nextpid, 15);
       }
-      Thread.sleep(500);
-      pids = getPidsExcludingMyPid(query, mypid);
+      TimeUnit.SECONDS.sleep(2);
+      pids = getPidsExcludingPids(query, mypid);
       if (System.currentTimeMillis() > (start + termTimeout))
         break;
     }
     while (pids.size() > 0) {
       for (Long nextpid : pids) {
-        KillProcess.killProcess(nextpid.toString());
+        new Sigar().kill(nextpid, 9);
       }
       Thread.sleep(500);
-      pids = getPidsExcludingMyPid(query, mypid);
+      pids = getPidsExcludingPids(query, mypid);
     }
   }
   public static JMXConnector getJMXConnector(long pid) {
@@ -179,38 +179,6 @@ public class DeployerControl {
     System.err.println(error);
     System.exit(1);
   }
-  private static Proxy resolveProxy(String proto, String hostName) throws MalformedURLException {
-    String proxyUrl = System.getenv(proto.toLowerCase() + "_proxy");
-    if (proxyUrl == null) {
-      proxyUrl = System.getenv(proto.toUpperCase() + "_PROXY");
-    }
-    if (proxyUrl == null)
-      return null;
-    String noProxy = System.getenv("no_proxy");
-    if (noProxy == null) {
-      noProxy = System.getenv("NO_PROXY");
-    }
-    if (!noProxyMatches(hostName, noProxy)) {
-      URL proxyAddr = new URL(proxyUrl);
-      return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
-    } else {
-      return null;
-    }
-  }
-  protected static boolean noProxyMatches(String host, String noProxy) {
-    if (noProxy == null)
-      return false;
-    for (String next : noProxy.split(",")) {
-      String trimmed = next.trim();
-      while (trimmed.startsWith(".")) {
-        trimmed = trimmed.substring(1);
-      }
-      if (trimmed.equals(host) || host.endsWith("." + trimmed)) {
-        return true;
-      }
-    }
-    return false;
-  }
   protected MergeableProperties getURLProperties(String url) {
     MergeableProperties launchProperties = new MergeableProperties();
     launchProperties.merge(System.getProperties(), url);
@@ -226,16 +194,16 @@ public class DeployerControl {
   }
   protected List<Long> findChildPids() throws SigarException {
     long mypid = sigar.getPid();
-    return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+,Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
+    return getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".re=.+,Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
   }
   protected List<Long> findChildPids(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
-    return getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
+    return getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
       ",Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
   }
   protected List<Long> findOldDeployerPids() throws SigarException {
     long mypid = sigar.getPid();
-    List<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".re=.+,Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
+    List<Long> pids = getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".re=.+,Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
     List<Long> parentPids = new ArrayList<>();
     for (Long next : pids) {
         String name = sigar.getProcExe(next).getName();
@@ -253,7 +221,7 @@ public class DeployerControl {
   }
   protected long findOldDeployerPid(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
-    List<Long> pids = getPidsExcludingMyPid("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName + 
+    List<Long> pids = getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName + 
       ",Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
     if (pids.isEmpty()) {
       return -1;

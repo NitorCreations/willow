@@ -39,7 +39,6 @@ import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
-import com.nitorcreations.core.utils.KillProcess;
 import com.nitorcreations.willow.deployer.download.FileUtil;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.AbstractStreamPumper;
@@ -196,9 +195,9 @@ public abstract class AbstractLauncher implements LaunchMethod {
     } finally {
       if (pid.get() > 0) {
         try {
-          KillProcess.killProcess(Long.toString(pid.get()));
+          new Sigar().kill(pid.get(), 9);
           pid.set(-1);
-        } catch (IOException e) {
+        } catch (SigarException e) {
           if (log != null) {
             LogRecord rec = new LogRecord(Level.INFO, "Failed to kill child " + getName());
             rec.setThrown(e);
