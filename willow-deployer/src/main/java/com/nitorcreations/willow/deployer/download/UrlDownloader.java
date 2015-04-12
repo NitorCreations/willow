@@ -5,6 +5,8 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNL
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXYAUTOCONF;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXY;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 import static com.nitorcreations.willow.deployer.download.FileUtil.createDir;
 import static com.nitorcreations.willow.deployer.download.FileUtil.getFileName;
@@ -16,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.NoSuchAlgorithmException;
@@ -29,6 +32,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
 
 import com.nitorcreations.willow.utils.MD5SumInputStream;
+import com.nitorcreations.willow.utils.ProxyUtils;
 
 public class UrlDownloader implements Callable<File> {
   private final Properties properties;
@@ -93,8 +97,9 @@ public class UrlDownloader implements Callable<File> {
             }
           }
         }
-        URLConnection conn = new URL(url).openConnection();
-        try (InputStream bIn = new BufferedInputStream(conn.getInputStream(), FileUtil.BUFFER_LEN)) {
+        try (InputStream bIn = new BufferedInputStream(ProxyUtils.getUriInputStream(
+          properties.getProperty(PROPERTY_KEY_SUFFIX_PROXYAUTOCONF), 
+          properties.getProperty(PROPERTY_KEY_SUFFIX_PROXY), url), FileUtil.BUFFER_LEN)) {
           InputStream in = null;
           MD5SumInputStream md5in = null;
           if (md5 != null) {
@@ -125,7 +130,7 @@ public class UrlDownloader implements Callable<File> {
           }
         }
         break;
-      } catch (IOException | NoSuchAlgorithmException e) {
+      } catch (URISyntaxException | IOException | NoSuchAlgorithmException e) {
         tryNo++;
         target = null;
         LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract " + url);

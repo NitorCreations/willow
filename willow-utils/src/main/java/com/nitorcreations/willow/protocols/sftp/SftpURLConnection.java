@@ -2,6 +2,8 @@ package com.nitorcreations.willow.protocols.sftp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Properties;
@@ -20,8 +22,13 @@ import com.nitorcreations.willow.utils.Obfuscator;
 
 public class SftpURLConnection extends URLConnection {
   private final Logger log = Logger.getLogger(getClass().getCanonicalName());
+  private Proxy proxy;
   public SftpURLConnection(URL url) {
     super(url);
+  }
+  public SftpURLConnection(URL url, Proxy proxy) {
+    super(url);
+    this.proxy =proxy; 
   }
   public static final int DEFAULT_TIMEOUT = 30000;
   private Session session;
@@ -70,6 +77,14 @@ public class SftpURLConnection extends URLConnection {
       config.put("StrictHostKeyChecking", "no");
       session.setConfig(config);
       session.setTimeout(DEFAULT_TIMEOUT);
+      if (proxy != null) {
+        String proxyHost = ((InetSocketAddress)proxy.address()).getHostName() + ":" + ((InetSocketAddress)proxy.address()).getPort();
+        if (proxy.type() == Proxy.Type.HTTP) {
+          session.setProxy(new com.jcraft.jsch.ProxyHTTP(proxyHost));
+        } else if (proxy.type() == Proxy.Type.SOCKS) {
+          session.setProxy(new com.jcraft.jsch.ProxySOCKS5(proxyHost));
+        }
+      }
       session.connect();
       channel = (ChannelSftp) session.openChannel("sftp");
       channel.connect();
