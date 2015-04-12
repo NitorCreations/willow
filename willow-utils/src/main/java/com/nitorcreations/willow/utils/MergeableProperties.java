@@ -2,6 +2,9 @@ package com.nitorcreations.willow.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -27,6 +30,8 @@ import javax.script.ScriptException;
 
 import org.apache.commons.lang3.text.StrSubstitutor;
 
+import com.nitorcreations.willow.protocols.Register;
+
 public class MergeableProperties extends Properties {
   public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
   public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
@@ -40,7 +45,9 @@ public class MergeableProperties extends Properties {
   private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
   ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
   private final boolean allowScripts;
-
+  static {
+    Register.doIt();
+  }
   protected MergeableProperties(Properties defaults, LinkedHashMap<String, String> values, boolean allowScripts, String... prefixes) {
     super(defaults);
     table.putAll(values);
@@ -164,43 +171,30 @@ public class MergeableProperties extends Properties {
     }
     return ret;
   }
-  private InputStream getUrlInputStream(String url) throws IOException {
-    InputStream in = null;
-    if (url.startsWith(URL_PREFIX_CLASSPATH)) {
-      in = getClass().getClassLoader().getResourceAsStream(url.substring(URL_PREFIX_CLASSPATH.length()));
-      if (in == null) {
-        throw new IOException("Resource " + url + " not found");
-      }
-    } else {
-      URL toFetch = new URL(url);
-      URLConnection conn = toFetch.openConnection();
-      conn.connect();
-      in = conn.getInputStream();
-    }
-    return in;
-  }
-
   private boolean merge0(String name) {
     boolean ret = false;
-    try (InputStream in = getUrlInputStream(name)) {
+    try (InputStream in = getIncludeUriInputStream(name)) {
       if (in == null)
         throw new IOException();
       load(in);
       ret = true;
-    } catch (IOException e) {
+    } catch (IOException | URISyntaxException e) {
       for (String nextPrefix : prefixes) {
         String url = nextPrefix + name;
-        try (InputStream in1 = getUrlInputStream(url)) {
+        try (InputStream in1 = getIncludeUriInputStream(url)) {
           load(in1);
           ret = true;
-        } catch (IOException e1) {
+        } catch (IOException | URISyntaxException e1) {
           this.log.log(Level.INFO, "Failed to render url: " + url);
         }
       }
     }
     return ret;
   }
-
+  private InputStream getIncludeUriInputStream(String url) throws IOException, URISyntaxException {
+    return ProxyUtils.getUriInputStream(getProperty(INCLUDE_PROPERTY + ".proxyautoconf"),
+      getProperty(INCLUDE_PROPERTY + ".proxy"), url);
+  }
   @SuppressWarnings("unchecked")
   @Override
   public Set<Entry<Object, Object>> entrySet() {
