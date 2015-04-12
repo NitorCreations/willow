@@ -14,9 +14,11 @@ public abstract class AbstractStatisticsSender implements StatisticsSender {
 
   @Inject
   protected WebSocketTransmitter transmitter;
+  private Thread thread;
 
   @Override
   public final void run() {
+    thread = Thread.currentThread();
     while (running.get() && !Thread.currentThread().isInterrupted()) {
       try {
         execute();
@@ -28,6 +30,9 @@ public abstract class AbstractStatisticsSender implements StatisticsSender {
 
   public void stop() {
     running.set(false);
+    if (thread != null) {
+      thread.interrupt();
+    }
   }
 
   public abstract void execute();

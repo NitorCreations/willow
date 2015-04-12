@@ -1,6 +1,5 @@
 package com.nitorcreations.willow.servers;
 
-import static com.nitorcreations.core.utils.KillProcess.killProcessUsingPort;
 import static java.lang.Integer.getInteger;
 import static java.lang.System.currentTimeMillis;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -59,7 +58,6 @@ public class MetricsServer {
     long start = currentTimeMillis();
     SLF4JBridgeHandler.removeHandlersForRootLogger();
     SLF4JBridgeHandler.install();
-    killProcessUsingPort(port);
     Server server = setupServer();
     setupServerConnector(server, port);
     ServletContextHandler servletContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
