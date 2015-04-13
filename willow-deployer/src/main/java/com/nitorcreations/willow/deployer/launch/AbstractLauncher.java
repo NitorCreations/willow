@@ -7,6 +7,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_LAUNCH_WORKDIR;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_TERM_TIMEOUT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
@@ -126,13 +127,14 @@ public abstract class AbstractLauncher implements LaunchMethod {
       log.info(String.format("Starting %s%n", pb.command().toString()));
       try {
         child = pb.start();
-        /*if (transmitter != null && transmitter.isRunning()) {
+        if (transmitter != null && transmitter.isRunning() && 
+          launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
-        } else {*/
+        } else {
           stdout = new LoggingStreamPumper(child.getInputStream(), Level.INFO, name);
           stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
-        //}
+        }
         new Thread(stdout, name + "-child-stdout-pumper").start();
         new Thread(stderr, name + "-child-sdrerr-pumper").start();
         try {
