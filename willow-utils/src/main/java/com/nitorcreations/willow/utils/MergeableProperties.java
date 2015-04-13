@@ -2,11 +2,7 @@ package com.nitorcreations.willow.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Proxy;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -81,10 +77,15 @@ public class MergeableProperties extends Properties {
   }
 
   public Properties merge(String name) {
-    merge0(name);
+    if (name.toLowerCase().endsWith(".yml")) {
+      mergeYml(name);
+    } else {
+      mergeProperties(name);
+    }
     postMerge();
     return this;
   }
+
 
   public Properties merge(Properties prev, String name) {
     if (prev != null) {
@@ -94,7 +95,11 @@ public class MergeableProperties extends Properties {
         putAll(prev);
       }
     }
-    merge0(name);
+    if (name.toLowerCase().endsWith(".yml")) {
+      mergeYml(name);
+    } else {
+      mergeProperties(name);
+    }
     postMerge();
     return this;
   }
@@ -171,7 +176,7 @@ public class MergeableProperties extends Properties {
     }
     return ret;
   }
-  private boolean merge0(String name) {
+  private boolean mergeProperties(String name) {
     boolean ret = false;
     try (InputStream in = getIncludeUriInputStream(name)) {
       if (in == null)
@@ -183,6 +188,28 @@ public class MergeableProperties extends Properties {
         String url = nextPrefix + name;
         try (InputStream in1 = getIncludeUriInputStream(url)) {
           load(in1);
+          ret = true;
+        } catch (IOException | URISyntaxException e1) {
+          this.log.log(Level.INFO, "Failed to render url: " + url);
+        }
+      }
+    }
+    return ret;
+  }
+  private boolean mergeYml(String name) {
+    boolean ret = false;
+    try (InputStream in = getIncludeUriInputStream(name)) {
+      if (in == null)
+        throw new IOException();
+      ret = true;
+    } catch (IOException | URISyntaxException e) {
+      for (String nextPrefix : prefixes) {
+        String url = nextPrefix + name;
+        try (InputStream in1 = getIncludeUriInputStream(url)) {
+          YamlProcessor p = new YamlProcessor();
+          p.setResources(in1);
+          Properties props = p.createProperties();
+          this.putAll(props);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
           this.log.log(Level.INFO, "Failed to render url: " + url);
@@ -220,7 +247,7 @@ public class MergeableProperties extends Properties {
     if (INCLUDE_PROPERTY.equals(k)) {
       //Don't allow include if eval is disallowed
       if (allowEval) {
-        if (!merge0(v)) {
+        if (!((v.toLowerCase().endsWith(".yml") && mergeYml(v)) || (mergeProperties(v)))) {
           return table.put(k, v);
         }
       }
