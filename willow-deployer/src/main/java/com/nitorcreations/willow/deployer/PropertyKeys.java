@@ -49,6 +49,7 @@ public interface PropertyKeys {
   public static final String PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE = "extract.overwrite";
   public static final String PROPERTY_KEY_SUFFIX_PROXYAUTOCONF = "proxyautoconf";
   public static final String PROPERTY_KEY_SUFFIX_PROXY = "proxy";
+  public static final String PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT = "skipOutputRedirect";
   public static final String ENV_DEPLOYER_TERM_TIMEOUT = "W_DEPLOYER_TERM_TIMEOUT";
   public static final String ENV_DEPLOYER_LOCAL_REPOSITORY = "W_DEPLOYER_LOCAL_REPOSITORY";
   public static final String ENV_DEPLOYER_HOME = "W_DEPLOYER_HOME";
