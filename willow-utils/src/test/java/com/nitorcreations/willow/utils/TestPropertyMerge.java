@@ -147,4 +147,13 @@ public class TestPropertyMerge {
     assertEquals("baz", p.getProperty("obfuscated.value"));
     assertEquals("obf:foobar", p.getProperty("fake.obsfuscated.value"));
   }
+  @Test
+  public void testYml() {
+    MergeableProperties p = new MergeableProperties("classpath:", "file:./target/test-classes/");
+    p.merge("test.yml");
+    assertEquals("http://dev.bar.com", p.getProperty("environments.dev.url"));
+    assertEquals("Developer Setup", p.getProperty("environments.dev.name"));
+    assertEquals("http://foo.bar.com", p.getProperty("environments.prod.url"));
+    assertEquals("My Cool App", p.getProperty("environments.prod.name"));
+  }
 }

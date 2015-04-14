@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.utils;
 
-import static java.nio.file.StandardWatchEventKinds.*;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 
 import java.io.File;
 import java.io.FileInputStream;
