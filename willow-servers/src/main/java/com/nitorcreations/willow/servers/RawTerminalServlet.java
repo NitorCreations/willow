@@ -8,7 +8,6 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import com.nitorcreations.willow.ssh.RawSecureShellWS;
-import com.nitorcreations.willow.ssh.SecureShellWS;
 
 @Singleton
 public class RawTerminalServlet extends WebSocketServlet {

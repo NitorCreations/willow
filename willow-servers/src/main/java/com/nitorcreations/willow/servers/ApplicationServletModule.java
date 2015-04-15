@@ -18,7 +18,6 @@ public class ApplicationServletModule extends ServletModule {
     String env =  getProperty("env", "dev");
     bind(MetricsServlet.class);
     bind(StatisticsServlet.class);
-    bind(TerminalServlet.class);
     bind(PropertyServlet.class).toInstance(new PropertyServlet());;
     bind(DefaultServlet.class).toInstance(new DefaultServlet());;
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
@@ -32,7 +31,6 @@ public class ApplicationServletModule extends ServletModule {
     serve("/metrics/*").with(MetricsServlet.class);
     serve("/properties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);
-    serve("/terminal/*").with(TerminalServlet.class);
     serve("/rawterminal/*").with(RawTerminalServlet.class);
     serve("/*").with(DefaultServlet.class);
   }
