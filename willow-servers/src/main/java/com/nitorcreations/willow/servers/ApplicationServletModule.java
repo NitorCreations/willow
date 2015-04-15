@@ -33,6 +33,7 @@ public class ApplicationServletModule extends ServletModule {
     serve("/properties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);
     serve("/terminal/*").with(TerminalServlet.class);
+    serve("/rawterminal/*").with(RawTerminalServlet.class);
     serve("/*").with(DefaultServlet.class);
   }
 }
