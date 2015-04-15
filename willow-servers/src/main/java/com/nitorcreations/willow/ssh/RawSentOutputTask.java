@@ -23,35 +23,32 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import org.eclipse.jetty.websocket.api.Session;
-import org.elasticsearch.common.netty.buffer.ByteBufferBackedChannelBuffer;
 
 import com.google.gson.Gson;
 
 /**
  * class to send output to web socket client
  */
-public class SentOutputTask implements Runnable {
+public class RawSentOutputTask implements Runnable {
   private final Gson gson = new Gson();
   Session session;
   InputStream output;
 
-  public SentOutputTask(Session session, InputStream output) {
+  public RawSentOutputTask(Session session, InputStream output) {
     this.session = session;
     this.output = output;
   }
 
   public void run() {
     byte[] buf = new byte[BUFFER_LEN];
+    ByteBuffer bBuff = ByteBuffer.allocate(BUFFER_LEN);
     while (session.isOpen()) {
       int read;
       try {
         while ((read = output.read(buf)) != -1) {
           try {
             if (read > 0) {
-              SessionOutput out = new SessionOutput(new String(buf, 0, read, Charset.forName("UTF-8")));
-              String json = gson.toJson(out);
-              this.session.getRemote().sendString(json);
-            }
+              this.session.getRemote().sendString(new String(buf, 0, read, "UTF-8"));            }
           } catch (IOException e) {
             e.printStackTrace();
           }
