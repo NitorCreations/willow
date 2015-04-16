@@ -346,9 +346,11 @@ var debouncer = function(func , timeout) {
     }
 };
 var shuffleNavigation = function() {
-    $(".nav .container a").attr("class", "");
-    $("#" + metric).attr("class", "pagename current");
-    $("#" + metric).prependTo(".nav .container");
+	$(".nav .container a").attr("class", "");
+	$("#" + metric).attr("class", "pagename current");
+	if ($(window).width() < 500) {
+		$("#" + metric).prependTo(".nav .container");
+	}
 }
 var refresh = window.setInterval(initGraphs, 3000);
 $(window).resize(debouncer(function (e) {

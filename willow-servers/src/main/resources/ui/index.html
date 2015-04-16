@@ -5,7 +5,6 @@
 <meta charset="utf-8">
 <title>Willow monitoring</title>
 <meta charset="utf-8">
-<link type="text/css" rel="stylesheet" href="styles/common.css">
 <link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
 <link type="text/css" rel="stylesheet" href="styles/main.css">
 <script type="text/javascript" src="scripts/jquery.js" charset="utf-8"></script>
@@ -36,12 +35,12 @@
 
 	<nav class="nav" tabindex="-1" onclick="this.focus()">
 		<div class="container">
+            <svg viewBox="0 0 100 100" class="icon shape-bell white navright">
+              <use xlink:href="#shape-bell"></use>
+            </svg>
 			<a id="cpu" href="?metric=cpu">cpu</a> <a id="mem" href="?metric=mem">mem</a>
 			<a id="net" href="?metric=net">net</a> <a id="diskio"
 				href="?metric=diskio">io</a> <a id="tcpinfo" href="?metric=tcpinfo">connections</a>
-            <svg viewBox="0 0 100 100" class="icon shape-bell white right">
-              <use xlink:href="#shape-bell"></use>
-            </svg>
 		</div>
 	</nav>
 	<div id="chart" class="mainchart"></div>
