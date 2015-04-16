@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -25,6 +26,7 @@ import com.nitorcreations.willow.messages.MessageMapping.MessageType;
 
 @WebSocket
 public class SaveEventsSocket {
+  Logger log = Logger.getLogger(getClass().getCanonicalName());
   private final CountDownLatch closeLatch;
   private final MessageMapping mapping = new MessageMapping();
   private final Client client = MetricsServlet.getClient();
@@ -58,7 +60,6 @@ public class SaveEventsSocket {
       tags = new ArrayList<>();
     }
   }
-
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @OnWebSocketMessage
   public void messageReceived(byte buf[], int offset, int length) {
@@ -101,7 +102,7 @@ public class SaveEventsSocket {
         }
         IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(1000);
         if (!resp.isCreated()) {
-          System.out.println("Failed to create index for " + source);
+          log.warning("Failed to create index for " + source);
         }
       }
     } catch (Throwable e) {
