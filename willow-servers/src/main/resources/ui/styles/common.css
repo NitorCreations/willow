@@ -10,5 +10,8 @@ html {
 .white {
 	fill: white;
 	color: white;
+}
+.right {
 	float: right;
+	right: 2em;
 }

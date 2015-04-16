@@ -15,7 +15,9 @@ public class RawTerminalServlet extends WebSocketServlet {
 
   @Override
   public void configure(WebSocketServletFactory factory) {
-    factory.getPolicy().setIdleTimeout(TimeUnit.MINUTES.toMillis(1));
+    factory.getPolicy().setIdleTimeout(TimeUnit.MINUTES.toMillis(5));
+    factory.getPolicy().setMaxBinaryMessageBufferSize(1024 * 1024);
+    factory.getPolicy().setMaxBinaryMessageSize(1024 * 1024 * 5);
     factory.register(RawSecureShellWS.class);
   }
 }
