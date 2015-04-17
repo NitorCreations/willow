@@ -280,10 +280,11 @@ var initGraphs = function () {
                         var metricSettings = $(metricMap).attr(metric);
                         var next = deployer_metric(metric, data[i]);
                         d3.select("#chart").call(function(div) {
-                            div.selectAll(".horizon-" + host)
+                            var graphDiv = div.selectAll(".horizon-" + host)
                             .data([next])
-                            .enter().append("div")
-                            .attr("class", "horizon horizon-" + host + " horizoncpu-" + host)
+                            .enter().append("div");
+                            
+                            graphDiv.attr("class", "horizon horizon-" + host + " horizoncpu-" + host)
                             .attr("data-host", host)
                             .call(context.horizon()
                                     .height(50)
@@ -291,6 +292,12 @@ var initGraphs = function () {
                                     .extent(metricSettings.extent)
                                     .format(metricSettings.format)
                                     .title(metricSettings.title + host));
+                            graphDiv.append("svg").attr("viewBox", "0 0 100 100")
+                            	.attr("class", "icon shape-terminal")
+                            	.append("use").attr("xlink:href","#shape-terminal");
+                            graphDiv.append("svg").attr("viewBox", "0 0 100 100")
+                          	    .attr("class", "icon shape-share")
+                        	    .append("use").attr("xlink:href","#shape-share");
                             div.append("div")
                                 .attr("class", "details details-" + host);
                         });
