@@ -476,11 +476,21 @@ select.navcenter {
 
 .shape-terminal {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0px;
+  left: 5px;
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
 }
+
 .shape-share {
   position: absolute;
   top: 0;
-  left: 25px;
+  left: 30px;
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+}
+.icon:hover {
+  opacity: 1;
 }
