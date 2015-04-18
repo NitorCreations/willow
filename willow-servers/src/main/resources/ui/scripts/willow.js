@@ -292,12 +292,12 @@ var initGraphs = function () {
                                     .extent(metricSettings.extent)
                                     .format(metricSettings.format)
                                     .title(metricSettings.title + host));
-                            graphDiv.append("svg").attr("viewBox", "0 0 100 100")
-                            	.attr("class", "icon shape-terminal")
+                            graphDiv.append("svg").attr("viewBox", "0 0 124 124")
+                            	.attr("class", "icon shape-terminal terminal-" + host)
                             	.append("use").attr("xlink:href","#shape-terminal");
                             graphDiv.append("svg").attr("viewBox", "0 0 100 100")
-                          	    .attr("class", "icon shape-share")
-                        	    .append("use").attr("xlink:href","#shape-share");
+                          	    .attr("class", "icon shape-share share-" + host)
+                        	    .append("use").attr("xlink:href","#shape-to-radiator");
                             div.append("div")
                                 .attr("class", "details details-" + host);
                         });
