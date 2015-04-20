@@ -21,4 +21,11 @@ public class AbstractMessage {
   public void addTags(List<String> tags) {
     this.tags.addAll(tags);
   }
+  
+  public String getFirstTagWithPrefix(String prefix) {
+    for (String next : tags) {
+      if (next.startsWith(prefix)) return next;
+    }
+    return null;
+  }
 }

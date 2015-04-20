@@ -24,12 +24,12 @@ import com.google.gson.Gson;
 import com.nitorcreations.willow.messages.AbstractMessage;
 import com.nitorcreations.willow.messages.MessageMapping;
 
-public abstract class FullMessageMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> implements Metric {
+public abstract class FullMessageSimpleMetric<T extends AbstractMessage> implements Metric {
   protected SortedMap<Long, T> rawData;
   private final Class<T> type;
 
   @SuppressWarnings("unchecked")
-  public FullMessageMetric() {
+  public FullMessageSimpleMetric() {
     this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
   }
 
@@ -43,7 +43,7 @@ public abstract class FullMessageMetric<T extends AbstractMessage, X extends Com
   }
 
   @Override
-  public Collection<SeriesData<X, Y>> calculateMetric(Client client, HttpServletRequest req) {
+  public Collection<TimePoint> calculateMetric(Client client, HttpServletRequest req) {
     long start = Long.parseLong(req.getParameter("start"));
     long stop = Long.parseLong(req.getParameter("stop"));
     int step = Integer.parseInt(req.getParameter("step"));
@@ -56,9 +56,9 @@ public abstract class FullMessageMetric<T extends AbstractMessage, X extends Com
     SearchResponse response = builder.setQuery(query).get();
     readResponse(response);
     int len = (int) ((stop - start) / step) + 1;
-    Map<String, SeriesData<X, Y>> ret = new LinkedHashMap<String, SeriesData<X, Y>>();
+    List<TimePoint> ret = new ArrayList<TimePoint>();
     if (rawData.isEmpty())
-      return ret.values();
+      return ret;
     List<Long> retTimes = new ArrayList<Long>();
     long curr = start;
     for (int i = 0; i < len; i++) {
@@ -71,40 +71,20 @@ public abstract class FullMessageMetric<T extends AbstractMessage, X extends Com
       preceeding = rawData.headMap(afterNextTime).values();
       rawData = rawData.tailMap(afterNextTime);
       List<T> tmplist = new ArrayList<T>(preceeding);
-      addValue(ret, tmplist, nextTime.longValue(), step);
-    }
-    fillMissingValues(ret, retTimes, step);
-    return ret.values();
-  }
-
-  protected abstract void addValue(Map<String, SeriesData<X, Y>> values, List<T> preeceding, long stepTime, long stepLen);
-
-  @SuppressWarnings("unchecked")
-  protected void fillMissingValues(Map<String, SeriesData<X, Y>> ret, List<Long> retTimes, long stepLen) {
-    for (SeriesData<X, Y> nextValues : ret.values()) {
-      Map<X, Y> valueMap = nextValues.pointsAsMap();
-      List<Long> addX = new ArrayList<>();
-      for (Long nextStep : retTimes) {
-        if (!valueMap.containsKey(nextStep)) {
-          addX.add(nextStep);
-        }
+      if (tmplist.isEmpty()) {
+        ret.add(new TimePoint(nextTime.longValue(), fillMissingValue()));
+        continue;
       }
-      Object zero = 0;
-      for (Long nextAdd : addX) {
-        for (int i = 0; i < nextValues.values.size(); i++) {
-          if (nextValues.values.get(i).x.compareTo((X) nextAdd) > 0) {
-            Point<X, Y> toAdd = new Point<>();
-            toAdd.x = (X) nextAdd;
-            toAdd.y = (Y) zero;
-            nextValues.values.add(i, toAdd);
-            break;
-          }
-        }
-      }
+      ret.add(new TimePoint(nextTime.longValue(), estimateValue(tmplist, nextTime, step)));
     }
+    return ret;
   }
+  protected Number fillMissingValue() {
+    return 0D;
+  }
+  protected abstract Number estimateValue(List<T> preceeding, long stepTime, long stepLen);
 
-  protected Y median(List<Y> data) {
+  protected <Y extends Comparable> Y median(List<Y> data) {
     Collections.sort(data);
     return data.get(data.size() / 2);
   }
