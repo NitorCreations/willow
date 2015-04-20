@@ -11,6 +11,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -21,11 +23,11 @@ import com.btr.proxy.selector.pac.PacProxySelector;
 public class ProxyUtils {
   private static Logger log = Logger.getLogger(ProxyUtils.class.getCanonicalName());
   private static ConcurrentHashMap<String, PacProxySelector> pacSelectors = new ConcurrentHashMap<>();
-  public static Proxy resolveSystemProxy(URI target) {
+  public static List<Proxy> resolveSystemProxy(URI target) {
     if (Boolean.getBoolean("java.net.useSystemProxies")) {
       List<Proxy> l = ProxySelector.getDefault().select(target);
       if (l.size() > 0) {
-        return l.get(0);
+        return l;
       }
     }
     String proto = "" + target.getScheme();
@@ -46,12 +48,12 @@ public class ProxyUtils {
         log.log(Level.INFO, "Failed to resolve proxy for " + target.toString(), e);
         return null;
       }
-      return new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort()));
+      return Collections.singletonList(new Proxy(Type.HTTP, new InetSocketAddress(proxyAddr.getHost(), proxyAddr.getPort())));
     } else {
       return null;
     }
   }
-  public static synchronized Proxy resolveAutoconfig(String proxyAutoconfig, URI target) {
+  public static synchronized List<Proxy> resolveAutoconfig(String proxyAutoconfig, URI target) {
     PacProxySelector sel = pacSelectors.get(proxyAutoconfig);
     if (sel == null) {
       sel = PacProxySelector.buildPacSelectorForUrl(proxyAutoconfig);
@@ -60,7 +62,7 @@ public class ProxyUtils {
     if (sel == null) return null;
     List<Proxy> l = sel.select(target);
     if (l.size() > 0) {
-      return l.get(0);
+      return l;
     }
     return null;
   }
@@ -85,23 +87,38 @@ public class ProxyUtils {
     }
     return ret;
   }
-  public static Proxy fromPacResult(String pacResult) {
-    return PacProxySelector.buildProxyFromPacResult(pacResult);
+  public static List<Proxy> fromPacResult(String pacResult) {
+    List<Proxy> ret = new ArrayList<>();
+    for (String next : pacResult.split(";")) {
+      ret.add(PacProxySelector.buildProxyFromPacResult(next));
+    }
+    return ret;
   }
   public static InputStream getUriInputStream(String proxyAutoconf, String pacProxyResult, String url) throws IOException, URISyntaxException {
     URI uri = new URI(url);
-    Proxy p;
+    List<Proxy> l;
     if (proxyAutoconf != null) {
-      p = ProxyUtils.resolveAutoconfig(proxyAutoconf, uri);
+      l = ProxyUtils.resolveAutoconfig(proxyAutoconf, uri);
     } else if (pacProxyResult != null) {
-      p = ProxyUtils.fromPacResult(pacProxyResult);
+      l = ProxyUtils.fromPacResult(pacProxyResult);
     } else {
-      p = ProxyUtils.resolveSystemProxy(uri);
+      l = ProxyUtils.resolveSystemProxy(uri);
     }
-    URLConnection conn;
+    URLConnection conn = null;
     try {
-      if (p != null) {
-        conn = uri.toURL().openConnection(p);
+      IOException lastEx = new IOException("Failed to get working proxy");
+      if (l != null && l.size() > 0) {
+        for (Proxy p : l) {
+          try {
+            conn = uri.toURL().openConnection(p);
+            break;
+          } catch (IOException e) {
+            lastEx.addSuppressed(e);
+          }
+        }
+        if (conn == null) {
+          throw lastEx;
+        }
       } else {
         conn = uri.toURL().openConnection();
       }
