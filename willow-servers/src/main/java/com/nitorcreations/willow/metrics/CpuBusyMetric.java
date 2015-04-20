@@ -1,53 +1,58 @@
 package com.nitorcreations.willow.metrics;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.inject.Named;
 
+import com.nitorcreations.willow.messages.CPU;
+
 @Named("/cpu")
-public class CpuBusyMetric extends SimpleMetric<CpuData, Long> {
-  CpuData prevValues;
+public class CpuBusyMetric extends FullMessageSimpleMetric<CPU> {
+  Map<String, CPU> prevValues = new HashMap<>();
   double prevRes = 0D;
 
-  @Override
-  protected CpuData getValue(List<Long> results) {
-    CpuData ret = new CpuData(((Number) results.get(0)).longValue(), ((Number) results.get(1)).longValue());
-    if (prevValues == null)
-      prevValues = ret;
-    return ret;
-  }
 
   @Override
-  public String getType() {
-    return "cpu";
-  }
-
-  @Override
-  public String[] requiresFields() {
-    return new String[] { "idle", "total" };
-  }
-
-  @Override
-  protected Double estimateValue(List<CpuData> preceeding, long stepTime, long stepLen) {
-    CpuData last = preceeding.get(preceeding.size() - 1);
-    long idleEnd = last.idle;
-    long totalEnd = last.total;
-    long idleStart = preceeding.get(0).idle;
-    long totalStart = preceeding.get(0).total;
-    if (preceeding.size() == 1) {
-      idleStart = prevValues.idle;
-      totalStart = prevValues.total;
+  protected Number estimateValue(List<CPU> preceeding, long stepTime, long stepLen) {
+    HashMap<String, List<CPU>> perHostCPUData = new HashMap<>();
+    for (CPU next : preceeding) {
+      String host = "" + next.getFirstTagWithPrefix("host_");
+      List<CPU> hostCpu = perHostCPUData.get(host);
+      if (hostCpu == null) {
+        hostCpu = new ArrayList<>();
+        perHostCPUData.put(host, hostCpu);
+      }
+      hostCpu.add(next);
     }
-    prevValues = last;
-    long totalDiff = totalEnd - totalStart;
-    if (totalDiff == 0)
-      return fillMissingValue();
-    long idleDiff = idleEnd - idleStart;
-    return prevRes = (100 * (totalDiff - idleDiff)) / (double) totalDiff;
-  }
-
-  @Override
-  protected Double fillMissingValue() {
-    return 0D;
+    Map<String, Double> hostBusy = new HashMap<>();
+    for (Entry<String, List<CPU>> nextEntry : perHostCPUData.entrySet()) {
+      List<CPU> hostPrev = nextEntry.getValue();
+      CPU last = hostPrev.get(hostPrev.size() - 1);
+      long idleEnd = last.getIdle();
+      long totalEnd = last.getTotal();
+      long idleStart = hostPrev.get(0).getIdle();
+      long totalStart = hostPrev.get(0).getTotal();
+      if (hostPrev.size() == 1) {
+        CPU prev = prevValues.get(nextEntry.getKey());
+        if (prev != null) {
+          idleStart = prev.getIdle();
+          totalStart = prev.getTotal();
+        }
+      }
+      prevValues.put(nextEntry.getKey(), last);
+      long totalDiff = totalEnd - totalStart;
+      if (totalDiff == 0) {
+        hostBusy.put(nextEntry.getKey(), 0D);
+      } else {
+        long idleDiff = idleEnd - idleStart;
+        Double nextBusy = (100 * (totalDiff - idleDiff)) / (double) totalDiff;
+        hostBusy.put(nextEntry.getKey(), nextBusy);
+      }
+    }
+    return median(new ArrayList<>(hostBusy.values()));
   }
 }

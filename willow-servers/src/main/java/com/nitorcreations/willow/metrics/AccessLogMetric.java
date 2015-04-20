@@ -12,7 +12,7 @@ import org.elasticsearch.client.Client;
 import com.nitorcreations.willow.messages.AccessLogEntry;
 
 @Named("/access")
-public class AccessLogMetric extends FullMessageMetric<AccessLogEntry, Long, Long> {
+public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry, Long, Long> {
   long[] limits = new long[] { 10L, 100L, 1000L, 10000L };
 
   private interface ValueGetter {

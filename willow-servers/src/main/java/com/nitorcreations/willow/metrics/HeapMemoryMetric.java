@@ -11,7 +11,7 @@ import javax.inject.Named;
 import com.nitorcreations.willow.messages.JmxMessage;
 
 @Named("/heap")
-public class HeapMemoryMetric extends FullMessageMetric<JmxMessage, Long, Long> {
+public class HeapMemoryMetric extends FullMessageMultiseriesMetric<JmxMessage, Long, Long> {
   private static final String categoryPrefix = "category_jmx_";
 
   @Override
