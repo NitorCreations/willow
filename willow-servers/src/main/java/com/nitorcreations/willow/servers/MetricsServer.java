@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.EventListener;
 
 import javax.inject.Named;
 import javax.servlet.DispatcherType;
@@ -25,15 +26,10 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.sisu.space.SpaceModule;
-import org.eclipse.sisu.space.URLClassSpace;
-import org.eclipse.sisu.wire.WireModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
 import com.nitorcreations.logging.jetty.WebsocketRequestLog;
 
@@ -42,15 +38,12 @@ public class MetricsServer {
   private static final Logger LOG = LoggerFactory.getLogger(MetricsServer.class);
 
   public static void main(final String... args) throws Exception {
-    ClassLoader classloader = MetricsServer.class.getClassLoader();
-    Injector injector = Guice.createInjector(
-      new WireModule(new ApplicationServletModule(),
-        new SpaceModule(
-          new URLClassSpace(classloader)
-          )));
-    injector.getInstance(MetricsServer.class).start(getInteger("port", 5120));
+    main(new MetricsServer());
   }
-
+  
+  public static void main(MetricsServer metrics) throws Exception {
+    metrics.start(getInteger("port", 5120));
+  }
   public MetricsServer() throws Exception {
   }
 
@@ -61,6 +54,7 @@ public class MetricsServer {
     Server server = setupServer();
     setupServerConnector(server, port);
     ServletContextHandler servletContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+    servletContextHandler.addEventListener(getServletContextListener());
     servletContextHandler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
     ServletHolder holder = servletContextHandler.addServlet(DefaultServlet.class, "/");
     holder.setInitParameter("dirAllowed", "false");
@@ -78,7 +72,7 @@ public class MetricsServer {
       LOG.info("Succesfully started Jetty on port {} in {} seconds", port, (end - start) / 1000.0);
       server.join();
     } catch (Exception e) {
-      e.printStackTrace();
+      e.printStackTrace(); 
     } finally {
       try {
         server.stop();
@@ -87,7 +81,9 @@ public class MetricsServer {
       }
     }    
   }
-
+  protected EventListener getServletContextListener() {
+    return new WillowServletContextListener();
+  }
   private Server setupServer() {
     Server server = new Server(new QueuedThreadPool(100));
     server.setStopAtShutdown(true);
