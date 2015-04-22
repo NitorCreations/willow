@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Willow monitoring</title>
+<meta charset="utf-8">
+<title>Willow monitoring</title>
+<meta charset="utf-8">
+<link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
+<link type="text/css" rel="stylesheet" href="styles/main.css">
+<script type="text/javascript" src="scripts/jquery.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
+<script type="text/javascript" src="scripts/cubism.js"></script>
+<script type="text/javascript" src="scripts/t3.js"></script>
+<script type="text/javascript" src="scripts/modules/navigation.js"></script>
+<script type="text/javascript" src="scripts/willow.js"></script>
+</head>
+<body>
+  #include("/ui/images/icons.svg")
+  <nav class="nav" tabindex="-1" onclick="this.focus()" data-module="navigation">
+    <div class="container">
+      <svg viewBox="0 0 100 100" class="icon shape-bell white navright"><use xlink:href="#shape-alarm"></use></svg>
+      <a id="cpu" href="?metric=cpu">cpu</a>
+      <a id="mem" href="?metric=mem">mem</a>
+      <a id="net" href="?metric=net">net</a>
+      <a id="diskio" href="?metric=diskio">io</a>
+      <a id="tcpinfo" href="?metric=tcpinfo">connections</a>
+      <label for="timescale"> </label>
+      <select id="timescale" class="navcenter smooth">
+        <option value="10800">3h</option>
+        <option value="28800">8h</option>
+        <option value="43200">12h</option>
+        <option value="86400">1d</option>
+        <option value="187200">3d</option>
+        <option value="436800">7d</option>
+      </select>
+    </div>
+  </nav>
+  <div id="chart" class="mainchart"></div>
+  <script type="text/javascript">
+			resetGraphs();
+			shuffleNavigation();
+			Box.Application.init({
+				debug: true
+			});
+		</script>
+</body>
+</html>

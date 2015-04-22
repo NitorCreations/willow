@@ -20,3 +20,5 @@ application.properties
 
 #OS X
 .DS_Store
+icons/node_modules/
+icons/icons.svg

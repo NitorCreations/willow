@@ -60,7 +60,7 @@ public class MetricsServer {
     holder.setInitParameter("dirAllowed", "false");
     holder.setInitParameter("gzip", "false");
     ArrayList<String> resources = new ArrayList<>();
-    for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources("resource-root.marker"); urls.hasMoreElements();) {
+    for (Enumeration<URL> urls = this.getClass().getClassLoader().getResources("webapp/resource-root.marker"); urls.hasMoreElements();) {
       URL url = urls.nextElement();
       resources.add(url.toString().replace("resource-root.marker", ""));
     }

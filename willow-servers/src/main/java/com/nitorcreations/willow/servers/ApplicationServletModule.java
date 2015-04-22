@@ -20,8 +20,9 @@ public class ApplicationServletModule extends ServletModule {
     String env =  getProperty("env", "dev");
     bind(MetricsServlet.class);
     bind(StatisticsServlet.class);
-    bind(PropertyServlet.class).toInstance(new PropertyServlet());;
-    bind(DefaultServlet.class).toInstance(new DefaultServlet());;
+    bind(PropertyServlet.class).asEagerSingleton();
+    bind(DefaultServlet.class).asEagerSingleton();
+    bind(VelocityServlet.class).asEagerSingleton();
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
 
     Map<String, String> defaultInit = new HashMap<>();
@@ -41,6 +42,7 @@ public class ApplicationServletModule extends ServletModule {
     serve("/properties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);
     serve("/rawterminal/*").with(RawTerminalServlet.class);
+    serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
   }
 }
