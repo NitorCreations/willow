@@ -26,10 +26,12 @@ public class WillowServletContextListener extends GuiceServletContextListener {
     ClassLoader classloader = getClass().getClassLoader();
     return  Guice.createInjector(
       new WireModule(new ApplicationServletModule(),
-        new WillowShiroModule(servletContext),
-        ShiroWebModule.guiceFilterModule(),
+        getShiroModule(), ShiroWebModule.guiceFilterModule(),
         new SpaceModule(
           new URLClassSpace(classloader)
           )));
+  }
+  protected ShiroWebModule getShiroModule() {
+    return new WillowShiroModule(servletContext); 
   }
 }
