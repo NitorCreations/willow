@@ -5,15 +5,21 @@
 <meta charset="utf-8">
 <title>Willow monitoring</title>
 <meta charset="utf-8">
-<link type="text/css" rel="stylesheet" href="styles/nv.d3.css">
-<link type="text/css" rel="stylesheet" href="styles/main.css">
-<script type="text/javascript" src="scripts/jquery.js" charset="utf-8"></script>
-<script type="text/javascript" src="scripts/d3.v3.js" charset="utf-8"></script>
-<script type="text/javascript" src="scripts/nv.d3.js" charset="utf-8"></script>
-<script type="text/javascript" src="scripts/cubism.js"></script>
-<script type="text/javascript" src="scripts/t3.js"></script>
-<script type="text/javascript" src="scripts/modules/navigation.js"></script>
-<script type="text/javascript" src="scripts/willow.js"></script>
+#set ($env = $system.getProperty("env"))
+#if ($env == "dev")
+  #set ($wro = $xml.parse("classpath:wro.xml"))
+  #set ($cssarr = $xml.xpath("//*[local-name()='css']", $wro))
+  #foreach ($css in $cssarr)
+<link type="text/css" rel="stylesheet" href="$css.getTextContent()"/>
+  #end    
+  #set ($jsarr = $xml.xpath("//*[local-name()='js']", $wro))
+  #foreach ($js in $jsarr)
+<script type="text/javascript" src="$js.getTextContent()" charset="utf-8"></script>
+  #end    
+#else
+<link type="text/css" rel="stylesheet" href="styles/all.css">
+<script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
+#end
 </head>
 <body>
   #include("/ui/images/icons.svg")

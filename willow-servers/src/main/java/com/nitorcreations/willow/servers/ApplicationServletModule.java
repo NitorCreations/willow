@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.servers;
 
 import static java.lang.System.getProperty;
+import static java.lang.System.setProperty;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,8 @@ public class ApplicationServletModule extends ServletModule {
   @Override
   protected void configureServlets() {
     String env =  getProperty("env", "dev");
+    setProperty("env", env);
+
     bind(MetricsServlet.class);
     bind(StatisticsServlet.class);
     bind(PropertyServlet.class).asEagerSingleton();

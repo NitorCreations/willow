@@ -32,11 +32,14 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.inject.servlet.GuiceFilter;
 import com.nitorcreations.logging.jetty.WebsocketRequestLog;
+import com.nitorcreations.willow.protocols.Register;
 
 @Named
 public class MetricsServer {
   private static final Logger LOG = LoggerFactory.getLogger(MetricsServer.class);
-
+  static {
+    Register.doIt();
+  }
   public static void main(final String... args) throws Exception {
     main(new MetricsServer());
   }
