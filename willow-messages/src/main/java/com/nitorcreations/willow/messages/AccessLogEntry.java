@@ -4,16 +4,16 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class AccessLogEntry extends AbstractMessage {
-  String remoteAddr;
-  String authentication;
-  private String method;
-  private String uri;
-  private String protocol;
-  private int status;
-  private long responseLength;
-  private long duration;
-  private String referrer;
-  private String agent;
+  public String remoteAddr;
+  public String authentication;
+  public String method;
+  public String uri;
+  public String protocol;
+  public int status;
+  public long responseLength;
+  public long duration;
+  public String referrer;
+  public String agent;
 
   public String getUri() {
     return uri;

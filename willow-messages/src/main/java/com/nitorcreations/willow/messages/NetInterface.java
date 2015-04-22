@@ -1,20 +1,20 @@
 package com.nitorcreations.willow.messages;
 
 public class NetInterface extends AbstractMessage {
-  String name;
-  long rxBytes;
-  long rxPackets;
-  long rxErrors;
-  long rxDropped;
-  long rxOverruns;
-  long rxFrame;
-  long txBytes;
-  long txPackets;
-  long txErrors;
-  long txDropped;
-  long txOverruns;
-  long txCollisions;
-  long txCarrier;
+  public String name;
+  public long rxBytes;
+  public long rxPackets;
+  public long rxErrors;
+  public long rxDropped;
+  public long rxOverruns;
+  public long rxFrame;
+  public long txBytes;
+  public long txPackets;
+  public long txErrors;
+  public long txDropped;
+  public long txOverruns;
+  public long txCollisions;
+  public long txCarrier;
 
   public String getName() {
     return name;

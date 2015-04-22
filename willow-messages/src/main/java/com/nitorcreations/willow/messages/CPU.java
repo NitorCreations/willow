@@ -4,15 +4,15 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class CPU extends AbstractMessage {
-  long user;
-  long sys;
-  long nice;
-  long idle;
-  long wait;
-  long irq;
-  long softIrq;
-  long stolen;
-  long total;
+  public long user;
+  public long sys;
+  public long nice;
+  public long idle;
+  public long wait;
+  public long irq;
+  public long softIrq;
+  public long stolen;
+  public long total;
 
   public long getUser() {
     return user;
