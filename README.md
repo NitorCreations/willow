@@ -2,7 +2,9 @@
 
 ## Starting statistics ui in development mode ##
 Development mode means static resources are read in from
-```willow-servers/src/main/resources```
+```
+willow-servers/src/main/resources
+```
 This enables the editing of markup, css and javascript so that changes are immediately available in the ui
 First you need to build the server.
 ```
