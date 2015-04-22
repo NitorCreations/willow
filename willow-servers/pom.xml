@@ -133,16 +133,38 @@
               <shadedClassifierName>uber</shadedClassifierName>
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>com.nitorcreations.willow.servers.MetricsServer</mainClass>
                 </transformer>
               </transformers>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>ro.isdc.wro4j</groupId>
+        <artifactId>wro4j-maven-plugin</artifactId>
+        <version>1.7.7</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <targetGroups>all</targetGroups>
+          <minimize>true</minimize>
+          <destinationFolder>${project.build.directory}/target/classes/webapp/ui/</destinationFolder>
+          <jsDestinationFolder>${project.build.directory}/classes/webapp/ui/scripts</jsDestinationFolder>
+          <cssDestinationFolder>${project.build.directory}/classes/webapp/ui/styles</cssDestinationFolder>
+          <contextFolder>${basedir}/src/main/resources/webapp</contextFolder>
+          <wroFile>${basedir}/src/main/resources/wro.xml</wroFile>
+          <ignoreMissingResources>false</ignoreMissingResources>
+          <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
+        </configuration>
       </plugin>
     </plugins>
   </build>

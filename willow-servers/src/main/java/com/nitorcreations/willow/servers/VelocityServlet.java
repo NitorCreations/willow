@@ -34,6 +34,8 @@ public class VelocityServlet extends HttpServlet {
   private String requestKey;
   private String sessionKey;
   private String applicationKey;
+  private String systemKey;
+  private String xmlKey;
   private VelocityEngine engine;
 
   @Override
@@ -44,6 +46,8 @@ public class VelocityServlet extends HttpServlet {
     this.requestKey = "request";
     this.sessionKey = "session";
     this.applicationKey = "application";
+    this.xmlKey = "xml";
+    this.systemKey = "system";
     this.engine = createEngine();
   }
 
@@ -101,23 +105,21 @@ public class VelocityServlet extends HttpServlet {
   }
 
   private void render(final HttpServletRequest request,
-    final HttpServletResponse response) throws ServletException,
-    IOException {
+    final HttpServletResponse response) throws ServletException, IOException {
 
     String templ = request.getServletPath();
     if (templ.isEmpty()) {
       templ = new URL(request.getRequestURL().toString()).getPath() + request.getRequestURI();
     }
     final Template template = this.engine.getTemplate(templ, this.encoding);
-
     final VelocityContext context = new VelocityContext();
     context.put(this.requestKey, toMap(request));
     context.put(this.sessionKey, toMap(request.getSession(false)));
     context.put(this.applicationKey, toMap(getServletContext()));
-
+    context.put(this.xmlKey, XMLTool.class);
+    context.put(this.systemKey, System.class);
     response.setContentType(this.contentType);
     response.setCharacterEncoding(this.encoding);
-
     try {
       template.merge(context, response.getWriter());
     } catch (final ResourceNotFoundException e) {
@@ -131,7 +133,6 @@ public class VelocityServlet extends HttpServlet {
 
   private Map<String, Object> toMap(final HttpServletRequest request) {
     final Map<String, Object> map = newMap();
-    @SuppressWarnings("unchecked")
     final Enumeration<String> names = request.getAttributeNames();
     while (names.hasMoreElements()) {
       final String name = names.nextElement();
@@ -139,13 +140,11 @@ public class VelocityServlet extends HttpServlet {
     }
     return Collections.unmodifiableMap(map);
   }
-
   private Map<String, Object> toMap(final HttpSession session) {
     if (session == null) {
       return Collections.emptyMap();
     }
     final Map<String, Object> map = newMap();
-    @SuppressWarnings("unchecked")
     final Enumeration<String> names = session.getAttributeNames();
     while (names.hasMoreElements()) {
       final String name = names.nextElement();
@@ -153,7 +152,6 @@ public class VelocityServlet extends HttpServlet {
     }
     return Collections.unmodifiableMap(map);
   }
-
   private Map<String, Object> toMap(final ServletContext context) {
     final Map<String, Object> map = newMap();
     final Enumeration<String> names = context.getAttributeNames();
@@ -163,7 +161,6 @@ public class VelocityServlet extends HttpServlet {
     }
     return Collections.unmodifiableMap(map);
   }
-
   private LinkedHashMap<String, Object> newMap() {
     return new LinkedHashMap<String, Object>();
   }
