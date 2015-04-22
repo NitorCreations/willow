@@ -2,7 +2,10 @@ package com.nitorcreations.willow.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -77,7 +80,7 @@ public class MergeableProperties extends Properties {
   }
 
   public Properties merge(String name) {
-    if (name.toLowerCase().endsWith(".yml")) {
+    if (pathEndsWith(name.toLowerCase(), ".yml")) {
       mergeYml(name);
     } else {
       mergeProperties(name);
@@ -85,7 +88,15 @@ public class MergeableProperties extends Properties {
     postMerge();
     return this;
   }
-
+  
+  private boolean pathEndsWith(String name, String suffix) {
+    try {
+      URI uri = new URI(name);
+      return uri.getPath().endsWith(suffix);
+    } catch (URISyntaxException e) {
+      return false;
+    }
+  }
 
   public Properties merge(Properties prev, String name) {
     if (prev != null) {
@@ -181,12 +192,14 @@ public class MergeableProperties extends Properties {
     try (InputStream in = getIncludeUriInputStream(name)) {
       if (in == null)
         throw new IOException();
+      includeQueryParameters(name);
       load(in);
       ret = true;
     } catch (IOException | URISyntaxException e) {
       for (String nextPrefix : prefixes) {
         String url = nextPrefix + name;
         try (InputStream in1 = getIncludeUriInputStream(url)) {
+          includeQueryParameters(name);
           load(in1);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
@@ -196,11 +209,34 @@ public class MergeableProperties extends Properties {
     }
     return ret;
   }
+  private void includeQueryParameters(String name) throws URISyntaxException {
+    URI uri = new URI(name);
+    String query = uri.getQuery();
+    if (query != null && !query.isEmpty()) {
+      final String[] pairs = query.split("&");
+      for (String pair : pairs) {
+        final int idx = pair.indexOf("=");
+        try {
+          final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+          final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+          put(key, value);
+        } catch (UnsupportedEncodingException e) {
+          assert false : "UTF-8 must be available";
+        }
+      }
+    }
+  }
+
   private boolean mergeYml(String name) {
     boolean ret = false;
     try (InputStream in = getIncludeUriInputStream(name)) {
       if (in == null)
         throw new IOException();
+      YamlProcessor p = new YamlProcessor();
+      p.setResources(in);
+      Properties props = p.createProperties();
+      includeQueryParameters(name);
+      this.putAll(props);
       ret = true;
     } catch (IOException | URISyntaxException e) {
       for (String nextPrefix : prefixes) {
@@ -209,6 +245,7 @@ public class MergeableProperties extends Properties {
           YamlProcessor p = new YamlProcessor();
           p.setResources(in1);
           Properties props = p.createProperties();
+          includeQueryParameters(name);
           this.putAll(props);
           ret = true;
         } catch (IOException | URISyntaxException e1) {

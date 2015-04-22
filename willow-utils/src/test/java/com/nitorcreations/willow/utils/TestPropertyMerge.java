@@ -113,7 +113,7 @@ public class TestPropertyMerge {
     seed.setProperty("node.id", "appserver");
     seed.setProperty("component.id", "webfront");
     MergeableProperties p = new MergeableProperties("classpath:", "file:./target/test-classes/");
-    p.merge(seed, "root.properties");
+    p.merge(seed, "root.properties?myprop=foo&myarr[]=bar");
     p.deObfuscate(new PropertySource() {
       Obfuscator o = new Obfuscator("foobar");
 
@@ -146,14 +146,18 @@ public class TestPropertyMerge {
     assertEquals("env_test/settings/component/webfront.properties", p.getProperty("included.file[17]"));
     assertEquals("baz", p.getProperty("obfuscated.value"));
     assertEquals("obf:foobar", p.getProperty("fake.obsfuscated.value"));
+    assertEquals("foo", p.getProperty("myprop"));
+    assertEquals("bar", p.getProperty("myarr[0]"));
   }
   @Test
   public void testYml() {
     MergeableProperties p = new MergeableProperties("classpath:", "file:./target/test-classes/");
-    p.merge("test.yml");
+    p.merge("test.yml?myprop=foo&myarr[]=bar");
     assertEquals("http://dev.bar.com", p.getProperty("environments.dev.url"));
     assertEquals("Developer Setup", p.getProperty("environments.dev.name"));
     assertEquals("http://foo.bar.com", p.getProperty("environments.prod.url"));
     assertEquals("My Cool App", p.getProperty("environments.prod.name"));
+    assertEquals("foo", p.getProperty("myprop"));
+    assertEquals("bar", p.getProperty("myarr[0]"));
   }
 }
