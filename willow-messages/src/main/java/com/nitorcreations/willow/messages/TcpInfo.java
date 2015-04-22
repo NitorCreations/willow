@@ -1,23 +1,23 @@
 package com.nitorcreations.willow.messages;
 
 public class TcpInfo extends AbstractMessage {
-  int tcpInboundTotal;
-  int tcpOutboundTotal;
-  int allInboundTotal;
-  int allOutboundTotal;
-  int tcpEstablished;
-  int tcpSynSent;
-  int tcpSynRecv;
-  int tcpFinWait1;
-  int tcpFinWait2;
-  int tcpTimeWait;
-  int tcpClose;
-  int tcpCloseWait;
-  int tcpLastAck;
-  int tcpListen;
-  int tcpClosing;
-  int tcpIdle;
-  int tcpBound;
+  public int tcpInboundTotal;
+  public int tcpOutboundTotal;
+  public int allInboundTotal;
+  public int allOutboundTotal;
+  public int tcpEstablished;
+  public int tcpSynSent;
+  public int tcpSynRecv;
+  public int tcpFinWait1;
+  public int tcpFinWait2;
+  public int tcpTimeWait;
+  public int tcpClose;
+  public int tcpCloseWait;
+  public int tcpLastAck;
+  public int tcpListen;
+  public int tcpClosing;
+  public int tcpIdle;
+  public int tcpBound;
 
   public int getTcpInboundTotal() {
     return tcpInboundTotal;

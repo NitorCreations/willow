@@ -4,12 +4,12 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class DiskUsage extends AbstractMessage {
-  String name;
-  long total;
-  long free;
-  long used;
-  long avail;
-  double usePercent;
+  public String name;
+  public long total;
+  public long free;
+  public long used;
+  public long avail;
+  public double usePercent;
 
   public String getName() {
     return name;

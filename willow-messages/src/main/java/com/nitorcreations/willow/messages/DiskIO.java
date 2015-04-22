@@ -1,14 +1,14 @@
 package com.nitorcreations.willow.messages;
 
 public class DiskIO extends AbstractMessage {
-  long reads;
-  long writes;
-  long readBytes;
-  long writeBytes;
-  double queue;
-  double serviceTime;
-  String name;
-  String device;
+  public long reads;
+  public long writes;
+  public long readBytes;
+  public long writeBytes;
+  public double queue;
+  public double serviceTime;
+  public String name;
+  public String device;
 
   public long getReads() {
     return reads;

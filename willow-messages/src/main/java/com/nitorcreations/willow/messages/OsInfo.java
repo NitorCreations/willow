@@ -1,16 +1,16 @@
 package com.nitorcreations.willow.messages;
 
 public class OsInfo extends AbstractMessage {
-  String name;
-  String version;
-  String arch;
-  String machine;
-  String description;
-  String patchLevel;
-  String vendor;
-  String vendorVersion;
-  String vendorName;
-  String vendorCodeName;
+  public String name;
+  public String version;
+  public String arch;
+  public String machine;
+  public String description;
+  public String patchLevel;
+  public String vendor;
+  public String vendorVersion;
+  public String vendorName;
+  public String vendorCodeName;
   public String getName() {
     return name;
   }

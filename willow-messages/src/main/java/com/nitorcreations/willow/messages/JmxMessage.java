@@ -9,14 +9,14 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class JmxMessage extends AbstractMessage {
-  long heapMemory;
-  long nonHeapMemory;
-  long codeCache;
-  int liveThreads;
-  int loadedClassCount;
-  long unloadedClassCount;
-  long startTime;
-  long uptime;
+  public long heapMemory;
+  public long nonHeapMemory;
+  public long codeCache;
+  public int liveThreads;
+  public int loadedClassCount;
+  public long unloadedClassCount;
+  public long startTime;
+  public long uptime;
   public List<GcInfo> gcInfo = new ArrayList<GcInfo>();
   public Map<String, Long> memoryPoolUsage = new LinkedHashMap<String, Long>();
   public Map<String, Long> memoryPoolPeakUsage = new LinkedHashMap<String, Long>();

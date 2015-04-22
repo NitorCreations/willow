@@ -4,18 +4,18 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class ThreadInfoMessage {
-  private String threadName;
-  private long threadId;
-  private long blockedTime;
-  private long blockedCount;
-  private long waitedTime;
-  private long waitedCount;
-  private String lockName;
-  private long lockOwnerId;
-  private String lockOwnerName;
-  private boolean inNative;
-  private boolean suspended;
-  private Thread.State threadState;
+  public String threadName;
+  public long threadId;
+  public long blockedTime;
+  public long blockedCount;
+  public long waitedTime;
+  public long waitedCount;
+  public String lockName;
+  public long lockOwnerId;
+  public String lockOwnerName;
+  public boolean inNative;
+  public boolean suspended;
+  public Thread.State threadState;
 
   public String getThreadName() {
     return threadName;

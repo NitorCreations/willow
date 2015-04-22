@@ -4,14 +4,14 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class Memory extends AbstractMessage {
-  long total;
-  long ram;
-  long used;
-  long free;
-  long actualUsed;
-  long actualFree;
-  double usedPercent;
-  double freePercent;
+  public long total;
+  public long ram;
+  public long used;
+  public long free;
+  public long actualUsed;
+  public long actualFree;
+  public double usedPercent;
+  public double freePercent;
 
   public long getTotal() {
     return total;

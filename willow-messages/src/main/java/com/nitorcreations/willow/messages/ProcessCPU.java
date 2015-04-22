@@ -4,12 +4,12 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class ProcessCPU extends AbstractMessage {
-  double percent;
-  long lastTime;
-  long startTime;
-  long user;
-  long sys;
-  long total;
+  public double percent;
+  public long lastTime;
+  public long startTime;
+  public long user;
+  public long sys;
+  public long total;
 
   public double getPercent() {
     return percent;

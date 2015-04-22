@@ -4,9 +4,9 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class GcInfo {
-  String name;
-  long collectionCount;
-  long collectionTime;
+  public String name;
+  public long collectionCount;
+  public long collectionTime;
 
   public long getCollectionCount() {
     return collectionCount;

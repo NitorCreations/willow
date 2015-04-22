@@ -4,13 +4,13 @@ import org.msgpack.annotation.Message;
 
 @Message
 public class Processes extends AbstractMessage {
-  long total;
-  long idle;
-  long running;
-  long sleeping;
-  long stopped;
-  long zombie;
-  long threads;
+  public long total;
+  public long idle;
+  public long running;
+  public long sleeping;
+  public long stopped;
+  public long zombie;
+  public long threads;
 
   public long getTotal() {
     return total;
