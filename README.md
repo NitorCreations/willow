@@ -5,7 +5,8 @@ Development mode means static resources are read in from
 ```
 willow-servers/src/main/resources
 ```
-This enables the editing of markup, css and javascript so that changes are immediately available in the ui
+This enables the editing of markup, css and javascript so that changes are immediately available in the ui.
+
 First you need to build the server.
 ```
 $ git clone git@github.com:NitorCreations/willow.git
