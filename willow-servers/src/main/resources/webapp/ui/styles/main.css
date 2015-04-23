@@ -361,11 +361,12 @@ textarea, input[type=text] {
     width: 50%
   }
   .nav .current {
-    padding: 1.5em 0;
+    padding: 3px 0 2em;
+    top: 14px
   }
   select.navcenter {
     position: absolute;
-    top: 0.8em;
+    top: 12px;
     right: 100px;
   }
 }
@@ -454,8 +455,8 @@ textarea, input[type=text] {
 
 .icon {
   display: inline-block;
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
 }
 
 .white {
@@ -467,7 +468,7 @@ textarea, input[type=text] {
   float: right;
   position: absolute;
   right: 57px;
-  top: 10px;
+  top: 12px;
 }
 
 select.navcenter {
@@ -476,6 +477,8 @@ select.navcenter {
   width: 4em;
   background: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve"><polygon fill="white" points="5,8 19,8 12,15 "/></svg>') no-repeat #000;
   background-position: 95% 50%;
+  height: 20px;
+  top: 12px
 }
 
 .shape-terminal {
