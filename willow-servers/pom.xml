@@ -160,7 +160,7 @@
           <destinationFolder>${project.build.directory}/target/classes/webapp/ui/</destinationFolder>
           <jsDestinationFolder>${project.build.directory}/classes/webapp/ui/scripts</jsDestinationFolder>
           <cssDestinationFolder>${project.build.directory}/classes/webapp/ui/styles</cssDestinationFolder>
-          <contextFolder>${basedir}/src/main/resources/webapp</contextFolder>
+          <contextFolder>${basedir}/src/main/resources/webapp/ui</contextFolder>
           <wroFile>${basedir}/src/main/resources/wro.xml</wroFile>
           <ignoreMissingResources>false</ignoreMissingResources>
           <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>

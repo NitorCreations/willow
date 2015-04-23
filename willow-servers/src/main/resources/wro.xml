@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <groups xmlns="http://www.isdc.ro/wro">
   <group name="all">
-    <css>/ui/styles/nv.d3.css</css>
-    <css>/ui/styles/main.css</css>
-    <js>/ui/scripts/jquery.js</js>
-    <js>/ui/scripts/d3.v3.js</js>
-    <js>/ui/scripts/nv.d3.js</js>
-    <js>/ui/scripts/cubism.js</js>
-    <js>/ui/scripts/t3.js</js>
-    <js>/ui/scripts/modules/navigation.js</js>
-    <js>/ui/scripts/willow.js</js>
+    <css>/styles/nv.d3.css</css>
+    <css>/styles/main.css</css>
+    <js>/scripts/jquery.js</js>
+    <js>/scripts/d3.v3.js</js>
+    <js>/scripts/nv.d3.js</js>
+    <js>/scripts/cubism.js</js>
+    <js>/scripts/t3.js</js>
+    <js>/scripts/modules/navigation.js</js>
+    <js>/scripts/willow.js</js>
   </group>
 </groups>

@@ -28,65 +28,44 @@ import org.apache.velocity.runtime.log.JdkLogChute;
 public class VelocityServlet extends HttpServlet {
 
   private static final long serialVersionUID = 5202740307439072493L;
-  private String encoding;
-  private String contentType;
-  private String configLocation;
-  private String requestKey;
-  private String sessionKey;
-  private String applicationKey;
-  private String systemKey;
-  private String xmlKey;
+  private String encoding = "UTF-8";
+  private String contentType = "text/html";
+  private String configLocation = "velocity.properties";
+  private String requestKey = "request";
+  private String sessionKey = "session";
+  private String applicationKey = "application";
+  private String systemKey = "system";
+  private String xmlKey = "xml";
   private VelocityEngine engine;
 
   @Override
   public void init() throws ServletException {
-    this.encoding = "UTF-8";
-    this.contentType = "text/html";
-    this.configLocation = "/WEB-INF/velocity.properties";
-    this.requestKey = "request";
-    this.sessionKey = "session";
-    this.applicationKey = "application";
-    this.xmlKey = "xml";
-    this.systemKey = "system";
     this.engine = createEngine();
   }
 
   private VelocityEngine createEngine() throws ServletException {
     final VelocityEngine velocity = new VelocityEngine();
 
-    velocity.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,
-      JdkLogChute.class.getName());
-    velocity.setProperty(RuntimeConstants.RESOURCE_LOADER,
-      WebappResourceLoader.NAME);
-    velocity.setProperty(WebappResourceLoader.NAME + '.'
-      + RuntimeConstants.RESOURCE_LOADER + ".class",
+    velocity.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, JdkLogChute.class.getName());
+    velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, WebappResourceLoader.NAME);
+    velocity.setProperty(WebappResourceLoader.NAME + '.' + RuntimeConstants.RESOURCE_LOADER + ".class",
       WebappResourceLoader.class.getName());
-    velocity.setApplicationAttribute(ServletContext.class.getName(),
-      getServletContext());
-
+    velocity.setApplicationAttribute(ServletContext.class.getName(), getServletContext());
     velocity.init(loadProperties());
-
     return velocity;
   }
 
   private Properties loadProperties() throws ServletException {
-    final InputStream resource = getServletContext().getResourceAsStream(
-      this.configLocation);
-    if (resource == null) {
-      return new Properties();
-    }
-    try {
+    try (InputStream resource = getClass().getClassLoader().getResourceAsStream(
+      this.configLocation)) {
+      if (resource == null) {
+        return new Properties();
+      }
       final Properties props = new Properties();
       props.load(resource);
       return props;
     } catch (IOException e) {
       throw new ServletException(e);
-    } finally {
-      try {
-        resource.close();
-      } catch (IOException e) {
-        throw new ServletException(e);
-      }
     }
   }
 
@@ -106,16 +85,16 @@ public class VelocityServlet extends HttpServlet {
 
   private void render(final HttpServletRequest request,
     final HttpServletResponse response) throws ServletException, IOException {
-
+    
     String templ = request.getServletPath();
     if (templ.isEmpty()) {
       templ = new URL(request.getRequestURL().toString()).getPath() + request.getRequestURI();
     }
     final Template template = this.engine.getTemplate(templ, this.encoding);
     final VelocityContext context = new VelocityContext();
-    context.put(this.requestKey, toMap(request));
-    context.put(this.sessionKey, toMap(request.getSession(false)));
-    context.put(this.applicationKey, toMap(getServletContext()));
+    context.put(this.requestKey, request);
+    context.put(this.sessionKey, request.getSession(true));
+    context.put(this.applicationKey, getServletContext());
     context.put(this.xmlKey, XMLTool.class);
     context.put(this.systemKey, System.class);
     response.setContentType(this.contentType);
@@ -129,37 +108,6 @@ public class VelocityServlet extends HttpServlet {
     } catch (final MethodInvocationException e) {
       throw new ServletException(e);
     }
-  }
-
-  private Map<String, Object> toMap(final HttpServletRequest request) {
-    final Map<String, Object> map = newMap();
-    final Enumeration<String> names = request.getAttributeNames();
-    while (names.hasMoreElements()) {
-      final String name = names.nextElement();
-      map.put(name, request.getAttribute(name));
-    }
-    return Collections.unmodifiableMap(map);
-  }
-  private Map<String, Object> toMap(final HttpSession session) {
-    if (session == null) {
-      return Collections.emptyMap();
-    }
-    final Map<String, Object> map = newMap();
-    final Enumeration<String> names = session.getAttributeNames();
-    while (names.hasMoreElements()) {
-      final String name = names.nextElement();
-      map.put(name, session.getAttribute(name));
-    }
-    return Collections.unmodifiableMap(map);
-  }
-  private Map<String, Object> toMap(final ServletContext context) {
-    final Map<String, Object> map = newMap();
-    final Enumeration<String> names = context.getAttributeNames();
-    while (names.hasMoreElements()) {
-      final String name = names.nextElement();
-      map.put(name, context.getAttribute(name));
-    }
-    return Collections.unmodifiableMap(map);
   }
   private LinkedHashMap<String, Object> newMap() {
     return new LinkedHashMap<String, Object>();
