@@ -19,7 +19,6 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -64,9 +63,8 @@ public class XMLTool {
       NodeList ret = (NodeList) xpath.evaluate(expression, context, XPathConstants.NODESET);
       return new IterableNodeList(ret).iterator();
     } catch (XPathExpressionException e) {
-        logger.log(Level.FINE, "Invalid XPath expression", e);
+      logger.log(Level.FINE, "Invalid XPath expression", e);
     }
     return null;
-}
-
+  }
 }
