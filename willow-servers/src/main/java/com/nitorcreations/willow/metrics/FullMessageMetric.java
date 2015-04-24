@@ -38,14 +38,17 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> implements
   }
   @Override
   public R calculateMetric(Client client, HttpServletRequest req) {
-    long start = Long.parseLong(req.getParameter("start"));
-    long stop = Long.parseLong(req.getParameter("stop"));
-    int step = Integer.parseInt(req.getParameter("step"));
+    long now = System.currentTimeMillis();
+    long start = getLongParameter(req, "start", now - 300000);
+    long stop = getLongParameter(req, "stop", now);
+    int step = (int) getLongParameter(req, "step", 0);
     String[] tags = req.getParameterValues("tag");
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop, client)).setTypes(MessageMapping.map(type).lcName()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (stop - start) / 10);
     BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(start - step).to(stop + step).includeLower(false).includeUpper(true));
-    for (String tag : tags) {
-      query = query.must(QueryBuilders.termQuery("tags", tag));
+    if (tags != null) {
+      for (String tag : tags) {
+        query = query.must(QueryBuilders.termQuery("tags", tag));
+      }
     }
     SearchResponse response = builder.setQuery(query).get();
     readResponse(response);
@@ -57,6 +60,15 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> implements
   protected <Y extends Comparable> Y median(List<Y> data) {
     Collections.sort(data);
     return data.get(data.size() / 2);
+  }
+  protected long getLongParameter(HttpServletRequest req, String name, long def) {
+    String attr = req.getParameter(name);
+    if (attr == null) return def;
+    try {
+      return Long.parseLong(attr);
+    } catch (NumberFormatException e) {
+      return def;
+    }
   }
 
 }

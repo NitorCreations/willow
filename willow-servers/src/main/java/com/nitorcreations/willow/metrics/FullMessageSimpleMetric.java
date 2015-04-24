@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
 import com.nitorcreations.willow.messages.AbstractMessage;
 
 public abstract class FullMessageSimpleMetric<T extends AbstractMessage> extends FullMessageMetric<T, Collection<TimePoint>> {

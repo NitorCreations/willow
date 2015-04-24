@@ -13,7 +13,8 @@ rect {
 <body>
 <script src="scripts/d3.v3.js"></script>
 <script>
-
+var stop = new Date().getTime();
+var start = stop - 300000;
 var width = 960,
     height = 500;
 
@@ -35,7 +36,7 @@ var svg = d3.select("body").append("svg")
 
 var rect = svg.selectAll("rect");
 
-d3.json("readme.json", function(error, root) {
+d3.json("/metrics/stacktrace?start=" + start + "&stop=" + stop + "&tag=host_venom" , function(error, root) {
   rect = rect
       .data(partition(d3.entries(root)[0]))
     .enter().append("rect")
