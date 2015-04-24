@@ -11,8 +11,6 @@ import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,6 +22,7 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.metrics.Metric;
 import com.nitorcreations.willow.utils.HostUtil;
@@ -57,12 +56,12 @@ public class MetricsServlet extends HttpServlet {
   }
 
   @Override
-  public void service(ServletRequest req, ServletResponse res) throws IOException {
-    if (!((HttpServletRequest) req).getMethod().equals("GET")) {
-      ((HttpServletResponse) res).sendError(405, "Only GET allowed");
+  public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
+    if (!req.getMethod().equals("GET")) {
+      res.sendError(405, "Only GET allowed");
       return;
     }
-    String metricKey = ((HttpServletRequest) req).getPathInfo();
+    String metricKey = req.getPathInfo();
     Metric metric = metrics.get(metricKey);
     if (metric == null) {
       ((HttpServletResponse) res).sendError(404, "Metric with key " + metricKey + " not found");
@@ -70,10 +69,15 @@ public class MetricsServlet extends HttpServlet {
     }
     try {
       metric = metric.getClass().newInstance();
-      Object data = metric.calculateMetric(getClient(), (HttpServletRequest) req);
+      Object data = metric.calculateMetric(getClient(), req);
       res.setContentType("application/json");
-      Gson out = new Gson();
-      res.getOutputStream().write(out.toJson(data).getBytes());
+      Gson out;
+      if ("true".equals(req.getAttribute("pretty"))) {
+        out = new GsonBuilder().setPrettyPrinting().create();
+      } else {
+        out = new Gson();
+      }
+      out.toJson(data, res.getWriter());
     } catch (InstantiationException | IllegalAccessException e) {
       throw new IOException(e);
     }

@@ -3,10 +3,7 @@ package com.nitorcreations.willow.servers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
@@ -14,7 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;

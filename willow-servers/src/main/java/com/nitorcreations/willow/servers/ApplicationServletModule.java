@@ -20,14 +20,12 @@ public class ApplicationServletModule extends ServletModule {
   protected void configureServlets() {
     String env =  getProperty("env", "dev");
     setProperty("env", env);
-
     bind(MetricsServlet.class);
     bind(StatisticsServlet.class);
     bind(PropertyServlet.class).asEagerSingleton();
     bind(DefaultServlet.class).asEagerSingleton();
     bind(VelocityServlet.class).asEagerSingleton();
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
-
     Map<String, String> defaultInit = new HashMap<>();
     defaultInit.put("dirAllowed", "false");
     defaultInit.put("gzip", "false");
