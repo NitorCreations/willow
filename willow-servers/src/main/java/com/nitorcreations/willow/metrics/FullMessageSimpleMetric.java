@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.nitorcreations.willow.messages.AbstractMessage;
 
 public abstract class FullMessageSimpleMetric<T extends AbstractMessage> extends FullMessageMetric<T, Collection<TimePoint>> {
 
   @Override
-  public Collection<TimePoint> processData(long start, long stop, int step) {
+  public Collection<TimePoint> processData(long start, long stop, int step, HttpServletRequest req) {
     int len = (int) ((stop - start) / step) + 1;
     List<TimePoint> ret = new ArrayList<TimePoint>();
     if (rawData.isEmpty())

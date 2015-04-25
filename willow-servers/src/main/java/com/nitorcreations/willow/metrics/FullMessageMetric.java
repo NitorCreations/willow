@@ -52,10 +52,10 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> implements
     }
     SearchResponse response = builder.setQuery(query).get();
     readResponse(response);
-    return processData(start, stop, step);
+    return processData(start, stop, step, req);
   }
   
-  protected abstract R processData(long start, long stop, int step);
+  protected abstract R processData(long start, long stop, int step, HttpServletRequest req);
 
   protected <Y extends Comparable> Y median(List<Y> data) {
     Collections.sort(data);
