@@ -6,12 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.nitorcreations.willow.messages.AbstractMessage;
 
 public abstract class FullMessageMultiseriesMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> extends FullMessageMetric<T, Collection<SeriesData<X, Y>>>{
 
   @Override
-  public Collection<SeriesData<X, Y>> processData(long start, long stop, int step) {
+  public Collection<SeriesData<X, Y>> processData(long start, long stop, int step, HttpServletRequest req) {
     int len = (int) ((stop - start) / step) + 1;
     Map<String, SeriesData<X, Y>> ret = new LinkedHashMap<String, SeriesData<X, Y>>();
     if (rawData.isEmpty())
