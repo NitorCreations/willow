@@ -5,16 +5,16 @@ import java.util.List;
 
 public class StackTreeNode {
   public int value=0;
-  public final String name;
-  public StackTreeNode(String name) {
-    this.name = name;
+  public final String key;
+  public StackTreeNode(String key) {
+    this.key = key;
   }
   public List<StackTreeNode> children = new ArrayList<>();
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((key == null) ? 0 : key.hashCode());
     return result;
   }
   @Override
@@ -26,10 +26,10 @@ public class StackTreeNode {
     if (getClass() != obj.getClass())
       return false;
     StackTreeNode other = (StackTreeNode) obj;
-    if (name == null) {
-      if (other.name != null)
+    if (key == null) {
+      if (other.key != null)
         return false;
-    } else if (!name.equals(other.name))
+    } else if (!key.equals(other.key))
       return false;
     return true;
   }
