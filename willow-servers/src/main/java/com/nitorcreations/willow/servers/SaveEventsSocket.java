@@ -100,7 +100,7 @@ public class SaveEventsSocket {
         if (System.getProperty("debug") != null) {
           System.out.println(type.lcName() + ": " + source);
         }
-        IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(1000);
+        IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(5000);
         if (!resp.isCreated()) {
           log.warning("Failed to create index for " + source);
         }

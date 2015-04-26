@@ -9,14 +9,26 @@ rect {
   stroke: #fff;
 }
 
+.label {
+  font: 8px sans-serif;
+  text-anchor: left;
+}
+
+.node {
+  fill: #ddd;
+  stroke: #fff;
+}
 </style>
 <body>
+<script src="scripts/jquery.js"></script>
 <script src="scripts/d3.v3.js"></script>
 <script>
 var stop = new Date().getTime();
 var start = stop - 300000;
 var width = 960,
-    height = 500;
+    height = 1080;
+
+var fontHeight = parseFloat($("html").css("font-size"))
 
 var x = d3.scale.linear()
     .range([0, width]);
@@ -33,30 +45,61 @@ var svg = d3.select("body").append("svg")
     .attr("height", height);
 
 var rect = svg.selectAll("rect");
+var text = svg.selectAll("text");
 
 d3.json("/metrics/stacktrace?start=" + start + "&stop=" + stop, function(error, root) {
-  rect = rect
-      .data(partition(root))
-      .enter().append("rect")
-      .attr("x", function(d) { return x(d.x); })
-      .attr("y", function(d) { return y(d.y); })
-      .attr("height", function(d) { return y(d.dy); })
-      .attr("width", function(d) { return x(d.dx); })
-      .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+  var nodes = partition.nodes(root);
+  var gSelection = rect.data(nodes).enter().append("g");
+
+  rect = gSelection.append("rect")
+        .attr("x", function(d) { return x(d.x); })
+        .attr("y", function(d) { return y(d.y); })
+        .attr("height", function(d) { return y(d.dy); })
+        .attr("width", function(d) { return x(d.dx); })
+        .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+        .on("click", clicked);
+
+   text = gSelection.append("text")
+      .attr("class", "label")
+      .attr("x", function(d) { return x(d.x) + 10; })
+      .attr("y", function(d) { return y(d.y) + (fontHeight * 0.7); })
+      .text(function(d) { return d.key; })
       .on("click", clicked);
+
+   text.attr("style", function(d) {
+	   if ((x(d.dx) - 10) > this.getComputedTextLength()) {
+		   return "visibility:inherited";
+	   } else {
+		   return "visibility:hidden";
+	   }
+   });
 });
 
 function clicked(d) {
-  x.domain([d.x, d.x + d.dx]);
-  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
+	  x.domain([d.x, d.x + d.dx]);
+	  y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
 
-  rect.transition()
-      .duration(750)
-      .attr("x", function(d) { return x(d.x); })
-      .attr("y", function(d) { return y(d.y); })
-      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
-      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+	  rect.transition()
+	      .duration(750)
+	      .attr("x", function(d) { return x(d.x); })
+	      .attr("y", function(d) { return y(d.y); })
+	      .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+	      .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); });
+      text.transition()
+          .duration(750)
+          .attr("x", function(d) { return x(d.x) + 10; })
+          .attr("y", function(d) { return y(d.y) + (fontHeight * 0.7); })
+          .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
+          .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); })
+          .transition().each("end", transitionFinish);
 }
-
+function transitionFinish(d) {
+  var width = x(d.x + d.dx) - x(d.x) - 10;
+  if (width > this.getComputedTextLength()) {
+	return this.setAttribute("style", "visibility:inherited");
+  } else {
+    return this.setAttribute("style", "visibility:hidden");
+  }
+}
 </script>
 </body>
