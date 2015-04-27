@@ -49,7 +49,7 @@ var getQueryVariable = function(variable) {
        }
        return(false);
 }
-var metric = getQueryVariable("metric") ? getQueryVariable("metric") : "cpu"; 
+var metric = getQueryVariable("metric") ? getQueryVariable("metric") : "cpu";
 var xToTime = function(pageX) {
     var timeStart = context.scale.domain()[0].getTime();
     return timeStart + (pageX * step);
@@ -69,7 +69,7 @@ var kiloBytesToString = function (kbytes) {
 var deployer_metric = function(name, tag) {
     var hostTag = tag;
     return context.metric(function(start, stop, step, callback) {
-        d3.json("/metrics/" + name 
+        d3.json("metrics/" + name
                 + "?start=" + start.getTime()
                 + "&stop=" + stop.getTime()
                 + "&step=" + step + "&tag=" + hostTag, function(data) {
@@ -118,7 +118,7 @@ var fsGraphCallback = function(host) {
                  $(window).resize(chart.update);
                  return chart;
              });
-        }; 
+        };
 };
 var heapGraphCallback = function(host) {
     return function(data) {
@@ -195,11 +195,11 @@ var expandDetails = function(e) {
         $(".row2-" + host).append('<div class="login-' + host + ' col c6" style="height:200px">')
         $(".login-" + host).append('<a class="btn btn-b smooth login">Login</a>');
         $(".login-" + host).on("click", function() {
-              window.open("/shell/?user=pasi&host=localhost");
+              window.open("shell.html?user=pasi&host=" + host);
         });
-        d3.json("/metrics/disk?tag=host_" + host + "&stop=" + host_stop, fsGraphCallback(host));
-        d3.json("/metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, heapGraphCallback(host));
-        d3.json("/metrics/access?tag=host_" + host + "&step=60000&start=" + host_start + "&stop=" + host_stop, accessGraphCallback(host));
+        d3.json("metrics/disk?tag=host_" + host + "&stop=" + host_stop, fsGraphCallback(host));
+        d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, heapGraphCallback(host));
+        d3.json("metrics/access?tag=host_" + host + "&step=60000&start=" + host_start + "&stop=" + host_stop, accessGraphCallback(host));
         $(element).slideDown("slow", function() {
             $(this).attr("data-expanded", "true");
         });
@@ -242,17 +242,17 @@ var isDraggingMouseUp = function(e) {
             detailsStop = -1;
         }
         expandDetails(e);
-    } 
+    }
     if (isDragging) {
         for (var i=0; i<hosts.length; i++) {
             var nextHost = hosts[i];
               var element = ".details-" + nextHost;
               if ($(element).attr("data-expanded")) {
-                  d3.json("/metrics/disk?tag=host_" + nextHost+ "&stop=" + detailsStop, 
+                  d3.json("metrics/disk?tag=host_" + nextHost+ "&stop=" + detailsStop,
                           updateChart(nextHost, "fs-"));
-                  d3.json("/metrics/heap?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, 
+                  d3.json("metrics/heap?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
                           updateChart(nextHost, "heap-"));
-                  d3.json("/metrics/access?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop, 
+                  d3.json("metrics/access?tag=host_" + nextHost + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
                           updateChart(nextHost, "access-"));
               }
         }
@@ -266,9 +266,9 @@ var initGraphs = function () {
     while(hosts.length > 0) {
         hosts.pop();
     }
-    d3.json("/metrics/hosts"
+    d3.json("metrics/hosts"
             + "?start=" + start
-            + "&stop=" + stop 
+            + "&stop=" + stop
             + "&type=" + metric, function(data) {
                 $(".horizon").unbind("mousedown");
                 data.sort();
@@ -283,7 +283,7 @@ var initGraphs = function () {
                             var graphDiv = div.selectAll(".horizon-" + host)
                             .data([next])
                             .enter().append("div");
-                            
+
                             graphDiv.attr("class", "horizon horizon-" + host + " horizoncpu-" + host)
                             .attr("data-host", host)
                             .call(context.horizon()
@@ -316,7 +316,7 @@ var resetGraphs = function () {
         .on("change", moveSelection)
         .start();
     $(".horizon").unbind("mousedown");
-    d3.selectAll(".horizon").call(context.horizon().remove).remove(); 
+    d3.selectAll(".horizon").call(context.horizon().remove).remove();
     d3.selectAll(".details").remove();
     d3.selectAll(".axis").remove();
     d3.selectAll(".rule").remove();
@@ -362,6 +362,6 @@ var shuffleNavigation = function() {
 var refresh = window.setInterval(initGraphs, 3000);
 $(window).resize(debouncer(function (e) {
         window.clearInterval(refresh);
-        resetGraphs(); 
+        resetGraphs();
         refresh = window.setInterval(initGraphs, 3000);
 }));
