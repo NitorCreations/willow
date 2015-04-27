@@ -49,7 +49,15 @@ var getQueryVariable = function(variable) {
        }
        return(false);
 }
-var metric = getQueryVariable("metric") ? getQueryVariable("metric") : "cpu";
+var getHashVariable = function(hash, variable) {
+    var vars = hash.split("&");
+    for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+    }
+    return(false);
+}
+var metric = getHashVariable(window.location.hash.substring(1), "metric") ? getHashVariable(window.location.hash.substring(1), "metric") : "cpu";
 var xToTime = function(pageX) {
     var timeStart = context.scale.domain()[0].getTime();
     return timeStart + (pageX * step);

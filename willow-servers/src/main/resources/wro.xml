@@ -9,7 +9,8 @@
     <js>/scripts/cubism.js</js>
     <js>/scripts/term.js</js>
     <js>/scripts/t3.js</js>
-    <js>/scripts/modules/navigation.js</js>
+    <js>/scripts/modules/navigation-index.js</js>
+    <js>/scripts/modules/navigation-radiator.js</js>
     <js>/scripts/willow.js</js>
   </group>
 </groups>
