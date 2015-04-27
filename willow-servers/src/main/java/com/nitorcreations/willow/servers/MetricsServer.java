@@ -15,6 +15,7 @@ import java.util.EventListener;
 import javax.inject.Named;
 import javax.servlet.DispatcherType;
 
+import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.Server;
@@ -59,6 +60,10 @@ public class MetricsServer {
     ServletContextHandler servletContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
     servletContextHandler.addEventListener(getServletContextListener());
     servletContextHandler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+    MimeTypes mime = servletContextHandler.getMimeTypes();
+    mime.addMimeMapping("js.gz", "text/javascript");
+    mime.addMimeMapping("css.gz", "text/css");
+    mime.addMimeMapping("svg.gz", "image/svg+xml");
     ServletHolder holder = servletContextHandler.addServlet(DefaultServlet.class, "/");
     holder.setInitParameter("dirAllowed", "false");
     holder.setInitParameter("gzip", "false");
