@@ -1,60 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Willow monitoring</title>
-<meta charset="utf-8" />
-#set ($env = $system.getProperty("env"))
-#if ($env == "dev")
+  <title>Willow monitoring</title>
+  <meta charset="utf-8" />
+  #set ($env = $system.getProperty("env"))
+  #if ($env == "dev")
   #set ($wro = $xml.parse("classpath:wro.xml"))
   #set ($cssarr = $xml.xpath("//*[local-name()='css']", $wro))
   #foreach ($css in $cssarr)
-<link type="text/css" rel="stylesheet" href="$css.getTextContent().substring(1)"/>
-  #end    
+  <link type="text/css" rel="stylesheet" href="$css.getTextContent().substring(1)"/>
+  #end
   #set ($jsarr = $xml.xpath("//*[local-name()='js']", $wro))
   #foreach ($js in $jsarr)
-<script type="text/javascript" src="$js.getTextContent().substring(1)" charset="utf-8"></script>
+  <script type="text/javascript" src="$js.getTextContent().substring(1)" charset="utf-8"></script>
   #end
   <!-- request -->
   #foreach ($key in $request.getAttributeNames())
-    <!-- $key => $request.getAttribute($key) -->
+  <!-- $key => $request.getAttribute($key) -->
   #end
   <!-- session -->
   #foreach ($key in $session.getAttributeNames())
-    <!-- $key => $session.getAttribute($key) -->
+  <!-- $key => $session.getAttribute($key) -->
   #end
-#else
-<link type="text/css" rel="stylesheet" href="styles/all.css">
-<script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
-#end
+  #else
+  <link type="text/css" rel="stylesheet" href="styles/all.css">
+  <script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
+  #end
 </head>
 <body>
-  #include("/images/icons.svg")
-  <nav class="nav" tabindex="-1">
-    <div class="container" data-module="navigation-index">
-      <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts"><use xlink:href="#shape-alarm"></use></svg>
-      <a id="cpu" href="#metric=cpu" data-type="select-metric">cpu</a>
-      <a id="mem" href="#metric=mem" data-type="select-metric">mem</a>
-      <a id="net" href="#metric=net" data-type="select-metric">net</a>
-      <a id="diskio" href="#metric=diskio" data-type="select-metric">io</a>
-      <a id="tcpinfo" href="#metric=tcpinfo" data-type="select-metric">connections</a>
-      <label for="timescale"> </label>
-      <select id="timescale" class="navcenter smooth" data-type="select-timescale">
-        <option value="10800">3h</option>
-        <option value="28800">8h</option>
-        <option value="43200">12h</option>
-        <option value="86400">1d</option>
-        <option value="187200">3d</option>
-        <option value="436800">7d</option>
-      </select>
-    </div>
-  </nav>
-  <div id="chart" class="mainchart"></div>
-  <script type="text/javascript">
-			resetGraphs();
-			shuffleNavigation();
-			Box.Application.init({
-				debug: true
-			});
-		</script>
+#include("/images/icons.svg")
+<nav class="nav" tabindex="-1">
+  <div class="container" data-module="navigation-index">
+    <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts"><use xlink:href="#shape-alarm"></use></svg>
+    <a id="cpu" href="#metric=cpu" data-type="select-metric">cpu</a>
+    <a id="mem" href="#metric=mem" data-type="select-metric">mem</a>
+    <a id="net" href="#metric=net" data-type="select-metric">net</a>
+    <a id="diskio" href="#metric=diskio" data-type="select-metric">io</a>
+    <a id="tcpinfo" href="#metric=tcpinfo" data-type="select-metric">connections</a>
+    <label for="timescale"> </label>
+    <select id="timescale" class="navcenter smooth" data-type="select-timescale">
+      <option value="10800">3h</option>
+      <option value="28800">8h</option>
+      <option value="43200">12h</option>
+      <option value="86400">1d</option>
+      <option value="187200">3d</option>
+      <option value="436800">7d</option>
+    </select>
+  </div>
+</nav>
+<div id="chart" class="mainchart"></div>
+<script id="bootstrap-application" type="text/javascript">
+  resetGraphs();
+  shuffleNavigation();
+  Box.Application.init({
+    debug: true
+  });
+</script>
 </body>
 </html>
