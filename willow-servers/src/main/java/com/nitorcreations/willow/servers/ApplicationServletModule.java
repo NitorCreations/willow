@@ -28,17 +28,17 @@ public class ApplicationServletModule extends ServletModule {
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
     Map<String, String> defaultInit = new HashMap<>();
     defaultInit.put("dirAllowed", "false");
-    defaultInit.put("gzip", "false");
+    defaultInit.put("gzip", "true");
     defaultInit.put("maxCacheSize","81920");
     defaultInit.put("maxCacheSize","81920");
     defaultInit.put("welcomeServlets", "true");
-
     if ("dev".equals(env)) {
       bind(ElasticsearchProxy.class);
       bind(TestServlet.class).toInstance(new TestServlet());;
       serve("/test/*").with(TestServlet.class);
       serve("/search/*").with(ElasticsearchProxy.class);
-    }    
+      defaultInit.put("gzip", "false");
+    }
     serve("/metrics/*").with(MetricsServlet.class);
     serve("/properties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);

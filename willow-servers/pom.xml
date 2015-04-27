@@ -166,6 +166,44 @@
           <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <pathconvert pathsep=";" property="compress.jsfiles">
+                  <fileset dir="${project.build.directory}/classes/webapp/styles" includes="**/*.css"/>
+                  <fileset dir="${project.build.directory}/classes/webapp/scripts" includes="**/*.js"/>
+                  <fileset dir="${project.build.directory}/classes/webapp/images" includes="**/*.svg"/>
+                </pathconvert>
+                <script language="javascript"><![CDATA[
+                  try {
+                    load("nashorn:mozilla_compat.js");
+                  } catch (e) { }
+                  importPackage(java.io);
+                  //get the property and convert to an array
+                  var files = project.getProperty("compress.jsfiles").split(";"),
+                    gzip, i,len;
+                  for (i=0, len=files.length; i < len; i++) {
+                    //create new gzip task
+                    gzip = project.createTask("gzip");
+                    gzip.setSrc(new File(files[i]));
+                    gzip.setDestfile(new File(files[i].replaceAll(".js$", ".js.gz").replaceAll(".css$", ".css.gz").replaceAll(".svg$", ".svg.gz")));
+                    gzip.perform();
+                  }
+                  ]]>
+                </script>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
