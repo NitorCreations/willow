@@ -1,5 +1,10 @@
 # willow #
 
+
+## Prerequisites ##
+
+Build requires at least Java 7 and JCE (comes in OpenJDK by default). Also phantomjs is required for javascript unit testing.
+
 ## Starting statistics ui in development mode ##
 Development mode means static resources are read in from
 ```
