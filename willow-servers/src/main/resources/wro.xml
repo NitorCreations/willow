@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <groups xmlns="http://www.isdc.ro/wro">
+  <group name="all">
+   <group-ref>libs</group-ref>
+   <group-ref>app</group-ref>
+  </group>
   <group name="libs">
     <css>/styles/nv.d3.css</css>
     <css>/styles/main.css</css>
