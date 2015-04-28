@@ -9,6 +9,10 @@
     <js>/scripts/cubism.js</js>
     <js>/scripts/term.js</js>
     <js>/scripts/t3.js</js>
+    <js>/scripts/services/window-service.js</js>
+    <js>/scripts/behaviors/metric-links.js</js>
+    <js>/scripts/behaviors/navigation-common.js</js>
+    <js>/scripts/modules/horizon-index.js</js>
     <js>/scripts/modules/navigation-index.js</js>
     <js>/scripts/modules/navigation-radiator.js</js>
     <js>/scripts/willow.js</js>
