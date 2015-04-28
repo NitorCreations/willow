@@ -22,7 +22,7 @@ Box.Application.addModule('horizon-index', function(context) {
           break;
         case 'close':
           break;
-        };
+        }
       },
       setTimeScale: function(scale) {
 
