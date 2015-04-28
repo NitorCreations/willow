@@ -148,14 +148,28 @@
         <version>1.7.7</version>
         <executions>
           <execution>
+            <id>run</id>
             <phase>compile</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <configuration>
+              <targetGroups>libs,app</targetGroups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>jshint</id>
+            <phase>test</phase>
+            <goals>
+              <goal>jshint</goal>
+            </goals>
+            <configuration>
+              <targetGroups>app</targetGroups>
+              <options>devel,evil,noarg</options>
+            </configuration>
           </execution>
         </executions>
         <configuration>
-          <targetGroups>all</targetGroups>
           <minimize>true</minimize>
           <destinationFolder>${project.build.directory}/target/classes/webapp</destinationFolder>
           <jsDestinationFolder>${project.build.directory}/classes/webapp/scripts</jsDestinationFolder>
