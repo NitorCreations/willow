@@ -1,24 +1,24 @@
 describe("Tests for navigation-index module", function() {
-  var module, sandbox;
+  var behavior, sandbox, contextFake;
 
   beforeEach(function() {
-      var contextFake = new Box.TestServiceProvider();
-      this.module = Box.Application.getModuleForTest('navigation-index', contextFake);
-      this.module.init();
-      this.sandbox = sinon.sandbox.create();
+      contextFake = new Box.TestServiceProvider();
+      behavior = Box.Application.getBehaviorForTest('metric-links', contextFake);
+      behavior.init();
+      sandbox = sinon.sandbox.create();
   });
 
   afterEach(function() {
-      this.module.destroy();
-      this.sandbox.verifyAndRestore();
+      behavior.destroy();
+      sandbox.verifyAndRestore();
   });
 
-  it('Clicking an element with "select-metric" type should call selectMetric()', function() {
-	    this.sandbox.mock(this.module).expects('selectMetric').once().withExactArgs("metric=cpu");
+  it('Clicking an element with "select-metric" type should send "metric-changed" message', function() {
+	    sandbox.mock(contextFake).expects('broadcast').once().withExactArgs("metric-changed", "cpu");
 	    var target = $('<a id="cpu" href="#metric=cpu" data-type="select-metric">cpu</a>')[0];
 	    var event = $.Event('click', {
 	        target: target
 	    });
-	    this.module.onclick(event, target, 'select-metric');
+	    behavior.onclick(event, target, 'select-metric');
   });
 });

@@ -223,6 +223,8 @@
             <source>sinon.js</source>
           </preloadSources>
           <sourceIncludes>
+            <include>behaviors/*.js</include>
+            <include>services/*.js</include>
             <include>modules/*.js</include>
           </sourceIncludes>
           <specIncludes>
