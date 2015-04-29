@@ -281,7 +281,7 @@ public class MergeableProperties extends Properties {
     if (prev != null && "true".equalsIgnoreCase(table.get(k + ".readonly"))) {
       return prev;
     }
-    if (INCLUDE_PROPERTY.equals(k)) {
+    if (INCLUDE_PROPERTY.equals(k) || k.startsWith(INCLUDE_PROPERTY + "[")) {
       //Don't allow include if eval is disallowed
       if (allowEval) {
         if (!((v.toLowerCase().endsWith(".yml") && mergeYml(v)) || (mergeProperties(v)))) {
