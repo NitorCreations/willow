@@ -10,7 +10,7 @@
     <js>/scripts/jquery.js</js>
     <js>/scripts/d3.v3.js</js>
     <js>/scripts/nv.d3.js</js>
-    <js>/scripts/cubism.js</js>
+    <js>/scripts/cubism.v1.js</js>
     <js>/scripts/term.js</js>
     <js>/scripts/t3.js</js>
     <js>/scripts/willow.js</js>
