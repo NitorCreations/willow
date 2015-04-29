@@ -200,11 +200,6 @@ var expandDetails = function(e) {
         setupDetailsDivs(element, "fs", host);
         setupDetailsDivs(element, "heap", host);
         setupDetailsDivs(element, "access", host);
-        $(".row2-" + host).append('<div class="login-' + host + ' col c6" style="height:200px">')
-        $(".login-" + host).append('<a class="btn btn-b smooth login">Login</a>');
-        $(".login-" + host).on("click", function() {
-              window.open("shell.html?user=pasi&host=" + host);
-        });
         d3.json("metrics/disk?tag=host_" + host + "&stop=" + host_stop, fsGraphCallback(host));
         d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, heapGraphCallback(host));
         d3.json("metrics/access?tag=host_" + host + "&step=60000&start=" + host_start + "&stop=" + host_stop, accessGraphCallback(host));
@@ -302,6 +297,8 @@ var initGraphs = function () {
                                     .title(metricSettings.title + host));
                             graphDiv.append("svg").attr("viewBox", "0 0 124 124")
                             	.attr("class", "icon shape-terminal terminal-" + host)
+                          	    .attr("data-type", "start-terminal")
+                          	    .attr("data-host", host)
                             	.append("use").attr("xlink:href","#shape-terminal");
                             graphDiv.append("svg").attr("viewBox", "0 0 100 100")
                           	    .attr("class", "icon shape-share share-" + host)
@@ -315,7 +312,7 @@ var initGraphs = function () {
             });
 };
 var resetGraphs = function () {
-    size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    size = $(window).width();
     start = stop - (step * size);
     context.stop();
     context = cubism.context()

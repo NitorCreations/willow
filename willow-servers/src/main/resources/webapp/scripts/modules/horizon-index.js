@@ -13,12 +13,12 @@ Box.Application.addModule('horizon-index', function(context) {
     },
     messages: ["timescale-changed", "metric-changed"],
     onclick: function(event, element, elementType) {
+      var host = element.getAttribute("data-host");
       switch (elementType) {
       case 'start-terminal':
-        windowSvc.open("shell.html?user=pasi&host=" + element.getAttribute("data-host"), "_blank");
+        windowSvc.open("shell.html?user=pasi&host=" + host, "_blank");
         break;
       case 'to-radiator':
-        var host = element.getAttribute("data-host");
         windowSvc.open("radiator.html?host=" + host, "radiator-" + host);
         break;
       case 'close':
