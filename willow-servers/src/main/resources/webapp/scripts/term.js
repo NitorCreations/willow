@@ -168,7 +168,7 @@ function Terminal(options) {
     options.colors = options.colors.slice(0, -2).concat(
       Terminal._colors.slice(8, -2), options.colors.slice(-2));
   } else if (options.colors.length === 18) {
-    options.colors = options.colors.slice(0, -2).concat(
+    options.colors = options.colors.concat(
       Terminal._colors.slice(16, -2), options.colors.slice(-2));
   }
   this.colors = options.colors;
@@ -470,8 +470,8 @@ Terminal.prototype.initGlobal = function() {
 
   Terminal.bindCopy(document);
 
-  if (this.isMobile) {
-    this.fixMobile(document);
+  if (this.isIpad || this.isIphone) {
+    Terminal.fixIpad(document);
   }
 
   if (this.useStyle) {
@@ -598,12 +598,10 @@ Terminal.bindCopy = function(document) {
 };
 
 /**
- * Fix Mobile
+ * Fix iPad - no idea if this works
  */
 
-Terminal.prototype.fixMobile = function(document) {
-  var self = this;
-
+Terminal.fixIpad = function(document) {
   var textarea = document.createElement('textarea');
   textarea.style.position = 'absolute';
   textarea.style.left = '-32000px';
@@ -624,15 +622,6 @@ Terminal.prototype.fixMobile = function(document) {
   setTimeout(function() {
     textarea.focus();
   }, 1000);
-
-  if (this.isAndroid) {
-    on(textarea, 'change', function() {
-      var value = textarea.textContent || textarea.value;
-      textarea.value = '';
-      textarea.textContent = '';
-      self.send(value + '\r');
-    });
-  }
 };
 
 /**
@@ -706,8 +695,6 @@ Terminal.prototype.open = function(parent) {
     this.isMac = !!~this.context.navigator.userAgent.indexOf('Mac');
     this.isIpad = !!~this.context.navigator.userAgent.indexOf('iPad');
     this.isIphone = !!~this.context.navigator.userAgent.indexOf('iPhone');
-    this.isAndroid = !!~this.context.navigator.userAgent.indexOf('Android');
-    this.isMobile = this.isIpad || this.isIphone || this.isAndroid;
     this.isMSIE = !!~this.context.navigator.userAgent.indexOf('MSIE');
   }
 
@@ -716,7 +703,6 @@ Terminal.prototype.open = function(parent) {
   this.element.className = 'terminal';
   this.element.style.outline = 'none';
   this.element.setAttribute('tabindex', 0);
-  this.element.setAttribute('spellcheck', 'false');
   this.element.style.backgroundColor = this.colors[256];
   this.element.style.color = this.colors[257];
 
@@ -746,7 +732,7 @@ Terminal.prototype.open = function(parent) {
   // to focus and paste behavior.
   on(this.element, 'focus', function() {
     self.focus();
-    if (self.isMobile) {
+    if (self.isIpad || self.isIphone) {
       Terminal._textarea.focus();
     }
   });
@@ -2710,7 +2696,6 @@ Terminal.prototype.send = function(data) {
 };
 
 Terminal.prototype.bell = function() {
-  this.emit('bell');
   if (!this.visualBell) return;
   var self = this;
   this.element.style.borderColor = 'white';
