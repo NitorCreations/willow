@@ -6,6 +6,9 @@ Box.Application.addService('window', function(application) {
   return {
     open: function(url, target) {
       window.open(url, target);
+    },
+    setHash: function(hash) {
+      window.location.hash = "#" + hash;
     }
   };
 });

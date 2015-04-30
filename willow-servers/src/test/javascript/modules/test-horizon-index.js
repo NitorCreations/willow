@@ -3,14 +3,37 @@ describe("Tests for horizon-index module", function() {
 
   beforeEach(function() {
     windowSvc = {
-      open: function(url, target) {}
+      open: function(url, target) {},
+      setHash: function() {}
     };
+    cubism = {
+      context: function() { return this; },
+      step: function() { return this; },
+      size: function() { return this; },
+      start: function() { return this; },
+      on: function() { return this; },
+      horizon: function() { return this; }
+    };
+    d3 = {
+      json: function() { return this; },
+      selectAll: function() { return this; },
+      call: function() { return this; },
+      select: function() { return this; },
+      attr: function() { return this; },
+      remove: function() { return this; }
+    };
+    jquery = {
+      attr: function() {}
+    }
     contextFake = new Box.TestServiceProvider({
-      'window-service': windowSvc
+      'window': windowSvc,
+      'cubism': cubism,
+      'd3': d3,
+      'jQuery': jquery
     });
     module = Box.Application.getModuleForTest('horizon-index', contextFake);
-    module.init();
     sandbox = sinon.sandbox.create();
+    module.init();
   });
 
   afterEach(function() {

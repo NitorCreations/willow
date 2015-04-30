@@ -9,14 +9,14 @@ Box.Application.addModule('horizon-index', function(context) {
         "net" : { "title" : "net: ", "format" : ".2f", "extent": undefined, colors : defaultColors },
         "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors },
         "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors }
-  }
+  };
   var deployer_metric = function(name, tag, stop, step) {
     var hostTag = tag;
     return cubismContext.metric(function(start, stop, step, callback) {
-        d3.json("metrics/" + name
-                + "?start=" + start.getTime()
-                + "&stop=" + stop.getTime()
-                + "&step=" + step + "&tag=" + hostTag, function(data) {
+        d3.json("metrics/" + name +
+                "?start=" + start.getTime() +
+                "&stop=" + stop.getTime() +
+                "&step=" + step + "&tag=" + hostTag, function(data) {
             if (!data) return callback(new Error("unable to load data"));
             callback(null, data.map(function(d) { return d.value; }));
         });
@@ -25,7 +25,7 @@ Box.Application.addModule('horizon-index', function(context) {
   var stateInHash = function() {
     var hash = window.location.hash ? window.location.hash.substring(1) : "";
     hash = utils.addOrReplaceUrlVariable(utils.addOrReplaceUrlVariable(hash, "metric", metric), "timescale", timescale);
-    window.location.hash = "#" + hash;
+    windowSvc.setHash(hash);
     $(".nav .container a").each(function(index, element) {
       $(element).attr("class", "");
       $(element).attr("href", "#" + utils.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("data-metric")));
@@ -34,7 +34,7 @@ Box.Application.addModule('horizon-index', function(context) {
 	if ($(window).width() < 500) {
       $("#" + metric).prependTo(".nav .container");
 	}
-  }
+  };
   var resetGraphs = function() {
     stop = new Date().getTime();
     if (graphEnd) stop = graphEnd;
@@ -66,14 +66,14 @@ Box.Application.addModule('horizon-index', function(context) {
         .attr("class", "rule")
         .call(cubismContext.rule());
     });
-  }
+  };
   var initGraphs = function() {
-    var step = parseInt((timescale * 1000) / $(window).width()) 
+    var step = parseInt((timescale * 1000) / $(window).width()); 
     var start = stop - (timescale * 1000);
-    d3.json("metrics/hosts"
-            + "?start=" + start
-            + "&stop=" + stop
-            + "&type=" + metric, function(data) {
+    d3.json("metrics/hosts" +
+            "?start=" + start +
+            "&stop=" + stop +
+            "&type=" + metric, function(data) {
                 $(".horizon").unbind("mousedown");
                 data.sort();
                 if (!data) return new Error("unable to load data");
@@ -81,35 +81,35 @@ Box.Application.addModule('horizon-index', function(context) {
                     var host = data[i].substring(5);
                     if ( ! $(".horizon-" + host).length ) {
                         var metricSettings = $(metricMap).attr(metric);
-                        var next = deployer_metric(metric, data[i], stop, step);
-                        d3.select("#chart").call(function(div) {
-                            var graphDiv = div.selectAll(".horizon-" + host)
-                            .data([next])
-                            .enter().append("div");
-
-                            graphDiv.attr("class", "horizon horizon-" + host + " horizoncpu-" + host)
-                            .attr("data-host", host)
-                            .call(cubismContext.horizon()
-                                    .height(50)
-                                    .colors(metricSettings.colors)
-                                    .extent(metricSettings.extent)
-                                    .format(d3.format(metricSettings.format))
-                                    .title(metricSettings.title + host));
-                            graphDiv.append("svg").attr("viewBox", "0 0 124 124")
-                            	.attr("class", "icon shape-terminal terminal-" + host)
-                          	    .attr("data-type", "start-terminal")
-                          	    .attr("data-host", host)
-                            	.append("use").attr("xlink:href","#shape-terminal");
-                            graphDiv.append("svg").attr("viewBox", "0 0 100 100")
-                          	    .attr("class", "icon shape-share share-" + host)
-                        	    .append("use").attr("xlink:href","#shape-to-radiator");
-                            div.append("div")
-                                .attr("class", "details details-" + host);
-                        });
+                        var chart = deployer_metric(metric, data[i], stop, step);
+                        d3.select("#chart").call(createHorizon, host, chart, metricSettings);
                     }
                 }
             });
-  }
+  };
+  var createHorizon = function(div, host, chart, metricSettings) {
+    var graphDiv = div.selectAll(".horizon-" + host)
+      .data([chart])
+      .enter().append("div");
+    graphDiv.attr("class", "horizon horizon-" + host + " horizoncpu-" + host)
+      .attr("data-host", host)
+      .call(cubismContext.horizon()
+        .height(50)
+        .colors(metricSettings.colors)
+        .extent(metricSettings.extent)
+        .format(d3.format(metricSettings.format))
+        .title(metricSettings.title + host));
+    graphDiv.append("svg").attr("viewBox", "0 0 124 124")
+      .attr("class", "icon shape-terminal terminal-" + host)
+      .attr("data-type", "start-terminal")
+      .attr("data-host", host)
+      .append("use").attr("xlink:href","#shape-terminal");
+    graphDiv.append("svg").attr("viewBox", "0 0 100 100")
+      .attr("class", "icon shape-share share-" + host)
+      .append("use").attr("xlink:href","#shape-to-radiator");
+    div.append("div")
+      .attr("class", "details details-" + host);
+  };
   return {
     init: function() {
       moduleElement = context.getElement();
@@ -127,7 +127,7 @@ Box.Application.addModule('horizon-index', function(context) {
       resetGraphs();
     },
     destroy: function() {
-      element = null;
+      moduleElement = null;
     },
     messages: ["timescale-changed", "metric-changed"],
     onclick: function(event, element, elementType) {
