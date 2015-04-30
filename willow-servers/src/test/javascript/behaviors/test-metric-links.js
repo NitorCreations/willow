@@ -1,4 +1,4 @@
-describe("Tests for navigation-common behavior", function() {
+describe("Tests for test-metric behavior", function() {
   var behavior, sandbox, contextFake;
 
   beforeEach(function() {
@@ -13,7 +13,7 @@ describe("Tests for navigation-common behavior", function() {
   });
   it('Clicking an element with "select-metric" type should send "metric-changed" message', function() {
     sandbox.mock(contextFake).expects('broadcast').once().withExactArgs("metric-changed", "cpu");
-    var target = $('<a id="cpu" href="#metric=cpu" data-type="select-metric">cpu</a>')[0];
+    var target = $('<a id="cpu" href="#metric=cpu" data-metric="cpu" data-type="select-metric">cpu</a>')[0];
     var event = $.Event('click', {
       target: target
     });
