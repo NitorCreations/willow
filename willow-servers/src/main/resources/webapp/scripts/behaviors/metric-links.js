@@ -9,7 +9,7 @@ Box.Application.addBehavior('metric-links', function(context) {
     },
     onclick: function(event, element, elementType) {
       if (elementType === 'select-metric') {
-        context.broadcast("metric-changed", utils.getUrlVariable(element.getAttribute("href").substring(1), "metric"));
+        context.broadcast("metric-changed", element.getAttribute("data-metric"));
       }
     }
   };

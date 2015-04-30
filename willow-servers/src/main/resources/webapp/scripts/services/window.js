@@ -1,4 +1,4 @@
-Box.Application.addService('window-service', function(application) {
+Box.Application.addService('window', function(application) {
   'use strict';
   // I'll add utilities here for communicating between browser windows
   // and keeping track of open windows

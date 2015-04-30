@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   #set ($env = $system.getProperty("env"))
   #if ($env == "dev")
+  #set ($debug = "true")
   #set ($wro = $xml.parse("classpath:wro.xml"))
   #set ($cssarr = $xml.xpath("//*[local-name()='css']", $wro))
   #foreach ($css in $cssarr)
@@ -23,6 +24,7 @@
   <!-- $key => $session.getAttribute($key) -->
   #end
   #else
+  #set ($debug = "false")
   <link type="text/css" rel="stylesheet" href="styles/all.css">
   <script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
   #end
@@ -32,11 +34,11 @@
 <nav class="nav" tabindex="-1">
   <div class="container" data-module="navigation-index">
     <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts"><use xlink:href="#shape-alarm"></use></svg>
-    <a id="cpu" href="#metric=cpu" data-type="select-metric">cpu</a>
-    <a id="mem" href="#metric=mem" data-type="select-metric">mem</a>
-    <a id="net" href="#metric=net" data-type="select-metric">net</a>
-    <a id="diskio" href="#metric=diskio" data-type="select-metric">io</a>
-    <a id="tcpinfo" href="#metric=tcpinfo" data-type="select-metric">connections</a>
+    <a id="cpu" data-metric="cpu" href="#" data-type="select-metric">cpu</a>
+    <a id="mem" data-metric="mem" href="#" data-type="select-metric">mem</a>
+    <a id="net" data-metric="net" href="#" data-type="select-metric">net</a>
+    <a id="diskio" data-metric="diskio" href="#" data-type="select-metric">io</a>
+    <a id="tcpinfo" data-metric="tcpinfo" href="#" data-type="select-metric">connections</a>
     <label for="timescale"> </label>
     <select id="timescale" class="navcenter smooth" data-type="select-timescale">
       <option value="10800">3h</option>
@@ -50,10 +52,8 @@
 </nav>
 <div id="chart" class="mainchart" data-module="horizon-index"></div>
 <script id="bootstrap-application" type="text/javascript">
-  resetGraphs();
-  shuffleNavigation();
   Box.Application.init({
-    debug: true
+    debug: $debug
   });
 </script>
 </body>

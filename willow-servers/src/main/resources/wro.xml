@@ -13,10 +13,9 @@
     <js>/scripts/cubism.v1.js</js>
     <js>/scripts/term.js</js>
     <js>/scripts/t3.js</js>
-    <js>/scripts/willow.js</js>
   </group>
   <group name="app">
-    <js>/scripts/services/window-service.js</js>
+    <js>/scripts/services/window.js</js>
     <js>/scripts/services/utils.js</js>
     <js>/scripts/behaviors/metric-links.js</js>
     <js>/scripts/behaviors/navigation-common.js</js>
