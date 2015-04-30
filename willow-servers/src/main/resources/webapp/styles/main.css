@@ -41,31 +41,21 @@ header {
 }
 
 .axis.top {
-  background-image: linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
+  background-image: linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)  100%);
+  background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   top: 0px;
   padding: 0 0 24px 0;
 }
 
 .axis.bottom {
-  background-image: linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
-  background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0)
-    100%);
+  background-image: linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   bottom: 0px;
   padding: 24px 0 0 0;
 }
@@ -168,7 +158,7 @@ body, textarea, input, select {
   border-radius: 0;
   color: inherit;
   font: 16px sans-serif;
-  margin: 0
+  margin: 0;
 }
 
 select {
@@ -180,35 +170,35 @@ select {
 
 .addon, .btn-sm, .nav, textarea, input, select {
   outline: 0;
-  font-size: 14px
+  font-size: 14px;
 }
 
 .smooth {
-  transition: all .2s
+  transition: all .2s;
 }
 
 .btn, .nav a {
-  text-decoration: none
+  text-decoration: none;
 }
 
 .container {
   margin: 0 20px;
-  width: auto
+  width: auto;
 }
 
-@media ( min-width :1310px) {
+@media (min-width: 1310px) {
   .container {
     margin: 0 20px;
-    width: 100% px
+    width: 100%;
   }
 }
 
 .btn, h2 {
-  font-size: 2em
+  font-size: 2em;
 }
 
 h1 {
-  font-size: 3em
+  font-size: 3em;
 }
 
 .btn {
@@ -219,80 +209,80 @@ h1 {
   cursor: pointer;
   display: inline-block;
   margin: 2px 0;
-  padding: 12px 30px 14px
+  padding: 12px 30px 14px;
 }
 
 .btn:hover {
-  background: #888
+  background: #888;
 }
 
 .btn:active, .btn:focus {
-  background: #777
+  background: #777;
 }
 
 .btn-a {
-  background: #0ae
+  background: #0ae;
 }
 
 .btn-a:hover {
-  background: #09d
+  background: #09d;
 }
 
 .btn-a:active, .btn-a:focus {
-  background: #08b
+  background: #08b;
 }
 
 .btn-b {
-  background: #3c5
+  background: #3c5;
 }
 
 .btn-b:hover {
-  background: #2b4
+  background: #2b4;
 }
 
 .btn-b:active, .btn-b:focus {
-  background: #2a4
+  background: #2a4;
 }
 
 .btn-c {
-  background: #d33
+  background: #d33;
 }
 
 .btn-c:hover {
-  background: #c22
+  background: #c22;
 }
 
 .btn-c:active, .btn-c:focus {
-  background: #b22
+  background: #b22;
 }
 
 .btn-sm {
   border-radius: 4px;
-  padding: 10px 14px 11px
+  padding: 10px 14px 11px;
 }
 
 label>* {
-  display: inline
+  display: inline;
 }
 
 form>* {
   display: block;
-  margin-bottom: 10px
+  margin-bottom: 10px;
 }
 
 textarea, input, select {
   border: 1px solid #ccc;
-  padding: 2px 4px
+  padding: 2px 4px;
 }
 
 textarea:focus, input:focus, select:focus {
-  border-color: #5ab
+  border-color: #5ab;
 }
 
 textarea, input[type=text] {
   -webkit-appearance: none;
   width: 13em;
-  outline: 0
+  outline: 0;
 }
 
 .addon {
@@ -319,7 +309,7 @@ textarea, input[type=text] {
   color: #aaa;
   padding-right: 1em;
   position: relative;
-  top: -1px
+  top: -1px;
 }
 
 .btn.btn-close {
@@ -327,21 +317,21 @@ textarea, input[type=text] {
   float: right;
   font-size: 25px;
   margin: -54px 7px;
-  display: none
+  display: none;
 }
 
-@media ( max-width :500px) {
+@media (max-width :500px) {
   .btn.btn-close {
-    display: block
+    display: block;
   }
   .nav {
-    overflow: hidden
+    overflow: hidden;
   }
   .pagename {
-    margin-top: -11px
+    margin-top: -11px;
   }
   .nav:active, .nav:focus {
-    height: auto
+    height: auto;
   }
   .nav div:before {
     background: #000;
@@ -353,16 +343,16 @@ textarea, input[type=text] {
     position: relative;
     right: 3px;
     top: 14px;
-    width: 20px
+    width: 20px;
   }
   .nav a {
     display: block;
     padding: .5em 0;
-    width: 50%
+    width: 50%;
   }
   .nav .current {
     padding: 3px 0 2em;
-    top: 14px
+    top: 14px;
   }
   select.navcenter {
     position: absolute;
@@ -373,84 +363,84 @@ textarea, input[type=text] {
 
 .table th, .table td {
   padding: .5em;
-  text-align: left
+  text-align: left;
 }
 
 .table tbody>:nth-child(2n-1) {
-  background: #ddd
+  background: #ddd;
 }
 
 .ico {
-  font: 33px Arial Unicode MS, Lucida Sans Unicode
+  font: 33px Arial Unicode MS, Lucida Sans Unicode;
 }
 
 .row {
   margin: 1% 0;
-  overflow: auto
+  overflow: auto;
 }
 
 .col {
-  float: left
+  float: left;
 }
 
 .table, .c12 {
-  width: 100%
+  width: 100%;
 }
 
 .c11 {
-  width: 91.66%
+  width: 91.66%;
 }
 
 .c10 {
-  width: 83.33%
+  width: 83.33%;
 }
 
 .c9 {
-  width: 75%
+  width: 75%;
 }
 
 .c8 {
-  width: 66.66%
+  width: 66.66%;
 }
 
 .c7 {
-  width: 58.33%
+  width: 58.33%;
 }
 
 .c6 {
-  width: 50%
+  width: 50%;
 }
 
 .c5 {
-  width: 41.66%
+  width: 41.66%;
 }
 
 .c4 {
-  width: 33.33%
+  width: 33.33%;
 }
 
 .c3 {
-  width: 25%
+  width: 25%;
 }
 
 .c2 {
-  width: 16.66%
+  width: 16.66%;
 }
 
 .c1 {
-  width: 8.33%
+  width: 8.33%;
 }
 
-@media ( max-width :870px) {
+@media (max-width :870px) {
   .row .col {
-    width: 100%
+    width: 100%;
   }
 }
 
 .msg {
   background: #def;
   border-left: 5px solid #59d;
-  padding: 1.5em
+  padding: 1.5em;
 }
 
 .icon {
@@ -498,6 +488,7 @@ select.navcenter {
   width: 1.3em;
   opacity: 0.5;
 }
+
 .icon:hover {
   opacity: 1;
 }
