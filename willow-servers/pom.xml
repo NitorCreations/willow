@@ -168,6 +168,16 @@
               <options>devel,evil,noarg</options>
             </configuration>
           </execution>
+            <execution>
+                <id>csslint</id>
+                <phase>test</phase>
+                <goals>
+                    <goal>csslint</goal>
+                </goals>
+                <configuration>
+                    <targetGroups>app</targetGroups>
+                </configuration>
+            </execution>
         </executions>
         <configuration>
           <minimize>true</minimize>
