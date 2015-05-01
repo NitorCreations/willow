@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <groups xmlns="http://www.isdc.ro/wro">
   <group name="all">
-   <group-ref>libs</group-ref>
-   <group-ref>app</group-ref>
+    <group-ref>libs</group-ref>
+    <group-ref>app</group-ref>
   </group>
   <group name="libs">
     <css>/styles/nv.d3.css</css>
-    <css>/styles/main.css</css>
     <js>/scripts/jquery.js</js>
     <js>/scripts/d3.v3.js</js>
     <js>/scripts/nv.d3.js</js>
@@ -15,6 +14,7 @@
     <js>/scripts/t3.js</js>
   </group>
   <group name="app">
+    <css>/styles/main.css</css>
     <js>/scripts/services/window.js</js>
     <js>/scripts/services/utils.js</js>
     <js>/scripts/behaviors/metric-links.js</js>
