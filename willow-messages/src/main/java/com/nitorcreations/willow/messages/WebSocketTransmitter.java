@@ -1,12 +1,16 @@
 package com.nitorcreations.willow.messages;
 
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
@@ -22,10 +26,18 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
+import com.jcraft.jsch.Identity;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.agentproxy.AgentProxyException;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.ConnectorFactory;
+import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
+
 public class WebSocketTransmitter {
   private long flushInterval = 2000;
   private URI uri;
-
+  private String username;
+  
   private final Logger logger = Logger.getLogger(this.getClass().getName());
   private final ArrayBlockingQueue<AbstractMessage> queue = new ArrayBlockingQueue<AbstractMessage>(200);
   private final Worker worker = new Worker();
@@ -45,6 +57,7 @@ public class WebSocketTransmitter {
   }
 
   public WebSocketTransmitter() {
+    this.username = System.getProperty("user.name", "willow");
   }
   public long getFlushInterval() {
     return flushInterval;
@@ -57,6 +70,9 @@ public class WebSocketTransmitter {
   }
   public void setUri(URI uri) {
     this.uri = uri;
+    if (uri.getUserInfo() != null && uri.getUserInfo() != null) {
+      this.username = uri.getUserInfo().split(":")[0];
+    }
   }
   
   public void start() {
@@ -87,6 +103,14 @@ public class WebSocketTransmitter {
       return false;
     }
     return true;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
   }
 
   @WebSocket
@@ -174,6 +198,7 @@ public class WebSocketTransmitter {
       client.start();
       ClientUpgradeRequest request = new ClientUpgradeRequest();
       synchronized (this) {
+        request.setHeader("Authorization", "PUBLICKEY " + getAuthorization());
         Future<Session> future = client.connect(this, uri, request);
         logger.info(String.format("Connecting to : %s", uri));
         try {
@@ -193,7 +218,27 @@ public class WebSocketTransmitter {
         }
       }
     }
-
+    private String getAuthorization() {
+      StringBuilder ret = new StringBuilder();
+      String now = "" + System.currentTimeMillis();
+      Connector con = null;
+      try {
+        ConnectorFactory cf = ConnectorFactory.getDefault();
+        con = cf.createConnector();
+      } catch (AgentProxyException e) {
+        System.out.println(e);
+      }
+      byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
+      ret.append(printBase64Binary(sign));
+      if (con != null) {
+        IdentityRepository irepo = new RemoteIdentityRepository(con);
+        for (Identity id : (List<Identity>)irepo.getIdentities()) {
+          byte[] sig = id.getSignature(sign);
+          ret.append(" ").append(printBase64Binary(sig));
+        }
+      }
+      return ret.toString();
+    }
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
       logger.info(String.format("Connection closed: %d - %s", statusCode, reason));
