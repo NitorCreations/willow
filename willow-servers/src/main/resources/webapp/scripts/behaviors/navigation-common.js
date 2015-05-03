@@ -3,7 +3,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
   var windowSvc;
   return {
     init: function() {
-      windowSvc = context.getService("window-service");
+      windowSvc = context.getService("window");
     },
     destroy: function() {
       windowSvc = null;
@@ -11,7 +11,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
     onclick: function(event, element, elementType) {
       switch (elementType) {
         case 'alerts':
-          windowSvc.open("alerts.html", "index-alerts");
+          windowSvc.openAlerts();
           break;
       }
     },
@@ -21,6 +21,6 @@ Box.Application.addBehavior('navigation-common', function(context) {
           context.broadcast("timescale-changed", element.children[element.selectedIndex].getAttribute("value"));
           break;
       }
-    },
+    }
   };
 });
