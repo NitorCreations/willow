@@ -19,6 +19,8 @@ $ cd willow
 $ mvn clean install
 ```
 Please note that building requires unlimited JCE to be installed (openjdk has this out of the  box, oracle jdk needs you to download a set of jars and extract them http://lmgtfy.com/?q=install+jce)
+
+Deployer agent authenticetes with ssh agent signatures by default so you need to add a public key that matches a private key loaded into your ssh agent into willow-servers/src/main/resources/authorized_keys in openssh authorized_keys format.
 ```
 $ willow-deployer/target/deployer.sh start test file:src/test/resources/develop-servers.properties
 ```
