@@ -6,7 +6,7 @@ describe("Tests for navigation-common behavior", function() {
       openAlerts: function() {}
     };
     contextFake = new Box.TestServiceProvider({
-      'window-service': windowSvc
+      'window': windowSvc
     });
     behavior = Box.Application.getBehaviorForTest('navigation-common', contextFake);
     behavior.init();
