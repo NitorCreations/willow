@@ -52,6 +52,6 @@ public class WillowShiroModule extends ShiroWebModule {
     return AUTHC_BASIC;
   }
   protected Key<? extends Filter> getDeployerFilter() {
-    return Key.get(PublicKeyAuthenticationFilter.class);
+    return ANON;
   }
 }
