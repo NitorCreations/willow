@@ -25,7 +25,7 @@ Box.Application.addModule('horizon-index', function(context) {
   var stateInHash = function() {
     var hash = window.location.hash ? window.location.hash.substring(1) : "";
     hash = utils.addOrReplaceUrlVariable(utils.addOrReplaceUrlVariable(hash, "metric", metric), "timescale", timescale);
-    windowSvc.setHash(hash);
+    windowSvc.setHash(hash); //FIXME could this information be passed somehow differently to module?
     $(".nav .container a").each(function(index, element) {
       $(element).attr("class", "");
       $(element).attr("href", "#" + utils.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("data-metric")));
@@ -134,10 +134,10 @@ Box.Application.addModule('horizon-index', function(context) {
       var host = element ? element.getAttribute("data-host") : null;
       switch (elementType) {
         case 'start-terminal':
-          windowSvc.open("shell.html?user=pasi&host=" + host, "_blank");
+          windowSvc.openTerminalToHost("pasi", host); //FIXME paratemetize user
           break;
         case 'to-radiator':
-          windowSvc.open("radiator.html?host=" + host, "radiator-" + host);
+          windowSvc.openRadiatorForHost(host);
           break;
         case 'close':
           break;
