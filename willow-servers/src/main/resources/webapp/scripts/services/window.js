@@ -1,13 +1,29 @@
 Box.Application.addService('window', function(application) {
   'use strict';
-  // I'll add utilities here for communicating between browser windows
-  // and keeping track of open windows
-  // For example you need to be able to add a graph to an open radiator
+  // Add utilities here for communicating between browser windows
+  // and keeping track of open windows, .i.e. routing component
+
+  function _open(url, target) {
+    window.open(url, target);
+  }
+
+  function openRadiator(host) {
+    _open("radiator.html?host=" + host, "radiator-" + host);
+  }
+
+  function openTerminal(user, host) {
+    _open("shell.html?user=" + user + "&host=" + host, "_blank");
+  }
+
+  function openAlerts() {
+    _open("alerts.html", "index-alerts");
+  }
+
   return {
-    open: function(url, target) {
-      window.open(url, target);
-    },
-    setHash: function(hash) {
+    openRadiatorForHost: openRadiator,
+    openTerminalToHost: openTerminal,
+    openAlerts: openAlerts,
+    setHash: function(hash) { //FIXME define deeplinking contract
       window.location.hash = "#" + hash;
     }
   };
