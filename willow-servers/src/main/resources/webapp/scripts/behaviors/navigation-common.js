@@ -3,7 +3,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
   var windowSvc;
   return {
     init: function() {
-      windowSvc = context.getService("window-service");
+      windowSvc = context.getService("window");
     },
     destroy: function() {
       windowSvc = null;
