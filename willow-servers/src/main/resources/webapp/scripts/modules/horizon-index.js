@@ -1,6 +1,8 @@
 Box.Application.addModule('horizon-index', function(context) {
   'use strict';
+
   var moduleElement, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext, graphEnd, stop;
+
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
   var metricMap = {
@@ -10,6 +12,7 @@ Box.Application.addModule('horizon-index', function(context) {
     "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors },
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors }
   };
+
   var deployer_metric = function(name, tag, stop, step) {
     var hostTag = tag;
     return cubismContext.metric(function(start, stop, step, callback) {
@@ -22,6 +25,7 @@ Box.Application.addModule('horizon-index', function(context) {
       });
     }, name += "");
   };
+
   var stateInHash = function() {
     var hash = window.location.hash ? window.location.hash.substring(1) : "";
     hash = utils.addOrReplaceUrlVariable(utils.addOrReplaceUrlVariable(hash, "metric", metric), "timescale", timescale);
@@ -35,6 +39,7 @@ Box.Application.addModule('horizon-index', function(context) {
       $("#" + metric).prependTo(".nav .container");
     }
   };
+
   var resetGraphs = function() {
     stop = new Date().getTime();
     if (graphEnd) stop = graphEnd;
@@ -67,6 +72,7 @@ Box.Application.addModule('horizon-index', function(context) {
           .call(cubismContext.rule());
     });
   };
+
   var initGraphs = function() {
     var step = parseInt((timescale * 1000) / $(window).width());
     var start = stop - (timescale * 1000);
@@ -118,18 +124,22 @@ Box.Application.addModule('horizon-index', function(context) {
       d3 = context.getGlobal("d3");
       cubism = context.getGlobal("cubism");
       $ = context.getGlobal("jQuery");
-      metric = utils.getUrlVariable(hash, metric);
+
       var hash = window.location.hash ? window.location.hash.substring(1) : "";
-      if (!metric) metric = "cpu";
-      timescale = utils.getUrlVariable(hash, timescale);
-      if (!timescale) timescale = 10800;
+
+      metric = utils.getUrlVariable(hash, metric) || "cpu";
+      timescale = utils.getUrlVariable(hash, timescale) || 10800;
+
       stateInHash();
       resetGraphs();
     },
+
     destroy: function() {
       moduleElement = null;
     },
+
     messages: ["timescale-changed", "metric-changed"],
+
     onclick: function(event, element, elementType) {
       var host = element ? element.getAttribute("data-host") : null;
       switch (elementType) {
@@ -143,6 +153,7 @@ Box.Application.addModule('horizon-index', function(context) {
           break;
       }
     },
+
     onmessage: function(name, data) {
       switch (name) {
         case 'timescale-changed':
@@ -153,11 +164,13 @@ Box.Application.addModule('horizon-index', function(context) {
           break;
       }
     },
+
     setTimescale: function(scale) {
       timescale = scale;
       stateInHash();
       resetGraphs();
     },
+
     setMetric: function(metricName) {
       metric = metricName;
       stateInHash();
