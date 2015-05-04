@@ -4,6 +4,7 @@ describe("Tests for horizon-index module", function() {
   beforeEach(function() {
     windowSvc = {
       openRadiatorForHost: function(host) {},
+      sendGraphToRadiator: function(host) {},
       openTerminalToHost: function(user, host) {},
       setHash: function() {}
     };
@@ -53,12 +54,21 @@ describe("Tests for horizon-index module", function() {
   });
 
   it('Clicking an element with "to-radiator"" type should open the radiator window', function() {
-    sandbox.mock(windowSvc).expects('openRadiatorForHost').once().withExactArgs("test");
+    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs('{ "type": "horizon", "host": "test", "metric": "cpu" }', "newradiator");
     var target = $(' <svg data-type="start-terminal" data-host="test"></svg>')[0];
     var event = $.Event('click', {
       target: target
     });
     module.onclick(event, target, 'to-radiator');
+  });
+
+  it('Clicking an element with "host-radiator"" type should open the radiator window', function() {
+    sandbox.mock(windowSvc).expects('openRadiatorForHost').once().withExactArgs("test");
+    var target = $(' <a data-type="host-radiator" data-host="test">test</a>')[0];
+    var event = $.Event('click', {
+      target: target
+    });
+    module.onclick(event, target, 'host-radiator');
   });
 
   it('Receiving a "metric-changed" message should result calling setMetric', function() {

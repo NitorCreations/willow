@@ -111,8 +111,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     horizonGraphElements.call(appendHorizonGraph, host, metricSettings);
     horizonGraphElements.call(appendTerminalIcon, host);
     horizonGraphElements.call(appendShareRadiatorIcon, host);
-
-    parentElement.call(appendDetailsScreen, host);
+    horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
   var debouncer = function(func , timeout) {
@@ -134,7 +133,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
   }
 
   function appendTerminalIcon(parentElement, host) {
-    return parentElement.append("svg").attr("viewBox", "0 0 124 124")
+    return parentElement.append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon shape-terminal terminal-" + host, true)
         .attr("data-type", "start-terminal")
         .attr("data-host", host)
@@ -147,8 +146,9 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
         .append("use").attr("xlink:href", "#shape-to-radiator");
   }
 
-  function appendDetailsScreen(parentElement, host) {
-    return parentElement.append("div").classed("details details-" + host, true);
+  function appendHostRadiatorLink(parentElement, title, host) {
+    return parentElement.append("div").classed("host-link", true).text(title).append("a").attr("href", "radiator.html?host=" + host)
+      .attr("data-host", host).attr("data-type", "host-radiator").text(host);
   }
 
   function configureHorizonGraph(host, metricSettings) {
@@ -157,7 +157,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
         .colors(metricSettings.colors)
         .extent(metricSettings.extent)
         .format(d3.format(metricSettings.format))
-        .title(metricSettings.title + host);
+        .title(null);
   }
 
   return {
@@ -194,9 +194,12 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
           windowSvc.openTerminalToHost(user, host);
           break;
         case 'to-radiator':
-          windowSvc.openRadiatorForHost(host);
+          windowSvc.sendGraphToRadiator('{ "type": "horizon", "host": "' + host + '", "metric": "' + metric + '" }', "newradiator");
           break;
         case 'close':
+          break;
+        case 'host-radiator':
+          windowSvc.openRadiatorForHost(host);
           break;
       }
     },
