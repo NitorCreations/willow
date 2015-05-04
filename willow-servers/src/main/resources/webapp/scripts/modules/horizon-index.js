@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-index', function(context) { //FIXME rename to cloud|summary|?|-index?
   'use strict';
 
-  var moduleElement, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext, graphEnd, stop;
+  var moduleElement, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext;
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
@@ -12,6 +12,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors, height: 50 },
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
+  var user = "pasi";
 
   var deployer_metric = function(name, tag, stop, step) {
     var hostTag = tag;
@@ -41,49 +42,57 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
   };
 
   var resetGraphs = function() {
-    stop = new Date().getTime();
-    if (graphEnd) stop = graphEnd;
+    var widthInPx = $(window).width();
+    var step = parseInt(timescale * 1000 / widthInPx);
+    var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
-    var size = $(window).width();
-    var step = parseInt(timescale * 1000 / size);
+
+    resetCubismContext(step, widthInPx);
+    removeExistingGraphs();
+    initGraphLayout(widthInPx);
+    initGraphs(metric, start, stop, step);
+  };
+
+  function resetCubismContext(step, widthInPixels) {
     if (cubismContext) cubismContext.stop();
     cubismContext = cubism.context()
         .step(step)
-        .size(size)
+        .size(widthInPixels)
         .start();
-    d3.selectAll(".horizon").call(cubismContext.horizon().remove).remove();
-    d3.selectAll(".axis").remove();
-    d3.selectAll(".rule").remove();
-    d3.select("#chart").attr("style", "width: " + size + "px");
-    d3.select("#chart").call(function(div) {
-      div.append("div")
-          .attr("class", "axis")
+    cubismContext.on("focus", function(i) {
+      d3.selectAll(".horizon .value").style("right", i === null ? null : cubismContext.size() - i + "px");
+    });
+  }
+
+  function initGraphLayout(widthInPixels) {
+    d3.select("#chart").attr("style", "width: " + widthInPixels + "px");
+    d3.select("#chart").call(function(container) {
+      container.append("div")
+          .classed("axis", true)
           .call(cubismContext.axis()
               .orient("top")
               .tickFormat(d3.time.format("%H:%M")));
     });
-    initGraphs();
-    cubismContext.on("focus", function(i) {
-      d3.selectAll(".horizon .value").style("right", i === null ? null : cubismContext.size() - i + "px");
-    });
-    d3.select("#chart").call(function(div) {
-      div.append("div")
-          .attr("class", "rule")
+    d3.select("#chart").call(function(container) {
+      container.append("div")
+          .classed("rule", true)
           .call(cubismContext.rule());
     });
-  };
+  }
 
-  var initGraphs = function() {
-    var step = parseInt((timescale * 1000) / $(window).width());
-    var start = stop - (timescale * 1000);
-    d3.json("metrics/hosts" +
-    "?start=" + start +
-    "&stop=" + stop +
-    "&type=" + metric, function(data) {
-      $(".horizon").unbind("mousedown");
+  function removeExistingGraphs() {
+    d3.selectAll(".horizon").call(cubismContext.horizon().remove).remove();
+    d3.selectAll(".axis").remove();
+    d3.selectAll(".rule").remove();
+  }
+
+  var initGraphs = function(metric, start, stop, step) {
+    var dataUrl = "metrics/hosts" + "?start=" + start + "&stop=" + stop + "&type=" + metric;
+    d3.json(dataUrl, function(data) {
+      $(".horizon").unbind("mousedown"); //FIXME should be done somewhere else
       data.sort();
       if (!data) return new Error("unable to load data");
-      for (var i=0; i<data.length; i++) {
+      for (var i=0; i< data.length; i++) {
         var host = data[i].substring(5);
         if ( ! $(".horizon-" + host).length ) {
           var metricSettings = $(metricMap).attr(metric);
@@ -105,6 +114,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
 
     parentElement.call(appendDetailsScreen, host);
   };
+
   var debouncer = function(func , timeout) {
     var timeoutID , tmOut = timeout || 200;
     return function () {
@@ -115,6 +125,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       } , tmOut );
     };
   };
+
   function appendHorizonGraph(parentElement, host, metricSettings) {
     return parentElement
         .classed("horizon horizon-" + host + " horizoncpu-" + host, true)
@@ -180,7 +191,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       var host = element ? element.getAttribute("data-host") : null;
       switch (elementType) {
         case 'start-terminal':
-          windowSvc.openTerminalToHost("pasi", host); //FIXME paratemetize user
+          windowSvc.openTerminalToHost(user, host);
           break;
         case 'to-radiator':
           windowSvc.openRadiatorForHost(host);
