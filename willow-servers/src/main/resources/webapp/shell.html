@@ -47,7 +47,9 @@
     	    var term = new Terminal({
     	      cols: nCols,
     	      rows: nRows,
-    	      screenKeys: true
+              screenKeys: true,
+              cursorBlink: true,
+              useStyles: true
     	    });
     	    term.on('data', function(data) {
     	      socket.send(data);
@@ -78,6 +80,10 @@
     <style type="text/css">
 	body {
 	  font-family: "Lucida Console", Monaco, monospace
+	}
+	.reverse-video {
+	  outline: none;
+	  color: rgb(0, 0, 0); background-color: rgb(240, 240, 240);
 	}
     </style>
   </head>
