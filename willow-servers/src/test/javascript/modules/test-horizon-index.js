@@ -21,6 +21,7 @@ describe("Tests for horizon-index module", function() {
       call: function() { return this; },
       select: function() { return this; },
       attr: function() { return this; },
+      resize: function() { return this; },
       remove: function() { return this; }
     };
     jquery = {
