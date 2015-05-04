@@ -18,9 +18,18 @@ Box.Application.addService('window', function(application) {
   function openAlerts() {
     _open("alerts.html", "index-alerts");
   }
+  
+  function sendToRadiator(graphSpec, radiatorname) {
+    // Actually should
+    // 1) Check if named radiator is alredy open
+    // 1.1) If so, signal that window to add graph
+    // 2) Otherwise open new window and get that window to add the graph (maybe simply with a query param)
+    _open("radiator.html?graph=" + graphSpec, "radiator-" + radiatorname);
+  }
 
   return {
     openRadiatorForHost: openRadiator,
+    sendGraphToRadiator: sendToRadiator,
     openTerminalToHost: openTerminal,
     openAlerts: openAlerts,
     setHash: function(hash) { //FIXME define deeplinking contract
