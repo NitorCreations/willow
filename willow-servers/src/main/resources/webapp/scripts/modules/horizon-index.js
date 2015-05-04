@@ -105,7 +105,16 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
 
     parentElement.call(appendDetailsScreen, host);
   };
-
+  var debouncer = function(func , timeout) {
+    var timeoutID , tmOut = timeout || 200;
+    return function () {
+      var scope = this , args = arguments;
+      clearTimeout( timeoutID );
+      timeoutID = setTimeout( function () {
+        func.apply( scope , Array.prototype.slice.call( args ) );
+      } , tmOut );
+    };
+  };
   function appendHorizonGraph(parentElement, host, metricSettings) {
     return parentElement
         .classed("horizon horizon-" + host + " horizoncpu-" + host, true)
@@ -156,6 +165,9 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
 
       stateInHash();
       resetGraphs();
+      $(window).resize(debouncer(function (e) {
+        resetGraphs();
+      }));
     },
 
     destroy: function() {
