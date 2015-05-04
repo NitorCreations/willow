@@ -84,6 +84,11 @@ public class WebSocketTransmitter {
   public void stop() {
     if (workerThread.isAlive()) {
       worker.stop();
+      try {
+        workerThread.join(5000);
+      } catch (InterruptedException e) {
+        workerThread.interrupt();
+      }
     }
   }
   public boolean isRunning() {
@@ -119,18 +124,19 @@ public class WebSocketTransmitter {
     private final ArrayList<AbstractMessage> send = new ArrayList<AbstractMessage>();
     private Session wsSession;
     private WebSocketClient client = new WebSocketClient();
-
+    
     @Override
     public void run() {
       synchronized (this) {
-        while (running) {
+        while (running && !Thread.currentThread().isInterrupted()) {
           try {
             try {
               if ((!client.isRunning() && !client.isStarting()) || client.isFailed()) {
                 connect();
               }
             } catch (Exception e) {
-              throw new RuntimeException("Failed to connect to " + uri.toString(), e);
+              logger.log(Level.WARNING, "Failed to connect to " + uri.toString(), e);
+              continue;
             }
             try {
               this.wait(flushInterval);
@@ -196,6 +202,9 @@ public class WebSocketTransmitter {
       wsSession = null;
       client = new WebSocketClient();
       client.start();
+      client.setAsyncWriteTimeout(5000);
+      client.setConnectTimeout(2000);
+      client.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
       synchronized (this) {
         request.setHeader("Authorization", "PUBLICKEY " + getAuthorization());

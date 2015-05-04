@@ -271,6 +271,7 @@ public class Main extends DeployerControl implements MainMBean {
         }
       }
       stopexec.shutdownNow();
+      transmitter.stop();
     }
     super.stop();
   }
