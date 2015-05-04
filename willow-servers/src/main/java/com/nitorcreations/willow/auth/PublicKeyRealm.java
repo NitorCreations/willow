@@ -42,50 +42,55 @@ public class PublicKeyRealm implements Realm {
     PublicKeyAuthenticationToken pkToken = (PublicKeyAuthenticationToken)token;
     boolean found = false;
     for (AuthorizedKey next : authorizedKeys.keys()) {
-      Signature sig = null;
-      if ("ssh-dss".equals(next.type)) {
-        SignatureDSA dsaSig = new SignatureDSA();
-        try {
-          dsaSig.init();
-        } catch (Exception e) {
-          assert false: "These algorithms should always be available";
+      for (byte[] nextSig : pkToken.getSignatures()) {
+        String type = new String(AuthorizedKeys.components(nextSig).get(0));
+        if (!type.equals(next.type)) continue;
+        Signature sig = null;
+        if ("ssh-dss".equals(next.type)) {
+          SignatureDSA dsaSig = new SignatureDSA();
+          try {
+            dsaSig.init();
+          } catch (Exception e) {
+            assert false: "These algorithms should always be available";
+          }
+          try {
+            dsaSig.setPubKey(next.keycomponents.get(4), next.keycomponents.get(1), 
+              next.keycomponents.get(2), next.keycomponents.get(3));
+          } catch (Exception e) {
+            log.log(Level.WARNING, "Failed to set public key", e);
+            continue;
+          }
+          sig = dsaSig;
+        } else if ("ssh-rsa".equals(next.type)) {
+          SignatureRSA rsaSig = new SignatureRSA();
+          try {
+            rsaSig.init();
+          } catch (Exception e) {
+            assert false: "These algorithms should always be available";
+          }
+          try {
+            rsaSig.setPubKey(next.keycomponents.get(1), next.keycomponents.get(2));
+          } catch (Exception e) {
+            log.log(Level.WARNING, "Failed to set public key", e);
+            continue;
+          }
+          sig = rsaSig;
         }
+        boolean verified = false;
         try {
-          dsaSig.setPubKey(next.keycomponents.get(4), next.keycomponents.get(1), 
-            next.keycomponents.get(2), next.keycomponents.get(3));
-        } catch (Exception e) {
-          log.log(Level.WARNING, "Failed to set public key", e);
-          continue;
-        }
-        sig = dsaSig;
-      } else if ("ssh-rsa".equals(next.type)) {
-        SignatureRSA rsaSig = new SignatureRSA();
-        try {
-          rsaSig.init();
-        } catch (Exception e) {
-          assert false: "These algorithms should always be available";
-        }
-        try {
-          rsaSig.setPubKey(next.keycomponents.get(1), next.keycomponents.get(2));
-        } catch (Exception e) {
-          log.log(Level.WARNING, "Failed to set public key", e);
-          continue;
-        }
-        sig = rsaSig;
-      }
-      boolean verified = false;
-      try {
-        sig.update(pkToken.getSign());
-        for (byte[] nextSig : pkToken.getSignatures()) {
-          verified = sig.verify(nextSig);
+          sig.update(pkToken.getSign());
+          try {
+            verified = sig.verify(nextSig);
+          } catch (Throwable t) { // verify failed
+          }
           if (verified) {
             found = true;
             break;
           }
+        } catch (Exception e) {
+          log.log(Level.WARNING, "Failed to verify signature", e);
+          continue;
         }
-      } catch (Exception e) {
-        log.log(Level.WARNING, "Failed to verify signature", e);
-        continue;
       }
     }
     if (found) {
