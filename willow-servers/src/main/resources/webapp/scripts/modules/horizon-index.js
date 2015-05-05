@@ -13,19 +13,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
 
-  var deployer_metric = function(name, tag, stop, step) {
-    var hostTag = tag;
-    return cubismContext.metric(function(start, stop, step, callback) {
-      d3.json("metrics/" + name +
-      "?start=" + start.getTime() +
-      "&stop=" + stop.getTime() +
-      "&step=" + step + "&tag=" + hostTag, function(data) {
-        if (!data) return callback(new Error("unable to load data"));
-        callback(null, data.map(function(d) { return d.value; }));
-      });
-    }, name += "");
-  };
-
   var resetGraphs = function() {
     var widthInPx = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPx);
@@ -71,22 +58,43 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     d3.selectAll(".rule").remove();
   }
 
-  var initGraphs = function(metric, start, stop, step) {
+  function initGraphs(metric, start, stop, step) {
     var dataUrl = "metrics/hosts" + "?start=" + start + "&stop=" + stop + "&type=" + metric;
-    d3.json(dataUrl, function(data) {
+    d3.json(dataUrl, function(hosts) {
+      if (!hosts) return new Error("unable to load data");
+      hosts.sort();
+      hosts.map(resolveHostName)
+          .filter(horizonGraphNotExists)
+          .forEach(function (tag) {
+            var metricSettings = $(metricMap).attr(metric);
+            var chart = metricsChart(metric, tag.raw, stop, step);
+            d3.select("#chart").call(createHorizon, tag.host, chart, metricSettings);
+          });
       $(".horizon").unbind("mousedown"); //FIXME should be done somewhere else
-      data.sort();
-      if (!data) return new Error("unable to load data");
-      for (var i=0; i< data.length; i++) {
-        var host = data[i].substring(5);
-        if ( ! $(".horizon-" + host).length ) {
-          var metricSettings = $(metricMap).attr(metric);
-          var chart = deployer_metric(metric, data[i], stop, step);
-          d3.select("#chart").call(createHorizon, host, chart, metricSettings);
-        }
-      }
     });
-  };
+
+    function resolveHostName(tag) {
+      return { raw: tag, host: tag.substring(5) };
+    }
+
+    function horizonGraphNotExists(tag) {
+      return !$(".horizon-" + tag.host).length;
+    }
+  }
+
+  function metricsChart(type, instanceTag, stop, step) {
+    return cubismContext.metric(function(start, stop, step, callback) {
+      var dataUrl = "metrics/" + type +
+          "?start=" + start.getTime() +
+          "&stop=" + stop.getTime() +
+          "&step=" + step +
+          "&tag=" + instanceTag;
+      d3.json(dataUrl, function(data) {
+        if (!data) return callback(new Error("unable to load data"));
+        callback(null, data.map(function(d) { return d.value; }));
+      });
+    }, String(type));
+  }
 
   var createHorizon = function(parentElement, host, chart, metricSettings) {
     var horizonGraphElements = parentElement.selectAll(".horizon-" + host)
@@ -97,17 +105,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     horizonGraphElements.call(appendTerminalIcon, host);
     horizonGraphElements.call(appendShareRadiatorIcon, host);
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
-  };
-
-  var debouncer = function(func , timeout) {
-    var timeoutID , tmOut = timeout || 200;
-    return function () {
-      var scope = this , args = arguments;
-      clearTimeout( timeoutID );
-      timeoutID = setTimeout( function () {
-        func.apply( scope , Array.prototype.slice.call( args ) );
-      } , tmOut );
-    };
   };
 
   function appendHorizonGraph(parentElement, host, metricSettings) {
@@ -132,8 +129,11 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
   }
 
   function appendHostRadiatorLink(parentElement, title, host) {
-    return parentElement.append("div").classed("host-link", true).text(title).append("a").attr("href", "radiator.html?host=" + host)
-      .attr("data-host", host).attr("data-type", "host-radiator").text(host);
+    return parentElement.append("div").classed("host-link", true)
+        .text(title).append("a")
+        .attr("href", "radiator.html?host=" + host)
+        .attr("data-host", host)
+        .attr("data-type", "host-radiator").text(host);
   }
 
   function configureHorizonGraph(host, metricSettings) {
@@ -155,10 +155,10 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       $ = context.getGlobal("jQuery");
       metric = utils.getHashVariable("metric") || "cpu";
       timescale = utils.getHashVariable("timescale") || 10800;
+
+      $(window).resize(utils.debouncer(resetGraphs));
+
       resetGraphs();
-      $(window).resize(debouncer(function (e) {
-        resetGraphs();
-      }));
     },
 
     destroy: function() {
