@@ -5,9 +5,19 @@ describe("Tests for navigation-common behavior", function() {
     windowSvc = {
       openAlerts: function() {}
     };
+    utilsSvc = {
+      getHashVariable: function() {},
+      variableStateInHash: function() {}
+    };
+    jquery = {
+      attr: function() {}
+    };
     contextFake = new Box.TestServiceProvider({
-      'window': windowSvc
+      'window': windowSvc,
+      'utils': utilsSvc,
+      'jQuery': jquery
     });
+    contextFake.getElement = function() { return this };
     behavior = Box.Application.getBehaviorForTest('navigation-common', contextFake);
     behavior.init();
     sandbox = sinon.sandbox.create();

@@ -31,9 +31,6 @@ Box.Application.addService('window', function(application) {
     openRadiatorForHost: openRadiator,
     sendGraphToRadiator: sendToRadiator,
     openTerminalToHost: openTerminal,
-    openAlerts: openAlerts,
-    setHash: function(hash) { //FIXME define deeplinking contract
-      window.location.hash = "#" + hash;
-    }
+    openAlerts: openAlerts
   };
 });

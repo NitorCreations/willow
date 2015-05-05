@@ -45,7 +45,7 @@ describe("Tests for horizon-index module", function() {
   });
 
   it('Clicking an element with "start-terminal" type should open the shell window', function() {
-    sandbox.mock(windowSvc).expects('openTerminalToHost').once().withExactArgs("pasi", "test");
+    sandbox.mock(windowSvc).expects('openTerminalToHost').once().withExactArgs("${admin}", "test");
     var target = $(' <svg data-type="start-terminal" data-host="test"></svg>')[0];
     var event = $.Event('click', {
       target: target
@@ -55,7 +55,7 @@ describe("Tests for horizon-index module", function() {
 
   it('Clicking an element with "to-radiator"" type should open the radiator window', function() {
     sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs('{ "type": "horizon", "host": "test", "metric": "cpu" }', "newradiator");
-    var target = $(' <svg data-type="start-terminal" data-host="test"></svg>')[0];
+    var target = $(' <svg data-type="to-radiator" data-host="test"></svg>')[0];
     var event = $.Event('click', {
       target: target
     });
