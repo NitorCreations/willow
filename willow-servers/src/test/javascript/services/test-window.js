@@ -5,26 +5,25 @@ describe("Tests for window service", function() {
     contextFake = new Box.TestServiceProvider();
     service = Box.Application.getServiceForTest('window', contextFake);
     sandbox = sinon.sandbox.create();
-    openSpy = sinon.spy(window, "open");
   });
 
   afterEach(function() {
-    sandbox.verifyAndRestore();
     window.open.restore();
+    sandbox.verifyAndRestore();
   });
 
   it('open terminal service opens new tab', function() {
+    sandbox.mock(window).expects("open").withExactArgs("shell.html?user=pasi&host=test-host", "_blank");
     service.openTerminalToHost("pasi", "test-host");
-    sinon.assert.calledWith(openSpy, "shell.html?user=pasi&host=test-host", "_blank")
   });
 
   it('open alerts opens alert window', function() {
+    sandbox.mock(window).expects("open").withExactArgs("alerts.html", "index-alerts");
     service.openAlerts();
-    sinon.assert.calledWith(openSpy, "alerts.html", "index-alerts")
   });
 
   it('open radiator opens existing radiator tab', function() {
+    sandbox.mock(window).expects("open").withExactArgs("radiator.html?host=test-host", "radiator-test-host");
     service.openRadiatorForHost("test-host");
-    sinon.assert.calledWith(openSpy, "radiator.html?host=test-host", "radiator-test-host")
   });
 });

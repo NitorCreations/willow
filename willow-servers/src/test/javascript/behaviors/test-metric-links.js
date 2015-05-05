@@ -1,11 +1,22 @@
-describe("Tests for test-metric behavior", function() {
+describe("Tests for metric-links behavior", function() {
   var behavior, sandbox, contextFake;
 
   beforeEach(function() {
-    contextFake = new Box.TestServiceProvider();
+    utilsSvc = {
+      getHashVariable: function() {},
+      variableStateInHash: function() {}
+    };
+    jquery = {
+      attr: function() {}
+    };
+    contextFake = new Box.TestServiceProvider({
+      'utils': utilsSvc,
+      'jQuery': jquery
+    });
+    contextFake.getElement = function() { return this };
+    sandbox = sinon.sandbox.create();
     behavior = Box.Application.getBehaviorForTest('metric-links', contextFake);
     behavior.init();
-    sandbox = sinon.sandbox.create();
   });
 
   afterEach(function() {

@@ -12,7 +12,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors, height: 50 },
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
-  var user = "pasi";
 
   var deployer_metric = function(name, tag, stop, step) {
     var hostTag = tag;
@@ -25,20 +24,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
         callback(null, data.map(function(d) { return d.value; }));
       });
     }, name += "");
-  };
-
-  var stateInHash = function() {
-    var hash = window.location.hash ? window.location.hash.substring(1) : "";
-    hash = utils.addOrReplaceUrlVariable(utils.addOrReplaceUrlVariable(hash, "metric", metric), "timescale", timescale);
-    windowSvc.setHash(hash); //FIXME could this information be passed somehow differently to module?
-    $(".nav .container a").each(function(index, element) {
-      $(element).attr("class", "");
-      $(element).attr("href", "#" + utils.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("data-metric")));
-    });
-    $("#" + metric).attr("class", "pagename current");
-    if ($(window).width() < 500) {
-      $("#" + metric).prependTo(".nav .container");
-    }
   };
 
   var resetGraphs = function() {
@@ -168,13 +153,8 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       d3 = context.getGlobal("d3");
       cubism = context.getGlobal("cubism");
       $ = context.getGlobal("jQuery");
-
-      var hash = window.location.hash ? window.location.hash.substring(1) : "";
-
-      metric = utils.getUrlVariable(hash, metric) || "cpu";
-      timescale = utils.getUrlVariable(hash, timescale) || 10800;
-
-      stateInHash();
+      metric = utils.getHashVariable("metric") || "cpu";
+      timescale = utils.getHashVariable("timescale") || 10800;
       resetGraphs();
       $(window).resize(debouncer(function (e) {
         resetGraphs();
@@ -189,11 +169,13 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
 
     onclick: function(event, element, elementType) {
       var host = element ? element.getAttribute("data-host") : null;
+      var user = element ? (element.getAttribute("data-user") ? element.getAttribute("data-user") : "${admin}") : "$admin";
       switch (elementType) {
         case 'start-terminal':
           windowSvc.openTerminalToHost(user, host);
           break;
         case 'to-radiator':
+          // Actually should show a menu to select radiator
           windowSvc.sendGraphToRadiator('{ "type": "horizon", "host": "' + host + '", "metric": "' + metric + '" }', "newradiator");
           break;
         case 'close':
@@ -217,13 +199,11 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
 
     setTimescale: function(scale) {
       timescale = scale;
-      stateInHash();
       resetGraphs();
     },
 
     setMetric: function(metricName) {
       metric = metricName;
-      stateInHash();
       resetGraphs();
     }
   };

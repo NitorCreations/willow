@@ -2,10 +2,14 @@ Box.Application.addService('utils', function(application) {
   'use strict';
   return {
     getQueryVariable: function(variable) {
-       return this.getUrlVariable(window.location.search.substring(1));
+       return this.getUrlVariable(window.location.search);
+    },
+    getHashVariable: function(variable) {
+       return this.getUrlVariable(window.location.hash);
     },
     getUrlVariable: function(urlsegment, variable) {
       if (!urlsegment) return(false);
+      urlsegment = urlsegment.substring(1);
       var vars = urlsegment.split("&");
       for (var i=0;i<vars.length;i++) {
         var pair = vars[i].split("=");
@@ -30,7 +34,13 @@ Box.Application.addService('utils', function(application) {
         ret += "&" + encodeURIComponent(variable) + "=" + encodeURIComponent(value);
       }
       return ret.substring(1);
-
+    },
+    variableStateInHash: function(variable, value, callback) {
+      var hash = window.location.hash ? window.location.hash.substring(1) : "";
+      hash = this.addOrReplaceUrlVariable(hash, variable, value);
+      window.location.hash = "#" + hash;
+      callback(hash);
     }
+
   };
 });
