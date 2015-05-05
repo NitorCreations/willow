@@ -13,19 +13,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
 
-  var deployer_metric = function(name, tag, stop, step) {
-    var hostTag = tag;
-    return cubismContext.metric(function(start, stop, step, callback) {
-      d3.json("metrics/" + name +
-      "?start=" + start.getTime() +
-      "&stop=" + stop.getTime() +
-      "&step=" + step + "&tag=" + hostTag, function(data) {
-        if (!data) return callback(new Error("unable to load data"));
-        callback(null, data.map(function(d) { return d.value; }));
-      });
-    }, name += "");
-  };
-
   var resetGraphs = function() {
     var widthInPx = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPx);
@@ -87,6 +74,19 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       }
     });
   };
+  function fetchMetric(type, instanceTag, stop, step) {
+    return cubismContext.metric(function(start, stop, step, callback) {
+      var dataUrl = "metrics/" + type +
+          "?start=" + start.getTime() +
+          "&stop=" + stop.getTime() +
+          "&step=" + step +
+          "&tag=" + instanceTag;
+      d3.json(dataUrl, function(data) {
+        if (!data) return callback(new Error("unable to load data"));
+        callback(null, data.map(function(d) { return d.value; }));
+      });
+    }, String(type));
+  }
 
   var createHorizon = function(parentElement, host, chart, metricSettings) {
     var horizonGraphElements = parentElement.selectAll(".horizon-" + host)
