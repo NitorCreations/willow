@@ -99,17 +99,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
-  var debouncer = function(func , timeout) {
-    var timeoutID , tmOut = timeout || 200;
-    return function () {
-      var scope = this , args = arguments;
-      clearTimeout( timeoutID );
-      timeoutID = setTimeout( function () {
-        func.apply( scope , Array.prototype.slice.call( args ) );
-      } , tmOut );
-    };
-  };
-
   function appendHorizonGraph(parentElement, host, metricSettings) {
     return parentElement
         .classed("horizon horizon-" + host + " horizoncpu-" + host, true)
@@ -156,7 +145,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       metric = utils.getHashVariable("metric") || "cpu";
       timescale = utils.getHashVariable("timescale") || 10800;
       resetGraphs();
-      $(window).resize(debouncer(function (e) {
+      $(window).resize(utils.debouncer(function (e) {
         resetGraphs();
       }));
     },
