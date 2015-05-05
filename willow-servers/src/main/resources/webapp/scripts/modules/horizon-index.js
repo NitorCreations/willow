@@ -144,10 +144,10 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       $ = context.getGlobal("jQuery");
       metric = utils.getHashVariable("metric") || "cpu";
       timescale = utils.getHashVariable("timescale") || 10800;
+
+      $(window).resize(utils.debouncer(resetGraphs));
+
       resetGraphs();
-      $(window).resize(utils.debouncer(function (e) {
-        resetGraphs();
-      }));
     },
 
     destroy: function() {
