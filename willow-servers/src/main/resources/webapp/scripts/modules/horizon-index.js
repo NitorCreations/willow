@@ -58,23 +58,31 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     d3.selectAll(".rule").remove();
   }
 
-  var initGraphs = function(metric, start, stop, step) {
+  function initGraphs(metric, start, stop, step) {
     var dataUrl = "metrics/hosts" + "?start=" + start + "&stop=" + stop + "&type=" + metric;
-    d3.json(dataUrl, function(data) {
+    d3.json(dataUrl, function(hosts) {
+      if (!hosts) return new Error("unable to load data");
+      hosts.sort();
+      hosts.map(resolveHostName)
+          .filter(horizonGraphNotExists)
+          .forEach(function (tag) {
+            var metricSettings = $(metricMap).attr(metric);
+            var chart = metricsChart(metric, tag.raw, stop, step);
+            d3.select("#chart").call(createHorizon, tag.host, chart, metricSettings);
+          });
       $(".horizon").unbind("mousedown"); //FIXME should be done somewhere else
-      data.sort();
-      if (!data) return new Error("unable to load data");
-      for (var i=0; i< data.length; i++) {
-        var host = data[i].substring(5);
-        if ( ! $(".horizon-" + host).length ) {
-          var metricSettings = $(metricMap).attr(metric);
-          var chart = deployer_metric(metric, data[i], stop, step);
-          d3.select("#chart").call(createHorizon, host, chart, metricSettings);
-        }
-      }
     });
-  };
-  function fetchMetric(type, instanceTag, stop, step) {
+
+    function resolveHostName(tag) {
+      return { raw: tag, host: tag.substring(5) };
+    }
+
+    function horizonGraphNotExists(tag) {
+      return !$(".horizon-" + tag.host).length;
+    }
+  }
+
+  function metricsChart(type, instanceTag, stop, step) {
     return cubismContext.metric(function(start, stop, step, callback) {
       var dataUrl = "metrics/" + type +
           "?start=" + start.getTime() +
