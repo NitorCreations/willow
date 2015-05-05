@@ -8,6 +8,7 @@ import org.eclipse.sisu.space.SpaceModule;
 import org.eclipse.sisu.space.URLClassSpace;
 import org.eclipse.sisu.wire.WireModule;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
@@ -26,12 +27,16 @@ public class WillowServletContextListener extends GuiceServletContextListener {
     ClassLoader classloader = getClass().getClassLoader();
     return  Guice.createInjector(
       new WireModule(new ApplicationServletModule(),
-        getShiroModule(), ShiroWebModule.guiceFilterModule(),
+        getShiroModule(), ShiroWebModule.guiceFilterModule(), 
+        getElasticSearchModule(),
         new SpaceModule(
           new URLClassSpace(classloader)
           )));
   }
   protected ShiroWebModule getShiroModule() {
     return new WillowShiroModule(servletContext); 
+  }
+  protected AbstractModule getElasticSearchModule() {
+    return new ElasticSearchModule();
   }
 }

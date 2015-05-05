@@ -9,13 +9,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.nitorcreations.willow.messages.AbstractMessage;
@@ -25,11 +28,13 @@ import com.nitorcreations.willow.messages.MessageMapping;
 import com.nitorcreations.willow.messages.MessageMapping.MessageType;
 
 @WebSocket
+@Named
 public class SaveEventsSocket {
   Logger log = Logger.getLogger(getClass().getCanonicalName());
   private final CountDownLatch closeLatch;
   private final MessageMapping mapping = new MessageMapping();
-  private final Client client = MetricsServlet.getClient();
+  @Inject
+  private Node node;
   @SuppressWarnings("unused")
   private Session session;
   private String path;
@@ -100,7 +105,7 @@ public class SaveEventsSocket {
         if (System.getProperty("debug") != null) {
           System.out.println(type.lcName() + ": " + source);
         }
-        IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(5000);
+        IndexResponse resp = node.client().prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(5000);
         if (!resp.isCreated()) {
           log.warning("Failed to create index for " + source);
         }
