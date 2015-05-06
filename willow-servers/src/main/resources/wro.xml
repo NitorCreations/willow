@@ -12,6 +12,7 @@
     <js>/scripts/cubism.v1.js</js>
     <js>/scripts/term.js</js>
     <js>/scripts/t3.js</js>
+    <js>/scripts/intercom.js</js>
   </group>
   <group name="app">
     <css>/styles/main.css</css>

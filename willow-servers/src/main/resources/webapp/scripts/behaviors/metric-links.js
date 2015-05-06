@@ -1,11 +1,11 @@
 Box.Application.addBehavior('metric-links', function(context) {
-  var utils, $, moduleEl;
+  var windowSvc, $, moduleEl;
 
   var metricInHash = function(metric) {
-    utils.variableStateInHash("metric", metric, function(hash) {
+    windowSvc.variableStateInHash("metric", metric, function(hash) {
       $("a", moduleEl).each(function(index, element) {
         $(element).attr("class", "");
-        $(element).attr("href", "#" + utils.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("id")));
+        $(element).attr("href", "#" + windowSvc.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("id")));
       });
       $("#" + metric, moduleEl).attr("class", "pagename current");
       if ($(window).width() < 500) {
@@ -16,14 +16,14 @@ Box.Application.addBehavior('metric-links', function(context) {
 
   return {
     init: function() {
-      utils = context.getService("utils");
+      windowSvc = context.getService("window");
       $ = context.getGlobal("jQuery");
       moduleEl = context.getElement();
-      var metric = utils.getHashVariable("metric") || "cpu";
+      var metric = windowSvc.getHashVariable("metric") || "cpu";
       metricInHash(metric);
     },
     destroy: function() {
-      utils = null;
+      windowSvc = null;
     },
     onclick: function(event, element, elementType) {
       if (elementType === 'select-metric') {

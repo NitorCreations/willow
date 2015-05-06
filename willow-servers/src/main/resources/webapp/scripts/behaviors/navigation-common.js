@@ -1,10 +1,10 @@
 Box.Application.addBehavior('navigation-common', function(context) {
   'use strict';
-  var windowSvc, utils, $, moduleEl;
+  var windowSvc, $, moduleEl, intercom, localStorage, name;
   var timescaleInHash = function(timescale) {
-    utils.variableStateInHash("timescale", timescale, function(hash) {
+    windowSvc.variableStateInHash("timescale", timescale, function(hash) {
       $("a", moduleEl).each(function(index, element) {
-        $(element).attr("href", "#" + utils.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("data-metric")));
+        $(element).attr("href", "#" + windowSvc.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("data-metric")));
       });
     });
   };
@@ -12,11 +12,23 @@ Box.Application.addBehavior('navigation-common', function(context) {
   return {
     init: function() {
       windowSvc = context.getService("window");
-      utils = context.getService("utils");
       $ = context.getGlobal("jQuery");
       moduleEl = context.getElement();
-      var timescale = utils.getHashVariable("timescale") || 10800;
+      var timescale = windowSvc.getHashVariable("timescale") || 10800;
       timescaleInHash(timescale);
+      intercom = context.getGlobal("Intercom").getInstance();
+      localStorage = context.getGlobal("localStorage");
+      name = context.getGlobal("name");
+      var windowsArr = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
+      if (windowsArr.indexOf(name) == -1) {
+        windowsArr.push(window.name);
+        localStorage.willowWindows = JSON.stringify(windowsArr);
+      }
+      $(window).unload(function() {
+        var windowsArr = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
+        windowsArr = windowsArr.filter(function(value) { return value != name });
+        localStorage.willowWindows = JSON.stringify(windowsArr);
+      });
     },
     destroy: function() {
       windowSvc = null;
