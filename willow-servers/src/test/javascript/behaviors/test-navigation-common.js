@@ -3,9 +3,7 @@ describe("Tests for navigation-common behavior", function() {
 
   beforeEach(function() {
     windowSvc = {
-      openAlerts: function() {}
-    };
-    utilsSvc = {
+      openAlerts: function() {},
       getHashVariable: function() {},
       variableStateInHash: function() {}
     };
@@ -14,7 +12,6 @@ describe("Tests for navigation-common behavior", function() {
     };
     contextFake = new Box.TestServiceProvider({
       'window': windowSvc,
-      'utils': utilsSvc,
       'jQuery': jquery
     });
     contextFake.getElement = function() { return this };

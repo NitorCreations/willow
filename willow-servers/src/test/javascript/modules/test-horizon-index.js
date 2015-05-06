@@ -6,6 +6,8 @@ describe("Tests for horizon-index module", function() {
       openRadiatorForHost: function(host) {},
       sendGraphToRadiator: function(host) {},
       openTerminalToHost: function(user, host) {},
+      getHashVariable: function() {},
+      variableStateInHash: function() {},
       setHash: function() {}
     };
     cubism = {
@@ -54,7 +56,7 @@ describe("Tests for horizon-index module", function() {
   });
 
   it('Clicking an element with "to-radiator"" type should open the radiator window', function() {
-    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs('{ "type": "horizon", "host": "test", "metric": "cpu" }', "newradiator");
+    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs('{"type":"horizon","host":"test","metric":"cpu"}', "newradiator");
     var target = $(' <svg data-type="to-radiator" data-host="test"></svg>')[0];
     var event = $.Event('click', {
       target: target

@@ -250,6 +250,7 @@
             <source>jquery.js</source>
             <source>t3-testing.js</source>
             <source>sinon.js</source>
+            <source>intercom.js</source>
           </preloadSources>
           <sourceIncludes>
             <include>behaviors/*.js</include>
