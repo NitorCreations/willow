@@ -21,6 +21,7 @@ System.config({
     "core-js": "npm:core-js@0.9.4",
     "cubism": "npm:cubism@1.6.0",
     "d3": "npm:d3@3.5.5",
+    "intercom.js": "github:diy/intercom.js@0.1.4",
     "nvd3": "npm:nvd3@1.1.15",
     "t3js": "npm:t3js@1.2.0",
     "github:jspm/nodelibs-process@0.1.1": {

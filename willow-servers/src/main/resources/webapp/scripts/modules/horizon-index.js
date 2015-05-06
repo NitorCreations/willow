@@ -125,6 +125,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
   function appendShareRadiatorIcon(parentElement, host) {
     return parentElement.append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon shape-share share-" + host, true)
+        .attr("data-type", "to-radiator")
         .append("use").attr("xlink:href", "#shape-to-radiator");
   }
 
@@ -153,11 +154,9 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       d3 = context.getGlobal("d3");
       cubism = context.getGlobal("cubism");
       $ = context.getGlobal("jQuery");
-      metric = utils.getHashVariable("metric") || "cpu";
-      timescale = utils.getHashVariable("timescale") || 10800;
-
+      metric = windowSvc.getHashVariable("metric") || "cpu";
+      timescale = windowSvc.getHashVariable("timescale") || 10800;
       $(window).resize(utils.debouncer(resetGraphs));
-
       resetGraphs();
     },
 
@@ -176,12 +175,13 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
           break;
         case 'to-radiator':
           // Actually should show a menu to select radiator
-          windowSvc.sendGraphToRadiator('{ "type": "horizon", "host": "' + host + '", "metric": "' + metric + '" }', "newradiator");
+          windowSvc.sendGraphToRadiator('{"type":"horizon","host":"' + host + '","metric":"' + metric + '"}', "newradiator");
           break;
         case 'close':
           break;
         case 'host-radiator':
           windowSvc.openRadiatorForHost(host);
+          event.preventDefault();
           break;
       }
     },
