@@ -1,13 +1,6 @@
 Box.Application.addBehavior('navigation-common', function(context) {
   'use strict';
   var windowSvc, $, moduleEl, intercom, localStorage, name;
-  var timescaleInHash = function(timescale) {
-    windowSvc.variableStateInHash("timescale", timescale, function(hash) {
-      $("a", moduleEl).each(function(index, element) {
-        $(element).attr("href", "#" + windowSvc.addOrReplaceUrlVariable(hash, "metric", element.getAttribute("data-metric")));
-      });
-    });
-  };
 
   return {
     init: function() {
@@ -15,7 +8,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
       $ = context.getGlobal("jQuery");
       moduleEl = context.getElement();
       var timescale = windowSvc.getHashVariable("timescale") || 10800;
-      timescaleInHash(timescale);
+      windowSvc.variableStateInHash("timescale", timescale);
       intercom = context.getGlobal("Intercom").getInstance();
       localStorage = context.getGlobal("localStorage");
       name = context.getGlobal("name");
@@ -44,7 +37,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
       switch (elementType) {
         case 'select-timescale':
           var timescale = element.children[element.selectedIndex].getAttribute("value");
-          timescaleInHash(timescale);
+          windowSvc.variableStateInHash("timescale", timescale);
           context.broadcast("timescale-changed", timescale);
           break;
       }
