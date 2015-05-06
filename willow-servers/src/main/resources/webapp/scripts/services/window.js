@@ -3,6 +3,7 @@ Box.Application.addService('window', function(application) {
   var intercom = application.getGlobal("Intercom").getInstance();
   var localStorage = application.getGlobal("localStorage");
   var name  = application.getGlobal("name");
+  var hashChangeCallbacks = [];
   // Add utilities here for communicating between browser windows
   // and keeping track of open windows, .i.e. routing component
 
@@ -70,11 +71,18 @@ Box.Application.addService('window', function(application) {
       }
       return ret.substring(1);
     },
-    variableStateInHash: function(variable, value, callback) {
+    variableStateInHash: function(variable, value) {
       var hash = window.location.hash ? window.location.hash.substring(1) : "";
       hash = this.addOrReplaceUrlVariable(hash, variable, value);
       window.location.hash = "#" + hash;
-      callback(hash);
+      var i=0;
+      for (i=0;i<hashChangeCallbacks.length;i++) {
+        hashChangeCallbacks[i](hash);
+      }
+    },
+    onHashChange: function(callback) {
+      hashChangeCallbacks.push(callback);
+      return callback;
     }
   };
 });
