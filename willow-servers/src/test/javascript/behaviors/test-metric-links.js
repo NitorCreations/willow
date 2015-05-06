@@ -13,7 +13,7 @@ describe("Tests for metric-links behavior", function() {
       'utils': utilsSvc,
       'jQuery': jquery
     });
-    contextFake.getElement = function() { return this };
+    contextFake.getElement = function() { return $('<div data-module="navigation-index"></div>')[0]; };
     sandbox = sinon.sandbox.create();
     behavior = Box.Application.getBehaviorForTest('metric-links', contextFake);
     behavior.init();
