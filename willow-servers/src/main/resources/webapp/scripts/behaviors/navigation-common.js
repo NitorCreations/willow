@@ -26,7 +26,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
       }
       $(window).unload(function() {
         var windowsArr = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
-        windowsArr = windowsArr.filter(function(value) { return value != name });
+        windowsArr = windowsArr.filter(function(value) { return value != name; });
         localStorage.willowWindows = JSON.stringify(windowsArr);
       });
     },
