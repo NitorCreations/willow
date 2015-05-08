@@ -1,4 +1,4 @@
-describe("Tests for horizon-index module", function() {
+describe("Tests for horizon-graph module", function() {
   var module, sandbox, contextFake, windowSvc;
 
   beforeEach(function() {
@@ -36,7 +36,7 @@ describe("Tests for horizon-index module", function() {
       'd3': d3,
       'jQuery': jquery
     });
-    module = Box.Application.getModuleForTest('horizon-index', contextFake);
+    module = Box.Application.getModuleForTest('horizon-graph', contextFake);
     sandbox = sinon.sandbox.create();
     module.init();
   });
