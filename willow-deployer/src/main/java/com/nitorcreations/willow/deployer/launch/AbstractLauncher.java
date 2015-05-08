@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
+import com.nitorcreations.willow.messages.event.*;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
@@ -58,6 +59,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
   protected Map<String, String> extraEnv = new HashMap<>();
   protected File workingDir;
   protected AtomicBoolean running = new AtomicBoolean(true);
+  protected AtomicBoolean restarting = new AtomicBoolean(false);
   protected AtomicLong pid = new AtomicLong(-1);
   protected AbstractStreamPumper stdout, stderr;
   private String name;
@@ -113,6 +115,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
         autoRestartDefaultVal = Boolean.toString(callback.autoRestartDefault());
       }
       boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_AUTORESTART, autoRestartDefaultVal));
+      if (autoRestart && !restarting.get()) {
+        //launching the child instead of a one-off hook task
+        transmitter.queue(new ChildStartingEvent(getName()));
+      }
       running.set(autoRestart);
       log = Logger.getLogger(name);
       ProcessBuilder pb = new ProcessBuilder(args);
@@ -129,6 +135,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
         child = pb.start();
         if (transmitter != null && transmitter.isRunning() && 
           launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
+          //TODO send started / restarted event
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
         } else {
@@ -144,7 +151,20 @@ public abstract class AbstractLauncher implements LaunchMethod {
         } catch (Exception e) {
           log.log(Level.WARNING, "Failed to run post start", e);
         }
+        if (autoRestart && !restarting.get()) {
+          transmitter.queue(new ChildStartedEvent(getName(), getProcessId()));
+        } else if (autoRestart) {
+          transmitter.queue(new ChildRestartedEvent(getName(), getProcessId()));
+          restarting.set(false);
+        }
+
         returnValue.set(child.waitFor());
+
+        if (autoRestart && running.get() && !restarting.get()) {
+          transmitter.queue(new ChildDiedEvent(getName(), pid.get(), returnValue.get()));
+        } else if (autoRestart) {
+          transmitter.queue(new ChildStoppedEvent(getName(), pid.get(), returnValue.get(), restarting.get()));
+        }
         pid.set(-1);
       } catch (IOException e) {
         log.log(Level.WARNING, "Failed to start  process", e);
@@ -179,6 +199,12 @@ public abstract class AbstractLauncher implements LaunchMethod {
   public int destroyChild() throws InterruptedException {
     long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
     if (child != null) {
+      if (running.get()) {
+        transmitter.queue(new ChildRestartingEvent(getName()));
+        restarting.set(true);
+      } else {
+        transmitter.queue(new ChildStoppingEvent(getName(), getProcessId()));
+      }
       child.destroy();
     }
     try {
