@@ -1,3 +1,7 @@
+*, *:after, *:before {
+  box-sizing: border-box;
+}
+
 html {
   overflow-y: scroll;
 }
@@ -185,13 +189,13 @@ select {
 }
 
 .container {
-  margin: 0 20px;
+  padding: 0 20px;
   width: auto;
 }
 
 @media (min-width: 1310px) {
   .container {
-    margin: 0 20px;
+    padding: 0 20px;
     width: 100%;
   }
 }
@@ -304,8 +308,10 @@ textarea, input[type=text] {
 }
 
 .nav {
-  height: 24px;
-  padding: 11px 0 15px
+  display: inline-block;
+  float: left;
+  padding: 11px 0 15px;
+  width: 100%;
 }
 
 .nav a {

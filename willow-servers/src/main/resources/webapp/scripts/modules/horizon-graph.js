@@ -13,7 +13,7 @@ Box.Application.addModule('horizon-graph', function(context) {
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
 
-  var resetGraphs = function() {
+  var resetGraph = function() {
     var widthInPx = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPx);
     var stop = new Date().getTime();
@@ -162,8 +162,8 @@ Box.Application.addModule('horizon-graph', function(context) {
       metric     = windowSvc.getHashVariable("metric") || "cpu";
       timescale  = windowSvc.getHashVariable("timescale") || 10800;
 
-      $(window).resize(utils.debouncer(resetGraphs));
-      resetGraphs();
+      $(window).resize(utils.debouncer(resetGraph));
+      resetGraph();
     },
 
     destroy: function() {
@@ -206,12 +206,12 @@ Box.Application.addModule('horizon-graph', function(context) {
 
     setTimescale: function(scale) {
       timescale = scale;
-      resetGraphs();
+      resetGraph();
     },
 
     setMetric: function(metricName) {
       metric = metricName;
-      resetGraphs();
+      resetGraph();
     }
   };
 });
