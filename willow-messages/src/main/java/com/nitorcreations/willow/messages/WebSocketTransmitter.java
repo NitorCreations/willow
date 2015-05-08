@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import com.nitorcreations.willow.messages.event.Event;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -110,6 +111,10 @@ public class WebSocketTransmitter {
     return true;
   }
 
+  public boolean queue (Event event) {
+    return this.queue(event.getEventMessage());
+  }
+
   public String getUsername() {
     return username;
   }
@@ -186,6 +191,16 @@ public class WebSocketTransmitter {
       synchronized (this) {
         this.running = false;
         this.notifyAll();
+      }
+      int waited = 0;
+      logger.info("stopping and waiting for queue");
+      while (!queue.isEmpty() && waited++ < 2) {
+        logger.info("queue not empty, waiting before stop");
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          logger.warning("Could not transmit all messages before stopping");
+        }
       }
       this.wsSession.close();
       try {
