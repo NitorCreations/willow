@@ -19,7 +19,7 @@ Box.Application.addBehavior('metric-links', function(context) {
       $ = context.getGlobal("jQuery");
       moduleEl = context.getElement();
       var metric = windowSvc.getHashVariable("metric") || "cpu";
-      windowSvc.onHashChange(updateLinks)
+      windowSvc.onHashChange(updateLinks);
       windowSvc.variableStateInHash("metric", metric);
     },
     destroy: function() {
