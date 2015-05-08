@@ -135,7 +135,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
         child = pb.start();
         if (transmitter != null && transmitter.isRunning() && 
           launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
-          //TODO send started / restarted event
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
         } else {
