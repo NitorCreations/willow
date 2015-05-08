@@ -83,16 +83,15 @@ Box.Application.addModule('horizon-graph', function(context) {
     // }
   }
 
-  function metricsChart(type, instanceTag, stop, step) {
+  function metricsChart(type, instanceTag) {
     return cubismContext.metric(function(start, stop, step, callback) {
-      var dataUrl = "metrics/" + type +
-          "?start=" + start.getTime() +
-          "&stop=" + stop.getTime() +
-          "&step=" + step +
-          "&tag=" + instanceTag;
-      d3.json(dataUrl, function(data) {
-        if (!data) return callback(new Error("unable to load data"));
-        callback(null, data.map(function(d) { return d.value; }));
+      var metricDataSource = metricsService.metricsDataSource(type, instanceTag, start.getTime(), stop.getTime(), step);
+      metricDataSource(function(data) {
+        if (data instanceof Error) {
+          callback(data);
+        }
+        var parsedData = data.map(function(d) { return d.value; });
+        callback(null, parsedData);
       });
     }, String(type));
   }
