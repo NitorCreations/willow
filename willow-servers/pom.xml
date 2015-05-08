@@ -103,6 +103,10 @@
       <artifactId>shiro-web</artifactId>
     </dependency>
     <dependency>
+      <groupId>mx.com.inftel.oss</groupId>
+      <artifactId>shiro-oauth2</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>1.2</version>

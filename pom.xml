@@ -52,6 +52,7 @@
     <guice.version>3.0</guice.version>
     <jacoco.version>0.7.4.201502262128</jacoco.version>
     <shiro.version>1.2.3</shiro.version>
+    <shiro.oauth.version>1.0</shiro.oauth.version>
   </properties>
   <distributionManagement>
     <snapshotRepository>
@@ -378,6 +379,11 @@
         <groupId>org.apache.shiro</groupId>
         <artifactId>shiro-web</artifactId>
         <version>${shiro.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>mx.com.inftel.oss</groupId>
+        <artifactId>shiro-oauth2</artifactId>
+        <version>${shiro.oauth.version}</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
