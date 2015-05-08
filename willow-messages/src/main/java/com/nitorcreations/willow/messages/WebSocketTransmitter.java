@@ -44,6 +44,7 @@ public class WebSocketTransmitter {
   private final Worker worker = new Worker();
   private final Thread workerThread = new Thread(worker, "websocket-transfer");
   private final MessageMapping msgmap = new MessageMapping();
+  private boolean running = true;
   private static final Map<String, WebSocketTransmitter> singletonTransmitters = Collections.synchronizedMap(new HashMap<String, WebSocketTransmitter>());
 
   public static synchronized WebSocketTransmitter getSingleton(long flushInterval, String uri) throws URISyntaxException {
@@ -83,6 +84,10 @@ public class WebSocketTransmitter {
   }
 
   public void stop() {
+    logger.info("Stopping the message transmitter");
+    synchronized (this) {
+      running = false;
+    }
     if (workerThread.isAlive()) {
       worker.stop();
       try {
@@ -97,6 +102,11 @@ public class WebSocketTransmitter {
   }
 
   public boolean queue(AbstractMessage msg) {
+    synchronized (this) {
+      if (!running) {
+        return false;
+      }
+    }
     logger.fine("Queue message type: " + MessageMapping.map(msg.getClass()));
     try {
       while (!queue.offer(msg, flushInterval * 2, TimeUnit.MILLISECONDS)) {
@@ -189,18 +199,17 @@ public class WebSocketTransmitter {
 
     public void stop() {
       synchronized (this) {
-        this.running = false;
         this.notifyAll();
-      }
-      int waited = 0;
-      logger.info("stopping and waiting for queue");
-      while (!queue.isEmpty() && waited++ < 2) {
-        logger.info("queue not empty, waiting before stop");
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.warning("Could not transmit all messages before stopping");
+        int waited = 0;
+        while (!queue.isEmpty() && waited++ < 3) {
+          try {
+            this.wait(1000);
+          } catch (InterruptedException e) {
+            logger.info("Could not transmit all messages before stopping");
+            break;
+          }
         }
+        this.running = false;
       }
       this.wsSession.close();
       try {
