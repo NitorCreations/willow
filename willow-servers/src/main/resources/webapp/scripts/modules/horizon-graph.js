@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var moduleElem, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext;
+  var moduleElem, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext, metricsService;
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
@@ -59,12 +59,9 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function initGraphs(metric, start, stop, step) {
-    var dataUrl = "metrics/hosts" + "?start=" + start + "&stop=" + stop + "&type=" + metric;
-    d3.json(dataUrl, function(hosts) {
-      if (!hosts) return new Error("unable to load data");
+    metricsService.hostsDataSource(metric, start, stop, step)(function(hosts) {
       hosts.sort();
       hosts.map(resolveHostName)
-          //.filter(horizonGraphNotExists) // TODO: this should be done someplace else. module should govern itself, not how it came to be
           .forEach(function (tag) {
             var metricSettings = $(metricMap).attr(metric);
             var chart = metricsChart(metric, tag.raw, stop, step);
@@ -150,12 +147,17 @@ Box.Application.addModule('horizon-graph', function(context) {
     init: function() {
       $          = context.getGlobal("jQuery");
       d3         = context.getGlobal("d3");
+      cubism     = context.getGlobal("cubism");
+
       windowSvc  = context.getService("window");
       utils      = context.getService("utils");
-      cubism     = context.getGlobal("cubism");
+      metricsService = context.getService("metrics");
+
       moduleElem = d3.select(context.getElement());
+
       metric     = windowSvc.getHashVariable("metric") || "cpu";
       timescale  = windowSvc.getHashVariable("timescale") || 10800;
+
       $(window).resize(utils.debouncer(resetGraphs));
       resetGraphs();
     },
