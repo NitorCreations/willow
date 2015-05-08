@@ -20,7 +20,6 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     var start = stop - (timescale * 1000);
 
     resetCubismContext(step, widthInPx);
-    removeExistingGraphs();
     initGraphLayout(widthInPx);
     initGraphs(metric, start, stop, step);
   };
@@ -52,10 +51,11 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
     });
   }
 
+  // graph destroy button, not implemented yet
   function removeExistingGraphs() {
-    d3.selectAll(".horizon").call(cubismContext.horizon().remove).remove();
-    d3.selectAll(".axis").remove();
-    d3.selectAll(".rule").remove();
+    moduleElem.selectAll(".horizon").call(cubismContext.horizon().remove).remove();
+    moduleElem.selectAll(".axis").remove();
+    moduleElem.selectAll(".rule").remove();
   }
 
   function initGraphs(metric, start, stop, step) {
