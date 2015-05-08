@@ -21,6 +21,7 @@
     <js>/scripts/behaviors/metric-links.js</js>
     <js>/scripts/behaviors/navigation-common.js</js>
     <js>/scripts/modules/horizon-index.js</js>
+    <js>/scripts/modules/horizon-graph.js</js>
     <js>/scripts/modules/navigation-index.js</js>
     <js>/scripts/modules/navigation-radiator.js</js>
   </group>
