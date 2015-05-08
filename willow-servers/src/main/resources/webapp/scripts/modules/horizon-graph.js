@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var moduleElem, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext, metricsService;
+  var moduleElem, windowSvc, d3, metric, timescale, utils, $, metricsService, cubismGraphs;
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
@@ -22,42 +22,32 @@ Box.Application.addModule('horizon-graph', function(context) {
     // TODO: this should be done by reconfiguring, not destroying
     moduleElem.selectAll(".axis, .rule, .horizon").remove();
 
-    resetCubismContext(step, widthInPx);
+    cubismGraphs.resetCubismContext(step, widthInPx);
+    cubismGraphs.onFocus(function(index) {
+      moduleElem.selectAll(".horizon .value").style("right", index === null ? null : this.size() - index + "px");
+    });
     initGraphLayout(widthInPx);
     initGraphs(metric, start, stop, step);
   };
-
-  function resetCubismContext(step, widthInPixels) {
-    if (cubismContext) cubismContext.stop();
-    cubismContext = cubism.context()
-        .step(step)
-        .size(widthInPixels)
-        .start();
-    cubismContext.on("focus", function(i) {
-      moduleElem.selectAll(".horizon .value").style("right", i === null ? null : cubismContext.size() - i + "px");
-    });
-  }
 
   function initGraphLayout(widthInPixels) {
     moduleElem.attr("style", "width: " + widthInPixels + "px");
     moduleElem.call(function(container) {
       container.append("div")
           .classed("axis", true)
-          .call(cubismContext.axis()
-              .orient("top")
-              .tickFormat(d3.time.format("%H:%M")));
+          .call(cubismGraphs.createGraphAxis().orient("top").tickFormat(d3.time.format("%H:%M")));
     });
     moduleElem.call(function(container) {
       container.append("div")
           .classed("rule", true)
-          .call(cubismContext.rule());
+          .call(cubismGraphs.createRulerOverGraphs());
     });
   }
 
   // graph destroy, put this on a button or such
   function removeGraph() {
-    cubismContext.on("focus", null);
-    moduleElem.select(".horizon").call(cubismContext.horizon().remove);
+    cubismGraphs.onFocus(null);
+    moduleElem.select(".horizon").call(cubismGraphs.removeHorizonGraph());
     moduleElem.remove();
   }
 
@@ -84,7 +74,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function metricsChart(type, instanceTag) {
-    return cubismContext.metric(function(start, stop, step, callback) {
+    return cubismGraphs.createMetrics(function(start, stop, step, callback) {
       var metricDataSource = metricsService.metricsDataSource(type, instanceTag, start.getTime(), stop.getTime(), step);
       metricDataSource(function(data) {
         if (data instanceof Error) {
@@ -138,7 +128,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function configureHorizonGraph(host, metricSettings) {
-    return cubismContext.horizon()
+    return cubismGraphs.createHorizonGraph()
         .height(metricSettings.height)
         .colors(metricSettings.colors)
         .extent(metricSettings.extent)
@@ -150,11 +140,11 @@ Box.Application.addModule('horizon-graph', function(context) {
     init: function() {
       $          = context.getGlobal("jQuery");
       d3         = context.getGlobal("d3");
-      cubism     = context.getGlobal("cubism");
 
       windowSvc  = context.getService("window");
       utils      = context.getService("utils");
       metricsService = context.getService("metrics");
+      cubismGraphs = context.getService("cubism-graphs");
 
       moduleElem = d3.select(context.getElement());
 
