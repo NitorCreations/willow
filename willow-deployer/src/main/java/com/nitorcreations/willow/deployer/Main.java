@@ -55,6 +55,9 @@ import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 
+import com.nitorcreations.willow.messages.event.DeployerStartEvent;
+import com.nitorcreations.willow.messages.event.DeployerStopEvent;
+import com.nitorcreations.willow.messages.event.EventMessage;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
@@ -229,6 +232,7 @@ public class Main extends DeployerControl implements MainMBean {
     if (statistics.isEmpty() && children.isEmpty()) {
       System.exit(0);
     }
+    transmitter.queue(new DeployerStartEvent(sigar.getPid(), deployerName));
   }
 
   public void stop() {
@@ -271,6 +275,7 @@ public class Main extends DeployerControl implements MainMBean {
         }
       }
       stopexec.shutdownNow();
+      transmitter.queue(new DeployerStopEvent(sigar.getPid(), deployerName));
       transmitter.stop();
     }
     super.stop();
