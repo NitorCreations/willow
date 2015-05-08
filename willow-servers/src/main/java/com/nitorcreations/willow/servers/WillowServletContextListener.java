@@ -14,7 +14,7 @@ import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
 
 public class WillowServletContextListener extends GuiceServletContextListener {
-  private ServletContext servletContext;
+  protected ServletContext servletContext;
 
   @Override
   public void contextInitialized(ServletContextEvent servletContextEvent) {
