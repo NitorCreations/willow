@@ -19,6 +19,9 @@ Box.Application.addModule('horizon-graph', function(context) {
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
+    // TODO: this should be done by reconfiguring, not destroying
+    moduleElem.selectAll(".axis, .rule, .horizon").remove();
+
     resetCubismContext(step, widthInPx);
     initGraphLayout(widthInPx);
     initGraphs(metric, start, stop, step);
@@ -58,6 +61,7 @@ Box.Application.addModule('horizon-graph', function(context) {
     moduleElem.remove();
   }
 
+  // move to horizon-index
   function initGraphs(metric, start, stop, step) {
     metricsService.hostsDataSource(metric, start, stop, step)(function(hosts) {
       hosts.sort();
