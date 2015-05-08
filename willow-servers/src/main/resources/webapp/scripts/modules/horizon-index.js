@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-index', function(context) { //FIXME rename to cloud|summary|?|-index?
   'use strict';
 
-  var moduleElement, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext;
+  var moduleElem, windowSvc, d3, cubism, metric, timescale, utils, $, cubismContext;
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
@@ -31,20 +31,20 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
         .size(widthInPixels)
         .start();
     cubismContext.on("focus", function(i) {
-      d3.selectAll(".horizon .value").style("right", i === null ? null : cubismContext.size() - i + "px");
+      moduleElem.selectAll(".horizon .value").style("right", i === null ? null : cubismContext.size() - i + "px");
     });
   }
 
   function initGraphLayout(widthInPixels) {
-    d3.select("#chart").attr("style", "width: " + widthInPixels + "px");
-    d3.select("#chart").call(function(container) {
+    moduleElem.attr("style", "width: " + widthInPixels + "px");
+    moduleElem.call(function(container) {
       container.append("div")
           .classed("axis", true)
           .call(cubismContext.axis()
               .orient("top")
               .tickFormat(d3.time.format("%H:%M")));
     });
-    d3.select("#chart").call(function(container) {
+    moduleElem.call(function(container) {
       container.append("div")
           .classed("rule", true)
           .call(cubismContext.rule());
@@ -68,7 +68,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
           .forEach(function (tag) {
             var metricSettings = $(metricMap).attr(metric);
             var chart = metricsChart(metric, tag.raw, stop, step);
-            d3.select("#chart").call(createHorizon, tag.host, chart, metricSettings);
+            moduleElem.call(createHorizon, tag.host, chart, metricSettings);
           });
       $(".horizon").unbind("mousedown"); //FIXME should be done somewhere else
     });
@@ -148,20 +148,20 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
 
   return {
     init: function() {
-      moduleElement = context.getElement();
-      windowSvc = context.getService("window");
-      utils = context.getService("utils");
-      d3 = context.getGlobal("d3");
-      cubism = context.getGlobal("cubism");
-      $ = context.getGlobal("jQuery");
-      metric = windowSvc.getHashVariable("metric") || "cpu";
-      timescale = windowSvc.getHashVariable("timescale") || 10800;
+      $          = context.getGlobal("jQuery");
+      d3         = context.getGlobal("d3");
+      windowSvc  = context.getService("window");
+      utils      = context.getService("utils");
+      cubism     = context.getGlobal("cubism");
+      moduleElem = d3.select(context.getElement());
+      metric     = windowSvc.getHashVariable("metric") || "cpu";
+      timescale  = windowSvc.getHashVariable("timescale") || 10800;
       $(window).resize(utils.debouncer(resetGraphs));
       resetGraphs();
     },
 
     destroy: function() {
-      moduleElement = null;
+      moduleElem = null;
     },
 
     messages: ["timescale-changed", "metric-changed"],
@@ -207,4 +207,4 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       resetGraphs();
     }
   };
-}); 
+});
