@@ -235,7 +235,9 @@ public class WebSocketTransmitter {
         ConnectorFactory cf = ConnectorFactory.getDefault();
         con = cf.createConnector();
       } catch (AgentProxyException e) {
-        System.out.println(e);
+        LogRecord rec = new LogRecord(Level.SEVERE, "Unable to fetch authorization keys!");
+        rec.setThrown(e);
+        logger.log(rec);
       }
       byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
       ret.append(printBase64Binary(sign));

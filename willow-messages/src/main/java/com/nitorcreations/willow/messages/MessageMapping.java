@@ -1,5 +1,14 @@
 package com.nitorcreations.willow.messages;
 
+import com.nitorcreations.willow.messages.event.EventMessage;
+import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
+import org.msgpack.MessagePack;
+import org.msgpack.packer.Packer;
+import org.msgpack.unpacker.BufferUnpacker;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,21 +19,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import net.jpountz.lz4.LZ4Compressor;
-import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4FastDecompressor;
-
-import org.msgpack.MessagePack;
-import org.msgpack.packer.Packer;
-import org.msgpack.unpacker.BufferUnpacker;
-
 public class MessageMapping {
   MessagePack msgpack = new MessagePack();
-  private final Logger logger = Logger.getLogger(this.getClass().getName());
+  private static final Logger logger = Logger.getLogger(MessageMapping.class.getCanonicalName());
 
   public enum MessageType {
     PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS,
-    HASH, NET, TCPINFO, DISKIO, THREADDUMP, OS;
+    HASH, NET, TCPINFO, DISKIO, THREADDUMP, OS, EVENT;
     public String lcName() {
       return toString().toLowerCase();
     }
@@ -56,6 +57,7 @@ public class MessageMapping {
     messageTypes.put(MessageType.TCPINFO, TcpInfo.class);
     messageTypes.put(MessageType.THREADDUMP, ThreadDumpMessage.class);
     messageTypes.put(MessageType.OS, OsInfo.class);
+    messageTypes.put(MessageType.EVENT, EventMessage.class);
     for (java.util.Map.Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
       messageClasses.put(next.getValue(), next.getKey());
     }
@@ -73,6 +75,7 @@ public class MessageMapping {
     msgpack.register(LockData.class);
     msgpack.register(MonitorData.class);
     msgpack.register(ThreadData.class);
+    msgpack.register(MetricThresholdEvent.class);
     for (Class<?> next : messageTypes.values()) {
       msgpack.register(next);
     }
