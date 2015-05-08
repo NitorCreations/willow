@@ -51,11 +51,11 @@ Box.Application.addModule('horizon-graph', function(context) {
     });
   }
 
-  // graph destroy button, not implemented yet
-  function removeExistingGraphs() {
-    moduleElem.selectAll(".horizon").call(cubismContext.horizon().remove).remove();
-    moduleElem.selectAll(".axis").remove();
-    moduleElem.selectAll(".rule").remove();
+  // graph destroy, put this on a button or such
+  function removeGraph() {
+    cubismContext.on("focus", null);
+    moduleElem.select(".horizon").call(cubismContext.horizon().remove);
+    moduleElem.remove();
   }
 
   function initGraphs(metric, start, stop, step) {
@@ -161,6 +161,7 @@ Box.Application.addModule('horizon-graph', function(context) {
     },
 
     destroy: function() {
+      removeGraph();
       moduleElem = null;
     },
 
