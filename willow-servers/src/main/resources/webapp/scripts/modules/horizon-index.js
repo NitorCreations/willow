@@ -64,7 +64,7 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       if (!hosts) return new Error("unable to load data");
       hosts.sort();
       hosts.map(resolveHostName)
-          .filter(horizonGraphNotExists)
+          //.filter(horizonGraphNotExists) // TODO: this should be done someplace else. module should govern itself, not how it came to be
           .forEach(function (tag) {
             var metricSettings = $(metricMap).attr(metric);
             var chart = metricsChart(metric, tag.raw, stop, step);
@@ -77,9 +77,9 @@ Box.Application.addModule('horizon-index', function(context) { //FIXME rename to
       return { raw: tag, host: tag.substring(5) };
     }
 
-    function horizonGraphNotExists(tag) {
-      return !$(".horizon-" + tag.host).length;
-    }
+    // function horizonGraphNotExists(tag) {
+    //   return !$(".horizon-" + tag.host).length;
+    // }
   }
 
   function metricsChart(type, instanceTag, stop, step) {
