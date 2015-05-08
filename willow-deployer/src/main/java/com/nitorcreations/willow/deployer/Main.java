@@ -57,7 +57,6 @@ import javax.management.NotCompliantMBeanException;
 
 import com.nitorcreations.willow.messages.event.DeployerStartEvent;
 import com.nitorcreations.willow.messages.event.DeployerStopEvent;
-import com.nitorcreations.willow.messages.event.EventMessage;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
