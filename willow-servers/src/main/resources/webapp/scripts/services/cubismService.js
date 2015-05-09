@@ -7,12 +7,12 @@ Box.Application.addService('cubism-graphs', function(application) {
   var timescale = windowSvc.getHashVariable('timescale') || 10800;
 
   var cubismContext = cubism.context();
-  var focusEvents   = [];
+  var focusEvents   = {};
 
   cubismContext.on('focus', function(index) {
-    focusEvents.forEach(function(eventHandler) {
-      eventHandler.call(cubismContext, index);
-    });
+    for (var moduleId in focusEvents) {
+      focusEvents[moduleId].call(cubismContext, index);
+    }
   }, cubismContext);
 
   // TODO: this may need debouncing, each graph will call this on it's reset
@@ -36,10 +36,10 @@ Box.Application.addService('cubism-graphs', function(application) {
     createRulerOverGraphs: function() {
       return cubismContext.rule();
     },
-    onFocus: function(eventHandler) {
+    onFocus: function(eventHandler, moduleId) {
       // there can only be one focus event per context:
       // event cache will take care of executing all events
-      focusEvents.push(eventHandler);
+      focusEvents[moduleId] = eventHandler;
     },
     createMetrics: function(dataSourceRequest, name) {
       return cubismContext.metric(dataSourceRequest, name);

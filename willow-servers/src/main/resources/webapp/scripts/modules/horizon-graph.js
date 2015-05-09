@@ -21,11 +21,10 @@ Box.Application.addModule('horizon-graph', function(context) {
 
     // TODO: this should be done by reconfiguring, not destroying
     moduleElem.selectAll(".axis, .rule, .horizon").remove();
-
     cubismGraphs.resetCubismContext(step, widthInPx);
     cubismGraphs.onFocus(function(index) {
       moduleElem.selectAll(".horizon .value").style("right", index === null ? null : this.size() - index + "px");
-    });
+    }, moduleElem.attr('id'));
     initGraphLayout(widthInPx);
     initGraphs(metric, start, stop, step);
   };
