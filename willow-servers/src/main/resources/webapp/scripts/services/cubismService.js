@@ -6,11 +6,8 @@ Box.Application.addService('cubism-graphs', function(application) {
   var cubismContext;
 
   function resetCubismContext(step, widthInPixels) {
-    if (cubismContext) cubismContext.stop();
-    cubismContext = cubism.context()
-        .step(step)
-        .size(widthInPixels)
-        .start();
+    cubismContext.step(step)
+        .size(widthInPixels);
   }
 
   //TODO should we only wrap cubism context handling into this service
