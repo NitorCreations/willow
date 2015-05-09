@@ -72,6 +72,8 @@ Box.Application.addModule('horizon-graph', function(context) {
     // }
   }
 
+  // creating a new metrics chart every time graph is reset will not remove the old metric
+  // TODO: figure out how to reset metrics, otherwise they'll keep ticking = sending requests
   function metricsChart(type, instanceTag) {
     return cubismGraphs.createMetrics(function(start, stop, step, callback) {
       var metricDataSource = metricsService.metricsDataSource(type, instanceTag, start.getTime(), stop.getTime(), step);
