@@ -10,6 +10,12 @@ Box.Application.addService('utils', function(application) {
           func.apply( scope , Array.prototype.slice.call( args ) );
         } , tmOut );
       };
+    },
+    // check if object contains a property
+    contains: function(where, what) {
+      for (var key in where) {
+        return (key === what);
+      }
     }
   };
 });
