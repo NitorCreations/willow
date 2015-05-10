@@ -1,15 +1,24 @@
 Box.Application.addService('metrics', function(application) {
   'use strict';
 
+  var d3 = application.getGlobal('d3');
+  var utils = application.getService("utils");
+
+  var promiseCache = {};
+
   function createDataSource(url) {
-    var d3 = application.getGlobal('d3');
     return function(callback) {
-      d3.json(url, function(error, data) {
-        if (!data) {
-          return new Error("failed to load data from " + url + "reason:" + error);
-        }
+      // attach callback to existing promise if there is one available
+      var promise = promiseCache[url] || d3.promise.json(url);
+
+      promise.then(function (data) {
         callback(data);
+        promiseCache[url] = null;
+      }, function(err) {
+        console.error("failed to load data from " + url + "reason:" + err);
       });
+
+      promiseCache[url] = promise;
     };
   }
 
