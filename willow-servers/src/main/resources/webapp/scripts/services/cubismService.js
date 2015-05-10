@@ -1,10 +1,6 @@
 Box.Application.addService('cubism-graphs', function(application) {
   'use strict';
-
-  var windowSvc = application.getService('window');
   var cubism    = application.getGlobal('cubism');
-
-  var timescale = windowSvc.getHashVariable('timescale') || 10800;
 
   var cubismContext = cubism.context();
   var focusEvents   = {};
@@ -21,10 +17,16 @@ Box.Application.addService('cubism-graphs', function(application) {
         .size(widthInPixels);
   }
 
+  function init() {
+    var windowSvc = application.getService('window');
+    var timescale = windowSvc.getHashVariable('timescale') || 10800;
+    var widthInPx = $(window).width();
+    var step      = parseInt(timescale * 1000 / widthInPx);
+    resetCubismContext(step, widthInPx);
+  }
+
   // create a context when service initializes
-  var widthInPx = $(window).width();
-  var step      = parseInt(timescale * 1000 / widthInPx);
-  resetCubismContext(step, widthInPx);
+  init()
 
   // TODO should we only wrap cubism context handling into this service
   // or should we set default configurations such as the axis layout?
