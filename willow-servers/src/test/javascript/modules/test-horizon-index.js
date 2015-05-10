@@ -29,9 +29,29 @@ describe("Tests for horizon-graph module", function() {
     };
     jquery = {
       attr: function() {}
+    };
+    store = {
+      readConfiguration: function(id) {
+        return {
+          metric: "cpu",
+          host: "test-host",
+          instanceTag: 'test-instance',
+          stop: 10,
+          step: 1
+        }
+      },
+      storeConfiguration: function() {}
+    };
+    cubismGraphs = {
+      createMetrics: function() {},
+      resetCubismContext: function() {},
+      onFocus: function() {},
+      removeHorizonGraph: function() {}
     }
     contextFake = new Box.TestServiceProvider({
       'window': windowSvc,
+      'cubism-graphs' : cubismGraphs,
+      'configuration-store': store,
       'cubism': cubism,
       'd3': d3,
       'jQuery': jquery
@@ -42,6 +62,7 @@ describe("Tests for horizon-graph module", function() {
   });
 
   afterEach(function() {
+    localStorage.clear();
     module.destroy();
     sandbox.verifyAndRestore();
   });
@@ -56,7 +77,13 @@ describe("Tests for horizon-graph module", function() {
   });
 
   it('Clicking an element with "to-radiator"" type should open the radiator window', function() {
-    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs('{"type":"horizon","host":"test","metric":"cpu"}', "newradiator");
+    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs({
+      metric: "cpu",
+      host: "test-host",
+      instanceTag: 'test-instance',
+      stop: 10,
+      step: 1
+    }, "newradiator");
     var target = $(' <svg data-type="to-radiator" data-host="test"></svg>')[0];
     var event = $.Event('click', {
       target: target

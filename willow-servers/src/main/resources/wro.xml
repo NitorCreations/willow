@@ -18,6 +18,7 @@
     <css>/styles/main.css</css>
     <js>/scripts/services/window.js</js>
     <js>/scripts/services/utils.js</js>
+    <js>/scripts/services/configurationStore.js</js>
     <js>/scripts/services/cubismService.js</js>
     <js>/scripts/services/metrics.js</js>
     <js>/scripts/behaviors/metric-links.js</js>

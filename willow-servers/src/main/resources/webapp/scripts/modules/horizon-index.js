@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-index', function(context) {
   'use strict';
 
-  var d3, moduleElem, metric, timescale, windowSvc, cubismGraphs, utils, metricsService;
+  var d3, moduleElem, metric, timescale, store, windowSvc, cubismGraphs, utils, metricsService;
 
   function initLayout(widthInPixels) {
     moduleElem.attr("style", "width: " + widthInPixels + "px");
@@ -57,7 +57,7 @@ Box.Application.addModule('horizon-index', function(context) {
     var horizonGraphElement = parentElement.append("div")
         .attr("data-module","horizon-graph")[0][0];
     Box.Application.start(horizonGraphElement);
-    localStorage.setItem(d3.select(horizonGraphElement).attr('id'), JSON.stringify(chartConfig)); //TODO this should use namespacing
+    store.storeConfiguration(d3.select(horizonGraphElement).attr('id'), chartConfig); //TODO this should use namespacing
     context.broadcast("reload-graph-configuration", 11);
   }
 
@@ -70,6 +70,7 @@ Box.Application.addModule('horizon-index', function(context) {
       windowSvc    = context.getService("window");
       cubismGraphs = context.getService("cubism-graphs");
       metricsService = context.getService("metrics");
+      store        = context.getService("configuration-store");
 
       // TODO: configSvc for configs
       metric     = windowSvc.getHashVariable("metric") || "cpu";
