@@ -125,7 +125,6 @@ Box.Application.addModule('horizon-graph', function(context) {
 
       //FIXME move to index ?
       $(window).resize(utils.debouncer(resetGraph));
-      resetGraph();
     },
 
     destroy: function() {
