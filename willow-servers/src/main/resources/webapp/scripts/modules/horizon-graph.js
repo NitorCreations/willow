@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var moduleElem, windowSvc, d3, utils, $, metricsService, cubismGraphs;
+  var store, moduleElem, windowSvc, d3, utils, $, metricsService, cubismGraphs;
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
@@ -38,11 +38,11 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function readConfiguration() {
-    return JSON.parse(localStorage.getItem(moduleElem.attr('id')));
+    return store.readConfiguration(moduleElem.attr('id'));
   }
 
   function storeConfiguration(config) {
-    localStorage.setItem(moduleElem.attr('id'), JSON.stringify(config));
+    store.storeConfiguration(moduleElem.attr('id'), config);
   }
 
   // creating a new metrics chart every time graph is reset will not remove the old metric
@@ -119,6 +119,7 @@ Box.Application.addModule('horizon-graph', function(context) {
       utils      = context.getService("utils");
       metricsService = context.getService("metrics");
       cubismGraphs = context.getService("cubism-graphs");
+      store      = context.getService("configuration-store");
 
       moduleElem = d3.select(context.getElement());
 
