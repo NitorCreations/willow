@@ -23,7 +23,8 @@ Box.Application.addService('window', function(application) {
     _open("alerts.html", "index-alerts");
   }
   
-  function sendToRadiator(graphSpec, radiatorname) {
+  function sendToRadiator(graphConfig, radiatorname) {
+    var graphSpec = '{"type":"horizon","host":"' + graphConfig.host + '","metric":"' + graphConfig.metric + '"}';
     var windowArr = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
     if (windowArr.indexOf("radiator-" + radiatorname) == -1) {
       _open("radiator.html#graph=" + encodeURIComponent(graphSpec) + "&name=" + radiatorname, "radiator-" + radiatorname);

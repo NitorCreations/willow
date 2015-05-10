@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var moduleElem, windowSvc, d3, metric, timescale, utils, $, metricsService, cubismGraphs;
+  var moduleElem, windowSvc, d3, utils, $, metricsService, cubismGraphs;
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
@@ -14,18 +14,20 @@ Box.Application.addModule('horizon-graph', function(context) {
   };
 
   var resetGraph = function() {
-    var widthInPx = $(window).width();
-    var step = parseInt(timescale * 1000 / widthInPx);
-    var stop = new Date().getTime();
-    var start = stop - (timescale * 1000);
+    var id = moduleElem.attr('id');
+    var chartConfig = readConfiguration();
+    var metricSetting = $(metricMap).attr(chartConfig.metric);
 
     // TODO: this should be done by reconfiguring, not destroying
-    moduleElem.selectAll(".axis, .rule, .horizon").remove();
-    cubismGraphs.resetCubismContext(step, widthInPx);
+    moduleElem.selectAll(".horizon").remove();
+    cubismGraphs.resetCubismContext(chartConfig.step, window.innerWidth);
+
     cubismGraphs.onFocus(function(index) {
       moduleElem.selectAll(".horizon .value").style("right", index === null ? null : this.size() - index + "px");
-    }, moduleElem.attr('id'));
-    initGraphs(metric, start, stop, step);
+    }, id);
+    $(".horizon").unbind("mousedown");
+    var chartData = metricsChart(chartConfig.metric, chartConfig.instanceTag, chartConfig.stop, chartConfig.step);
+    moduleElem.call(createHorizon, chartConfig.host, chartData, metricSetting);
   };
 
   // graph destroy, put this on a button or such
@@ -35,26 +37,12 @@ Box.Application.addModule('horizon-graph', function(context) {
     moduleElem.remove();
   }
 
-  // move to horizon-index
-  function initGraphs(metric, start, stop, step) {
-    metricsService.hostsDataSource(metric, start, stop, step)(function(hosts) {
-      hosts.sort();
-      hosts.map(resolveHostName)
-          .forEach(function (tag) {
-            var metricSettings = $(metricMap).attr(metric);
-            var chart = metricsChart(metric, tag.raw, stop, step);
-            moduleElem.call(createHorizon, tag.host, chart, metricSettings);
-          });
-      $(".horizon").unbind("mousedown"); //FIXME should be done somewhere else
-    });
+  function readConfiguration() {
+    return JSON.parse(localStorage.getItem(moduleElem.attr('id')));
+  }
 
-    function resolveHostName(tag) {
-      return { raw: tag, host: tag.substring(5) };
-    }
-
-    // function horizonGraphNotExists(tag) {
-    //   return !$(".horizon-" + tag.host).length;
-    // }
+  function storeConfiguration(config) {
+    localStorage.setItem(moduleElem.attr('id'), JSON.stringify(config));
   }
 
   // creating a new metrics chart every time graph is reset will not remove the old metric
@@ -134,9 +122,7 @@ Box.Application.addModule('horizon-graph', function(context) {
 
       moduleElem = d3.select(context.getElement());
 
-      metric     = windowSvc.getHashVariable("metric") || "cpu";
-      timescale  = windowSvc.getHashVariable("timescale") || 10800;
-
+      //FIXME move to index ?
       $(window).resize(utils.debouncer(resetGraph));
       resetGraph();
     },
@@ -145,8 +131,6 @@ Box.Application.addModule('horizon-graph', function(context) {
       removeGraph();
       moduleElem = null;
     },
-
-    messages: ["timescale-changed", "metric-changed"],
 
     onclick: function(event, element, elementType) {
       var host = element ? element.getAttribute("data-host") : null;
@@ -157,7 +141,7 @@ Box.Application.addModule('horizon-graph', function(context) {
           break;
         case 'to-radiator':
           // Actually should show a menu to select radiator
-          windowSvc.sendGraphToRadiator('{"type":"horizon","host":"' + host + '","metric":"' + metric + '"}', "newradiator");
+          windowSvc.sendGraphToRadiator(readConfiguration(), "newradiator");
           break;
         case 'close':
           break;
@@ -168,6 +152,8 @@ Box.Application.addModule('horizon-graph', function(context) {
       }
     },
 
+    messages: ["timescale-changed", "metric-changed", "reload-graph-configuration"],
+
     onmessage: function(name, data) {
       switch (name) {
         case 'timescale-changed':
@@ -176,16 +162,31 @@ Box.Application.addModule('horizon-graph', function(context) {
         case 'metric-changed':
           this.setMetric(data);
           break;
+        case 'reload-graph-configuration':
+          resetGraph();
+          break;
       }
     },
 
-    setTimescale: function(scale) {
-      timescale = scale;
+    //FIXME should these manipulations be in index level?
+    setTimescale: function(timescale) {
+      var widthInPx = $(window).width();
+      var step = parseInt(timescale * 1000 / widthInPx);
+      var stop = new Date().getTime();
+
+      var config = readConfiguration();
+      config.stop = stop;
+      config.step = step;
+      storeConfiguration(config);
+
       resetGraph();
     },
 
-    setMetric: function(metricName) {
-      metric = metricName;
+    //FIXME should these manipulations be in index level?
+    setMetric: function(metric) {
+      var config = readConfiguration();
+      config.metric = metric;
+      storeConfiguration(config);
       resetGraph();
     }
   };
