@@ -33,21 +33,15 @@
 #include("/images/icons.svg")
 <nav class="nav" tabindex="-1">
   <div class="container" data-module="navigation-index">
-    <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts"><use xlink:href="#shape-alarm"></use></svg>
     <a id="cpu" href="#" data-type="select-metric">cpu</a>
     <a id="mem" href="#" data-type="select-metric">mem</a>
     <a id="net" href="#" data-type="select-metric">net</a>
     <a id="diskio" href="#" data-type="select-metric">io</a>
     <a id="tcpinfo" href="#" data-type="select-metric">connections</a>
-    <label for="timescale"> </label>
-    <select id="timescale" class="navcenter smooth" data-type="select-timescale">
-      <option value="10800">3h</option>
-      <option value="28800">8h</option>
-      <option value="43200">12h</option>
-      <option value="86400">1d</option>
-      <option value="187200">3d</option>
-      <option value="436800">7d</option>
-    </select>
+    #include("/time-scale-picker.html")
+    <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts">
+      <use xlink:href="#shape-alarm"></use>
+    </svg>
   </div>
 </nav>
 <div class="mainchart" data-module="horizon-graph"></div>
