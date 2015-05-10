@@ -23,6 +23,8 @@
   #foreach ($key in $session.getAttributeNames())
   <!-- $key => $session.getAttribute($key) -->
   #end
+  <!-- admin: $subject.isPermitted('admin'); -->
+  <!-- monitor: $subject.isPermitted('monitor'); -->
   #else
   #set ($debug = "false")
   <link type="text/css" rel="stylesheet" href="styles/all.css">

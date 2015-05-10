@@ -43,6 +43,7 @@ public class ApplicationServletModule extends ServletModule {
     serve("/properties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);
     serve("/rawterminal/*").with(RawTerminalServlet.class);
+    serve("/session/*").with(SessionServlet.class);
     serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
   }

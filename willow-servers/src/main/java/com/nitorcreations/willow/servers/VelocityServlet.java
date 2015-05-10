@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -32,6 +33,7 @@ public class VelocityServlet extends HttpServlet {
   private String applicationKey = "application";
   private String systemKey = "system";
   private String xmlKey = "xml";
+  private String subjectKey = "subject";
   private VelocityEngine engine;
 
   @Override
@@ -93,6 +95,7 @@ public class VelocityServlet extends HttpServlet {
     context.put(this.applicationKey, getServletContext());
     context.put(this.xmlKey, XMLTool.class);
     context.put(this.systemKey, System.class);
+    context.put(this.subjectKey, SecurityUtils.getSubject());
     response.setContentType(this.contentType);
     response.setCharacterEncoding(this.encoding);
     try {
