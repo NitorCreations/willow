@@ -25,23 +25,8 @@ Box.Application.addModule('horizon-graph', function(context) {
     cubismGraphs.onFocus(function(index) {
       moduleElem.selectAll(".horizon .value").style("right", index === null ? null : this.size() - index + "px");
     }, moduleElem.attr('id'));
-    initGraphLayout(widthInPx);
     initGraphs(metric, start, stop, step);
   };
-
-  function initGraphLayout(widthInPixels) {
-    moduleElem.attr("style", "width: " + widthInPixels + "px");
-    moduleElem.call(function(container) {
-      container.append("div")
-          .classed("axis", true)
-          .call(cubismGraphs.createGraphAxis().orient("top").tickFormat(d3.time.format("%H:%M")));
-    });
-    moduleElem.call(function(container) {
-      container.append("div")
-          .classed("rule", true)
-          .call(cubismGraphs.createRulerOverGraphs());
-    });
-  }
 
   // graph destroy, put this on a button or such
   function removeGraph() {
