@@ -26,7 +26,7 @@ Box.Application.addService('cubism-graphs', function(application) {
   }
 
   // create a context when service initializes
-  init()
+  init();
 
   // TODO should we only wrap cubism context handling into this service
   // or should we set default configurations such as the axis layout?
