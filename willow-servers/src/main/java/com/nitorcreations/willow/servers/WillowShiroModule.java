@@ -2,9 +2,7 @@ package com.nitorcreations.willow.servers;
 
 import com.google.inject.Key;
 import com.google.inject.Provides;
-import com.nitorcreations.willow.auth.AuthorizedKeys;
-import com.nitorcreations.willow.auth.PublicKeyAuthenticationFilter;
-import com.nitorcreations.willow.auth.PublicKeyRealm;
+import com.nitorcreations.willow.auth.*;
 import org.apache.shiro.config.Ini;
 import org.apache.shiro.guice.web.ShiroWebModule;
 import org.apache.shiro.realm.text.IniRealm;
@@ -34,10 +32,11 @@ public class WillowShiroModule extends ShiroWebModule {
 
   protected void doBindRealm() {
     try {
-      bindRealm().toConstructor(IniRealm.class.getConstructor(Ini.class)).asEagerSingleton();
       bindRealm().toConstructor(PublicKeyRealm.class.getConstructor(AuthorizedKeys.class)).asEagerSingleton();
       if(useGitHubOAuth()) {
         bindRealm().to(GitHubOAuthRealm.class).asEagerSingleton();
+      } else {
+        bindRealm().toConstructor(IniRealm.class.getConstructor(Ini.class)).asEagerSingleton();
       }
     } catch (NoSuchMethodException e) {
       addError(e);

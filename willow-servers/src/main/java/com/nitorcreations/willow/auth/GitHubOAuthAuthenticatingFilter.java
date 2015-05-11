@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.servers;
+package com.nitorcreations.willow.auth;
 
 import mx.com.inftel.shiro.oauth2.AbstractOAuth2AuthenticatingFilter;
 import org.json.JSONArray;
@@ -12,12 +12,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonMap;
 
 public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2AuthenticatingFilter {
 
@@ -39,22 +37,18 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
 
     @Override
     protected JSONObject getOAuth2Principal(ServletRequest request, ServletResponse response) throws Exception {
-        HttpURLConnection conn = (HttpURLConnection) new URL("https://github.com/login/oauth/access_token").openConnection();
-        conn.setDoOutput(true);
-        try(OutputStream out = conn.getOutputStream()) {
-            String body = "client_id=" + getClientId()
-                    + "&client_secret=" + getClientSecret()
-                    + "&redirect_uri=" + encodeURL(getRedirectUri())
-                    + "&code=" + encodeURL(request.getParameter("code"));
-            out.write(body.getBytes(UTF_8));
-        }
-        String accessToken = getAccessToken(readResponseBody(conn));
-        JSONObject user = new JSONObject(gitHubHttpGet("https://api.github.com/user", accessToken));
-        JSONArray memberOf = JSONTool.toArray(getOrganizations(user, accessToken), getTeams(accessToken));
+        String tokenResponse = httpPost("https://github.com/login/oauth/access_token",
+                "client_id=" + getClientId() +
+                "&client_secret=" + getClientSecret() +
+                "&redirect_uri=" + encodeURL(getRedirectUri()) +
+                "&code=" + encodeURL(request.getParameter("code")));
+        Map<String,String> headers = singletonMap("Authorization", "token " + getAccessToken(tokenResponse));
+        JSONArray memberOf = JSONTool.toArray(getOrganizations(headers), getTeams(headers));
+        String loginId = new JSONObject(httpGet("https://api.github.com/user", headers)).getString("login");
 
         return new JSONObject()
-                .append("login", user.getString("login"))
-                .append("member_of", memberOf);
+                .put("login", loginId)
+                .put("member_of", memberOf);
     }
 
     @Override
@@ -71,8 +65,8 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
         throw new IllegalStateException("access_token param not sent by idp");
     }
 
-    private List<String> getOrganizations(JSONObject user, String accessToken) throws Exception {
-        JSONArray organizations = new JSONArray(gitHubHttpGet(user.getString("organizations_url"), accessToken));
+    private List<String> getOrganizations(Map<String,String> headers) throws Exception {
+        JSONArray organizations = new JSONArray(httpGet("https://api.github.com/user/orgs", headers));
 
         List<String> names = new ArrayList<>();
         for(int i = 0; i < organizations.length(); i++) {
@@ -81,8 +75,8 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
         return Collections.unmodifiableList(names);
     }
 
-    private List<String> getTeams(String accessToken) throws Exception {
-        JSONArray teams = new JSONArray(gitHubHttpGet("https://api.github.com/user/teams", accessToken));
+    private List<String> getTeams(Map<String,String> headers) throws Exception {
+        JSONArray teams = new JSONArray(httpGet("https://api.github.com/user/teams", headers));
 
         List<String> names = new ArrayList<>();
         for(int i = 0; i < teams.length(); i++) {
@@ -95,10 +89,21 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
         return Collections.unmodifiableList(names);
     }
 
-    private String gitHubHttpGet(String url, String accessToken) throws Exception {
+    private String httpGet(String url, Map<String, String> headers) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setDoOutput(true);
-        conn.setRequestProperty("Authorization", "token " + accessToken);
+        for(Map.Entry<String,String> header : headers.entrySet()) {
+            conn.setRequestProperty(header.getKey(), header.getValue());
+        }
+        return readResponseBody(conn);
+    }
+
+    private String httpPost(String url, String data) throws Exception {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setDoOutput(true);
+        try(OutputStream out = conn.getOutputStream()) {
+            out.write(data.getBytes(UTF_8));
+        }
         return readResponseBody(conn);
     }
 
