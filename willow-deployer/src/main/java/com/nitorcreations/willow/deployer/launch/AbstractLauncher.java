@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 
 import com.nitorcreations.willow.messages.event.*;
+
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
@@ -201,9 +202,9 @@ public abstract class AbstractLauncher implements LaunchMethod {
     if (child == null) {
       log.finest("No child to destroy, returning previous return value");
       return getReturnValue();
-    }
+    };
     long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
-    if (child.isAlive()) {
+    if (isChildAlive()) {
       if (running.get()) {
         transmitter.queue(new ChildRestartingEvent(getName()));
         restarting.set(true);
@@ -279,5 +280,13 @@ public abstract class AbstractLauncher implements LaunchMethod {
   @Override
   public int restarts() {
     return restarts;
+  }
+  private boolean isChildAlive() {
+    try {
+      child.exitValue();
+      return false;
+    } catch(IllegalThreadStateException e) {
+      return true;
+    }
   }
 }
