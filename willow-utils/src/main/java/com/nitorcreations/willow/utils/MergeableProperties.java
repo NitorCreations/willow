@@ -88,7 +88,7 @@ public class MergeableProperties extends Properties {
     postMerge();
     return this;
   }
-  
+
   private boolean pathEndsWith(String name, String suffix) {
     try {
       URI uri = new URI(name);
@@ -148,9 +148,7 @@ public class MergeableProperties extends Properties {
         }
       } catch (ScriptException e) {
         ret.append(m.group(2));
-        LogRecord rec = new LogRecord(Level.INFO, "Failed to execute javascript");
-        rec.setThrown(e);
-        log.log(rec);
+        log.log(Level.INFO, "Failed to execute javascript", e);
       }
       end = m.end();
     }

@@ -38,7 +38,7 @@ public class WebSocketTransmitter {
   private long flushInterval = 2000;
   private URI uri;
   private String username;
-  
+
   private final Logger logger = Logger.getLogger(this.getClass().getName());
   private final ArrayBlockingQueue<AbstractMessage> queue = new ArrayBlockingQueue<AbstractMessage>(200);
   private final Worker worker = new Worker();
@@ -76,7 +76,7 @@ public class WebSocketTransmitter {
       this.username = uri.getUserInfo().split(":")[0];
     }
   }
-  
+
   public void start() {
     if (!workerThread.isAlive()) {
       workerThread.start();
@@ -109,9 +109,7 @@ public class WebSocketTransmitter {
         logger.info("queue full, retrying");
       }
     } catch (InterruptedException e) {
-      LogRecord rec = new LogRecord(Level.INFO, "Interrupted");
-      rec.setThrown(e);
-      logger.log(rec);
+      logger.log(Level.INFO, "Interrupted", e);
       return false;
     }
     return true;
@@ -135,7 +133,7 @@ public class WebSocketTransmitter {
     private final ArrayList<AbstractMessage> send = new ArrayList<AbstractMessage>();
     private Session wsSession;
     private WebSocketClient client = new WebSocketClient();
-    
+
     @Override
     public void run() {
       synchronized (this) {
@@ -155,26 +153,18 @@ public class WebSocketTransmitter {
                 continue;
               doSend();
             } catch (IOException e) {
-              LogRecord rec = new LogRecord(Level.INFO, "Exception while sending messages");
-              rec.setThrown(e);
-              logger.log(rec);
+              logger.log(Level.INFO, "Exception while sending messages", e);
             } catch (InterruptedException e) {
-              LogRecord rec = new LogRecord(Level.INFO, "Interrupted");
-              rec.setThrown(e);
-              logger.log(rec);
+              logger.log(Level.INFO, "Interrupted", e);
               try {
                 doSend();
               } catch (IOException e1) {
-                LogRecord rec2 = new LogRecord(Level.INFO, "Exception while sending messages");
-                rec2.setThrown(e);
-                logger.log(rec2);
+                logger.log(Level.INFO, "Exception while sending messages", e1);
               }
               return;
             }
           } catch (Exception e) {
-            LogRecord rec2 = new LogRecord(Level.INFO, "Exception while sending messages");
-            rec2.setThrown(e);
-            logger.log(rec2);
+            logger.log(Level.INFO, "Exception while sending messages", e);
           }
         }
       }
@@ -207,9 +197,7 @@ public class WebSocketTransmitter {
       try {
         client.stop();
       } catch (Exception e) {
-        LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to stop");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.INFO, "Exception while trying to stop", e);
       }
       client.destroy();
     }
@@ -229,16 +217,12 @@ public class WebSocketTransmitter {
         try {
           wsSession = future.get();
         } catch (Exception e) {
-          LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to connect");
-          rec.setThrown(e);
-          logger.log(rec);
+          logger.log(Level.INFO, "Exception while trying to connect", e);
           try {
             client.stop();
             client.destroy();
           } catch (Exception e1) {
-            LogRecord rec2 = new LogRecord(Level.INFO, "Exception while trying to disconnect");
-            rec2.setThrown(e1);
-            logger.log(rec2);
+            logger.log(Level.INFO, "Exception while trying to disconnect", e1);
           }
         }
       }
@@ -251,9 +235,7 @@ public class WebSocketTransmitter {
         ConnectorFactory cf = ConnectorFactory.getDefault();
         con = cf.createConnector();
       } catch (AgentProxyException e) {
-        LogRecord rec = new LogRecord(Level.SEVERE, "Unable to fetch authorization keys!");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.SEVERE, "Unable to fetch authorization keys!", e);
       }
       byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
       ret.append(printBase64Binary(sign));
@@ -275,9 +257,7 @@ public class WebSocketTransmitter {
           client.destroy();
         }
       } catch (Exception e) {
-        LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to handle socket close");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.INFO, "Exception while trying to handle socket close", e);
       }
     }
 
@@ -290,9 +270,7 @@ public class WebSocketTransmitter {
           client.destroy();
         }
       } catch (Exception e) {
-        LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to handle socket error");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.INFO, "Exception while trying to handle socket error", e);
       }
     }
   }

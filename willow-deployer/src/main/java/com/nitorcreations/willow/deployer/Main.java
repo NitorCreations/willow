@@ -77,13 +77,13 @@ public class Main extends DeployerControl implements MainMBean {
   private List<StatisticsSender> statistics = new ArrayList<>();
   private static AtomicReference<String> statisticsUrl = new AtomicReference<>(null);
   private static AtomicLong statisticsInterval = new AtomicLong(2000);
-  
+
   @Inject
   private Map<String, StatisticsSender> statisticSenders;
-  
-  @Inject 
+
+  @Inject
   private WebSocketTransmitter transmitter;
-  
+
   public Main() {}
 
   private void registerBean() {
@@ -94,7 +94,7 @@ public class Main extends DeployerControl implements MainMBean {
       e.printStackTrace();
     }
   }
- 
+
   public static void main(String[] args) throws URISyntaxException {
     injector.getInstance(Main.class).doMain(args);
   }
@@ -241,9 +241,7 @@ public class Main extends DeployerControl implements MainMBean {
     try {
       runHooks(PROPERTY_KEY_PREFIX_SHUTDOWN, launchPropertiesList, false);
     } catch (Exception e) {
-      LogRecord rec = new LogRecord(Level.SEVERE, "Shutdown failed");
-      rec.setThrown(e);
-      log.log(rec);
+      log.log(Level.SEVERE, "Shutdown failed", e);
     }
     if (children.size() > 0) {
       final ExecutorService stopexec = Executors.newFixedThreadPool(children.size() + statistics.size());
@@ -338,9 +336,7 @@ public class Main extends DeployerControl implements MainMBean {
         try {
           next.destroyChild();
         } catch (InterruptedException e) {
-          LogRecord rec = new LogRecord(Level.INFO, "Failed to restart child " + next.getName());
-          rec.setThrown(e);
-          log.log(rec);
+          log.log(Level.INFO, "Failed to restart child " + next.getName(), e);
         }
       }
     }
@@ -407,7 +403,7 @@ public class Main extends DeployerControl implements MainMBean {
   public static MergeableProperties getChildProperties(MergeableProperties launchProps, String prefix, int index) {
     MergeableProperties childProps = launchProps.getPrefixed(prefix);
     childProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(index));
-    for (String next : new String[] { 
+    for (String next : new String[] {
       PROPERTY_KEY_DEPLOYER_NAME,
       PROPERTY_KEY_WORKDIR,
       PROPERTY_KEY_DOWNLOAD_DIRECTORY,
@@ -431,7 +427,7 @@ public class Main extends DeployerControl implements MainMBean {
   public long getFirstJavaChildPid(String childName) {
     return getFirstJavaChildPid(getChildPid(childName));
   }
-  
+
   public long getFirstJavaChildPid(long nextChild) {
     if (nextChild > 0) {
       try {

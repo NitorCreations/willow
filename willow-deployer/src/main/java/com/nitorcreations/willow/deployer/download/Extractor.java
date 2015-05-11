@@ -97,9 +97,7 @@ public class Extractor implements Callable<Boolean> {
       logger.log(Level.INFO, "Processed " + entries + " entries");
       return true;
     } catch (Exception e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to extract " + target.getAbsolutePath());
-      rec.setThrown(e);
-      logger.log(rec);
+      logger.log(Level.WARNING, "Failed to extract " + target.getAbsolutePath(), e);
       return false;
     }
   }

@@ -98,7 +98,7 @@ public class UrlDownloader implements Callable<File> {
           }
         }
         try (InputStream bIn = new BufferedInputStream(ProxyUtils.getUriInputStream(
-          properties.getProperty(PROPERTY_KEY_SUFFIX_PROXYAUTOCONF), 
+          properties.getProperty(PROPERTY_KEY_SUFFIX_PROXYAUTOCONF),
           properties.getProperty(PROPERTY_KEY_SUFFIX_PROXY), url), FileUtil.BUFFER_LEN)) {
           InputStream in = null;
           MD5SumInputStream md5in = null;
@@ -133,9 +133,7 @@ public class UrlDownloader implements Callable<File> {
       } catch (URISyntaxException | IOException | NoSuchAlgorithmException e) {
         tryNo++;
         target = null;
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to download and extract " + url);
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to download and extract " + url, e);
         if (tryNo <= retries) {
           logger.log(Level.WARNING, "Retrying (" + tryNo + ")s");
         }

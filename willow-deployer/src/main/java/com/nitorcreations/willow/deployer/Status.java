@@ -43,8 +43,7 @@ public class Status extends DeployerControl {
         }
       }
     } catch (Throwable e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
-      log.log(rec);
+      log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
     }
   }
 }

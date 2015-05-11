@@ -35,8 +35,7 @@ public class GetList extends DeployerControl {
         System.out.println(getOldDeployerName(next));
       }
     } catch (Throwable e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
-      log.log(rec);
+      log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
     }
   }
   protected String getOldDeployerName(long pid) throws SigarException {

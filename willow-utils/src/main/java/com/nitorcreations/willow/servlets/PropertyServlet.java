@@ -47,9 +47,7 @@ public class PropertyServlet extends HttpServlet {
       } catch (ClassNotFoundException e) {
         log.info("PropertySource class " + propertySourceClassName + " not found");
       } catch (InstantiationException | IllegalAccessException e) {
-        LogRecord rec = new LogRecord(Level.INFO, "Unable to instantiate PropertySource class " + propertySourceClassName);
-        rec.setThrown(e);
-        log.log(rec);
+        log.log(Level.INFO, "Unable to instantiate PropertySource class " + propertySourceClassName, e);
       }
     }
   }

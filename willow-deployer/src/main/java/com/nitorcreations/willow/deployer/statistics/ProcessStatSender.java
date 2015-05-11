@@ -43,9 +43,7 @@ public class ProcessStatSender extends AbstractStatisticsSender {
           transmitter.queue(msg);
         }
       } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to Process CPU statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to Process CPU statistics", e);
       }
       nextProcCpus = nextProcCpus + conf.getIntervalProcCpus();
     }

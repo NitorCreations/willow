@@ -87,9 +87,7 @@ public class JMXOperation extends DeployerControl {
       }
       System.out.println("No operation/attribute found with name " + operationName + " and " + argList.size() + " argument(s)");
     } catch (Throwable e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to issue jmxoperation to deployer " + deployerName);
-      rec.setThrown(e);
-      log.log(rec);
+      log.log(Level.WARNING, "Failed to issue jmxoperation to deployer " + deployerName, e);
       System.exit(1);
     }
   }
@@ -104,21 +102,18 @@ public class JMXOperation extends DeployerControl {
     deployerName = first;
     long mypid = sigar.getPid();
     if (mypid <= 0) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed resolve own pid");
-      log.log(rec);
+      log.log(Level.WARNING, "Failed resolve own pid");
       System.exit(1);
     }
     try {
       long firstPid = findOldDeployerPid(deployerName);
       if (firstPid <= 0) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to find pid for deployer " + deployerName);
-        log.log(rec);
+        log.log(Level.WARNING, "Failed to find pid for deployer " + deployerName);
         System.exit(1);
       }
       conn = getJMXConnector(firstPid);
       if (conn == null) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
-        log.log(rec);
+        log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
         System.exit(1);
       }
       MBeanServerConnection server = conn.getMBeanServerConnection();
@@ -127,9 +122,8 @@ public class JMXOperation extends DeployerControl {
       if (childPid > 0) {
         childConn = getJMXConnector(childPid);
         if (childConn == null) {
-          LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer child" + deployerName
+          log.log(Level.WARNING, "Failed to connect to deployer child" + deployerName
               + "::"  + argList.get(0));
-          log.log(rec);
           System.exit(1);
         } else {
           argList.remove(0);
