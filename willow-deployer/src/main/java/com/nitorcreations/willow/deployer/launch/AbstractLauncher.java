@@ -51,7 +51,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
   @Inject
   protected WebSocketTransmitter transmitter;
   protected final String PROCESS_IDENTIFIER = new BigInteger(130, new SecureRandom()).toString(32);
-  protected final Set<String> launchArgs = new LinkedHashSet<String>();
+  protected final Set<String> launchArgs = new LinkedHashSet<>();
   protected MergeableProperties launchProperties;
   protected URI statUri;
   protected Process child;
@@ -132,8 +132,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
       pb.directory(workingDir);
       log.info(String.format("Starting %s%n", pb.command().toString()));
       try {
-        child = pb.start();
-        if (transmitter != null && transmitter.isRunning() && 
+        synchronized(this) {
+          child = pb.start();
+        }
+        if (transmitter != null && transmitter.isRunning() &&
           launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
@@ -195,40 +197,45 @@ public abstract class AbstractLauncher implements LaunchMethod {
   }
 
   @Override
-  public int destroyChild() throws InterruptedException {
+  public synchronized int destroyChild() throws InterruptedException {
+    if (child == null) {
+      log.finest("No child to destroy, returning previous return value");
+      return getReturnValue();
+    }
     long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
-    if (child != null) {
+    if (child.isAlive()) {
       if (running.get()) {
         transmitter.queue(new ChildRestartingEvent(getName()));
         restarting.set(true);
       } else {
-        transmitter.queue(new ChildStoppingEvent(getName(), getProcessId()));
+        transmitter.queue(new ChildStoppingEvent(getName(), pid.get()));
       }
       child.destroy();
-    }
-    try {
-      Future<Boolean> waitFor = executor.submit(new Callable<Boolean>() {
-        public Boolean call() throws InterruptedException {
-          child.waitFor();
-          pid.set(-1);
-          return true;
+
+      try {
+        Future<Boolean> waitFor = executor.submit(new Callable<Boolean>() {
+          public Boolean call() throws InterruptedException {
+            child.waitFor();
+            pid.set(-1);
+            return true;
+          }
+        });
+        waitFor.get(timeout, TimeUnit.SECONDS);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        if (log != null) {
+          log.info("Child did not stop on TERM");
         }
-      });
-      waitFor.get(timeout, TimeUnit.SECONDS);
-    } catch (InterruptedException | ExecutionException | TimeoutException e) {
-      if (log != null) {
-        log.info("Child did not stop on TERM");
-      }
-    } finally {
-      if (pid.get() > 0) {
-        try {
-          new Sigar().kill(pid.get(), 9);
-          pid.set(-1);
-        } catch (SigarException e) {
-          if (log != null) {
-            LogRecord rec = new LogRecord(Level.INFO, "Failed to kill child " + getName());
-            rec.setThrown(e);
-            log.log(rec);
+      } finally {
+        if (pid.get() > 0) {
+          try {
+            new Sigar().kill(pid.get(), 9);
+            pid.set(-1);
+          } catch (SigarException e) {
+            if (log != null) {
+              LogRecord rec = new LogRecord(Level.INFO, "Failed to kill child " + getName());
+              rec.setThrown(e);
+              log.log(rec);
+            }
           }
         }
       }
