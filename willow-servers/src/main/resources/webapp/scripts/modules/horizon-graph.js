@@ -1,8 +1,12 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var store, moduleElem, windowSvc, d3, utils, $, metricsService, cubismGraphs;
+  var moduleElem, configurationId,
+      d3, $,
+      store, windowSvc, utils, metricsService, cubismGraphs;
 
+  var enableTerminalButton = true;
+  var enableShareToRadiatorButton = true;
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
   var metricMap = {
@@ -38,11 +42,11 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function readConfiguration() {
-    return store.readConfiguration(moduleElem.attr('id'));
+    return store.readConfiguration(configurationId);
   }
 
   function storeConfiguration(config) {
-    store.storeConfiguration(moduleElem.attr('id'), config);
+    store.storeConfiguration(configurationId, config);
   }
 
   // creating a new metrics chart every time graph is reset will not remove the old metric
@@ -66,8 +70,12 @@ Box.Application.addModule('horizon-graph', function(context) {
         .enter().append("div");
 
     horizonGraphElements.call(appendHorizonGraph, host, metricSettings);
-    horizonGraphElements.call(appendTerminalIcon, host);
-    horizonGraphElements.call(appendShareRadiatorIcon, host);
+    if (enableTerminalButton) {
+      horizonGraphElements.call(appendTerminalIcon, host);
+    }
+    if (enableShareToRadiatorButton) {
+      horizonGraphElements.call(appendShareRadiatorIcon, host);
+    }
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
@@ -122,6 +130,10 @@ Box.Application.addModule('horizon-graph', function(context) {
       store      = context.getService("configuration-store");
 
       moduleElem = d3.select(context.getElement());
+
+      configurationId = context.getConfig('configurationIdPrefix') + moduleElem.attr('id');
+      enableTerminalButton = !context.getConfig('disableTerminalButton');
+      enableShareToRadiatorButton = !context.getConfig('disableRadiatorShareButton');
 
       //FIXME move to index ?
       $(window).resize(utils.debouncer(resetGraph));

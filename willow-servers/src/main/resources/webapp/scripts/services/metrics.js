@@ -22,10 +22,16 @@ Box.Application.addService('metrics', function(application) {
     };
   }
 
-  function hostsUrl(metric, start, stop, step) {
+  /**
+   * Fetch hosts with specific metric between specific time range
+   */
+  function hostsUrl(metric, start, stop) {
     return "metrics/hosts" + "?start=" + start + "&stop=" + stop + "&type=" + metric;
   }
 
+  /**
+   * Fetch metrics for specific instance between certain interval
+   */
   function metricUrl(type, instanceTag, start, stop, step) {
     return "metrics/" + type +
         "?start=" + start +
@@ -35,8 +41,8 @@ Box.Application.addService('metrics', function(application) {
   }
 
   return {
-    hostsDataSource: function(metric, start, stop, step) {
-      var dataUrl = hostsUrl(metric, start, stop, step);
+    hostsDataSource: function(metric, start, stop) {
+      var dataUrl = hostsUrl(metric, start, stop);
       return createDataSource(dataUrl);
     },
     metricsDataSource: function(type, instanceTag, start, stop, step) {
