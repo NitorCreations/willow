@@ -29,7 +29,7 @@ Box.Application.addModule('horizon-index', function(context) {
   }
 
   function initGraphs(metric, start, stop, step) {
-    metricsService.hostsDataSource(metric, start, stop, step)(function(hosts) {
+    metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
       hosts.map(resolveHostName)
           .forEach(function (tag) {
@@ -53,12 +53,19 @@ Box.Application.addModule('horizon-index', function(context) {
     // }
   }
 
+  function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix) {
+    var radiatorConfig = { configurationIdPrefix: radiatorIdPrefix };
+    horizonGraphElement.html("<script type='text/x-config'>" + JSON.stringify(radiatorConfig) + "</script>");
+  }
+
   function createHorizonGraph(parentElement, chartConfig) {
+    var metricIdPrefix = "live:metrics:graph-";
     var horizonGraphElement = parentElement.append("div")
-        .attr("data-module","horizon-graph")[0][0];
-    Box.Application.start(horizonGraphElement);
-    store.storeConfiguration(d3.select(horizonGraphElement).attr('id'), chartConfig); //TODO this should use namespacing
-    context.broadcast("reload-graph-configuration", 11);
+        .attr("data-module","horizon-graph");
+    injectModuleConfiguration(horizonGraphElement, metricIdPrefix);
+    Box.Application.start(horizonGraphElement[0][0]);
+    store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
+    context.broadcast("reload-graph-configuration");
   }
 
   return {
