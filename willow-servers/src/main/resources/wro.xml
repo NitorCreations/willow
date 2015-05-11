@@ -8,7 +8,7 @@
     <css>/styles/nv.d3.css</css>
     <js>/scripts/jquery.js</js>
     <js>/scripts/d3.v3.js</js>
-    <js>/scripts/d3.promise.min.js</js>
+    <js>/scripts/d3.promise.js</js>
     <js>/scripts/nv.d3.js</js>
     <js>/scripts/cubism.v1.js</js>
     <js>/scripts/term.js</js>
