@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.servers;
+package com.nitorcreations.willow.auth;
 
 import com.google.common.collect.ImmutableMap;
 import mx.com.inftel.shiro.oauth2.OAuth2AuthenticationToken;

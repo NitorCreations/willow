@@ -1,3 +1,3 @@
 redirect_uri=http://localhost:5120/
-client_id=dfbd4f8a495eaaec0919
-client_secret=4cd0672b44b189af142caa0fb3d3fa66c6c1176a
+client_id=123
+client_secret=456

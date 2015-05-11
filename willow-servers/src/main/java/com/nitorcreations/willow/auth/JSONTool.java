@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.servers;
+package com.nitorcreations.willow.auth;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,10 +22,14 @@ enum JSONTool {
     }
 
     static JSONArray toArray(List<String> list1, List<String> list2) { // generics and varargs don't match..
-        List<String> merged = new ArrayList<>(list1);
-        merged.addAll(list2);
-        return new JSONArray(merged);
+        JSONArray array = new JSONArray();
+        for(String s : list1) {
+            array = array.put(s);
+        }
+        for(String s : list2) {
+            array = array.put(s);
+        }
+        return array;
     }
-
 
 }
