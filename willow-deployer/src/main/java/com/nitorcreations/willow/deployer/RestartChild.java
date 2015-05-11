@@ -44,8 +44,7 @@ public class RestartChild extends DeployerControl {
         System.out.println("No deployer with role " + deployerName + " running");
       }
     } catch (Throwable e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to connect to deployer " + deployerName);
-      log.log(rec);
+      log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
     }
   }
 }

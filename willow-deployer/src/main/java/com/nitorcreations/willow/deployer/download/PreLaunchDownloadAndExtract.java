@@ -76,9 +76,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
         if (!next.get())
           failures = true;
       } catch (InterruptedException | ExecutionException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed download and extract");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed download and extract", e);
       }
     }
     executor.shutdownNow();
@@ -101,8 +99,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
       try {
         md5 = MD5SumInputStream.getMd5FromURL(new URL(urlMd5));
       } catch (IOException e) {
-        LogRecord rec = new LogRecord(Level.INFO, "No md5 sum available" + urlMd5);
-        logger.log(rec);
+        logger.log(Level.INFO, "No md5 sum available" + urlMd5);
         if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
           throw new IOException("Failed to get a valid md5sum for " + url, e);
         }

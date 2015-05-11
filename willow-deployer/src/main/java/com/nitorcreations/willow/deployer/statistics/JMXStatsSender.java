@@ -99,9 +99,7 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
           }
         }
       } catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect GC JMX statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to collect GC JMX statistics", e);
       }
     }
     return poolNames;
@@ -117,9 +115,7 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
         ret.memoryPoolUsage.put(nextPool, (Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "Usage")).get("used"));
         ret.memoryPoolPeakUsage.put(nextPool, (Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "PeakUsage")).get("used"));
       } catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException e) {
-        LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect Memory JMX statistics");
-        rec.setThrown(e);
-        logger.log(rec);
+        logger.log(Level.WARNING, "Failed to collect Memory JMX statistics", e);
       }
     }
   }
@@ -133,9 +129,7 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
       ret.setHeapMemory(((Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "HeapMemoryUsage")).get("used")).longValue());
       ret.setNonHeapMemory(((Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "NonHeapMemoryUsage")).get("used")).longValue());
     } catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect Heap Memory JMX statistics");
-      rec.setThrown(e);
-      logger.log(rec);
+      logger.log(Level.WARNING, "Failed to collect Heap Memory JMX statistics", e);
     }
   }
 
@@ -147,9 +141,7 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     try {
       ret.setHeapMemory(((Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "Usage")).get("used")).longValue());
     } catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException e) {
-      LogRecord rec = new LogRecord(Level.WARNING, "Failed to collect Code Cache statistics");
-      rec.setThrown(e);
-      logger.log(rec);
+      logger.log(Level.WARNING, "Failed to collect Code Cache statistics");
     }
   }
 

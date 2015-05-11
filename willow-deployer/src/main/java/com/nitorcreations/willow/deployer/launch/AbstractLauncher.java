@@ -232,9 +232,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
             pid.set(-1);
           } catch (SigarException e) {
             if (log != null) {
-              LogRecord rec = new LogRecord(Level.INFO, "Failed to kill child " + getName());
-              rec.setThrown(e);
-              log.log(rec);
+              log.log(Level.INFO, "Failed to kill child " + getName(), e);
             }
           }
         }
