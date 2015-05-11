@@ -18,11 +18,7 @@ import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
 
-public class GitHubOAuthRealm implements Realm {
-
-    static final Map<String,Permission> PERMISSIONS = ImmutableMap.of(
-            "NitorCreations.willow", (Permission) new DomainPermission("admin"),
-            "NitorCreations",        (Permission) new DomainPermission("monitor"));
+public abstract class GitHubOAuthRealm implements Realm {
 
     @Override
     public String getName() {
@@ -46,16 +42,7 @@ public class GitHubOAuthRealm implements Realm {
         }
     }
 
-    private Set<Permission> memberShipsToPermissions(Set<String> organizations) {
-        Set<Permission> permissions = new HashSet<>();
-        for(String team : organizations) {
-            Permission permission = PERMISSIONS.get(team);
-            if(permission != null) {
-                permissions.add(permission);
-            }
-        }
-        return unmodifiableSet(permissions);
-    }
+    protected abstract Set<Permission> memberShipsToPermissions(Set<String> organizations);
 
 
 }

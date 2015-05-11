@@ -12,6 +12,7 @@ import org.apache.shiro.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
+import com.nitorcreations.willow.auth.Permissions;
 import com.nitorcreations.willow.ssh.RawSecureShellWS;
 
 @Singleton
@@ -20,7 +21,7 @@ public class RawTerminalServlet extends WebSocketServlet {
 
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    if (!SecurityUtils.getSubject().isPermitted("admin")) {
+    if (!SecurityUtils.getSubject().isPermitted(Permissions.ADMIN)) {
       resp.sendError(HttpServletResponse.SC_FORBIDDEN);
     }
     super.service(req, resp);
