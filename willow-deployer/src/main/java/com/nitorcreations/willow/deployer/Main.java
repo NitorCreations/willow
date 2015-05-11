@@ -268,7 +268,7 @@ public class Main extends DeployerControl implements MainMBean {
       int i = 0;
       for (Future<Integer> next : waits) {
         try {
-          log.info("Child " + i + " returned " + next.get());
+          log.info("Child " + i++ + " returned " + next.get());
         } catch (InterruptedException | ExecutionException e) {
           log.warning("Destroy failed: " + e.getMessage());
         }
