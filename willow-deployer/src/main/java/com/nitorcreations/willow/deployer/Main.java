@@ -57,6 +57,7 @@ import javax.management.NotCompliantMBeanException;
 
 import com.nitorcreations.willow.messages.event.DeployerStartEvent;
 import com.nitorcreations.willow.messages.event.DeployerStopEvent;
+
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
@@ -68,6 +69,7 @@ import com.nitorcreations.willow.deployer.launch.LaunchCallback;
 import com.nitorcreations.willow.deployer.launch.LaunchMethod;
 import com.nitorcreations.willow.deployer.statistics.StatisticsSender;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.protocols.property.PropertyUrlConnection;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named

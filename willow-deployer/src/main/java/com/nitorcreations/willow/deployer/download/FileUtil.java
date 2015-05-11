@@ -19,7 +19,7 @@ public class FileUtil {
   }
 
   public static String getFileName(String name) {
-    int lastSeparator = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+    int lastSeparator = Math.max(Math.max(name.lastIndexOf(':'), name.lastIndexOf('/')), name.lastIndexOf('\\'));
     int queryIndex = name.lastIndexOf("?");
     if (queryIndex < 0)
       queryIndex = name.length();
