@@ -34,7 +34,7 @@ public class WillowShiroModule extends ShiroWebModule {
     try {
       bindRealm().toConstructor(PublicKeyRealm.class.getConstructor(AuthorizedKeys.class)).asEagerSingleton();
       if(useGitHubOAuth()) {
-        bindRealm().to(GitHubOAuthRealm.class).asEagerSingleton();
+        bindRealm().to(NitorGithubOAuthRealm.class).asEagerSingleton();
       } else {
         bindRealm().toConstructor(IniRealm.class.getConstructor(Ini.class)).asEagerSingleton();
       }
