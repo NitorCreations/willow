@@ -84,17 +84,13 @@ public class WebSocketTransmitter {
   }
 
   public void stop() {
-    logger.info("Stopping the message transmitter");
+    logger.finest("Stopping the message transmitter");
     synchronized (this) {
+      //stop accepting messages to the queue
       running = false;
     }
     if (workerThread.isAlive()) {
       worker.stop();
-      try {
-        workerThread.join(5000);
-      } catch (InterruptedException e) {
-        workerThread.interrupt();
-      }
     }
   }
   public boolean isRunning() {
@@ -187,9 +183,9 @@ public class WebSocketTransmitter {
     private void doSend() throws IOException {
       queue.drainTo(send);
       if (send.size() > 0) {
-        logger.fine(String.format("Sending %d messages", send.size()));
+        logger.finest(String.format("Sending %d messages", send.size()));
         ByteBuffer toSend = msgmap.encode(send);
-        logger.fine(String.format("Sending buffer len %d", toSend.capacity()));
+        logger.finest(String.format("Sending buffer len %d", toSend.capacity()));
         wsSession.getRemote().sendBytes(toSend);
         send.clear();
       } else {
@@ -199,19 +195,15 @@ public class WebSocketTransmitter {
 
     public void stop() {
       synchronized (this) {
-        this.notifyAll();
-        int waited = 0;
-        while (!queue.isEmpty() && waited++ < 3) {
-          try {
-            this.wait(1000);
-          } catch (InterruptedException e) {
-            logger.info("Could not transmit all messages before stopping");
-            break;
-          }
-        }
         this.running = false;
+        this.notifyAll();
       }
-      this.wsSession.close();
+      try {
+        workerThread.join();
+      } catch (InterruptedException e) {
+        logger.warning("Interrupted while waiting for transmitter to finish.");
+      }
+
       try {
         client.stop();
       } catch (Exception e) {
@@ -278,8 +270,10 @@ public class WebSocketTransmitter {
     public void onClose(int statusCode, String reason) {
       logger.info(String.format("Connection closed: %d - %s", statusCode, reason));
       try {
-        client.stop();
-        client.destroy();
+        if (client.isRunning()) {
+          client.stop();
+          client.destroy();
+        }
       } catch (Exception e) {
         LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to handle socket close");
         rec.setThrown(e);
@@ -291,8 +285,10 @@ public class WebSocketTransmitter {
     public void onError(Session wsSession, Throwable err) {
       logger.info(String.format("Connection error: %s - %s", wsSession, err.getMessage()));
       try {
-        client.stop();
-        client.destroy();
+        if (client.isRunning()) {
+          client.stop();
+          client.destroy();
+        }
       } catch (Exception e) {
         LogRecord rec = new LogRecord(Level.INFO, "Exception while trying to handle socket error");
         rec.setThrown(e);
