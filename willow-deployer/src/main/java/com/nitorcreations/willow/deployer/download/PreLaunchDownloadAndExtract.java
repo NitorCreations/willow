@@ -24,6 +24,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import com.nitorcreations.willow.deployer.Main;
+import com.nitorcreations.willow.protocols.property.PropertyUrlConnection;
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
@@ -44,14 +45,19 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
       Future<Boolean> next = executor.submit(new Callable<Boolean>() {
         @Override
         public Boolean call() throws Exception {
-          byte[] md5 = getMd5(downloadProperties);
-          UrlDownloader dwn = new UrlDownloader(downloadProperties, md5);
-          File downloaded = dwn.call();
-          if (downloaded != null && downloaded.exists()) {
-            downloadProperties.putAll(properties);
-            return new Extractor(downloadProperties, downloaded).call();
-          } else {
-            return false;
+          try {
+            PropertyUrlConnection.currentProperties.set(properties);
+            byte[] md5 = getMd5(downloadProperties);
+            UrlDownloader dwn = new UrlDownloader(downloadProperties, md5);
+            File downloaded = dwn.call();
+            if (downloaded != null && downloaded.exists()) {
+              downloadProperties.putAll(properties);
+              return new Extractor(downloadProperties, downloaded).call();
+            } else {
+              return false;
+            }
+          } finally {
+            PropertyUrlConnection.currentProperties.set(null);
           }
         }
       });
