@@ -7,6 +7,7 @@ public class AbstractMessage {
   public String instance = "";
   public long timestamp = System.currentTimeMillis();
   public List<String> tags = new ArrayList<>();
+  private String id = null;
 
   public AbstractMessage() {
     tags.add("category_" + MessageMapping.map(this.getClass()).lcName());
@@ -27,5 +28,13 @@ public class AbstractMessage {
       if (next.startsWith(prefix)) return next;
     }
     return null;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
   }
 }
