@@ -26,11 +26,9 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
 
   @Override
   public Collection<SeriesData<Long, Long>> calculateMetric(Client client, MetricConfig conf) {
-    if (conf.limits != null && conf.limits.length > 0) {
-      limitValues = new long[conf.limits.length];
-      for (int i = 0; i < conf.limits.length; i++) {
-        limitValues[i] = Long.parseLong(conf.limits[i]);
-      }
+    limitValues = new long[conf.getLimits().length];
+    for (int i = 0; i < conf.getLimits().length; i++) {
+      limitValues[i] = Long.parseLong(conf.getLimits()[i]);
     }
     if (conf.hasType("statuses")) {
       getter = new ValueGetter() {
@@ -39,7 +37,7 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
           return next.getStatus();
         }
       };
-      if (conf.limits == null) {
+      if (conf.getLimits().length == 0) {
         limitValues = new long[] { 200L, 300L, 400L, 500L, 600L };
       }
     }
