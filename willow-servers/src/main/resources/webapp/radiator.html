@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Willow monitoring</title>
+  <title>Willow monitoring - Radiator</title>
   <meta charset="utf-8" />
   #set ($env = $system.getProperty("env"))
   #if ($env == "dev")
@@ -41,9 +41,7 @@
     </svg>
   </div>
 </nav>
-
-<div data-module="horizon-index"></div>
-<div data-module="horizon-graph"></div>
+<div data-module="radiator-index"></div>
 
 <script id="bootstrap-application" type="text/javascript">
   Box.Application.init({

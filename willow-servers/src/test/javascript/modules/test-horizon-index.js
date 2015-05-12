@@ -56,8 +56,9 @@ describe("Tests for horizon-graph module", function() {
       'd3': d3,
       'jQuery': jquery
     });
-    module = Box.Application.getModuleForTest('horizon-graph', contextFake);
     sandbox = sinon.sandbox.create();
+    contextFake.getConfig = sandbox.stub().returns({});
+    module = Box.Application.getModuleForTest('horizon-graph', contextFake);
     module.init();
   });
 
