@@ -23,7 +23,7 @@ describe("Tests for window service", function() {
   });
 
   it('open radiator opens existing radiator tab', function() {
-    sandbox.mock(window).expects("open").withExactArgs("radiator.html?host=test-host", "hostradiator-test-host");
+    sandbox.mock(window).expects("open").withExactArgs("radiator.html#host=test-host", "hostradiator-test-host");
     service.openRadiatorForHost("test-host");
   });
 });
