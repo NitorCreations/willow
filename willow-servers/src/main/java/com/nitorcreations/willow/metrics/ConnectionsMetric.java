@@ -23,7 +23,7 @@ public class ConnectionsMetric extends SimpleMetric<Integer, Integer> {
   }
 
   @Override
-  protected Integer estimateValue(List<Integer> preceeding, long stepTime, long stepLen) {
+  protected Integer estimateValue(List<Integer> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     return Collections.max(preceeding);
   }
 }

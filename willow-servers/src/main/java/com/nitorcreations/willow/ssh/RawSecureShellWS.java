@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -27,11 +26,10 @@ import com.jcraft.jsch.agentproxy.AgentProxyException;
 import com.jcraft.jsch.agentproxy.Connector;
 import com.jcraft.jsch.agentproxy.ConnectorFactory;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
+import com.nitorcreations.willow.servers.BasicWillowSocket;
 
 @WebSocket
-public class RawSecureShellWS {
-  private Logger log = Logger.getLogger(getClass().getCanonicalName());
-  private Session session;
+public class RawSecureShellWS extends BasicWillowSocket{
   private ChannelShell shell;
   private JSch jsch = new JSch();
   private com.jcraft.jsch.Session jschSession;
@@ -39,19 +37,10 @@ public class RawSecureShellWS {
   private PrintStream inputToShell;
   public static final int BUFFER_LEN = 4 * 1024;
 
-  public RawSecureShellWS() {
-    this.closeLatch = new CountDownLatch(1);
-  }
-
-  public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
-    return this.closeLatch.await(duration, unit);
-  }
-
   @OnWebSocketConnect
   public void onConnect(Session session) {
-    System.out.printf("Got connect: %s%n", session);
-    session.setIdleTimeout(TimeUnit.MINUTES.toMillis(1));
-    this.session = session;
+    super.onConnect(session);
+    this.session.setIdleTimeout(TimeUnit.MINUTES.toMillis(1));
     Connector con = null;
     try {
       ConnectorFactory cf = ConnectorFactory.getDefault();
@@ -130,15 +119,13 @@ public class RawSecureShellWS {
   }
   @OnWebSocketClose
   public void onClose(int statusCode, String reason) {
-    log.log(Level.INFO, "Connection closed: " + statusCode + "-" + reason);
     if (shell != null) {
       shell.disconnect();
     }
     if (jschSession != null) {
       jschSession.disconnect();
     }
-    this.session = null;
-    this.closeLatch.countDown();
+    super.onClose(statusCode, reason);
   }
   private int getIntParameter(Map<String, List<String>> parameterMap, String name, int def) {
     List<String> vals = parameterMap.get(name);

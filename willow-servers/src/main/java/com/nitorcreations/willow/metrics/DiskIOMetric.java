@@ -29,7 +29,7 @@ public class DiskIOMetric extends SimpleMetric<DiskIOData, Object> {
   }
 
   @Override
-  protected Double estimateValue(List<DiskIOData> preceeding, long stepTime, long stepLen) {
+  protected Double estimateValue(List<DiskIOData> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     HashMap<String, DiskIOData> lasts = new HashMap<>();
     for (DiskIOData next : preceeding) {
       lasts.put(next.device, next);

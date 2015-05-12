@@ -15,7 +15,7 @@ public class HeapMemoryMetric extends FullMessageMultiseriesMetric<JmxMessage, L
   private static final String categoryPrefix = "category_jmx_";
 
   @Override
-  protected void addValue(Map<String, SeriesData<Long, Long>> values, List<JmxMessage> preceeding, long stepTime, long stepLen) {
+  protected void addValue(Map<String, SeriesData<Long, Long>> values, List<JmxMessage> preceeding, long stepTime, int stepLen, MetricConfig conf) {
     HashMap<String, List<Long>> data = new HashMap<>();
     for (JmxMessage next : preceeding) {
       String childName = "";

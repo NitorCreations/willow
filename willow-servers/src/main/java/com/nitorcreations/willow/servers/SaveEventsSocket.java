@@ -5,9 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -29,41 +26,25 @@ import com.nitorcreations.willow.messages.MessageMapping.MessageType;
 
 @WebSocket
 @Named
-public class SaveEventsSocket {
-  Logger log = Logger.getLogger(getClass().getCanonicalName());
-  private final CountDownLatch closeLatch;
+public class SaveEventsSocket extends BasicWillowSocket {
   private final MessageMapping mapping = new MessageMapping();
   @Inject
   private Node node;
-  @SuppressWarnings("unused")
-  private Session session;
   private String path;
   private List<String> tags;
 
-  public SaveEventsSocket() {
-    this.closeLatch = new CountDownLatch(1);
-  }
-
-  public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
-    return this.closeLatch.await(duration, unit);
-  }
-
-  @OnWebSocketClose
-  public void onClose(int statusCode, String reason) {
-    System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
-    this.session = null;
-    this.closeLatch.countDown();
-  }
-
   @OnWebSocketConnect
   public void onConnect(Session session) {
-    System.out.printf("Got connect: %s%n", session);
-    this.session = session;
+    super.onConnect(session);
     path = session.getUpgradeRequest().getRequestURI().getPath().substring("/statistics/".length());
     tags = session.getUpgradeRequest().getParameterMap().get("tag");
     if (tags == null) {
       tags = new ArrayList<>();
     }
+  }
+  @OnWebSocketClose
+  public void onClose(int statusCode, String reason) {
+    super.onClose(statusCode, reason);
   }
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @OnWebSocketMessage

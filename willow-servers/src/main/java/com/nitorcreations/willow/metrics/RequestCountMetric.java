@@ -17,7 +17,7 @@ public class RequestCountMetric extends SimpleMetric<Number, Long> {
   }
 
   @Override
-  protected Number estimateValue(List<Number> preceeding, long stepTime, long stepLen) {
+  protected Number estimateValue(List<Number> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     return preceeding.size();
   }
 }

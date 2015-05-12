@@ -29,7 +29,7 @@ public class NetworkMetric extends SimpleMetric<NetData, Object> {
   }
 
   @Override
-  protected Double estimateValue(List<NetData> preceeding, long stepTime, long stepLen) {
+  protected Double estimateValue(List<NetData> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     HashMap<String, NetData> lasts = new HashMap<>();
     for (NetData next : preceeding) {
       lasts.put(next.name, next);
