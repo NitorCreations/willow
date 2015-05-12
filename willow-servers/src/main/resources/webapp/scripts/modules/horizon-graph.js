@@ -18,13 +18,14 @@ Box.Application.addModule('horizon-graph', function(context) {
   };
 
   var resetGraph = function() {
+    var widthInPx = $(window).width();
     var id = moduleElem.attr('id');
     var chartConfig = readConfiguration();
     var metricSetting = $(metricMap).attr(chartConfig.metric);
 
     // TODO: this should be done by reconfiguring, not destroying
     moduleElem.selectAll(".horizon").remove();
-    cubismGraphs.resetCubismContext(chartConfig.step, window.innerWidth);
+    cubismGraphs.resetCubismContext(chartConfig.step, widthInPx);
 
     cubismGraphs.onFocus(function(index) {
       moduleElem.selectAll(".horizon .value").style("right", index === null ? null : this.size() - index + "px");

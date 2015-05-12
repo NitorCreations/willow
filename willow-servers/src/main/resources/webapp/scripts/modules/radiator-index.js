@@ -22,14 +22,14 @@ Box.Application.addModule('radiator-index', function(context) {
         var step = parseInt(timescale * 1000 / widthInPx);
         var stop = new Date().getTime();
 
-        cubismGraphs.resetCubismContext(step, window.innerWidth);
+        cubismGraphs.resetCubismContext(step, widthInPx);
         resetLayout();
         initGraphs(stop, step);
     }
 
     function resetLayout() {
         moduleElem.selectAll('.axis, .rule').remove();
-        initLayout(window.innerWidth);
+        initLayout($(window).width());
     }
 
     function initGraphs(stop, step) {
