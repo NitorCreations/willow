@@ -3,6 +3,7 @@ Box.Application.addModule('horizon-index', function(context) {
 
   var d3, moduleElem, metric, timescale, store, windowSvc, cubismGraphs, utils, metricsService;
 
+  //TODO could these be shared with radiator index?
   function initLayout(widthInPixels) {
     moduleElem.attr("style", "width: " + widthInPixels + "px");
 
@@ -21,11 +22,14 @@ Box.Application.addModule('horizon-index', function(context) {
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
-    moduleElem.selectAll('.axis, .rule').remove();
-
     cubismGraphs.resetCubismContext(step, window.innerWidth);
-    initLayout(window.innerWidth);
+    resetLayout();
     initGraphs(metric, start, stop, step);
+  }
+
+  function resetLayout() {
+    moduleElem.selectAll('.axis, .rule').remove();
+    initLayout(window.innerWidth);
   }
 
   function initGraphs(metric, start, stop, step) {
@@ -84,6 +88,7 @@ Box.Application.addModule('horizon-index', function(context) {
       timescale    = windowSvc.getHashVariable("timescale") || 10800;
 
       reset();
+      $(window).resize(utils.debouncer(resetLayout));
     },
 
     destroy: function() {
@@ -92,7 +97,15 @@ Box.Application.addModule('horizon-index', function(context) {
     onclick: function(event, element, elementType) {
     },
 
+    messages: ["timescale-changed"],
+
     onmessage: function(name, data) {
+      switch (name) {
+        case 'timescale-changed':
+          timescale = data;
+          resetLayout();
+          break;
+      }
     }
   };
 });
