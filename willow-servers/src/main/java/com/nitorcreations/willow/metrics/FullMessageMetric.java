@@ -37,16 +37,14 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> implements
   }
   @Override
   public R calculateMetric(Client client, MetricConfig conf) {
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.start, conf.stop, client)).setTypes(MessageMapping.map(type).lcName()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.stop - conf.start) / 10);
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.start - conf.step).to(conf.stop + conf.step).includeLower(false).includeUpper(true));
-    if (conf.tags != null) {
-      for (String tag : conf.tags) {
-        query = query.must(QueryBuilders.termQuery("tags", tag));
-      }
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(MessageMapping.map(type).lcName()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.getStop() - conf.getStart()) / 10);
+    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop() + conf.getStep()).includeLower(false).includeUpper(true));
+    for (String tag : conf.getTags()) {
+      query = query.must(QueryBuilders.termQuery("tags", tag));
     }
     SearchResponse response = builder.setQuery(query).get();
     readResponse(response);
-    return processData(conf.start, conf.stop, conf.step, conf);
+    return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
   }
   
   protected abstract R processData(long start, long stop, int step, MetricConfig conf);

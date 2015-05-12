@@ -49,22 +49,22 @@ public abstract class SimpleMetric<L, T> implements Metric {
   @Override
   public List<TimePoint> calculateMetric(Client client, MetricConfig conf) {
     this.conf = conf;
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.start, conf.stop, client)).setTypes(getType()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.stop - conf.start) / 10).addField("timestamp").addFields(requiresFields());
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.start - conf.step).to(conf.stop + conf.step).includeLower(false).includeUpper(true));
-    for (String tag : conf.tags) {
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(getType()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.getStop() - conf.getStart()) / 10).addField("timestamp").addFields(requiresFields());
+    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop() + conf.getStep()).includeLower(false).includeUpper(true));
+    for (String tag : conf.getTags()) {
       query = query.must(QueryBuilders.termQuery("tags", tag));
     }
     SearchResponse response = builder.setQuery(query).get();
     readResponse(response);
-    int len = (int) ((conf.stop - conf.start) / conf.step) + 1;
+    int len = (int) ((conf.getStop() - conf.getStart()) / conf.getStep()) + 1;
     List<TimePoint> ret = new ArrayList<TimePoint>();
     if (rawData.isEmpty())
       return ret;
     List<Long> retTimes = new ArrayList<Long>();
-    long curr = conf.start;
+    long curr = conf.getStart();
     for (int i = 0; i < len; i++) {
       retTimes.add(Long.valueOf(curr));
-      curr += conf.step;
+      curr += conf.getStep();
     }
     Collection<L> preceeding = new ArrayList<L>();
     for (Long nextTime : retTimes) {
@@ -76,7 +76,7 @@ public abstract class SimpleMetric<L, T> implements Metric {
         ret.add(new TimePoint(nextTime.longValue(), fillMissingValue()));
         continue;
       }
-      ret.add(new TimePoint(nextTime.longValue(), estimateValue(tmplist, nextTime, conf.step, conf)));
+      ret.add(new TimePoint(nextTime.longValue(), estimateValue(tmplist, nextTime, conf.getStep(), conf)));
     }
     return ret;
   }

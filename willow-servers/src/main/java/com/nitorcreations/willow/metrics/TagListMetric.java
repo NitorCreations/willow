@@ -20,16 +20,14 @@ public abstract class TagListMetric implements Metric {
 
   @Override
   public List<String> calculateMetric(Client client, MetricConfig conf) {
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.start, conf.stop, client))
-      .setTypes(conf.types)
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
+      .setTypes(conf.getTypes())
         .setSize(0).addAggregation(AggregationBuilders.terms("tags")
           .field("tags").include(tagPrefix + "_.*"));
     BoolQueryBuilder query = QueryBuilders.boolQuery()
-      .must(QueryBuilders.rangeQuery("timestamp").from(conf.start).to(conf.stop));
-    if (conf.tags != null) {
-      for (String tag : conf.tags) {
-        query = query.must(QueryBuilders.termQuery("tags", tag));
-      }
+      .must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart()).to(conf.getStop()));
+    for (String tag : conf.getTags()) {
+      query = query.must(QueryBuilders.termQuery("tags", tag));
     }
     SearchResponse response = builder.setQuery(query).get();
     ArrayList<String> ret = new ArrayList<>();

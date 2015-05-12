@@ -23,9 +23,9 @@ import org.elasticsearch.search.sort.SortOrder;
 public class DiskStatusMetric implements Metric {
   @Override
   public List<SeriesData<String, Long>> calculateMetric(Client client, MetricConfig conf) {
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.start, conf.stop, client)).setTypes("disk").addField("timestamp").addField("name").addField("total").addField("free").setSize(50).addSort("timestamp", SortOrder.DESC);
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.start).to(conf.stop));
-    for (String tag : conf.tags) {
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes("disk").addField("timestamp").addField("name").addField("total").addField("free").setSize(50).addSort("timestamp", SortOrder.DESC);
+    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart()).to(conf.getStop()));
+    for (String tag : conf.getTags()) {
       query = query.must(QueryBuilders.termQuery("tags", tag));
     }
     SearchResponse response = builder.setQuery(query).get();
