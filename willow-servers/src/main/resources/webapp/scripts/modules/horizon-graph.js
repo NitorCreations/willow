@@ -104,7 +104,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   function appendHostRadiatorLink(parentElement, title, host) {
     return parentElement.append("div").classed("host-link", true)
         .text(title).append("a")
-        .attr("href", "radiator.html?host=" + host)
+        .attr("href", "radiator.html#host=" + host)
         .attr("data-host", host)
         .attr("data-type", "host-radiator").text(host);
   }

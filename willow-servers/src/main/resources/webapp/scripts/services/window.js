@@ -12,7 +12,7 @@ Box.Application.addService('window', function(application) {
   }
 
   function openRadiator(host) {
-    _open("radiator.html?host=" + host, "hostradiator-" + host);
+    _open("radiator.html#host=" + host, "hostradiator-" + host);
   }
 
   function openTerminal(user, host) {
@@ -39,10 +39,10 @@ Box.Application.addService('window', function(application) {
     openTerminalToHost: openTerminal,
     openAlerts: openAlerts,
     getQueryVariable: function(variable) {
-      return this.getUrlVariable(window.location.search);
+      return this.getUrlVariable(window.location.search, variable);
     },
     getHashVariable: function(variable) {
-      return this.getUrlVariable(window.location.hash);
+      return this.getUrlVariable(window.location.hash, variable);
     },
     getUrlVariable: function(urlsegment, variable) {
       if (!urlsegment) return(false);

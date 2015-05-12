@@ -28,7 +28,7 @@ Box.Application.addModule('radiator-index', function(context) {
     }
 
     function initGraphs(stop, step) {
-        var host = "manticore";
+        var host = windowSvc.getHashVariable("host");
         var instanceTag = "host_" + host;
         defaultMetrics(host)(function(metrics) {
             metrics.forEach(function (metric) {
