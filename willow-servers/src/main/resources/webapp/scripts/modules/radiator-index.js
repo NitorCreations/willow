@@ -1,7 +1,8 @@
 Box.Application.addModule('radiator-index', function(context) {
     'use strict';
 
-    var d3, moduleElem, radiatorName, timescale, store, windowSvc, cubismGraphs, utils, metricsService;
+    var d3, moduleElem, radiatorName, host, instanceTag, timescale,
+        store, windowSvc, cubismGraphs, utils, metricsService;
 
     function initLayout(widthInPixels) {
         moduleElem.attr("style", "width: " + widthInPixels + "px");
@@ -28,8 +29,6 @@ Box.Application.addModule('radiator-index', function(context) {
     }
 
     function initGraphs(stop, step) {
-        var host = windowSvc.getHashVariable("host");
-        var instanceTag = "host_" + host;
         defaultMetrics(host)(function(metrics) {
             metrics.forEach(function (metric) {
                 var chartConfig = {
@@ -88,6 +87,8 @@ Box.Application.addModule('radiator-index', function(context) {
             // TODO: configSvc for configs
             timescale    = windowSvc.getHashVariable("timescale") || 10800;
             radiatorName = windowSvc.getHashVariable("host");
+            host = windowSvc.getHashVariable("host");
+            instanceTag = "host_" + host;
             if (!radiatorName) {
                 console.error("failed to resolve host name for the radiator metrics");
             }
