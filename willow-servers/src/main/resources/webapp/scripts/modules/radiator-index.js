@@ -2,8 +2,63 @@ Box.Application.addModule('radiator-index', function(context) {
     'use strict';
 
     var d3, moduleElem, radiatorName, host, instanceTag, timescale,
-        store, windowSvc, cubismGraphs, utils, metricsService;
+        store, windowSvc, cubismGraphs, utils, metricsService, isDragging = false, dragStart, detailsStart, detailsStop;
 
+  var isDraggingMouseDown = function(e) {
+    $(window).mousemove(function(e) {
+        if (!isDragging) {
+          isDragging = true;
+          dragStart = e.pageX;
+        } else {
+          $(".selection").show();
+          $(".selection").width(Math.abs(dragStart - e.pageX));
+          var axisTop = $(".axis svg").offset().top;
+          $(".selection").offset({ top: axisTop, left: Math.min(dragStart, e.pageX) });
+          var height = $($(moduleElem)[0]).height() - $(".axis").height();
+          $(".selection").height(height);
+          detailsStart = cubismGraphs.xToTime($(".selection").offset().left);
+          detailsStop = cubismGraphs.xToTime($(".selection").offset().left + $(".selection").width());
+        }
+    });
+    $(window).mouseup(isDraggingMouseUp);
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  var updateCharts = function(prefix) {
+    context.broadcast("details-updated", prefix);
+  };
+  var updateChart = function(host, prefix) {
+    var divHost = host;
+    return function(data) {
+            d3.select('.' + prefix  + divHost + ' svg').datum(data);
+            updateCharts(prefix);
+        };
+  };
+  var isDraggingMouseUp = function(e) {
+    $(window).unbind("mousemove");
+    $(window).unbind("mouseup");
+    var element = ".details-" + host;
+    if (isDragging) {
+      var element = ".details-" + host;
+          d3.json("metrics/disk?tag=host_" + host+ "&stop=" + detailsStop,
+                  updateChart(host, "fs-"));
+          d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
+                  updateChart(host, "heap-"));
+          d3.json("metrics/access?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
+                  updateChart(host, "access-"));
+    } else {
+      $(".selection").hide();
+      var stop = new Date().getTime()
+      var start = parseInt(stop - (1000 * 60 * 60 * 3));
+      d3.json("metrics/disk?tag=host_" + host + "&stop=" + stop, updateChart(host, "fs-"));
+      d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + start + "&stop=" + stop, updateChart(host, "heap-"));
+      d3.json("metrics/access?tag=host_" + host + "&step=60000&start=" + start + "&stop=" + stop, updateChart(host, "access-"));
+
+    }
+    isDragging = false;
+    e.stopPropagation();
+    e.preventDefault();
+  };
     //TODO could these be shared with horizon index?
     function initLayout(widthInPixels) {
         moduleElem.attr("style", "width: " + widthInPixels + "px");
@@ -15,6 +70,8 @@ Box.Application.addModule('radiator-index', function(context) {
         moduleElem.insert("div", ":first-child")
             .classed("rule", true)
             .call(cubismGraphs.createRulerOverGraphs());
+        var height = $($(moduleElem)[0]).height() - $(".axis").height();
+        $(".rule").height(height);
     }
 
     function reset() {
@@ -102,7 +159,7 @@ Box.Application.addModule('radiator-index', function(context) {
 
         destroy: function() {
         },
-
+        onmousedown: isDraggingMouseDown,
         onclick: function(event, element, elementType) {
         },
 

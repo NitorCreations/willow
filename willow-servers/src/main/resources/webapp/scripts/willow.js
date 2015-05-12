@@ -225,6 +225,7 @@ var isDraggingMouseDown = function(e) {
     });
     $(window).mouseup(isDraggingMouseUp);
     e.stopPropagation();
+    e.preventDefault();
 };
 var updateChart = function(host, prefix) {
     var divHost = host;
@@ -262,6 +263,7 @@ var isDraggingMouseUp = function(e) {
     }
     isDragging = false;
     e.stopPropagation();
+    e.preventDefault();
 };
 var initGraphs = function () {
     var stop = new Date().getTime();

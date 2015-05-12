@@ -16,7 +16,6 @@ Box.Application.addModule('horizon-graph', function(context) {
     "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors, height: 50 },
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
-
   var resetGraph = function() {
     var widthInPx = $(window).width();
     var id = moduleElem.attr('id');

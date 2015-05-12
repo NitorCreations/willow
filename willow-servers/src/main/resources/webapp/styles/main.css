@@ -465,9 +465,10 @@ textarea, input[type=text] {
 
 .navright {
   float: right;
-  position: absolute;
+  position: relative;
   right: 57px;
-  top: 12px;
+  top: 0px;
+  margin: 5px;
 }
 
 select.navcenter {
