@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -21,7 +19,7 @@ import org.elasticsearch.search.SearchHitField;
 public abstract class SimpleMetric<L, T> implements Metric {
   protected SortedMap<Long, L> rawData;
   private Map<String, SearchHitField> fields;
-
+  protected MetricConfig conf;
   public abstract String getType();
 
   public abstract String[] requiresFields();
@@ -49,27 +47,24 @@ public abstract class SimpleMetric<L, T> implements Metric {
   }
 
   @Override
-  public List<TimePoint> calculateMetric(Client client, HttpServletRequest req) {
-    long start = Long.parseLong(req.getParameter("start"));
-    long stop = Long.parseLong(req.getParameter("stop"));
-    int step = Integer.parseInt(req.getParameter("step"));
-    String[] tags = req.getParameterValues("tag");
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop, client)).setTypes(getType()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (stop - start) / 10).addField("timestamp").addFields(requiresFields());
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(start - step).to(stop + step).includeLower(false).includeUpper(true));
-    for (String tag : tags) {
+  public List<TimePoint> calculateMetric(Client client, MetricConfig conf) {
+    this.conf = conf;
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.start, conf.stop, client)).setTypes(getType()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.stop - conf.start) / 10).addField("timestamp").addFields(requiresFields());
+    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.start - conf.step).to(conf.stop + conf.step).includeLower(false).includeUpper(true));
+    for (String tag : conf.tags) {
       query = query.must(QueryBuilders.termQuery("tags", tag));
     }
     SearchResponse response = builder.setQuery(query).get();
     readResponse(response);
-    int len = (int) ((stop - start) / step) + 1;
+    int len = (int) ((conf.stop - conf.start) / conf.step) + 1;
     List<TimePoint> ret = new ArrayList<TimePoint>();
     if (rawData.isEmpty())
       return ret;
     List<Long> retTimes = new ArrayList<Long>();
-    long curr = start;
+    long curr = conf.start;
     for (int i = 0; i < len; i++) {
       retTimes.add(Long.valueOf(curr));
-      curr += step;
+      curr += conf.step;
     }
     Collection<L> preceeding = new ArrayList<L>();
     for (Long nextTime : retTimes) {
@@ -81,12 +76,12 @@ public abstract class SimpleMetric<L, T> implements Metric {
         ret.add(new TimePoint(nextTime.longValue(), fillMissingValue()));
         continue;
       }
-      ret.add(new TimePoint(nextTime.longValue(), estimateValue(tmplist, nextTime, step)));
+      ret.add(new TimePoint(nextTime.longValue(), estimateValue(tmplist, nextTime, conf.step, conf)));
     }
     return ret;
   }
 
-  protected Number estimateValue(List<L> preceeding, long stepTime, long stepLen) {
+  protected Number estimateValue(List<L> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     return (Number) preceeding.get(preceeding.size() - 1);
   }
 

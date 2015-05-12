@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 import org.elasticsearch.client.Client;
 
@@ -13,7 +12,7 @@ import com.nitorcreations.willow.messages.AccessLogEntry;
 
 @Named("/access")
 public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry, Long, Long> {
-  long[] limits = new long[] { 10L, 100L, 1000L, 10000L };
+  long[] limitValues = new long[] { 10L, 100L, 1000L, 10000L };
 
   private interface ValueGetter {
     long getValue(AccessLogEntry next);
@@ -26,47 +25,46 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
   };
 
   @Override
-  public Collection<SeriesData<Long, Long>> calculateMetric(Client client, HttpServletRequest req) {
-    String[] limitStrs = req.getParameterValues("limit");
-    if (limitStrs != null && limitStrs.length > 0) {
-      limits = new long[limitStrs.length];
-      for (int i = 0; i < limitStrs.length; i++) {
-        limits[i] = Long.parseLong(limitStrs[i]);
+  public Collection<SeriesData<Long, Long>> calculateMetric(Client client, MetricConfig conf) {
+    if (conf.limits != null && conf.limits.length > 0) {
+      limitValues = new long[conf.limits.length];
+      for (int i = 0; i < conf.limits.length; i++) {
+        limitValues[i] = Long.parseLong(conf.limits[i]);
       }
     }
-    if ("statuses".equals(req.getParameter("type"))) {
+    if (conf.hasType("statuses")) {
       getter = new ValueGetter() {
         @Override
         public long getValue(AccessLogEntry next) {
           return next.getStatus();
         }
       };
-      if (limitStrs == null) {
-        limits = new long[] { 200L, 300L, 400L, 500L, 600L };
+      if (conf.limits == null) {
+        limitValues = new long[] { 200L, 300L, 400L, 500L, 600L };
       }
     }
-    return super.calculateMetric(client, req);
+    return super.calculateMetric(client, conf);
   }
 
   @Override
-  protected void addValue(Map<String, SeriesData<Long, Long>> values, List<AccessLogEntry> preceeding, long stepTime, long stepLen) {
-    long[] buckets = new long[limits.length + 1];
+  protected void addValue(Map<String, SeriesData<Long, Long>> values, List<AccessLogEntry> preceeding, long stepTime, int stepLen, MetricConfig conf) {
+    long[] buckets = new long[limitValues.length + 1];
     for (AccessLogEntry next : preceeding) {
       boolean inLimits = false;
-      for (int i = 0; i < limits.length; i++) {
-        if (next.getDuration() < limits[i]) {
+      for (int i = 0; i < limitValues.length; i++) {
+        if (next.getDuration() < limitValues[i]) {
           buckets[i]++;
           inLimits = true;
           break;
         }
       }
       if (!inLimits)
-        buckets[limits.length]++;
+        buckets[limitValues.length]++;
     }
     String lower = "";
     addBucket(values, lower + "-", stepTime, buckets[0]);
-    for (int i = 0; i < limits.length; i++) {
-      lower = Long.toString(limits[i]);
+    for (int i = 0; i < limitValues.length; i++) {
+      lower = Long.toString(limitValues[i]);
     }
     addBucket(values, lower + "-", stepTime, buckets[buckets.length - 1]);
   }

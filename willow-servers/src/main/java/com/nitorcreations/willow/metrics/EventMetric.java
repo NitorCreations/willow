@@ -1,16 +1,16 @@
 package com.nitorcreations.willow.metrics;
 
-import com.nitorcreations.willow.messages.event.EventMessage;
+import java.util.Collection;
 
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
+
+import com.nitorcreations.willow.messages.event.EventMessage;
 
 @Named("/event")
 public class EventMetric extends FullMessageMetric<EventMessage,Collection<EventMessage>> {
 
   @Override
-  protected Collection<EventMessage> processData(long start, long stop, int step, HttpServletRequest req) {
+  protected Collection<EventMessage> processData(long start, long stop, int step, MetricConfig conf) {
     return rawData.values();
   }
 }

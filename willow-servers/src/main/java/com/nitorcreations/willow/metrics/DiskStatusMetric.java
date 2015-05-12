@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -23,13 +22,10 @@ import org.elasticsearch.search.sort.SortOrder;
 @Named("/disk")
 public class DiskStatusMetric implements Metric {
   @Override
-  public List<SeriesData<String, Long>> calculateMetric(Client client, HttpServletRequest req) {
-    long stop = Long.parseLong(req.getParameter("stop"));
-    long start = stop - TimeUnit.DAYS.toMillis(1);
-    String[] tags = req.getParameterValues("tag");
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(start, stop, client)).setTypes("disk").addField("timestamp").addField("name").addField("total").addField("free").setSize(50).addSort("timestamp", SortOrder.DESC);
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(start).to(stop));
-    for (String tag : tags) {
+  public List<SeriesData<String, Long>> calculateMetric(Client client, MetricConfig conf) {
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.start, conf.stop, client)).setTypes("disk").addField("timestamp").addField("name").addField("total").addField("free").setSize(50).addSort("timestamp", SortOrder.DESC);
+    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.start).to(conf.stop));
+    for (String tag : conf.tags) {
       query = query.must(QueryBuilders.termQuery("tags", tag));
     }
     SearchResponse response = builder.setQuery(query).get();

@@ -16,8 +16,8 @@ import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.inject.Injector;
 import com.nitorcreations.willow.metrics.Metric;
+import com.nitorcreations.willow.metrics.MetricConfig;
 
 @Singleton
 public class MetricsServlet extends HttpServlet {
@@ -26,8 +26,6 @@ public class MetricsServlet extends HttpServlet {
   private Node node;
   ServletConfig config;
 
-  @Inject
-  protected Injector injector;
   private final Map<String, Metric> metrics;
   
   @Inject
@@ -51,15 +49,15 @@ public class MetricsServlet extends HttpServlet {
       res.sendError(405, "Only GET allowed");
       return;
     }
-    String metricKey = req.getPathInfo();
-    Metric metric = metrics.get(metricKey);
+    MetricConfig conf = new MetricConfig(req);
+    Metric metric = metrics.get(conf.metricKey);
     if (metric == null) {
-      ((HttpServletResponse) res).sendError(404, "Metric with key " + metricKey + " not found");
+      ((HttpServletResponse) res).sendError(404, "Metric with key " + conf.metricKey + " not found");
       return;
     }
     try {
       metric = metric.getClass().newInstance();
-      Object data = metric.calculateMetric(node.client(), req);
+      Object data = metric.calculateMetric(node.client(), conf);
       res.setContentType("application/json");
       Gson out;
       if ("true".equals(req.getAttribute("pretty"))) {
