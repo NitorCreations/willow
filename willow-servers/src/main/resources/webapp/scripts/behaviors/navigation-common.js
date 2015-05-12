@@ -27,10 +27,16 @@ Box.Application.addBehavior('navigation-common', function(context) {
       windowSvc = null;
     },
     onclick: function(event, element, elementType) {
+      var host = element ? element.getAttribute("data-host") : null;
+      var user = element ? (element.getAttribute("data-user") ? element.getAttribute("data-user") : "${admin}") : "$admin";
       switch (elementType) {
         case 'alerts':
           windowSvc.openAlerts();
           break;
+        case 'start-terminal':
+          windowSvc.openTerminalToHost(user, host);
+          break;
+
       }
     },
     onchange: function(event, element, elementType) {
