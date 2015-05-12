@@ -22,14 +22,14 @@ Box.Application.addModule('horizon-index', function(context) {
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
-    cubismGraphs.resetCubismContext(step, window.innerWidth);
+    cubismGraphs.resetCubismContext(step, widthInPx);
     resetLayout();
     initGraphs(metric, start, stop, step);
   }
 
   function resetLayout() {
     moduleElem.selectAll('.axis, .rule').remove();
-    initLayout(window.innerWidth);
+    initLayout($(window).width());
   }
 
   function initGraphs(metric, start, stop, step) {
