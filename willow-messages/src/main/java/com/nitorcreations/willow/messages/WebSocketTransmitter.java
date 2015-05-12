@@ -242,8 +242,10 @@ public class WebSocketTransmitter {
       if (con != null) {
         IdentityRepository irepo = new RemoteIdentityRepository(con);
         for (Identity id : (List<Identity>)irepo.getIdentities()) {
-          byte[] sig = id.getSignature(sign);
-          ret.append(" ").append(printBase64Binary(sig));
+          try {
+            byte[] sig = id.getSignature(sign);
+            ret.append(" ").append(printBase64Binary(sig));
+          } catch (Throwable t) {}
         }
       }
       return ret.toString();
