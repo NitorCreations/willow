@@ -5,7 +5,7 @@ Box.Application.addModule('radiator-details', function(context) {
   
   var setupDetailsDivs = function(element, prefix, host) {
     var row = 1;
-    if ($(element).children('.row').length == 0) {
+    if ($(element).children('.row').length === 0) {
       $(element).append('<div class="row row-' + host + ' row' + row + '-' + host + '">');
     } else {
       row =  $(element).children('.row').length;
@@ -14,7 +14,7 @@ Box.Application.addModule('radiator-details', function(context) {
         $(element).append('<div class="row row-' + host + ' row' + row + '-' + host + '">');
       }
     }
-    $(".row" + row + "-" + host).append('<div class="' + prefix + '-' + host + ' col c6" style="height:200px">')
+    $(".row" + row + "-" + host).append('<div class="' + prefix + '-' + host + ' col c6" style="height:200px">');
     $("." + prefix + "-" + host).append("<svg>");
   };
   var kiloBytesToString = function (kbytes) {
@@ -35,7 +35,7 @@ Box.Application.addModule('radiator-details', function(context) {
       nv.addGraph(function() {
         var chart = nv.models.lineChart();
         chart.xAxis
-          .tickFormat(function(d) { return d3.time.format('%X')(new Date(d)) });
+          .tickFormat(function(d) { return d3.time.format('%X')(new Date(d)); });
         chart.yAxis
           .tickFormat(d3.format(',.2s'));
         d3.select('.heap-'  + divHost + ' svg')
@@ -58,7 +58,7 @@ Box.Application.addModule('radiator-details', function(context) {
           .stacked(true);
 
         chart.xAxis
-          .tickFormat(function(d) { return d3.time.format('%X')(new Date(d)) });
+          .tickFormat(function(d) { return d3.time.format('%X')(new Date(d)); });
         chart.yAxis
           .tickFormat(d3.format('0f'));
         d3.select('.access-'  + divHost + ' svg')
