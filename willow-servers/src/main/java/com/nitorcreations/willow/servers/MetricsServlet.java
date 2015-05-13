@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
@@ -55,9 +56,9 @@ public class MetricsServlet extends HttpServlet {
       ((HttpServletResponse) res).sendError(404, "Metric with key " + conf.metricKey + " not found");
       return;
     }
-    try {
+    try (Client client = node.client()){
       metric = metric.getClass().newInstance();
-      Object data = metric.calculateMetric(node.client(), conf);
+      Object data = metric.calculateMetric(client, conf);
       res.setContentType("application/json");
       Gson out;
       if ("true".equals(req.getAttribute("pretty"))) {
