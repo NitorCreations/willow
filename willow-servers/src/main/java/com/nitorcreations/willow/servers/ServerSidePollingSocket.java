@@ -37,34 +37,34 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
   public final int minStep = 1000;
   private final Gson gson = new Gson();
   private class PollTask implements Runnable {
-	  private final Metric metric;
-	  private final MetricConfig conf;
-	  private final long currTimeDelay;
-	  private final Session session;
-	  private final Gson gson = new Gson();
-	  public PollTask(Session session, MetricConfig conf) {
-		  this.conf = conf;
-		  this.metric = metrics.get(conf.metricKey);
-		  if (metric == null) throw new IllegalArgumentException("No metric found for " + conf.metricKey);
-	      long now = System.currentTimeMillis();
-	      this.currTimeDelay = now - conf.getStop();
-	      this.session = session;
-	  }
+    private final Metric metric;
+    private final MetricConfig conf;
+    private final long currTimeDelay;
+    private final Session session;
+    private final Gson gson = new Gson();
+    public PollTask(Session session, MetricConfig conf) {
+      this.conf = conf;
+      this.metric = metrics.get(conf.metricKey);
+      if (metric == null) throw new IllegalArgumentException("No metric found for " + conf.metricKey);
+      long now = System.currentTimeMillis();
+      this.currTimeDelay = now - conf.getStop();
+      this.session = session;
+    }
 
-	@Override
-	public void run() {
-		try (Client client = node.client()){
-			long stop = System.currentTimeMillis() - currTimeDelay;
-			long start = stop - conf.getStep();
-			Metric nextMetric = metric.getClass().newInstance();
-			Object ret = nextMetric.calculateMetric(client, conf);
-			conf.setStop(stop);
-			conf.setStart(start);
-			session.getRemote().sendString(gson.toJson(ret));
-		} catch (InstantiationException | IllegalAccessException | IOException e) {
-			log.log(Level.INFO, "Failed to send polled statistics", e);
-		}
-	}
+    @Override
+    public void run() {
+      try (Client client = node.client()){
+        long stop = System.currentTimeMillis() - currTimeDelay;
+        long start = stop - conf.getStep();
+        Metric nextMetric = metric.getClass().newInstance();
+        Object ret = nextMetric.calculateMetric(client, conf);
+        conf.setStop(stop);
+        conf.setStart(start);
+        session.getRemote().sendString(gson.toJson(ret));
+      } catch (InstantiationException | IllegalAccessException | IOException e) {
+        log.log(Level.INFO, "Failed to send polled statistics", e);
+      }
+    }
   }
   @Inject
   public ServerSidePollingSocket(Map<String, Metric> metrics) {
@@ -79,7 +79,7 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
       ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 0, conf.getStep(), TimeUnit.MILLISECONDS);
       pollers.add(handle);
     } catch (Throwable e) {
-		log.log(Level.INFO, "Failed to schedule task", e);
+      log.log(Level.INFO, "Failed to schedule task", e);
     }
   }
   @OnWebSocketConnect
@@ -88,9 +88,9 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
   }
   @OnWebSocketClose
   public void onClose(int statusCode, String reason) {
-	for (ScheduledFuture<?> next : pollers) {
-		next.cancel(true);
-	}
+    for (ScheduledFuture<?> next : pollers) {
+      next.cancel(true);
+    }
     super.onClose(statusCode, reason);
   }
 
