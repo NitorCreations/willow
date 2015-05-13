@@ -12,9 +12,9 @@ public class MetricConfig {
   private long stop;
   private int step;
   private int minSteps;
-  private String[] types = new String[0];
-  private String[] limits = new String[0];
-  private String[] tags = new String[0];
+  private String[] types;
+  private String[] limits;
+  private String[] tags;
 
   public String getMetricKey() {
     return metricKey;
@@ -57,34 +57,34 @@ public class MetricConfig {
     this.minSteps = minSteps;
   }
   public String[] getTypes() {
-    return types;
+    if (types == null) {
+      return new String[0];
+    } else {
+      return types;
+    }
   }
   public void setTypes(String[] types) {
-    if (types == null) {
-      this.types = new String[0];
-    } else {
-      this.types = types;
-    }
+    this.types = types;
   }
   public String[] getLimits() {
-    return limits;
+    if (limits == null) {
+      return new String[0];
+    } else {
+      return limits;
+    }
   }
   public void setLimits(String[] limits) {
-    if (limits == null) {
-      this.limits = new String[0];
-    } else {
-      this.limits = limits;
-    }
+    this.limits = limits;
   }
   public String[] getTags() {
-    return tags;
+    if (tags == null) {
+      return new String[0];
+    } else {
+      return tags;
+    }
   }
   public void setTags(String[] tags) {
-    if (tags == null) {
-      this.tags = new String[0];
-    } else {
-      this.tags = tags;
-    }
+    this.tags = tags;
   }
   public MetricConfig(HttpServletRequest req) {
     long now = System.currentTimeMillis();
