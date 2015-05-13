@@ -16,6 +16,9 @@ Box.Application.addService('utils', function(application) {
       for (var key in where) {
         return (key === what);
       }
+    },
+    setConfigurationElement: function(container, config) {
+      container.html("<script type='text/x-config'>" + JSON.stringify(config) + "</script>");
     }
   };
 });

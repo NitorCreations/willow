@@ -54,9 +54,9 @@ Box.Application.addModule('horizon-index', function(context) {
     }
   }
 
-  function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix) {
-    var radiatorConfig = { configurationIdPrefix: radiatorIdPrefix };
-    horizonGraphElement.html("<script type='text/x-config'>" + JSON.stringify(radiatorConfig) + "</script>");
+  function injectModuleConfiguration(horizonGraphElement, configIdPrefix) {
+    var graphConfig = { configurationIdPrefix: configIdPrefix };
+    utils.setConfigurationElement(horizonGraphElement, graphConfig);
   }
 
   function createHorizonGraph(parentElement, chartConfig) {

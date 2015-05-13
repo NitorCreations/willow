@@ -109,12 +109,12 @@ Box.Application.addModule('radiator-index', function(context) {
     }
 
     function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix) {
-        var radiatorConfig = {
-            configurationIdPrefix: radiatorIdPrefix,
-            disableTerminalButton: true,
-            disableRadiatorShareButton: true
-        };
-        horizonGraphElement.html("<script type='text/x-config'>" + JSON.stringify(radiatorConfig) + "</script>");
+      var radiatorConfig = {
+        configurationIdPrefix: radiatorIdPrefix,
+        disableTerminalButton: true,
+        disableRadiatorShareButton: true
+      };
+      utils.setConfigurationElement(horizonGraphElement, radiatorConfig);
     }
 
     function createHorizonGraph(parentElement, chartConfig) {
