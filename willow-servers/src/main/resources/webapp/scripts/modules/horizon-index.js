@@ -46,15 +46,12 @@ Box.Application.addModule('horizon-index', function(context) {
             };
             moduleElem.call(createHorizonGraph, chartConfig);
           });
+      context.broadcast("reload-graph-configuration");
     });
 
     function resolveHostName(tag) {
       return { raw: tag, host: tag.substring(5) };
     }
-
-    // function horizonGraphNotExists(tag) {
-    //   return !$(".horizon-" + tag.host).length;
-    // }
   }
 
   function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix) {
@@ -69,7 +66,6 @@ Box.Application.addModule('horizon-index', function(context) {
     injectModuleConfiguration(horizonGraphElement, metricIdPrefix);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
-    context.broadcast("reload-graph-configuration");
   }
 
   return {
