@@ -37,18 +37,17 @@ Box.Application.addModule('radiator-index', function(context) {
   var isDraggingMouseUp = function(e) {
     $(window).unbind("mousemove");
     $(window).unbind("mouseup");
-    var element = ".details-" + host;
     if (isDragging) {
       var element = ".details-" + host;
-          d3.json("metrics/disk?tag=host_" + host+ "&stop=" + detailsStop,
-                  updateChart(host, "fs-"));
-          d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
-                  updateChart(host, "heap-"));
-          d3.json("metrics/access?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
-                  updateChart(host, "access-"));
+      d3.json("metrics/disk?tag=host_" + host+ "&stop=" + detailsStop,
+              updateChart(host, "fs-"));
+      d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
+              updateChart(host, "heap-"));
+      d3.json("metrics/access?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
+              updateChart(host, "access-"));
     } else {
       $(".selection").hide();
-      var stop = new Date().getTime()
+      var stop = new Date().getTime();
       var start = parseInt(stop - (1000 * 60 * 60 * 3));
       d3.json("metrics/disk?tag=host_" + host + "&stop=" + stop, updateChart(host, "fs-"));
       d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + start + "&stop=" + stop, updateChart(host, "heap-"));
