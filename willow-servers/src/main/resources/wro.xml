@@ -30,5 +30,6 @@
     <js>/scripts/modules/navigation-index.js</js>
     <js>/scripts/modules/navigation-radiator.js</js>
     <js>/scripts/modules/radiator-details.js</js>
+    <js>/scripts/modules/navigation-alerts.js</js>
   </group>
 </groups>
