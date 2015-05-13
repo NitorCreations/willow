@@ -1,16 +1,20 @@
 package com.nitorcreations.willow.metrics;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.servlet.http.HttpServletRequest;
 
 public class MetricConfig {
-  public String metricKey;
+  public static final int MIN_STEPLEN = 1000;
+  public static final long MAX_TIMEPERIOD = TimeUnit.DAYS.toMillis(30);
+  public String metricKey = "";
   private long start;
   private long stop;
   private int step;
   private int minSteps;
-  private String[] types;
-  private String[] limits;
-  private String[] tags;
+  private String[] types = new String[0];
+  private String[] limits = new String[0];
+  private String[] tags = new String[0];
 
   public String getMetricKey() {
     return metricKey;
@@ -19,10 +23,16 @@ public class MetricConfig {
     this.metricKey = metricKey;
   }
   public long getStart() {
+	long ret;
     if (stop - (minSteps * step) < start) {
-      return stop - (minSteps * step);
+      ret = stop - (minSteps * step);
     } else {
-      return start;
+      ret = start;
+    }
+    if ((stop - ret) > MAX_TIMEPERIOD) {
+    	return stop - MAX_TIMEPERIOD;
+    } else {
+    	return ret;
     }
   }
   public void setStart(long start) {
@@ -35,7 +45,7 @@ public class MetricConfig {
     this.stop = stop;
   }
   public int getStep() {
-    return step;
+    return Math.max(step, MIN_STEPLEN);
   }
   public void setStep(int step) {
     this.step = step;

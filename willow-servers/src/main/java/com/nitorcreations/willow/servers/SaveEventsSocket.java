@@ -15,6 +15,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
@@ -49,7 +50,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @OnWebSocketMessage
   public void messageReceived(byte buf[], int offset, int length) {
-    try {
+    try (Client client = node.client()){
       Gson gson = new Gson();
       for (AbstractMessage msgObject : mapping.decode(buf, offset, length)) {
         MessageType type = MessageMapping.map(msgObject.getClass());
@@ -86,7 +87,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
         if (System.getProperty("debug") != null) {
           System.out.println(type.lcName() + ": " + source);
         }
-        IndexResponse resp = node.client().prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(5000);
+        IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(5000);
         if (!resp.isCreated()) {
           log.warning("Failed to create index for " + source);
         }

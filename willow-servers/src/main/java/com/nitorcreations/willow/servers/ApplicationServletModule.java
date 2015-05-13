@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jetty.servlet.DefaultServlet;
 
@@ -22,10 +23,12 @@ public class ApplicationServletModule extends ServletModule {
     setProperty("env", env);
     bind(MetricsServlet.class);
     bind(StatisticsServlet.class);
+    bind(ServerSidePollingServlet.class);
     bind(PropertyServlet.class).asEagerSingleton();
     bind(DefaultServlet.class).asEagerSingleton();
     bind(VelocityServlet.class).asEagerSingleton();
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
+    bind(ScheduledExecutorService.class).toInstance(Executors.newScheduledThreadPool(10));
     Map<String, String> defaultInit = new HashMap<>();
     defaultInit.put("dirAllowed", "false");
     defaultInit.put("gzip", "true");
@@ -44,6 +47,7 @@ public class ApplicationServletModule extends ServletModule {
     serve("/statistics/*").with(StatisticsServlet.class);
     serve("/rawterminal/*").with(RawTerminalServlet.class);
     serve("/session/*").with(SessionServlet.class);
+    serve("/poll/*").with(ServerSidePollingServlet.class);
     serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
   }
