@@ -146,7 +146,7 @@ Box.Application.addModule('horizon-graph', function(context) {
 
     onclick: function(event, element, elementType) {
       var host = element ? element.getAttribute("data-host") : null;
-      var user = element ? (element.getAttribute("data-user") ? element.getAttribute("data-user") : "${admin}") : "$admin";
+      var user = element ? (element.getAttribute("data-user") ? element.getAttribute("data-user") : "@admin") : "@admin";
       switch (elementType) {
         case 'start-terminal':
           windowSvc.openTerminalToHost(user, host);

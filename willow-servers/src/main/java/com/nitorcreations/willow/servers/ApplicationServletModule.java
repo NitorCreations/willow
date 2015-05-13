@@ -24,6 +24,7 @@ public class ApplicationServletModule extends ServletModule {
     bind(MetricsServlet.class);
     bind(StatisticsServlet.class);
     bind(ServerSidePollingServlet.class);
+    bind(HostLookupService.class).toInstance(getHostLookupService());
     bind(PropertyServlet.class).asEagerSingleton();
     bind(DefaultServlet.class).asEagerSingleton();
     bind(VelocityServlet.class).asEagerSingleton();
@@ -50,5 +51,8 @@ public class ApplicationServletModule extends ServletModule {
     serve("/poll/*").with(ServerSidePollingServlet.class);
     serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
+  }
+  protected HostLookupService getHostLookupService() {
+    return new SimpleHostLookupService();
   }
 }

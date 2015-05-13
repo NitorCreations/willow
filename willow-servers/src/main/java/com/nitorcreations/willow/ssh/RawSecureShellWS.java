@@ -11,6 +11,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import javax.inject.Inject;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -27,16 +29,19 @@ import com.jcraft.jsch.agentproxy.Connector;
 import com.jcraft.jsch.agentproxy.ConnectorFactory;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.nitorcreations.willow.servers.BasicWillowSocket;
+import com.nitorcreations.willow.servers.HostLookupService;
+import com.sun.jna.platform.win32.WinUser.HOOKPROC;
 
 @WebSocket
 public class RawSecureShellWS extends BasicWillowSocket{
   private ChannelShell shell;
   private JSch jsch = new JSch();
   private com.jcraft.jsch.Session jschSession;
-  private CountDownLatch closeLatch;
   private PrintStream inputToShell;
   public static final int BUFFER_LEN = 4 * 1024;
-
+  @Inject
+  HostLookupService hostLookupService;
+  
   @OnWebSocketConnect
   public void onConnect(Session session) {
     super.onConnect(session);
@@ -54,14 +59,18 @@ public class RawSecureShellWS extends BasicWillowSocket{
     }
     Map<String, List<String>> parameterMap = session.getUpgradeRequest().getParameterMap();
     String host = getStringParameter(parameterMap, "host", null);
+    String connectHost = hostLookupService.getResolvableHostname(host);
     String user = getStringParameter(parameterMap, "user", null);
+    if ("@admin".equals(user)) {
+      user = hostLookupService.getAdminUserFor(host);
+    }
     Resize resize = new Resize();
     resize.cols = getIntParameter(parameterMap, "cols", 80);
     resize.rows = getIntParameter(parameterMap, "rows", 24);
     try {
       java.util.Properties config = new java.util.Properties();
       config.put("StrictHostKeyChecking", "no");
-      jschSession = jsch.getSession(user, host, 22);
+      jschSession = jsch.getSession(user, connectHost, hostLookupService.getSshPort(host));
       jschSession.setConfig(config);
       jschSession.connect(60000);
       shell = (ChannelShell) jschSession.openChannel("shell");
