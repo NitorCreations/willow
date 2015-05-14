@@ -69,8 +69,6 @@ Box.Application.addModule('radiator-index', function(context) {
         moduleElem.insert("div", ":first-child")
             .classed("rule", true)
             .call(cubismGraphs.createRulerOverGraphs());
-        var height = $($(moduleElem)[0]).height() - $(".axis").height();
-        $(".rule").height(height); //FIXME brakes ruler positioning
     }
 
     function reset() {
