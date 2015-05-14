@@ -163,7 +163,7 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <targetGroups>libs,app</targetGroups>
+              <targetGroups>all</targetGroups>
             </configuration>
           </execution>
           <execution>
