@@ -40,16 +40,16 @@ Box.Application.addModule('horizon-index', function(context) {
     metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
       hosts.map(resolveHostName)
-          .forEach(function (tag) {
-            var chartConfig = {
-              metric: metric,
-              host: tag.host,
-              instanceTag:tag.raw,
-              stop: stop, //FIXME time related configurations should be in graph-module itself, not related to metrics itself
-              step: step
-            };
-            moduleElem.call(createHorizonGraph, chartConfig);
-          });
+        .forEach(function (tag) {
+          var chartConfig = {
+            metric: metric,
+            host: tag.host,
+            instanceTag:tag.raw,
+            stop: stop, //FIXME time related configurations should be in graph-module itself, not related to metrics itself
+            step: step
+          };
+          moduleElem.call(createHorizonGraph, chartConfig);
+        });
       context.broadcast("reload-graph-configuration");
     });
 
@@ -66,7 +66,7 @@ Box.Application.addModule('horizon-index', function(context) {
   function createHorizonGraph(parentElement, chartConfig) {
     var metricIdPrefix = "live:metrics:graph-";
     var horizonGraphElement = parentElement.append("div")
-        .attr("data-module","horizon-graph");
+      .attr("data-module","horizon-graph");
     injectModuleConfiguration(horizonGraphElement, metricIdPrefix);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
