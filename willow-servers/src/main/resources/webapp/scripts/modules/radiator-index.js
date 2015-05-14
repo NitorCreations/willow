@@ -70,7 +70,7 @@ Box.Application.addModule('radiator-index', function(context) {
             .classed("rule", true)
             .call(cubismGraphs.createRulerOverGraphs());
         var height = $($(moduleElem)[0]).height() - $(".axis").height();
-        $(".rule").height(height);
+        $(".rule").height(height); //FIXME brakes ruler positioning
     }
 
     function reset() {
@@ -78,14 +78,18 @@ Box.Application.addModule('radiator-index', function(context) {
         var step = parseInt(timescale * 1000 / widthInPx);
         var stop = new Date().getTime();
 
-        cubismGraphs.resetCubismContext(step, widthInPx);
         resetLayout();
         initGraphs(stop, step);
     }
 
+    //FIXME should get reset variables as arguments
     function resetLayout() {
-        moduleElem.selectAll('.axis, .rule').remove();
-        initLayout($(window).width());
+      var widthInPixels = $(window).width();
+      var step = parseInt(timescale * 1000 / widthInPixels);
+
+      moduleElem.selectAll('.axis, .rule').remove();
+      cubismGraphs.resetCubismContext(step, widthInPixels);
+      initLayout($(window).width());
     }
 
     function initGraphs(stop, step) {

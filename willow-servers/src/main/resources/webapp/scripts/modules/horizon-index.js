@@ -22,14 +22,18 @@ Box.Application.addModule('horizon-index', function(context) {
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
-    cubismGraphs.resetCubismContext(step, widthInPx);
     resetLayout();
     initGraphs(metric, start, stop, step);
   }
 
+  //FIXME should get reset variables as arguments
   function resetLayout() {
+    var widthInPixels = $(window).width();
+    var step = parseInt(timescale * 1000 / widthInPixels);
+
     moduleElem.selectAll('.axis, .rule').remove();
-    initLayout($(window).width());
+    cubismGraphs.resetCubismContext(step, widthInPixels);
+    initLayout(widthInPixels);
   }
 
   function initGraphs(metric, start, stop, step) {
