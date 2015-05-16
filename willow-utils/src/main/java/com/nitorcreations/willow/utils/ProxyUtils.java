@@ -95,6 +95,9 @@ public class ProxyUtils {
     return ret;
   }
   public static InputStream getUriInputStream(String proxyAutoconf, String pacProxyResult, String url) throws IOException, URISyntaxException {
+    return getUriInputStream(proxyAutoconf, pacProxyResult, url, null);
+  }
+  public static InputStream getUriInputStream(String proxyAutoconf, String pacProxyResult, String url, RequestCustomizer cust) throws IOException, URISyntaxException {
     URI uri = new URI(url);
     List<Proxy> l;
     if (proxyAutoconf != null) {
@@ -126,6 +129,7 @@ public class ProxyUtils {
       throw new IOException("Invalid uri", e);
     }
     if (conn == null) throw new IOException("Failed to get connection to " + url);
+    if (cust != null) cust.customize(conn);
     return conn.getInputStream();
   }
 
