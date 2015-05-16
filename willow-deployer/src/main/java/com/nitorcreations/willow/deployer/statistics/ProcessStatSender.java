@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import javax.inject.Inject;
 import javax.inject.Named;

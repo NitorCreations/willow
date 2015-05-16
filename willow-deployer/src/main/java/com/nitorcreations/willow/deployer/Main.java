@@ -45,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -54,9 +53,6 @@ import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
-
-import com.nitorcreations.willow.messages.event.DeployerStartEvent;
-import com.nitorcreations.willow.messages.event.DeployerStopEvent;
 
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
@@ -69,7 +65,8 @@ import com.nitorcreations.willow.deployer.launch.LaunchCallback;
 import com.nitorcreations.willow.deployer.launch.LaunchMethod;
 import com.nitorcreations.willow.deployer.statistics.StatisticsSender;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
-import com.nitorcreations.willow.protocols.property.PropertyUrlConnection;
+import com.nitorcreations.willow.messages.event.DeployerStartEvent;
+import com.nitorcreations.willow.messages.event.DeployerStopEvent;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named

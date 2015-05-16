@@ -1,12 +1,15 @@
 package com.nitorcreations.willow.utils;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class TestPropertyMerge {
   @Test

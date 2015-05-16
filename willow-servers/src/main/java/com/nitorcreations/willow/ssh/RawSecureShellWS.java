@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -30,7 +29,6 @@ import com.jcraft.jsch.agentproxy.ConnectorFactory;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.nitorcreations.willow.servers.BasicWillowSocket;
 import com.nitorcreations.willow.servers.HostLookupService;
-import com.sun.jna.platform.win32.WinUser.HOOKPROC;
 
 @WebSocket
 public class RawSecureShellWS extends BasicWillowSocket{

@@ -1,10 +1,10 @@
 package com.nitorcreations.willow.utils;
 
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
+import static org.junit.Assert.assertEquals;
+
 import java.net.URL;
 import java.net.URLConnection;
-
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
-import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;

@@ -1,16 +1,20 @@
 package com.nitorcreations.willow.servers;
 
 
-import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.nitorcreations.willow.auth.*;
+import javax.servlet.ServletContext;
 
 import org.apache.shiro.config.Ini;
 import org.apache.shiro.guice.web.ShiroWebModule;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 
-import javax.servlet.ServletContext;
+import com.google.inject.Key;
+import com.google.inject.Provides;
+import com.nitorcreations.willow.auth.AuthorizedKeys;
+import com.nitorcreations.willow.auth.GitHubOAuthAuthenticatingFilter;
+import com.nitorcreations.willow.auth.NitorGithubOAuthRealm;
+import com.nitorcreations.willow.auth.PublicKeyAuthenticationFilter;
+import com.nitorcreations.willow.auth.PublicKeyRealm;
 
 public class WillowShiroModule extends ShiroWebModule {
   public WillowShiroModule(ServletContext servletContext) {
