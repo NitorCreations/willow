@@ -62,19 +62,6 @@ Box.Application.addModule('radiator-index', function(context) {
     e.preventDefault();
   };
 
-  //TODO could these be shared with horizon index?
-  function initLayout(widthInPixels) {
-    moduleElem.attr("style", "width: " + widthInPixels + "px");
-
-    moduleElem.insert("div", ":first-child")
-      .classed("axis", true)
-      .call(cubismGraphs.createGraphAxis().orient("top").tickFormat(d3.time.format("%H:%M")));
-
-    moduleElem.insert("div", ":first-child")
-      .classed("rule", true)
-      .call(cubismGraphs.createRulerOverGraphs());
-  }
-
   function reset() {
     var widthInPx = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPx);
@@ -88,10 +75,7 @@ Box.Application.addModule('radiator-index', function(context) {
   function resetLayout() {
     var widthInPixels = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPixels);
-
-    moduleElem.selectAll('.axis, .rule').remove();
     cubismGraphs.resetCubismContext(step, widthInPixels);
-    initLayout($(window).width());
   }
 
   function initGraphs(stop, step) {
@@ -164,9 +148,8 @@ Box.Application.addModule('radiator-index', function(context) {
 
     destroy: function() {
     },
+
     onmousedown: isDraggingMouseDown,
-    onclick: function(event, element, elementType) {
-    },
 
     messages: ["timescale-changed"],
 
