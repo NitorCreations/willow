@@ -6,8 +6,8 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLO
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_AUTORESTART;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_LAUNCH_WORKDIR;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_TERM_TIMEOUT;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
@@ -30,12 +30,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
-
-import com.nitorcreations.willow.messages.event.*;
 
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
@@ -44,6 +41,13 @@ import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
 import com.nitorcreations.willow.deployer.download.FileUtil;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.messages.event.ChildDiedEvent;
+import com.nitorcreations.willow.messages.event.ChildRestartedEvent;
+import com.nitorcreations.willow.messages.event.ChildRestartingEvent;
+import com.nitorcreations.willow.messages.event.ChildStartedEvent;
+import com.nitorcreations.willow.messages.event.ChildStartingEvent;
+import com.nitorcreations.willow.messages.event.ChildStoppedEvent;
+import com.nitorcreations.willow.messages.event.ChildStoppingEvent;
 import com.nitorcreations.willow.utils.AbstractStreamPumper;
 import com.nitorcreations.willow.utils.LoggingStreamPumper;
 import com.nitorcreations.willow.utils.MergeableProperties;

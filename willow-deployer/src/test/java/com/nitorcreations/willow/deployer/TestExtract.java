@@ -1,11 +1,13 @@
 package com.nitorcreations.willow.deployer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 import org.junit.Test;
 

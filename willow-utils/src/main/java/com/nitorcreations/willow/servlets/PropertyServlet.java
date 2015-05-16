@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
