@@ -44,6 +44,7 @@ public class MergeableProperties extends Properties {
   private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
   ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
   private final boolean allowScripts;
+  private RequestCustomizer customizer = null;
   static {
     Register.doIt();
   }
@@ -255,7 +256,7 @@ public class MergeableProperties extends Properties {
   }
   private InputStream getIncludeUriInputStream(String url) throws IOException, URISyntaxException {
     return ProxyUtils.getUriInputStream(getProperty(INCLUDE_PROPERTY + ".proxyautoconf"),
-      getProperty(INCLUDE_PROPERTY + ".proxy"), url);
+      getProperty(INCLUDE_PROPERTY + ".proxy"), url, customizer);
   }
   @SuppressWarnings("unchecked")
   @Override
@@ -448,5 +449,13 @@ public class MergeableProperties extends Properties {
 
   public Collection<Object> values() {
     return new LinkedHashSet<Object>(table.values());
+  }
+
+  public RequestCustomizer getRequestCustomizer() {
+    return customizer;
+  }
+
+  public void setRequestCustomizer(RequestCustomizer customizer) {
+    this.customizer = customizer;
   }
 }

@@ -16,10 +16,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import com.nitorcreations.willow.messages.event.Event;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -39,7 +39,7 @@ public class WebSocketTransmitter {
   private URI uri;
   private String username;
 
-  private final Logger logger = Logger.getLogger(this.getClass().getName());
+  private static final Logger logger = Logger.getLogger(WebSocketTransmitter.class.getName());
   private final ArrayBlockingQueue<AbstractMessage> queue = new ArrayBlockingQueue<AbstractMessage>(200);
   private final Worker worker = new Worker();
   private final Thread workerThread = new Thread(worker, "websocket-transfer");
@@ -126,6 +126,30 @@ public class WebSocketTransmitter {
   public void setUsername(String username) {
     this.username = username;
   }
+  @SuppressWarnings("unchecked")
+  public static String getSshAgentAuthorization(String username) {
+    StringBuilder ret = new StringBuilder("PUBLICKEY ");
+    String now = "" + System.currentTimeMillis();
+    Connector con = null;
+    try {
+      ConnectorFactory cf = ConnectorFactory.getDefault();
+      con = cf.createConnector();
+    } catch (AgentProxyException e) {
+      logger.log(Level.SEVERE, "Unable to fetch authorization keys!", e);
+    }
+    byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
+    ret.append(printBase64Binary(sign));
+    if (con != null) {
+      IdentityRepository irepo = new RemoteIdentityRepository(con);
+      for (Identity id : (List<Identity>)irepo.getIdentities()) {
+        try {
+          byte[] sig = id.getSignature(sign);
+          ret.append(" ").append(printBase64Binary(sig));
+        } catch (Throwable t) {}
+      }
+    }
+    return ret.toString();
+  }
 
   @WebSocket
   public class Worker implements Runnable {
@@ -211,7 +235,7 @@ public class WebSocketTransmitter {
       client.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
       synchronized (this) {
-        request.setHeader("Authorization", "PUBLICKEY " + getAuthorization());
+        request.setHeader("Authorization", getSshAgentAuthorization(username));
         Future<Session> future = client.connect(this, uri, request);
         logger.info(String.format("Connecting to : %s", uri));
         try {
@@ -226,29 +250,6 @@ public class WebSocketTransmitter {
           }
         }
       }
-    }
-    private String getAuthorization() {
-      StringBuilder ret = new StringBuilder();
-      String now = "" + System.currentTimeMillis();
-      Connector con = null;
-      try {
-        ConnectorFactory cf = ConnectorFactory.getDefault();
-        con = cf.createConnector();
-      } catch (AgentProxyException e) {
-        logger.log(Level.SEVERE, "Unable to fetch authorization keys!", e);
-      }
-      byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
-      ret.append(printBase64Binary(sign));
-      if (con != null) {
-        IdentityRepository irepo = new RemoteIdentityRepository(con);
-        for (Identity id : (List<Identity>)irepo.getIdentities()) {
-          try {
-            byte[] sig = id.getSignature(sign);
-            ret.append(" ").append(printBase64Binary(sig));
-          } catch (Throwable t) {}
-        }
-      }
-      return ret.toString();
     }
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
