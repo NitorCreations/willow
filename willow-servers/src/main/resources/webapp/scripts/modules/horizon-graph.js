@@ -31,7 +31,7 @@ Box.Application.addModule('horizon-graph', function(context) {
     }, id);
     $(".horizon").unbind("mousedown");
     var chartData = metricsChart(chartConfig.metric, chartConfig.instanceTag, chartConfig.stop, chartConfig.step);
-    moduleElem.call(createHorizon, chartConfig.host, chartData, metricSetting);
+    moduleElem.call(createHorizon, chartConfig.host, chartConfig.metric, chartData, metricSetting);
   };
 
   // graph destroy, put this on a button or such
@@ -64,12 +64,12 @@ Box.Application.addModule('horizon-graph', function(context) {
     }, String(type));
   }
 
-  var createHorizon = function(parentElement, host, chart, metricSettings) {
-    var horizonGraphElements = parentElement.selectAll(".horizon-" + host)
+  var createHorizon = function(parentElement, host, metric, chart, metricSettings) {
+    var horizonGraphElements = parentElement.selectAll(".horizon-" + host) //FIXME remove, this is currently empty selection
         .data([chart])
-        .enter().append("div");
+        .enter().append("div").classed("horizon", true);
 
-    horizonGraphElements.call(appendHorizonGraph, host, metricSettings);
+    horizonGraphElements.call(appendHorizonGraph, host, metric, metricSettings);
     if (enableTerminalButton) {
       horizonGraphElements.call(appendTerminalIcon, host);
     }
@@ -79,11 +79,20 @@ Box.Application.addModule('horizon-graph', function(context) {
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
-  function appendHorizonGraph(parentElement, host, metricSettings) {
+  function appendHorizonGraph(parentElement, host, metric, metricSettings) {
     return parentElement
-        .classed("horizon horizon-" + host + " horizoncpu-" + host, true)
-        .attr("data-host", host)
-        .call(configureHorizonGraph(host, metricSettings));
+      .attr("data-metric", metric)
+      .attr("data-host", host)
+      .call(configureHorizonGraph(metricSettings));
+  }
+
+  function configureHorizonGraph(metricSettings) {
+    return cubismGraphs.createHorizonGraph()
+      .height(metricSettings.height)
+      .colors(metricSettings.colors)
+      .extent(metricSettings.extent)
+      .format(d3.format(metricSettings.format))
+      .title(null);
   }
 
   function appendTerminalIcon(parentElement, host) {
@@ -107,15 +116,6 @@ Box.Application.addModule('horizon-graph', function(context) {
         .attr("href", "radiator.html#host=" + host)
         .attr("data-host", host)
         .attr("data-type", "host-radiator").text(host);
-  }
-
-  function configureHorizonGraph(host, metricSettings) {
-    return cubismGraphs.createHorizonGraph()
-        .height(metricSettings.height)
-        .colors(metricSettings.colors)
-        .extent(metricSettings.extent)
-        .format(d3.format(metricSettings.format))
-        .title(null);
   }
 
   return {
