@@ -1,20 +1,8 @@
 Box.Application.addModule('horizon-index', function(context) {
   'use strict';
 
-  var d3, moduleElem, metric, timescale, store, windowSvc, cubismGraphs, utils, metricsService;
-
-  //TODO could these be shared with radiator index?
-  function initLayout(widthInPixels) {
-    moduleElem.attr("style", "width: " + widthInPixels + "px");
-
-    moduleElem.insert("div", ":first-child")
-      .classed("axis", true)
-      .call(cubismGraphs.createGraphAxis().orient("top").tickFormat(d3.time.format("%H:%M")));
-
-    moduleElem.insert("div", ":first-child")
-      .classed("rule", true)
-      .call(cubismGraphs.createRulerOverGraphs());
-  }
+  var d3, moduleElem, metric, timescale,
+    store, windowSvc, cubismGraphs, utils, metricsService;
 
   function reset() {
     var widthInPx = $(window).width();
@@ -30,10 +18,7 @@ Box.Application.addModule('horizon-index', function(context) {
   function resetLayout() {
     var widthInPixels = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPixels);
-
-    moduleElem.selectAll('.axis, .rule').remove();
     cubismGraphs.resetCubismContext(step, widthInPixels);
-    initLayout(widthInPixels);
   }
 
   function initGraphs(metric, start, stop, step) {
@@ -66,7 +51,7 @@ Box.Application.addModule('horizon-index', function(context) {
   function createHorizonGraph(parentElement, chartConfig) {
     var metricIdPrefix = "live:metrics:graph-";
     var horizonGraphElement = parentElement.append("div")
-      .attr("data-module","horizon-graph");
+      .attr("data-module", "horizon-graph");
     injectModuleConfiguration(horizonGraphElement, metricIdPrefix);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
