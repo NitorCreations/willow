@@ -5,7 +5,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import javax.inject.Singleton;
 

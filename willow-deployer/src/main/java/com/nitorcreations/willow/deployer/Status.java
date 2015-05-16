@@ -3,7 +3,6 @@ package com.nitorcreations.willow.deployer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import javax.inject.Singleton;
 import javax.management.JMX;

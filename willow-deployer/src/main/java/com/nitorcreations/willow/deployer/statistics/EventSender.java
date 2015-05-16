@@ -1,11 +1,11 @@
 package com.nitorcreations.willow.deployer.statistics;
 
-import com.nitorcreations.willow.messages.event.EventMessage;
-import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
-
-import javax.inject.Named;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import javax.inject.Named;
+
+import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
 
 @Named("event")
 public class EventSender extends AbstractStatisticsSender {

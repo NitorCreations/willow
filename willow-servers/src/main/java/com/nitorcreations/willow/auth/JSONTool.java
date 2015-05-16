@@ -1,14 +1,13 @@
 package com.nitorcreations.willow.auth;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import static java.util.Collections.unmodifiableSet;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.unmodifiableSet;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 enum JSONTool {
     ;

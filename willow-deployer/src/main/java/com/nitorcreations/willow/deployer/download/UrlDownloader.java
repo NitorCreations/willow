@@ -4,9 +4,9 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNL
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXYAUTOCONF;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXY;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXYAUTOCONF;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
 import static com.nitorcreations.willow.deployer.download.FileUtil.createDir;
 import static com.nitorcreations.willow.deployer.download.FileUtil.getFileName;
@@ -19,14 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Hex;

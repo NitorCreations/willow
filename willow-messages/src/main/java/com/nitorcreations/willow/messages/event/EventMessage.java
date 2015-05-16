@@ -1,9 +1,10 @@
 package com.nitorcreations.willow.messages.event;
 
-import com.nitorcreations.willow.messages.AbstractMessage;
+import java.util.HashMap;
+
 import org.msgpack.annotation.Message;
 
-import java.util.HashMap;
+import com.nitorcreations.willow.messages.AbstractMessage;
 
 @Message
 public class EventMessage extends AbstractMessage {

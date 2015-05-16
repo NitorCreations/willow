@@ -1,21 +1,27 @@
 package com.nitorcreations.willow.auth;
 
-import mx.com.inftel.shiro.oauth2.AbstractOAuth2AuthenticatingFilter;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonMap;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonMap;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
+import mx.com.inftel.shiro.oauth2.AbstractOAuth2AuthenticatingFilter;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2AuthenticatingFilter {
 

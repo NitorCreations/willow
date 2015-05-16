@@ -1,14 +1,5 @@
 package com.nitorcreations.willow.messages;
 
-import com.nitorcreations.willow.messages.event.EventMessage;
-import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
-import net.jpountz.lz4.LZ4Compressor;
-import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4FastDecompressor;
-import org.msgpack.MessagePack;
-import org.msgpack.packer.Packer;
-import org.msgpack.unpacker.BufferUnpacker;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,6 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
+
+import org.msgpack.MessagePack;
+import org.msgpack.packer.Packer;
+import org.msgpack.unpacker.BufferUnpacker;
+
+import com.nitorcreations.willow.messages.event.EventMessage;
+import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
 
 public class MessageMapping {
   MessagePack msgpack = new MessagePack();
