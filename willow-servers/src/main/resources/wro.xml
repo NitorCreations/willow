@@ -26,11 +26,12 @@
     <js>/scripts/behaviors/navigation-common.js</js>
     <js>/scripts/modules/radiator-index.js</js>
     <js>/scripts/modules/horizon-index.js</js>
-    <js>/scripts/modules/horizon-graph.js</js>
     <js>/scripts/modules/horizon-ruler.js</js>
     <js>/scripts/modules/navigation-index.js</js>
     <js>/scripts/modules/navigation-radiator.js</js>
     <js>/scripts/modules/radiator-details.js</js>
     <js>/scripts/modules/navigation-alerts.js</js>
+    <js>/scripts/modules/graphs/horizon-graph.js</js>
+    <js>/scripts/modules/graphs/filesystem-graph.js</js>
   </group>
 </groups>

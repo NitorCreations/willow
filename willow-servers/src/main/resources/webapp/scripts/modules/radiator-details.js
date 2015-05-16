@@ -17,6 +17,7 @@ Box.Application.addModule('radiator-details', function(context) {
     $(".row" + row + "-" + host).append('<div class="' + prefix + '-' + host + ' col c6" style="height:200px">');
     $("." + prefix + "-" + host).append("<svg>");
   };
+
   var kiloBytesToString = function (kbytes) {
     var fmt = d3.format('.0f');
     if (kbytes < 1024) {
@@ -29,6 +30,7 @@ Box.Application.addModule('radiator-details', function(context) {
       return fmt(kbytes / 1024 / 1024 / 1024) + 'TB';
     }
   };
+
   var heapGraphCallback = function(host) {
     return function(data) {
       var divHost = host;
@@ -48,6 +50,7 @@ Box.Application.addModule('radiator-details', function(context) {
       });
     };
   };
+
   var accessGraphCallback = function(host) {
     return function(data) {
       var divHost = host;
@@ -71,6 +74,7 @@ Box.Application.addModule('radiator-details', function(context) {
       });
     };
   };
+
   var fsGraphCallback = function(host) {
     return function(data) {
       var divHost = host;
@@ -91,8 +95,8 @@ Box.Application.addModule('radiator-details', function(context) {
       });
     };
   };
+
   return {
-    messages: [ "details-updated" ],
     init: function() {
       $          = context.getGlobal("jQuery");
       d3         = context.getGlobal("d3");
@@ -100,7 +104,9 @@ Box.Application.addModule('radiator-details', function(context) {
       windowSvc  = context.getService("window");
       moduleEl   = context.getElement();
       host       = windowSvc.getHashVariable("host");
+
       $(".shape-navterminal").attr("data-host", host);
+
       var host_stop = parseInt(detailsStop);
       if (host_stop < 0) {
         host_stop = parseInt(new Date().getTime());
@@ -109,13 +115,18 @@ Box.Application.addModule('radiator-details', function(context) {
       if (host_start < 0) {
         host_start = parseInt(host_stop - (1000 * 60 * 60 * 3));
       }
+
       setupDetailsDivs(moduleEl, "fs", host);
       setupDetailsDivs(moduleEl, "heap", host);
       setupDetailsDivs(moduleEl, "access", host);
+
       d3.json("metrics/disk?tag=host_" + host + "&stop=" + host_stop, fsGraphCallback(host));
       d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + host_start + "&stop=" + host_stop, heapGraphCallback(host));
       d3.json("metrics/access?tag=host_" + host + "&step=60000&start=" + host_start + "&stop=" + host_stop, accessGraphCallback(host));
     },
+
+    messages: [ "details-updated" ],
+
     onmessage: function(name, data) {
       switch (name) {
       case 'details-updated':
