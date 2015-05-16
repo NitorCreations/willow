@@ -5,13 +5,11 @@ Box.Application.addModule('horizon-index', function(context) {
     store, windowSvc, cubismGraphs, utils, metricsService;
 
   function reset() {
-    var widthInPx = $(window).width();
-    var step = parseInt(timescale * 1000 / widthInPx);
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
     resetLayout();
-    initGraphs(metric, start, stop, step);
+    initGraphs(metric, start, stop);
   }
 
   //FIXME should get reset variables as arguments
@@ -21,7 +19,7 @@ Box.Application.addModule('horizon-index', function(context) {
     cubismGraphs.resetCubismContext(step, widthInPixels);
   }
 
-  function initGraphs(metric, start, stop, step) {
+  function initGraphs(metric, start, stop) {
     metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
       hosts.map(resolveHostName)
@@ -29,9 +27,7 @@ Box.Application.addModule('horizon-index', function(context) {
           var chartConfig = {
             metric: metric,
             host: tag.host,
-            instanceTag:tag.raw,
-            stop: stop, //FIXME time related configurations should be in graph-module itself, not related to metrics itself
-            step: step
+            instanceTag: tag.raw
           };
           moduleElem.select("#horizon-graphs").call(createHorizonGraph, chartConfig);
         });

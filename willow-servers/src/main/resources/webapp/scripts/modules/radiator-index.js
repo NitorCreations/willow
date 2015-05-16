@@ -63,12 +63,8 @@ Box.Application.addModule('radiator-index', function(context) {
   };
 
   function reset() {
-    var widthInPx = $(window).width();
-    var step = parseInt(timescale * 1000 / widthInPx);
-    var stop = new Date().getTime();
-
     resetLayout();
-    initGraphs(stop, step);
+    initGraphs();
   }
 
   //FIXME should get reset variables as arguments
@@ -78,15 +74,13 @@ Box.Application.addModule('radiator-index', function(context) {
     cubismGraphs.resetCubismContext(step, widthInPixels);
   }
 
-  function initGraphs(stop, step) {
+  function initGraphs() {
     defaultMetrics(host)(function(metrics) {
       metrics.forEach(function (metric) {
         var chartConfig = {
           metric: metric,
           host: host,
-          instanceTag: instanceTag,
-          stop: stop, //FIXME time related configurations should be in graph-module itself, not related to metrics itself
-          step: step
+          instanceTag: instanceTag
         };
         moduleElem.call(createHorizonGraph, chartConfig);
       });
