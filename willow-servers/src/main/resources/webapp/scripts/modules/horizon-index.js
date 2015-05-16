@@ -33,7 +33,7 @@ Box.Application.addModule('horizon-index', function(context) {
             stop: stop, //FIXME time related configurations should be in graph-module itself, not related to metrics itself
             step: step
           };
-          moduleElem.call(createHorizonGraph, chartConfig);
+          moduleElem.select("#horizon-graphs").call(createHorizonGraph, chartConfig);
         });
       context.broadcast("reload-graph-configuration");
     });
