@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-index', function(context) {
   'use strict';
 
-  var d3, moduleElem, metric, timescale,
+  var d3, $, moduleElem, metric, timescale,
     store, windowSvc, cubismGraphs, utils, metricsService;
 
   function reset() {
@@ -56,6 +56,7 @@ Box.Application.addModule('horizon-index', function(context) {
   return {
     init: function() {
       d3           = context.getGlobal("d3");
+      $            = context.getGlobal("jQuery");
       moduleElem   = d3.select(context.getElement());
 
       utils        = context.getService("utils");
