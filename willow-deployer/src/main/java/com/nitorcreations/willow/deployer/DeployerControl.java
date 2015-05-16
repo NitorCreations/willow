@@ -7,11 +7,8 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLO
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.Proxy.Type;
-import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +42,10 @@ import sun.management.ConnectorAddressLink;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.protocols.Register;
 import com.nitorcreations.willow.utils.MergeableProperties;
+import com.nitorcreations.willow.utils.RequestCustomizer;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
@@ -181,6 +180,15 @@ public class DeployerControl {
   }
   protected MergeableProperties getURLProperties(String url) {
     MergeableProperties launchProperties = new MergeableProperties();
+    final String username = System.getProperty("user.name");
+    launchProperties.setRequestCustomizer(new RequestCustomizer() {
+      @Override
+      public void customize(URLConnection conn) {
+        if (conn instanceof HttpURLConnection) {
+          conn.setRequestProperty("Authorization", WebSocketTransmitter.getSshAgentAuthorization(username));
+        }
+      }
+    });
     launchProperties.merge(System.getProperties(), url);
     return launchProperties;
   }

@@ -45,6 +45,7 @@ public class ApplicationServletModule extends ServletModule {
     }
     serve("/metrics/*").with(MetricsServlet.class);
     serve("/properties/*").with(PropertyServlet.class);
+    serve("/launchproperties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);
     serve("/rawterminal/*").with(RawTerminalServlet.class);
     serve("/session/*").with(SessionServlet.class);
