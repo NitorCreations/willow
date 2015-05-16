@@ -16,23 +16,23 @@ Box.Application.addModule('horizon-graph', function(context) {
     "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors, height: 50 },
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
-  var resetGraph = function() {
-    var widthInPx = $(window).width();
-    var id = moduleElem.attr('id');
+
+  function resetGraph() {
     var chartConfig = readConfiguration();
     var metricSetting = $(metricMap).attr(chartConfig.metric);
 
     // TODO: this should be done by reconfiguring, not destroying
     moduleElem.selectAll(".horizon").remove();
-    cubismGraphs.resetCubismContext(chartConfig.step, widthInPx);
 
+    var id = moduleElem.attr('id');
     cubismGraphs.onFocus(function(index) {
       moduleElem.selectAll(".horizon .value").style("right", index === null ? null : this.size() - index + "px");
     }, id);
+
     $(".horizon").unbind("mousedown");
-    var chartData = metricsChart(chartConfig.metric, chartConfig.instanceTag, chartConfig.stop, chartConfig.step);
+    var chartData = metricsChart(chartConfig.metric, chartConfig.instanceTag);
     moduleElem.call(createHorizon, chartConfig.host, chartConfig.metric, chartData, metricSetting);
-  };
+  }
 
   // graph destroy, put this on a button or such
   function removeGraph() {
@@ -134,9 +134,6 @@ Box.Application.addModule('horizon-graph', function(context) {
       configurationId = context.getConfig('configurationIdPrefix') + moduleElem.attr('id');
       enableTerminalButton = !context.getConfig('disableTerminalButton');
       enableShareToRadiatorButton = !context.getConfig('disableRadiatorShareButton');
-
-      //FIXME move to index ?
-      $(window).resize(utils.debouncer(resetGraph));
     },
 
     destroy: function() {
@@ -164,34 +161,18 @@ Box.Application.addModule('horizon-graph', function(context) {
       }
     },
 
-    messages: ["timescale-changed", "metric-changed", "reload-graph-configuration"],
+    messages: ["metric-changed", "reload-graph-configuration", "cubism-context-reset"],
 
     onmessage: function(name, data) {
       switch (name) {
-        case 'timescale-changed':
-          this.setTimescale(data);
-          break;
         case 'metric-changed':
           this.setMetric(data);
           break;
+        case 'cubism-context-reset':
         case 'reload-graph-configuration':
           resetGraph();
           break;
       }
-    },
-
-    //FIXME should these manipulations be in index level?
-    setTimescale: function(timescale) {
-      var widthInPx = $(window).width();
-      var step = parseInt(timescale * 1000 / widthInPx);
-      var stop = new Date().getTime();
-
-      var config = readConfiguration();
-      config.stop = stop;
-      config.step = step;
-      storeConfiguration(config);
-
-      resetGraph();
     },
 
     //FIXME should these manipulations be in index level?
