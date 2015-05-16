@@ -63,7 +63,7 @@ public class MetricConfig {
       return types;
     }
   }
-  public void setTypes(String[] types) {
+  public void setTypes(String... types) {
     this.types = types;
   }
   public String[] getLimits() {
@@ -73,7 +73,7 @@ public class MetricConfig {
       return limits;
     }
   }
-  public void setLimits(String[] limits) {
+  public void setLimits(String... limits) {
     this.limits = limits;
   }
   public String[] getTags() {
@@ -83,8 +83,18 @@ public class MetricConfig {
       return tags;
     }
   }
-  public void setTags(String[] tags) {
+  public void setTags(String... tags) {
     this.tags = tags;
+  }
+  public MetricConfig() {
+    long now = System.currentTimeMillis();
+    start = now - 30000;
+    stop = now;
+    step = 0;
+    minSteps = 1;
+    types = new String[0];
+    limits = new String[0];
+    tags = new String[0];
   }
   public MetricConfig(HttpServletRequest req) {
     long now = System.currentTimeMillis();

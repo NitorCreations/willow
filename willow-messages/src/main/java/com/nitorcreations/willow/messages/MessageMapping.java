@@ -27,7 +27,7 @@ public class MessageMapping {
 
   public enum MessageType {
     PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS,
-    HASH, NET, TCPINFO, DISKIO, THREADDUMP, OS, EVENT;
+    HASH, NET, TCPINFO, DISKIO, THREADDUMP, OS, EVENT, HOSTINFO;
     public String lcName() {
       return toString().toLowerCase();
     }
@@ -60,6 +60,7 @@ public class MessageMapping {
     messageTypes.put(MessageType.THREADDUMP, ThreadDumpMessage.class);
     messageTypes.put(MessageType.OS, OsInfo.class);
     messageTypes.put(MessageType.EVENT, EventMessage.class);
+    messageTypes.put(MessageType.HOSTINFO, HostInfoMessage.class);
     for (java.util.Map.Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
       messageClasses.put(next.getValue(), next.getKey());
     }
