@@ -1,8 +1,11 @@
 Box.Application.addModule('radiator-index', function(context) {
   'use strict';
 
-  var d3, moduleElem, radiatorName, host, instanceTag, timescale,
-    store, windowSvc, cubismGraphs, utils, metricsService, isDragging = false, dragStart, detailsStart, detailsStop;
+  var d3, $,
+    store, windowSvc, cubismGraphs, utils, metricsService,
+    moduleElem, radiatorName, host, instanceTag, timescale;
+
+  var detailsStart, detailsStop, dragStart, isDragging = false; //FIXME can usage of these be removed?
 
   var isDraggingMouseDown = function(e) {
     $(window).mousemove(function(e) {
@@ -120,6 +123,7 @@ Box.Application.addModule('radiator-index', function(context) {
   return {
     init: function() {
       d3           = context.getGlobal("d3");
+      $            = context.getGlobal("jQuery");
       moduleElem   = d3.select(context.getElement());
 
       utils        = context.getService("utils");

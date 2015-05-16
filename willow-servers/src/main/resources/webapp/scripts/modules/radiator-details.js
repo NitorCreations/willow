@@ -104,9 +104,6 @@ Box.Application.addModule('radiator-details', function(context) {
       windowSvc  = context.getService("window");
       moduleEl   = context.getElement();
       host       = windowSvc.getHashVariable("host");
-
-      $(".shape-navterminal").attr("data-host", host);
-
       var host_stop = parseInt(detailsStop);
       if (host_stop < 0) {
         host_stop = parseInt(new Date().getTime());
