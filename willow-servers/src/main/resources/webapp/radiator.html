@@ -46,12 +46,17 @@
 </nav>
 <div data-module="radiator-index">
   #include("/templates/horizon-ruler.html")
-  <div class="selection"></div>
+  <div id="time-range-selection"></div>
 </div>
-<div data-module="radiator-details"></div>
-<div data-module="filesystem-graph"></div>
-<div data-module="heap-graph"></div>
-<div data-module="access-graph"></div>
+<div data-module="radiator-details">
+  <div class="row">
+    <div class="col c6 nv-graph" data-module="filesystem-graph"></div>
+    <div class="col c6 nv-graph" data-module="heap-graph"></div>
+  </div>
+  <div class="row">
+    <div class="col c6 nv-graph" data-module="access-graph"></div>
+  </div>
+</div>
 
 <script id="bootstrap-application" type="text/javascript">
   Box.Application.init({

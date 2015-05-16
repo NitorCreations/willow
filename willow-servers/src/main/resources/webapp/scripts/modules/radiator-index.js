@@ -7,62 +7,46 @@ Box.Application.addModule('radiator-index', function(context) {
 
   var detailsStart, detailsStop, dragStart, isDragging = false; //FIXME can usage of these be removed?
 
+  function timeRangeSelectionArea() {
+    return $("#time-range-selection");
+  }
+
   var isDraggingMouseDown = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    var selectionArea = timeRangeSelectionArea;
     $(window).mousemove(function(e) {
       if (!isDragging) {
         isDragging = true;
         dragStart = e.pageX;
       } else {
-        $(".selection").show();
-        $(".selection").width(Math.abs(dragStart - e.pageX));
+        selectionArea().show();
+        selectionArea().width(Math.abs(dragStart - e.pageX));
         var axisTop = $(".axis svg").offset().top;
-        $(".selection").offset({ top: axisTop, left: Math.min(dragStart, e.pageX) });
+        selectionArea().offset({ top: axisTop, left: Math.min(dragStart, e.pageX) });
         var height = $($(moduleElem)[0]).height() - $(".axis").height();
-        $(".selection").height(height);
-        detailsStart = cubismGraphs.xToTime($(".selection").offset().left);
-        detailsStop = cubismGraphs.xToTime($(".selection").offset().left + $(".selection").width());
+        //selectionArea().height(height); //FIXME height calculation doesn't work.
+        detailsStart = cubismGraphs.xToTime(selectionArea().offset().left);
+        detailsStop = cubismGraphs.xToTime(selectionArea().offset().left + selectionArea().width());
       }
     });
     $(window).mouseup(isDraggingMouseUp);
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
-  var updateCharts = function(prefix) {
-    context.broadcast("details-updated", prefix);
-  };
-
-  var updateChart = function(host, prefix) {
-    var divHost = host;
-    return function(data) {
-      d3.select('.' + prefix  + divHost + ' svg').datum(data);
-      updateCharts(prefix);
-    };
   };
 
   var isDraggingMouseUp = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
     $(window).unbind("mousemove");
     $(window).unbind("mouseup");
     if (isDragging) {
-      var element = ".details-" + host;
-      d3.json("metrics/disk?tag=host_" + host+ "&stop=" + detailsStop,
-        updateChart(host, "fs-"));
-      d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
-        updateChart(host, "heap-"));
-      d3.json("metrics/access?tag=host_" + host + "&step=15000&start=" + detailsStart + "&stop=" + detailsStop,
-        updateChart(host, "access-"));
+      context.broadcast("selected-time-range-updated", {start: detailsStart, stop: detailsStop});
     } else {
-      $(".selection").hide();
+      timeRangeSelectionArea().hide();
       var stop = new Date().getTime();
       var start = parseInt(stop - (1000 * 60 * 60 * 3));
-      d3.json("metrics/disk?tag=host_" + host + "&stop=" + stop, updateChart(host, "fs-"));
-      d3.json("metrics/heap?tag=host_" + host + "&step=15000&start=" + start + "&stop=" + stop, updateChart(host, "heap-"));
-      d3.json("metrics/access?tag=host_" + host + "&step=60000&start=" + start + "&stop=" + stop, updateChart(host, "access-"));
-
+      context.broadcast("selected-time-range-updated", {start: start, stop: stop});
     }
     isDragging = false;
-    e.stopPropagation();
-    e.preventDefault();
   };
 
   function reset() {

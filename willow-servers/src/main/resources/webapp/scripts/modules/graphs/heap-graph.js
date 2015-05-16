@@ -44,11 +44,13 @@ Box.Application.addModule('heap-graph', function(context) {
       reset();
     },
 
-    messages: [ "details-updated" ],
+    messages: [ "selected-time-range-updated" ],
 
     onmessage: function(name, data) {
       switch (name) {
-        case 'details-updated':
+        case 'selected-time-range-updated':
+          detailsStart = data.start;
+          detailsStop = data.stop;
           reset();
           break;
       }
