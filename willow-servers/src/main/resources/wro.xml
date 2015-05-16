@@ -33,5 +33,6 @@
     <js>/scripts/modules/navigation-alerts.js</js>
     <js>/scripts/modules/graphs/horizon-graph.js</js>
     <js>/scripts/modules/graphs/filesystem-graph.js</js>
+    <js>/scripts/modules/graphs/heap-graph.js</js>
   </group>
 </groups>
