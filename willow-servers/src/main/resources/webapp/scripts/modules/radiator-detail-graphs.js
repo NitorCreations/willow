@@ -1,4 +1,4 @@
-Box.Application.addModule('radiator-details', function(context) {
+Box.Application.addModule('radiator-detail-graphs', function(context) {
   'use strict';
 
   /**

@@ -1,4 +1,4 @@
-Box.Application.addModule('navigation-radiator', function(context) {
+Box.Application.addModule('radiator-navigation', function(context) {
   'use strict';
 
   var $, host, windowService;

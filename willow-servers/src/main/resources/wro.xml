@@ -24,13 +24,13 @@
     <js>/scripts/services/metrics.js</js>
     <js>/scripts/behaviors/metric-links.js</js>
     <js>/scripts/behaviors/navigation-common.js</js>
-    <js>/scripts/modules/radiator-index.js</js>
-    <js>/scripts/modules/horizon-index.js</js>
+    <js>/scripts/modules/alerts-navigation.js</js>
     <js>/scripts/modules/horizon-ruler.js</js>
-    <js>/scripts/modules/navigation-index.js</js>
-    <js>/scripts/modules/navigation-radiator.js</js>
-    <js>/scripts/modules/radiator-details.js</js>
-    <js>/scripts/modules/navigation-alerts.js</js>
+    <js>/scripts/modules/index-horizon-graphs.js</js>
+    <js>/scripts/modules/index-navigation.js</js>
+    <js>/scripts/modules/radiator-detail-graphs.js</js>
+    <js>/scripts/modules/radiator-horizon-graphs.js</js>
+    <js>/scripts/modules/radiator-navigation.js</js>
     <js>/scripts/modules/graphs/horizon-graph.js</js>
     <js>/scripts/modules/graphs/filesystem-graph.js</js>
     <js>/scripts/modules/graphs/heap-graph.js</js>
