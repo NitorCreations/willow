@@ -105,9 +105,4 @@ describe("Tests for horizon-graph module", function() {
     sandbox.mock(module).expects('setMetric').once().withExactArgs("cpu");
     module.onmessage('metric-changed', 'cpu');
   });
-
-  it('Receiving a "timescale-changed" message should result calling setTimescale', function() {
-    sandbox.mock(module).expects('setTimescale').once().withExactArgs("1000");
-    module.onmessage('timescale-changed', '1000');
-  });
 });

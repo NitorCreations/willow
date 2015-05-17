@@ -34,8 +34,8 @@
 <body>
 #include("/images/icons.svg")
 <nav class="nav" tabindex="-1">
-  <div class="container" data-module="navigation-index">
-    #include("/time-scale-picker.html")
+  <div class="container" data-module="radiator-navigation">
+    #include("/templates/time-scale-picker.html")
     <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts">
       <use xlink:href="#shape-alarm"></use>
     </svg>
@@ -44,8 +44,19 @@
     </svg>
   </div>
 </nav>
-<div data-module="radiator-index"><div class="selection"></div></div>
-<div data-module="radiator-details"></div>
+<div data-module="radiator-horizon-graphs">
+  #include("/templates/horizon-ruler.html")
+  <div id="time-range-selection"></div>
+</div>
+<div data-module="radiator-detail-graphs">
+  <div class="row">
+    <div class="col c6 nv-graph" data-module="filesystem-graph"></div>
+    <div class="col c6 nv-graph" data-module="heap-graph"></div>
+  </div>
+  <div class="row">
+    <div class="col c6 nv-graph" data-module="access-graph"></div>
+  </div>
+</div>
 
 <script id="bootstrap-application" type="text/javascript">
   Box.Application.init({

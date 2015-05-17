@@ -257,9 +257,9 @@
             <source>intercom.js</source>
           </preloadSources>
           <sourceIncludes>
-            <include>behaviors/*.js</include>
-            <include>services/*.js</include>
-            <include>modules/*.js</include>
+            <include>behaviors/**/*.js</include>
+            <include>services/**/*.js</include>
+            <include>modules/**/*.js</include>
           </sourceIncludes>
           <specIncludes>
             <include>**/*.js</include>
