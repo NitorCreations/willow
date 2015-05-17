@@ -13,10 +13,11 @@ Box.Application.addService('cubism-graphs', function(application) {
 
   // TODO: this may need debouncing, each graph will call this on it's reset
   function resetCubismContext(step, widthInPixels) {
-    cubismContext.step(step)
-        .size(widthInPixels);
+    cubismContext.step(step).size(widthInPixels);
+    application.broadcast("cubism-context-reset");
   }
 
+  //FIXME service should not be dependent on the DOM on browser state
   function init() {
     var windowSvc = application.getService('window');
     var timescale = windowSvc.getHashVariable('timescale') || 10800;

@@ -34,19 +34,22 @@
 <body>
 #include("/images/icons.svg")
 <nav class="nav" tabindex="-1">
-  <div class="container" data-module="navigation-index">
+  <div class="container" data-module="index-navigation">
     <a id="cpu" href="#" data-type="select-metric">cpu</a>
     <a id="mem" href="#" data-type="select-metric">mem</a>
     <a id="net" href="#" data-type="select-metric">net</a>
     <a id="diskio" href="#" data-type="select-metric">io</a>
     <a id="tcpinfo" href="#" data-type="select-metric">connections</a>
-    #include("/time-scale-picker.html")
+    #include("/templates/time-scale-picker.html")
     <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts">
       <use xlink:href="#shape-alarm"></use>
     </svg>
   </div>
 </nav>
-<div class="mainchart" data-module="horizon-index"></div>
+<div class="mainchart" data-module="index-horizon-graphs">
+  #include("/templates/horizon-ruler.html")
+  <div id="horizon-graphs"></div>
+</div>
 <script id="bootstrap-application" type="text/javascript">
   window.name = "index";
   Box.Application.init({

@@ -1,42 +1,25 @@
-Box.Application.addModule('horizon-index', function(context) {
+Box.Application.addModule('index-horizon-graphs', function(context) {
   'use strict';
 
-  var d3, moduleElem, metric, timescale, store, windowSvc, cubismGraphs, utils, metricsService;
-
-  //TODO could these be shared with radiator index?
-  function initLayout(widthInPixels) {
-    moduleElem.attr("style", "width: " + widthInPixels + "px");
-
-    moduleElem.insert("div", ":first-child")
-      .classed("axis", true)
-      .call(cubismGraphs.createGraphAxis().orient("top").tickFormat(d3.time.format("%H:%M")));
-
-    moduleElem.insert("div", ":first-child")
-      .classed("rule", true)
-      .call(cubismGraphs.createRulerOverGraphs());
-  }
+  var d3, $, moduleElem, metric, timescale,
+    store, windowSvc, cubismGraphs, utils, metricsService;
 
   function reset() {
-    var widthInPx = $(window).width();
-    var step = parseInt(timescale * 1000 / widthInPx);
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
     resetLayout();
-    initGraphs(metric, start, stop, step);
+    initGraphs(metric, start, stop);
   }
 
   //FIXME should get reset variables as arguments
   function resetLayout() {
     var widthInPixels = $(window).width();
     var step = parseInt(timescale * 1000 / widthInPixels);
-
-    moduleElem.selectAll('.axis, .rule').remove();
     cubismGraphs.resetCubismContext(step, widthInPixels);
-    initLayout(widthInPixels);
   }
 
-  function initGraphs(metric, start, stop, step) {
+  function initGraphs(metric, start, stop) {
     metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
       hosts.map(resolveHostName)
@@ -44,11 +27,9 @@ Box.Application.addModule('horizon-index', function(context) {
           var chartConfig = {
             metric: metric,
             host: tag.host,
-            instanceTag:tag.raw,
-            stop: stop, //FIXME time related configurations should be in graph-module itself, not related to metrics itself
-            step: step
+            instanceTag: tag.raw
           };
-          moduleElem.call(createHorizonGraph, chartConfig);
+          moduleElem.select("#horizon-graphs").call(createHorizonGraph, chartConfig);
         });
       context.broadcast("reload-graph-configuration");
     });
@@ -66,7 +47,7 @@ Box.Application.addModule('horizon-index', function(context) {
   function createHorizonGraph(parentElement, chartConfig) {
     var metricIdPrefix = "live:metrics:graph-";
     var horizonGraphElement = parentElement.append("div")
-      .attr("data-module","horizon-graph");
+      .attr("data-module", "horizon-graph");
     injectModuleConfiguration(horizonGraphElement, metricIdPrefix);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
@@ -75,6 +56,7 @@ Box.Application.addModule('horizon-index', function(context) {
   return {
     init: function() {
       d3           = context.getGlobal("d3");
+      $            = context.getGlobal("jQuery");
       moduleElem   = d3.select(context.getElement());
 
       utils        = context.getService("utils");

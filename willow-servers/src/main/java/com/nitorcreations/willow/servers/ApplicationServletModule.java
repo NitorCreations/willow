@@ -54,6 +54,16 @@ public class ApplicationServletModule extends ServletModule {
     serve("/*").with(DefaultServlet.class, defaultInit);
   }
   protected HostLookupService getHostLookupService() {
-    return new SimpleHostLookupService();
+    String hlsClassName = getProperty("willow.hostLookupService");
+    if (hlsClassName == null) {
+      return new SimpleHostLookupService();
+    }
+    try {
+      Class<?> hlsClass = Class.forName(hlsClassName);
+      return (HostLookupService)hlsClass.newInstance();
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }
