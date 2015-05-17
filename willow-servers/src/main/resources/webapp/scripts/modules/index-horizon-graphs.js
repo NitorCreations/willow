@@ -1,4 +1,4 @@
-Box.Application.addModule('horizon-index', function(context) {
+Box.Application.addModule('index-horizon-graphs', function(context) {
   'use strict';
 
   var d3, $, moduleElem, metric, timescale,

@@ -1,4 +1,4 @@
-Box.Application.addModule('navigation-alerts', function(context) {
+Box.Application.addModule('alerts-navigation', function(context) {
   'use strict';
   var socket, seen  = [], d3, timeFormatter;
   var pollAlerts = function() {

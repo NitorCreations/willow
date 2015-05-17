@@ -1,4 +1,4 @@
-Box.Application.addModule('radiator-index', function(context) {
+Box.Application.addModule('radiator-horizon-graphs', function(context) {
   'use strict';
 
   var d3, $,
