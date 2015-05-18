@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.junit.Test;
@@ -38,11 +39,11 @@ public class TestExtract {
     assertTrue(res.exists());
     assertTrue(res.canExecute());
     assertTrue(prop.exists());
-    assertEquals("foo", Files.readAllLines(prop.toPath()).get(0));
+    assertEquals("foo", Files.readAllLines(prop.toPath(), StandardCharsets.UTF_8).get(0));
     res = new File("target/test2-extract/bin/cm");
     assertTrue(res.exists());
     assertTrue(res.canExecute());
-    for (String line : Files.readAllLines(res.toPath(), Charset.forName("UTF-8"))) {
+    for (String line : Files.readAllLines(res.toPath(), StandardCharsets.UTF_8)) {
       assertFalse(line.contains("@coremedia.admin.user@"));
     }
   }

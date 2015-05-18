@@ -1,7 +1,5 @@
 package com.nitorcreations.willow.utils;
 
-import sun.nio.ch.Net;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
