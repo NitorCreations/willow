@@ -1,7 +1,5 @@
 package com.nitorcreations.willow.utils;
 
-import sun.nio.ch.Net;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -44,7 +42,7 @@ public class HostUtil {
     } catch (SocketException e) {
       logger.log(Level.WARNING, "Unable to enumerate network interfaces", e);
     }
-    return null;
+    return InetAddress.getLoopbackAddress();
   }
 
   /**

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Properties;
@@ -42,9 +43,6 @@ public class UrlDownloader implements Callable<File> {
     this.properties = properties;
     this.md5 = md5;
     this.url = properties.getProperty("");
-    int queryIndex = url.lastIndexOf("?");
-    if (queryIndex < 0)
-      queryIndex = url.length();
     fileName = getFileName(url);
     logger = Logger.getLogger(fileName);
   }
@@ -119,11 +117,19 @@ public class UrlDownloader implements Callable<File> {
             String md5str = Hex.encodeHexString(md5);
             logger.info(url + " md5 sum ok " + md5str);
             try (OutputStream out = new FileOutputStream(md5file)) {
-              out.write((md5str + "  " + target.getName() + "\n").getBytes());
+              out.write((md5str + "  " + target.getName() + "\n").getBytes(StandardCharsets.UTF_8));
               out.flush();
             }
           } else if (!"true".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5))) {
-            throw new IOException("MD5 Sum does not match for " + url + " - expected: " + Hex.encodeHexString(md5) + " got: " + Hex.encodeHexString(md5in.digest()));
+            String digest = "''";
+            if (md5in != null) {
+              digest = Hex.encodeHexString(md5in.digest());
+            }
+            String expected = "null";
+            if (md5 != null) {
+              expected = Hex.encodeHexString(md5);
+            }
+            throw new IOException("MD5 Sum does not match for " + url + " - expected: " + expected + " got: " + digest);
           }
         }
         break;

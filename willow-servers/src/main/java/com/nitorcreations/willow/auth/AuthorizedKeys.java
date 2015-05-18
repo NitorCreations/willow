@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +28,7 @@ public class AuthorizedKeys {
   public static AuthorizedKeys fromUrl(String url) throws ConfigurationException {
     AuthorizedKeys ret = new AuthorizedKeys();
     try (InputStream in = ProxyUtils.getUriInputStream(null, null, url);
-      InputStreamReader ir = new InputStreamReader(in);
+      InputStreamReader ir = new InputStreamReader(in, StandardCharsets.UTF_8);
       BufferedReader read = new BufferedReader(ir)) {
       String line = null;
       while (null != (line = read.readLine())) {

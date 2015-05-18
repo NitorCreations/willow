@@ -21,6 +21,10 @@ public class RestartChild extends DeployerControl {
       long firstPid = findOldDeployerPid(deployerName);
       if (firstPid > 0) {
         try (JMXConnector conn = getJMXConnector(firstPid)) {
+          if (conn == null) {
+            log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
+            System.exit(1);
+          }
           MBeanServerConnection server = conn.getMBeanServerConnection();
           MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
           if (args.length == 1) {
@@ -41,9 +45,11 @@ public class RestartChild extends DeployerControl {
         }
       } else {
         System.out.println("No deployer with role " + deployerName + " running");
+        System.exit(2);
       }
     } catch (Throwable e) {
       log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
+      System.exit(1);
     }
   }
 }

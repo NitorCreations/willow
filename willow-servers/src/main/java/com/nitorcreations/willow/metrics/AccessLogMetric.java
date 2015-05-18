@@ -50,7 +50,7 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
     for (AccessLogEntry next : preceeding) {
       boolean inLimits = false;
       for (int i = 0; i < limitValues.length; i++) {
-        if (next.getDuration() < limitValues[i]) {
+        if (getter.getValue(next) < limitValues[i]) {
           buckets[i]++;
           inLimits = true;
           break;

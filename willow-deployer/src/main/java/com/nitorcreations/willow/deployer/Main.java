@@ -191,13 +191,13 @@ public class Main extends DeployerControl implements MainMBean {
       }
       File propsDir = propsFile.getParentFile();
       if (!FileUtil.createDir(propsDir)) {
-        usage("Unable to create properties directory " + workDir.getAbsolutePath());
+        usage("Unable to create properties directory " + propsDir.getAbsolutePath());
       }
       if (!FileUtil.createDir(workDir)) {
         usage("Unable to create work directory " + workDir.getAbsolutePath());
       }
-      try {
-        launchProps.store(new FileOutputStream(propsFile), null);
+      try (FileOutputStream out = new FileOutputStream(propsFile)){
+        launchProps.store(out, null);
       } catch (IOException e) {
         usage(e);
       }
@@ -222,8 +222,10 @@ public class Main extends DeployerControl implements MainMBean {
             return true;
           }
         });
-        executor.submit(launcher);
-        children.add(launcher);
+        Future<Integer> f = executor.submit(launcher);
+        if (!f.isDone()) {
+          children.add(launcher);
+        }
       }
       i++;
     }

@@ -97,6 +97,7 @@ public class DeployerControl {
       }
       if (firstPid > 0) {
         try (JMXConnector conn = getJMXConnector(firstPid)) {
+          if (conn == null) throw new RuntimeException("Failed to connect to running deployer");
           MBeanServerConnection server = conn.getMBeanServerConnection();
           MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
           proxy.stop();

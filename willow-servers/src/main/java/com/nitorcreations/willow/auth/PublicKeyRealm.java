@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.auth;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +44,7 @@ public class PublicKeyRealm implements Realm {
     boolean found = false;
     for (AuthorizedKey next : authorizedKeys.keys()) {
       for (byte[] nextSig : pkToken.getSignatures()) {
-        String type = new String(AuthorizedKeys.components(nextSig).get(0));
+        String type = new String(AuthorizedKeys.components(nextSig).get(0), StandardCharsets.UTF_8);
         if (!type.equals(next.type)) continue;
         Signature sig = null;
         if ("ssh-dss".equals(next.type)) {
@@ -75,6 +76,8 @@ public class PublicKeyRealm implements Realm {
             continue;
           }
           sig = rsaSig;
+        } else {
+          continue;
         }
         boolean verified = false;
         try {
@@ -85,6 +88,7 @@ public class PublicKeyRealm implements Realm {
           }
           if (verified) {
             found = true;
+            log.fine("Matched key " + next.comment);
             break;
           }
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.nitorcreations.logging.jetty;
 
 import java.net.URISyntaxException;
+import java.security.Principal;
 
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.PathMap;
@@ -44,7 +45,10 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
     msg.setRemoteAddr(addr);
     Authentication authentication = request.getAuthentication();
     if (authentication instanceof Authentication.User) {
-      msg.setAuthentication(((Authentication.User) authentication).getUserIdentity().getUserPrincipal().getName());
+      Principal p = ((Authentication.User) authentication).getUserIdentity().getUserPrincipal();
+      if (p != null) {
+        msg.setAuthentication(p.getName());
+      }
     }
     msg.timestamp = request.getTimeStamp();
     msg.setMethod(request.getMethod());

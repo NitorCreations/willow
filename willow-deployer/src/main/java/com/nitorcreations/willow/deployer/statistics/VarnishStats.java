@@ -2,6 +2,7 @@ package com.nitorcreations.willow.deployer.statistics;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +40,7 @@ public class VarnishStats extends AbstractStatisticsSender {
         int ret = p.waitFor();
         if (ret == 0) {
           Map<String, Long> values = new LinkedHashMap<String, Long>();
-          JsonObject j = new JsonParser().parse(new String(out.toByteArray())).getAsJsonObject();
+          JsonObject j = new JsonParser().parse(new String(out.toByteArray(), StandardCharsets.UTF_8)).getAsJsonObject();
           for (Entry<String, JsonElement> entry : j.entrySet()) {
             if (entry.getValue().isJsonObject()) {
               values.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsLong());
@@ -50,8 +51,8 @@ public class VarnishStats extends AbstractStatisticsSender {
           send.addTags("category_varnish");
           transmitter.queue(send);
         } else {
-          logger.log(Level.INFO, "varnishstat returned " + ret + "\n" +  new String(out.toByteArray()) + "\n"
-             + new String(err.toByteArray()));
+          logger.log(Level.INFO, "varnishstat returned " + ret + "\n" +  new String(out.toByteArray(), StandardCharsets.UTF_8) + "\n"
+             + new String(err.toByteArray(), StandardCharsets.UTF_8));
         }
         nextStats = now + interval;
       }

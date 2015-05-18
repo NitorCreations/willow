@@ -39,11 +39,7 @@ public class AetherDownloader implements Callable<File> {
   public AetherDownloader(Properties properties) {
     setProperties(properties);
     this.artifact = properties.getProperty("");
-    int queryIndex = artifact.lastIndexOf("?");
-    if (queryIndex < 0)
-      queryIndex = artifact.length();
   }
-
   public File downloadArtifact(String artifactCoords) {
     Dependency dependency = new Dependency(new DefaultArtifact(artifactCoords), "runtime");
     DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
@@ -60,7 +56,6 @@ public class AetherDownloader implements Callable<File> {
     }
     return rootJar;
   }
-
   public String downloadTransitive(String artifactCoords) {
     Dependency dependency = new Dependency(new DefaultArtifact(artifactCoords), "runtime");
     CollectRequest collectRequest = new CollectRequest();
@@ -81,7 +76,6 @@ public class AetherDownloader implements Callable<File> {
       throw new RuntimeException("Failed to resolve (transitively) " + artifactCoords, e);
     }
   }
-
   public void setProperties(Properties properties) {
     localRepo = System.getenv(ENV_DEPLOYER_LOCAL_REPOSITORY);
     if (localRepo == null) {
@@ -92,7 +86,6 @@ public class AetherDownloader implements Callable<File> {
     local = new LocalRepository(localRepo);
     remote = new RemoteRepository.Builder("deployer", "default", remoteRepo).build();
   }
-
   @Override
   public File call() throws Exception {
     if (artifact == null)

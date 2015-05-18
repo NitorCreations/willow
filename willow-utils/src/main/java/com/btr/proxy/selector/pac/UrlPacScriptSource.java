@@ -2,7 +2,7 @@ package com.btr.proxy.selector.pac;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,7 +87,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 			} else {
 				file = new File(new URL(scriptUrl).toURI());
 			}
-			BufferedReader r = new BufferedReader(new FileReader(file));
+			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
 			StringBuilder result = new StringBuilder();
 			try {
 				String line; 

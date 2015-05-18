@@ -1,0 +1,27 @@
+configurationVersion: 1
+
+triage:
+    - action: suppress
+      issueKey: 4d2e3fde662f1aa2e2c9704ff0d7b25b
+      comment: Falsely identify C&P error due to weird javascript style method overloading logic
+    - action: suppress
+      issueKey: f70c4f058f46696811253284793f1a0e
+      comment: DeployerControl is in charge of the whole vm and thus can call System.exit
+    - action: suppress
+      issueKey: af73f7dc853e6e9def822d70ba4ed4fa
+      comment: JMXOperation is a command line utility only and thus can call System.exit
+    - action: suppress
+      issueKey: 2032eba439697fbc6734a55d539acd89
+      comment: JMXOperation is a command line utility only and thus can call System.exit
+    - action: suppress
+      issueKey: cc375e5a138bbc630adc3eceda6c775d
+      comment: Main is a command line utility only and thus can call System.exit
+    - action: suppress
+      issueKey: bb7aae5d8dcd6649d2bf4188afda28ed
+      comment: Status is a command line utility only and thus can call System.exit
+    - action: suppress
+      issueKey: ff2335e1c5c42dea107a8463474b261c
+      comment: False positive - out closed by try-with-resources
+    - action: suppress
+      issueKey: 483a31668735b841ee7d5ab759556e69
+      comment: Might be used in the future, keep for completeness

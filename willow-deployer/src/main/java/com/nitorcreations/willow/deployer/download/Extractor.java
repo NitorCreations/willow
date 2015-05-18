@@ -204,13 +204,19 @@ public class Extractor implements Callable<Boolean> {
               userOnly = true;
             }
             if (next == PosixFilePermission.OWNER_EXECUTE || next == PosixFilePermission.GROUP_EXECUTE || next == PosixFilePermission.OTHERS_EXECUTE) {
-              dest.setExecutable(true, userOnly);
+              if (dest.setExecutable(true, userOnly)) {
+                logger.fine("Failed to set executable on " + dest.getAbsolutePath());
+              }
             }
             if (next == PosixFilePermission.OWNER_WRITE || next == PosixFilePermission.GROUP_WRITE || next == PosixFilePermission.OTHERS_WRITE) {
-              dest.setWritable(true, userOnly);
+              if (!dest.setWritable(true, userOnly)) {
+                logger.fine("Failed to set writable on " + dest.getAbsolutePath());
+              }
             }
             if (next == PosixFilePermission.OWNER_READ || next == PosixFilePermission.GROUP_READ || next == PosixFilePermission.OTHERS_READ) {
-              dest.setReadable(true, userOnly);
+              if (!dest.setReadable(true, userOnly)) {
+                logger.fine("Failed to set readable on " + dest.getAbsolutePath());
+              }
             }
           }
         }
@@ -222,7 +228,9 @@ public class Extractor implements Callable<Boolean> {
     Method m = null;
     try {
       m = entry.getClass().getMethod("getMode");
-    } catch (NoSuchMethodException | SecurityException e) {}
+    } catch (NoSuchMethodException | SecurityException e) {
+      logger.finer("No mode method on entry " + entry.getName());
+    }
     if (m == null) {
       if (entry instanceof ZipArchiveEntry) {
         ZipArchiveEntry e = (ZipArchiveEntry) entry;

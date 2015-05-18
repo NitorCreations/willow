@@ -18,6 +18,7 @@ public class RequestDurationMetric extends SimpleMetric<Number, Long> {
 
   @Override
   protected Number estimateValue(List<Number> preceeding, long stepTime, long stepLen, MetricConfig conf) {
+    if (preceeding.size() == 0) return 0;
     long sum = 0;
     for (Object next : preceeding) {
       sum += ((Number) next).longValue();

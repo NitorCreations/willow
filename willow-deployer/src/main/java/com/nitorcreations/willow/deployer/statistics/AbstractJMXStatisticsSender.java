@@ -1,6 +1,8 @@
 package com.nitorcreations.willow.deployer.statistics;
 
+import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import javax.inject.Inject;
 import javax.management.MBeanServerConnection;
@@ -49,7 +51,9 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
       if (connector != null) {
         try {
           connector.close();
-        } catch (Exception e) { }
+        } catch (IOException e) {
+          logger.log(Level.FINE, "Failed to close JMXConnector", e);
+        }
         connector = null;
         server = null;
       }
@@ -67,7 +71,9 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
         if (connector != null) {
           try {
             connector.close();
-          } catch (Exception e2) { }
+          } catch (Exception e2) {
+            logger.log(Level.FINE, "Failed to close JMXConnector", e2);
+          }
           connector = null;
           server = null;
         }

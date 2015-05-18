@@ -15,7 +15,8 @@ public class FileUtil {
   public static final int BUFFER_LEN = 8 * 1024;
 
   public static synchronized boolean createDir(File dir) {
-    return dir != null && dir.exists() || dir.mkdirs();
+    if (dir == null) return false;
+    return dir.exists() || dir.mkdirs();
   }
 
   public static String getFileName(String name) {

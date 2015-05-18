@@ -49,6 +49,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
 	private ScriptEngine setupEngine() throws ProxyEvaluationException {
 		ScriptEngineManager mng = new ScriptEngineManager();
 		ScriptEngine engine = mng.getEngineByMimeType("text/javascript");
+		assert engine != null : "Javascript engine not available";
 		engine.put(SCRIPT_METHODS_OBJECT, new PacScriptMethods());
 
 		Class<?> scriptMethodsClazz = ScriptMethods.class;

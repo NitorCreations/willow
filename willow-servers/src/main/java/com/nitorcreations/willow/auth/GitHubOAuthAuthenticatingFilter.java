@@ -29,7 +29,9 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
 
     public GitHubOAuthAuthenticatingFilter() throws IOException {
         Properties config = new Properties();
-        config.load(getClass().getResourceAsStream("/github-oauth.properties"));
+        try (InputStream in = getClass().getResourceAsStream("/github-oauth.properties")) {
+          config.load(in);
+        }
         setRedirectUri(config.getProperty("redirect_uri"));
         setClientId(config.getProperty("client_id"));
         setClientSecret(config.getProperty("client_secret"));

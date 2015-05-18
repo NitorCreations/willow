@@ -97,11 +97,12 @@ public class MessageMapping {
     LZ4Factory factory = LZ4Factory.fastestInstance();
     LZ4Compressor compressor = factory.fastCompressor();
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    Packer packer = msgpack.createPacker(out);
-    for (AbstractMessage msg : msgs) {
-      byte[] message = msgpack.write(msg);
-      MessageType type = map(msg.getClass());
-      packer.write(new DeployerMessage(type.ordinal(), message));
+    try (Packer packer = msgpack.createPacker(out)) {
+      for (AbstractMessage msg : msgs) {
+        byte[] message = msgpack.write(msg);
+        MessageType type = map(msg.getClass());
+        packer.write(new DeployerMessage(type.ordinal(), message));
+      }
     }
     byte data[] = out.toByteArray();
     int maxCompressedLength = compressor.maxCompressedLength(data.length);
@@ -130,7 +131,7 @@ public class MessageMapping {
       try {
         decompressor.decompress(data, offset + 4, restored, 0, uclen);
       } catch (Throwable e) {
-        String message = String.format("Failed to parse buffer[%d], %d, %d - uncompressed len %d\n", data.length, offset, length, uclen);
+        String message = String.format("Failed to parse buffer[%d], %d, %d - uncompressed len %d", data.length, offset, length, uclen);
         throw new IOException(message, e);
       }
     }

@@ -1,13 +1,13 @@
 package com.nitorcreations.willow.deployer.statistics;
 
-import com.nitorcreations.willow.messages.HostInfoMessage;
-import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
-import com.nitorcreations.willow.utils.HostUtil;
-
-import javax.inject.Named;
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import javax.inject.Named;
+
+import com.nitorcreations.willow.messages.HostInfoMessage;
+import com.nitorcreations.willow.utils.HostUtil;
 
 @Named("hostinfo")
 public class HostInfoSender extends AbstractStatisticsSender {

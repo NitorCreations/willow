@@ -13,7 +13,6 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKD
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URI;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -58,7 +57,6 @@ public abstract class AbstractLauncher implements LaunchMethod {
   protected final String PROCESS_IDENTIFIER = new BigInteger(130, new SecureRandom()).toString(32);
   protected final Set<String> launchArgs = new LinkedHashSet<>();
   protected MergeableProperties launchProperties;
-  protected URI statUri;
   protected Process child;
   protected AtomicInteger returnValue = new AtomicInteger(-1);
   protected Map<String, String> extraEnv = new HashMap<>();
@@ -140,8 +138,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
         synchronized(this) {
           child = pb.start();
         }
-        if (transmitter != null && transmitter.isRunning() &&
-          launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
+        if (transmitter.isRunning() && launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
         } else {

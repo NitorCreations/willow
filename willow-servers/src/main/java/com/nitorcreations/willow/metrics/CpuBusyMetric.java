@@ -13,7 +13,6 @@ import com.nitorcreations.willow.messages.CPU;
 @Named("/cpu")
 public class CpuBusyMetric extends FullMessageSimpleMetric<CPU> {
   Map<String, CPU> prevValues = new HashMap<>();
-  double prevRes = 0D;
 
 
   @Override

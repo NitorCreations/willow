@@ -46,8 +46,8 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
   private long nextOs;
 
   public void stop() {
-    running.set(false);
     synchronized (this) {
+      running.set(false);
       this.notifyAll();
     }
   }
@@ -115,7 +115,9 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
             org.hyperic.sigar.DiskUsage next = null;
             try {
               next = sigar.getDiskUsage(nextFs.getDevName());
-            } catch (SigarException e) {}
+            } catch (SigarException e) {
+              logger.fine("Failed to get disk usage for " +  nextFs.getDirName());
+            }
             if (next != null) {
               DiskIO nextMsg = new DiskIO();
               PropertyUtils.copyProperties(nextMsg, next);

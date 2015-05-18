@@ -1,11 +1,12 @@
 package com.nitorcreations.willow.metrics;
 
-import com.nitorcreations.willow.messages.HostInfoMessage;
-
-import javax.inject.Named;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.inject.Named;
+
+import com.nitorcreations.willow.messages.HostInfoMessage;
 
 @Named("/hostinfo")
 public class HostInfoMetric extends FullMessageMetric<HostInfoMessage, Collection<HostInfoMessage>> {

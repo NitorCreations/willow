@@ -69,7 +69,12 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
         public Boolean call() throws Exception {
           UrlDownloader dwn = new UrlDownloader(downloadProperties, getMd5(downloadProperties));
           downloadProperties.putAll(properties);
-          return new Extractor(downloadProperties, dwn.call()).call();
+          File target = dwn.call();
+          if (target != null) {
+            return new Extractor(downloadProperties, target).call(); 
+          } else {
+            return false;
+          }
         }
       });
       futures.add(next);

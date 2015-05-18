@@ -33,8 +33,6 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
   private Logger logger = Logger.getLogger(this.getClass().getName());
   private long nextJmx;
   private StatisticsConfig conf;
-  @Inject
-  protected WebSocketTransmitter transmitter;
 
   @Override
   public void setProperties(Properties properties) {
