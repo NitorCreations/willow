@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/NitorCreations/willow.png?label=ready&title=Ready)](https://waffle.io/NitorCreations/willow)
 # willow #
 
 
