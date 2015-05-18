@@ -22,7 +22,7 @@ public class PollingFile extends File implements Runnable {
   public interface FileListener {
     public void fileChanged(File file, WatchEvent.Kind<Path> kind);
   }
-  private final FileListener listener;
+  private FileListener listener;
 
   public PollingFile(File parent, String child, FileListener listener) {
     super(parent, child);

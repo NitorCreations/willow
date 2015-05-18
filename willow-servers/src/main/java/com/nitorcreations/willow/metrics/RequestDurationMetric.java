@@ -1,11 +1,12 @@
 package com.nitorcreations.willow.metrics;
 
+import static com.nitorcreations.willow.metrics.MetricUtils.median;
 import java.util.List;
 
 import javax.inject.Named;
 
 @Named("/latency")
-public class RequestDurationMetric extends SimpleMetric<Number, Long> {
+public class RequestDurationMetric extends SimpleMetric<Long, Long> {
   @Override
   public String getType() {
     return "access";
@@ -17,12 +18,7 @@ public class RequestDurationMetric extends SimpleMetric<Number, Long> {
   }
 
   @Override
-  protected Number estimateValue(List<Number> preceeding, long stepTime, long stepLen, MetricConfig conf) {
-    if (preceeding.size() == 0) return 0;
-    long sum = 0;
-    for (Object next : preceeding) {
-      sum += ((Number) next).longValue();
-    }
-    return sum / Math.max(preceeding.size(), 1);
+  protected Long estimateValue(List<Long> preceeding, long stepTime, long stepLen, MetricConfig conf) {
+    return median(preceeding);
   }
 }

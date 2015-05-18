@@ -63,6 +63,7 @@ public class ProxyUtils {
         return null;
       }
     }
+    sel = pacSelectors.get(proxyAutoconfig);
     List<Proxy> l = sel.select(target);
     if (l.size() > 0) {
       return l;

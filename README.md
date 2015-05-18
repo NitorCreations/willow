@@ -1,4 +1,6 @@
 [![Stories in Ready](https://badge.waffle.io/NitorCreations/willow.png?label=ready&title=Ready)](https://waffle.io/NitorCreations/willow)
+[![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/streams/belo7ihuvh5g17did9h651ihls)](https://ondemand.coverity.com/streams/belo7ihuvh5g17did9h651ihls/jobs)
+
 # willow #
 
 

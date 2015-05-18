@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.metrics;
 
+import static com.nitorcreations.willow.metrics.MetricUtils.median;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

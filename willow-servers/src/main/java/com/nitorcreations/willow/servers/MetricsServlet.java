@@ -27,7 +27,7 @@ public class MetricsServlet extends HttpServlet {
   private transient Node node;
   ServletConfig config;
 
-  private transient final Map<String, Metric> metrics;
+  private transient Map<String, Metric> metrics;
   
   @Inject
   public MetricsServlet(Map<String, Metric> metrics) {

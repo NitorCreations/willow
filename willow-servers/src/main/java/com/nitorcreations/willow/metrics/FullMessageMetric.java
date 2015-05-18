@@ -46,12 +46,5 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> implements
     readResponse(response);
     return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
   }
-  
   protected abstract R processData(long start, long stop, int step, MetricConfig conf);
-
-  protected <Y extends Comparable> Y median(List<Y> data) {
-    Collections.sort(data);
-    return data.get(data.size() / 2);
-  }
-
 }

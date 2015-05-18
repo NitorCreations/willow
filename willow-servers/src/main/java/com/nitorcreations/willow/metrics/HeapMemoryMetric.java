@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.metrics;
 
+import static com.nitorcreations.willow.metrics.MetricUtils.median;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map.Entry;
 import javax.inject.Named;
 
 import com.nitorcreations.willow.messages.JmxMessage;
+
 
 @Named("/heap")
 public class HeapMemoryMetric extends FullMessageMultiseriesMetric<JmxMessage, Long, Long> {

@@ -2,7 +2,9 @@ package com.nitorcreations.willow.metrics;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.client.Client;
@@ -29,4 +31,9 @@ public abstract class MetricUtils {
     }
     return ret.toArray(new String[ret.size()]);
   }
+  public static <Y extends Comparable> Y median(List<Y> data) {
+    Collections.sort(data);
+    return data.get(data.size() / 2);
+  }
+
 }
