@@ -43,7 +43,10 @@ public class VarnishStats extends AbstractStatisticsSender {
           JsonObject j = new JsonParser().parse(new String(out.toByteArray(), StandardCharsets.UTF_8)).getAsJsonObject();
           for (Entry<String, JsonElement> entry : j.entrySet()) {
             if (entry.getValue().isJsonObject()) {
-              values.put(entry.getKey(), entry.getValue().getAsJsonObject().get("value").getAsLong());
+              JsonElement value = entry.getValue().getAsJsonObject().get("value");
+              if (value != null) {
+                values.put(entry.getKey(), value.getAsLong());
+              }
             }
           }
           LongStatisticsMessage send = new LongStatisticsMessage();

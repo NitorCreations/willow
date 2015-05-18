@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +89,7 @@ public class RawSecureShellWS extends BasicWillowSocket{
       close(2, "IOException while getting data from ssh", e);
     }
     try {
-      inputToShell = new PrintStream(shell.getOutputStream(), true);
+      inputToShell = new PrintStream(shell.getOutputStream(), true, "UTF-8");
     } catch (IOException e) {
       close(3, "IOException while creating write stream to ssh", e);
     }
@@ -103,7 +104,7 @@ public class RawSecureShellWS extends BasicWillowSocket{
         } else if (message.startsWith("{\"ping\":")) {
           if (!shell.isConnected()) {
              try {
-              session.getRemote().sendPing(ByteBuffer.wrap(message.getBytes()));
+              session.getRemote().sendPing(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)));
             } catch (IOException e) {
               close(4, "IOException while sending ping data to client", e);
             }

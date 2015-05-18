@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractStreamPumper implements Runnable {
@@ -11,8 +12,8 @@ public abstract class AbstractStreamPumper implements Runnable {
   protected final BufferedReader in;
   protected final String name;
 
-  public AbstractStreamPumper(InputStream in, String name) {
-    this.in = new BufferedReader(new InputStreamReader(in));
+  public AbstractStreamPumper(InputStream in, String name, Charset charset) {
+    this.in = new BufferedReader(new InputStreamReader(in, charset));
     this.name = name;
   }
 

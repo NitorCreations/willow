@@ -34,7 +34,7 @@ public class VelocityServlet extends HttpServlet {
   private String systemKey = "system";
   private String xmlKey = "xml";
   private String subjectKey = "subject";
-  private VelocityEngine engine;
+  private transient VelocityEngine engine;
 
   @Override
   public void init() throws ServletException {

@@ -13,28 +13,30 @@ import com.nitorcreations.willow.utils.HostUtil;
 public class HostInfoSender extends AbstractStatisticsSender {
 
   private Logger logger = Logger.getLogger(getClass().getName());
-
+  private long interval = 30000;
   @Override
   public void execute() {
     HostInfoMessage him = new HostInfoMessage();
     InetAddress privateAddress = HostUtil.getPrivateIpAddress();
-    him.privateIpAddress = privateAddress.getHostAddress();
-    him.privateHostname = privateAddress.getCanonicalHostName();
+    if (privateAddress != null) {
+      him.privateIpAddress = privateAddress.getHostAddress();
+      him.privateHostname = privateAddress.getCanonicalHostName();
+    }
     InetAddress publicAddress = HostUtil.getPublicIpAddress();
-    him.publicIpAddress = publicAddress.getHostAddress();
-    him.publicHostname = publicAddress.getCanonicalHostName();
-
+    if (publicAddress != null) {
+      him.publicIpAddress = publicAddress.getHostAddress();
+      him.publicHostname = publicAddress.getCanonicalHostName();
+    }
     logger.finest("Sending HostInfoMessage");
     transmitter.queue(him);
     try {
-      Thread.sleep(30000);
+      Thread.sleep(interval);
     } catch (InterruptedException e1) {
       logger.finest("HostInfoSender interrupted");
     }
   }
-
   @Override
   public void setProperties(Properties properties) {
-
+    interval = Long.parseLong(properties.getProperty("interval", Long.toString(interval)));
   }
 }

@@ -24,10 +24,10 @@ import com.nitorcreations.willow.metrics.MetricConfig;
 public class MetricsServlet extends HttpServlet {
   private static final long serialVersionUID = -6704365246281136504L;
   @Inject
-  private Node node;
+  private transient Node node;
   ServletConfig config;
 
-  private final Map<String, Metric> metrics;
+  private transient final Map<String, Metric> metrics;
   
   @Inject
   public MetricsServlet(Map<String, Metric> metrics) {

@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PollingFile extends File implements Runnable {
   private final AtomicBoolean running = new AtomicBoolean(true);
-  private Thread poller = null;
+  private transient Thread poller = null;
   
   public interface FileListener {
     public void fileChanged(File file, WatchEvent.Kind<Path> kind);
@@ -84,5 +84,16 @@ public class PollingFile extends File implements Runnable {
     if (poller != null) {
       poller.interrupt();
     }
+  }
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+  @Override
+  public boolean equals(Object obj) {
+    if ((obj != null) && obj.getClass().isAssignableFrom(PollingFile.class)) {
+      return compareTo((File)obj) == 0;
+    }
+    return false;
   }
 }

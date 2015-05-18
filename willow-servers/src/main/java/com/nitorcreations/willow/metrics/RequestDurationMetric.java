@@ -23,6 +23,6 @@ public class RequestDurationMetric extends SimpleMetric<Number, Long> {
     for (Object next : preceeding) {
       sum += ((Number) next).longValue();
     }
-    return sum / preceeding.size();
+    return sum / Math.max(preceeding.size(), 1);
   }
 }

@@ -45,8 +45,7 @@ public class Obfuscator {
     String defaultMaster = System.getProperty("user.home") + File.separator + ".omaster" + File.separator + ".data";
     String masterPwdLocation = System.getProperty("o.datamaster", defaultMaster);
     File masterFile = new File(masterPwdLocation);
-    if (!masterFile.exists()) {
-      masterFile.getParentFile().mkdirs();
+    if (!masterFile.exists() && masterFile.getParentFile().mkdirs()) {
       SecureRandom sr = new SecureRandom();
       byte[] key = new byte[128];
       sr.nextBytes(key);
@@ -106,7 +105,7 @@ public class Obfuscator {
     Key key;
     Cipher out;
     CipherOutputStream cOut;
-    ByteArrayOutputStream bOut = null;
+    ByteArrayOutputStream bOut = new ByteArrayOutputStream();
     key = new SecretKeySpec(bkey, "AES");
     try {
       out = Cipher.getInstance(CIPHER);
@@ -178,6 +177,7 @@ public class Obfuscator {
   }
 
   public static String getFileMaster(File masterFile, KeyDigest digest) throws IOException {
+    if (!masterFile.exists()) throw new IOException("Master file not found");
     PosixFileAttributeView posix = Files.getFileAttributeView(masterFile.toPath(), PosixFileAttributeView.class);
     if (posix != null) {
       Set<PosixFilePermission> perms = posix.readAttributes().permissions();
@@ -196,13 +196,15 @@ public class Obfuscator {
       }
     }
     MergeableProperties p = new MergeableProperties();
-    try {
-      p.load(new FileInputStream(masterFile));
-    } catch (IOException e) {}
+    try (FileInputStream in = new FileInputStream(masterFile)) {
+      p.load(in);
+    }
     MessageDigest md = null;
     try {
       md = MessageDigest.getInstance(digest.toString().replace("_", "-"));
-    } catch (NoSuchAlgorithmException e) {}
+    } catch (NoSuchAlgorithmException e) {
+      assert false : digest.toString().replace("_", "-") + " digest not found";
+    }
     if (p.isEmpty()) {
       byte[] content = Files.readAllBytes(masterFile.toPath());
       md.update(content);

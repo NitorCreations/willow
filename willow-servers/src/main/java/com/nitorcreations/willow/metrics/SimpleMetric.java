@@ -19,7 +19,6 @@ import org.elasticsearch.search.SearchHitField;
 public abstract class SimpleMetric<L, T> implements Metric {
   protected SortedMap<Long, L> rawData;
   private Map<String, SearchHitField> fields;
-  protected MetricConfig conf;
   public abstract String getType();
 
   public abstract String[] requiresFields();
@@ -48,7 +47,6 @@ public abstract class SimpleMetric<L, T> implements Metric {
 
   @Override
   public List<TimePoint> calculateMetric(Client client, MetricConfig conf) {
-    this.conf = conf;
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(getType()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.getStop() - conf.getStart()) / 10).addField("timestamp").addFields(requiresFields());
     BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop() + conf.getStep()).includeLower(false).includeUpper(true));
     for (String tag : conf.getTags()) {

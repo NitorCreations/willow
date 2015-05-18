@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import com.nitorcreations.willow.utils.PollingFile.FileListener;
 
 public class FilePollingProperties implements FileListener {
+  private Logger logger = Logger.getLogger(getClass().getCanonicalName());
   public interface PropertyChangeListerner {
     public void propertyValueChanged(String key, String newValue, String oldValue);
     public void propertyAdded(String key, String value);
@@ -51,10 +52,10 @@ public class FilePollingProperties implements FileListener {
   public FilePollingProperties(final String source, final PropertyChangeListerner listener) {
     properties = new MergeableProperties();
     this.listener = listener;
-    try {
-      properties.load(new FileInputStream(source));
+    try (FileInputStream in = new FileInputStream(source)) {
+      properties.load(in);
     } catch (IOException e) {
-      //Noop
+      logger.log(Level.FINER, "Exception while polling for changes", e);
     }
     PollingFile backend = new PollingFile(source, this);
     backend.startListening();
@@ -80,8 +81,8 @@ public class FilePollingProperties implements FileListener {
       }
     } else {
       MergeableProperties newProps = new MergeableProperties();
-      try {
-        newProps.load(new FileInputStream(file));
+      try (FileInputStream in = new FileInputStream(file)) {
+        newProps.load(in);
         synchronized (properties) {
           oldProps = (MergeableProperties) properties.clone();
           properties.clear();

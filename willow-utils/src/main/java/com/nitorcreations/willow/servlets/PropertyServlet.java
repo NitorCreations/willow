@@ -24,9 +24,9 @@ import com.nitorcreations.willow.utils.PropertySource;
 public class PropertyServlet extends HttpServlet {
   private static final long serialVersionUID = -7870102334063578984L;
   ServletConfig config;
-  PropertySource propertySource;
-  String obfuscatedPrefix = "obfuscated:";
-  Logger log = Logger.getLogger(PropertyServlet.class.getName());
+  private transient PropertySource propertySource;
+  private String obfuscatedPrefix = "obfuscated:";
+  private transient Logger log = Logger.getLogger(PropertyServlet.class.getName());
   @Override
   public void init(ServletConfig config) throws ServletException {
     this.config = config;

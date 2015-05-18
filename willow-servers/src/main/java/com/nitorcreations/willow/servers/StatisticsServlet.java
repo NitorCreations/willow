@@ -18,7 +18,7 @@ public class StatisticsServlet extends WebSocketServlet {
   private static final long serialVersionUID = 4980353154914279832L;
 
   @Inject
-  Injector injector;
+  private transient Injector injector;
   
   @Override
   public void configure(WebSocketServletFactory factory) {

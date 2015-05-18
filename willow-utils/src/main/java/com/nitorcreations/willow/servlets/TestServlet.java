@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.servlets;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -21,7 +22,7 @@ public class TestServlet extends HttpServlet {
     try {
       Thread.sleep(Integer.valueOf(wait[0]));
       res.setContentType("text/plain");
-      res.getOutputStream().write("OK".getBytes(), 0, 2);
+      res.getOutputStream().write("OK".getBytes(StandardCharsets.UTF_8), 0, 2);
       res.getOutputStream().close();
     } catch (NumberFormatException | InterruptedException e) {
       throw new ServletException(e);

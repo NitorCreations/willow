@@ -5,6 +5,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -46,7 +47,7 @@ public class MD5SumInputStream extends FilterInputStream {
       while (-1 < (read = in.read(buff))) {
         out.write(buff, 0, read);
       }
-      String md5Str = new String(out.toByteArray(), 0, 32);
+      String md5Str = new String(out.toByteArray(), 0, 32, StandardCharsets.UTF_8);
       return hexStringToByteArray(md5Str);
     }
   }

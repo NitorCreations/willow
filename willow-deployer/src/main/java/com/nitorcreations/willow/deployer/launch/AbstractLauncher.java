@@ -13,6 +13,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKD
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -139,11 +140,11 @@ public abstract class AbstractLauncher implements LaunchMethod {
           child = pb.start();
         }
         if (transmitter.isRunning() && launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
-          stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT");
-          stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR");
+          stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT", StandardCharsets.UTF_8);
+          stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR", StandardCharsets.UTF_8);
         } else {
-          stdout = new LoggingStreamPumper(child.getInputStream(), Level.INFO, name);
-          stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name);
+          stdout = new LoggingStreamPumper(child.getInputStream(), Level.INFO, name, StandardCharsets.UTF_8);
+          stderr = new LoggingStreamPumper(child.getErrorStream(), Level.INFO, name, StandardCharsets.UTF_8);
         }
         new Thread(stdout, name + "-child-stdout-pumper").start();
         new Thread(stderr, name + "-child-sdrerr-pumper").start();

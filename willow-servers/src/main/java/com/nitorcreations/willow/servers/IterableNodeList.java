@@ -14,7 +14,9 @@ public class IterableNodeList implements Iterable<Node> {
     this.list = list;
   }
   public int length() {
-    return list.getLength();
+    synchronized (list) {
+      return list.getLength();
+    }
   }
   public void skipNext() {
     synchronized (list) {

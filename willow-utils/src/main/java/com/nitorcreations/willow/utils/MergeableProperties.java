@@ -36,14 +36,14 @@ public class MergeableProperties extends Properties {
   public static final Pattern SCRIPT_REGEX = Pattern.compile("(.*?)(\\<script\\>(.*?)\\<\\/script\\>)", Pattern.DOTALL + Pattern.MULTILINE);
   public static final String URL_PREFIX_CLASSPATH = "classpath:";
   public static final String INCLUDE_PROPERTY = "include.properties";
-  private Logger log = Logger.getLogger(getClass().getName());
+  private final transient Logger log = Logger.getLogger(getClass().getName());
   private final String[] prefixes;
   private static final long serialVersionUID = -2166886363149152785L;
   private LinkedHashMap<String, String> table = new LinkedHashMap<>();
   private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
-  ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
+  private transient ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
   private final boolean allowScripts;
-  private RequestCustomizer customizer = null;
+  private transient RequestCustomizer customizer = null;
   static {
     Register.doIt();
   }
@@ -456,5 +456,28 @@ public class MergeableProperties extends Properties {
 
   public void setRequestCustomizer(RequestCustomizer customizer) {
     this.customizer = customizer;
+  }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + ((table == null) ? 0 : table.hashCode());
+    return result;
+  }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (!super.equals(obj))
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    MergeableProperties other = (MergeableProperties) obj;
+    if (table == null) {
+      if (other.table != null)
+        return false;
+    } else if (!table.equals(other.table))
+      return false;
+    return true;
   }
 }

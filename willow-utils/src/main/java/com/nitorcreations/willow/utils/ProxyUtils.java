@@ -57,9 +57,12 @@ public class ProxyUtils {
     PacProxySelector sel = pacSelectors.get(proxyAutoconfig);
     if (sel == null) {
       sel = PacProxySelector.buildPacSelectorForUrl(proxyAutoconfig);
-      pacSelectors.put(proxyAutoconfig, sel);
+      if (sel != null) {
+        pacSelectors.putIfAbsent(proxyAutoconfig, sel);
+      } else {
+        return null;
+      }
     }
-    if (sel == null) return null;
     List<Proxy> l = sel.select(target);
     if (l.size() > 0) {
       return l;

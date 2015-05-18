@@ -89,7 +89,9 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
     if (connector != null) {
       try {
         connector.close();
-      } catch (Exception e) { }
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Failed to close JMXConnector", e);
+      }
       connector = null;
     }
   }

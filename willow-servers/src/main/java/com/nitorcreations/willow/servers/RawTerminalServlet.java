@@ -25,7 +25,7 @@ public class RawTerminalServlet extends WebSocketServlet {
   private static final long serialVersionUID = -7940037116569261919L;
 
   @Inject
-  Injector injector;
+  private transient Injector injector;
   
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

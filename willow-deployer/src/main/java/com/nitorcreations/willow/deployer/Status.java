@@ -31,6 +31,10 @@ public class Status extends DeployerControl {
       }
       for (long next : firstPids) {
         try (JMXConnector conn = getJMXConnector(next)) {
+          if (conn == null) {
+            log.log(Level.WARNING, "Failed to connect to deployer " + deployerName);
+            System.exit(1);
+          }
           MBeanServerConnection server = conn.getMBeanServerConnection();
           MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
           System.out.println(proxy.getStatus());
