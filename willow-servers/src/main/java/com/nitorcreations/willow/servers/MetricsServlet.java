@@ -25,15 +25,10 @@ public class MetricsServlet extends HttpServlet {
   private static final long serialVersionUID = -6704365246281136504L;
   @Inject
   private transient Node node;
-  ServletConfig config;
-
-  private transient Map<String, Metric> metrics;
-  
   @Inject
-  public MetricsServlet(Map<String, Metric> metrics) {
-    this.metrics = new HashMap<>(metrics);
-  }
-  
+  private transient Map<String, Metric> metrics;
+  private ServletConfig config;
+
   @Override
   public void init(ServletConfig config) throws ServletException {
     this.config = config;

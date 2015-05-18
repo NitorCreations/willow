@@ -16,14 +16,15 @@ import java.nio.file.WatchService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PollingFile extends File implements Runnable {
+  private static final long serialVersionUID = -6683198740670677087L;
+
   private final AtomicBoolean running = new AtomicBoolean(true);
   private transient Thread poller = null;
-  
+  private transient FileListener listener;
+
   public interface FileListener {
     public void fileChanged(File file, WatchEvent.Kind<Path> kind);
   }
-  private FileListener listener;
-
   public PollingFile(File parent, String child, FileListener listener) {
     super(parent, child);
     this.listener = listener;
@@ -44,8 +45,6 @@ public class PollingFile extends File implements Runnable {
     poller = new Thread(this, getAbsolutePath() + "-listener");
     poller.start();
   }
-  private static final long serialVersionUID = -6683198740670677087L;
-
   @Override
   public void run() {
     try {

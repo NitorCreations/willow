@@ -43,3 +43,9 @@ triage:
     - action: suppress
       issueKey: 8f7f78900a631c6ee3a8138b2a87c7e8
       comment: Obfuscator always adds random salt to plaintext
+    - action: suppress
+      issueKey: ff3bf64a2ee27004990108859cfd0a3f
+      comment: Obfuscator always adds random salt to plaintext
+    - action: suppress
+      issueKey: c53f6644635655971a32388cd1745a83
+      comment: Fields used as they are serialized to JSON
