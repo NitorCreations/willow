@@ -65,6 +65,8 @@ Box.Application.addModule('horizon-graph', function(context) {
         .data([chart])
         .enter().append("div").classed("horizon", true);
 
+    horizonGraphElements.append("div").classed('horizon__icons', true);
+
     horizonGraphElements.call(appendHorizonGraph, host, metric, metricSettings);
     if (!moduleConf.disableTerminalButton) {
       horizonGraphElements.call(appendTerminalIcon, host);
@@ -92,7 +94,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function appendTerminalIcon(parentElement, host) {
-    return parentElement.append("svg").attr("viewBox", "0 0 100 100")
+    return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon shape-terminal terminal-" + host, true)
         .attr("data-type", "start-terminal")
         .attr("data-host", host)
@@ -100,7 +102,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function appendShareRadiatorIcon(parentElement, host) {
-    return parentElement.append("svg").attr("viewBox", "0 0 100 100")
+    return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon shape-share share-" + host, true)
         .attr("data-type", "to-radiator")
         .append("use").attr("xlink:href", "#shape-to-radiator");
