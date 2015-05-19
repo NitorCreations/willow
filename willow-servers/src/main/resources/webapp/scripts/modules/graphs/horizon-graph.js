@@ -105,7 +105,7 @@ Box.Application.addModule('horizon-graph', function(context) {
 
   function appendShareRadiatorIcon(parentElement, host) {
     return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon shape-share share-" + host, true)
+        .classed("icon share-" + host, true)
         .attr("data-type", "to-radiator")
         .append("use").attr("xlink:href", "#shape-to-radiator");
   }
