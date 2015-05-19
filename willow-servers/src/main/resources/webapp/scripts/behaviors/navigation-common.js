@@ -2,6 +2,11 @@ Box.Application.addBehavior('navigation-common', function(context) {
   'use strict';
   var windowSvc, $, moduleEl, intercom, localStorage, name;
 
+  function updateSelectedValue(timescale) {
+    $(moduleEl).find('#timescale').val(timescale);
+    $(moduleEl).find('.default-option').remove();
+  }
+
   return {
     init: function() {
       windowSvc = context.getService("window");
@@ -9,6 +14,7 @@ Box.Application.addBehavior('navigation-common', function(context) {
       moduleEl = context.getElement();
       var timescale = windowSvc.getHashVariable("timescale") || 10800;
       windowSvc.variableStateInHash("timescale", timescale);
+      updateSelectedValue(timescale);
       intercom = context.getGlobal("Intercom").getInstance();
       localStorage = context.getGlobal("localStorage");
       name = context.getGlobal("name");
