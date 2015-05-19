@@ -39,9 +39,12 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
     }
   }
 
-  function injectModuleConfiguration(horizonGraphElement, configIdPrefix) {
-    var graphConfig = { configurationIdPrefix: configIdPrefix,
-    disableTerminalButton: !session.isAdmin };
+  function injectModuleConfiguration(horizonGraphElement, configIdPrefix, chartConfig) {
+    var graphConfig = {
+      configurationIdPrefix: configIdPrefix,
+      disableTerminalButton: !session.isAdmin,
+      chart: chartConfig
+    };
     utils.setConfigurationElement(horizonGraphElement, graphConfig);
   }
 
@@ -49,7 +52,7 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
     var metricIdPrefix = "live:metrics:graph-";
     var horizonGraphElement = parentElement.append("div")
       .attr("data-module", "horizon-graph");
-    injectModuleConfiguration(horizonGraphElement, metricIdPrefix);
+    injectModuleConfiguration(horizonGraphElement, metricIdPrefix, chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
   }

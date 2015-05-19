@@ -1,14 +1,12 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var moduleElem, configurationId,
+  var moduleElem, moduleConf,
       d3, $,
       store, windowSvc, utils, metricsService, cubismGraphs,
       initDone = false,
       messageQueue = [];
 
-  var enableTerminalButton = true;
-  var enableShareToRadiatorButton = true;
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
   var metricMap = {
@@ -20,7 +18,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   };
 
   function resetGraph() {
-    var chartConfig = readConfiguration();
+    var chartConfig = moduleConf.chart;
     var metricSetting = $(metricMap).attr(chartConfig.metric);
 
     // TODO: this should be done by reconfiguring, not destroying
@@ -43,12 +41,12 @@ Box.Application.addModule('horizon-graph', function(context) {
     moduleElem.remove();
   }
 
-  function readConfiguration() {
-    return store.readConfiguration(configurationId);
-  }
+  // function readConfiguration() {
+  //   return store.readConfiguration(moduleConf.configurationId);
+  // }
 
   function storeConfiguration(config) {
-    store.storeConfiguration(configurationId, config);
+    store.storeConfiguration(moduleConf.configurationId, config);
   }
 
   // creating a new metrics chart every time graph is reset will not remove the old metric
@@ -72,10 +70,10 @@ Box.Application.addModule('horizon-graph', function(context) {
         .enter().append("div").classed("horizon", true);
 
     horizonGraphElements.call(appendHorizonGraph, host, metric, metricSettings);
-    if (enableTerminalButton) {
+    if (!moduleConf.disableTerminalButton) {
       horizonGraphElements.call(appendTerminalIcon, host);
     }
-    if (enableShareToRadiatorButton) {
+    if (!moduleConf.disableRadiatorShareButton) {
       horizonGraphElements.call(appendShareRadiatorIcon, host);
     }
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
@@ -122,7 +120,7 @@ Box.Application.addModule('horizon-graph', function(context) {
 
   //FIXME should these manipulations be in index level?
   function setMetric(metric) {
-    var config = readConfiguration();
+    var config = moduleConf.chart;
     config.metric = metric;
     storeConfiguration(config);
     resetGraph();
@@ -152,10 +150,8 @@ Box.Application.addModule('horizon-graph', function(context) {
       store      = context.getService("configuration-store");
 
       moduleElem = d3.select(context.getElement());
-
-      configurationId = context.getConfig('configurationIdPrefix') + moduleElem.attr('id');
-      enableTerminalButton = !context.getConfig('disableTerminalButton');
-      enableShareToRadiatorButton = !context.getConfig('disableRadiatorShareButton');
+      moduleConf = context.getConfig() || {};
+      moduleConf.configurationId = moduleConf.configurationIdPrefix + moduleElem.attr('id');
 
       initDone = true;
       messageQueue.forEach(execMessage);
@@ -175,7 +171,7 @@ Box.Application.addModule('horizon-graph', function(context) {
           break;
         case 'to-radiator':
           // Actually should show a menu to select radiator
-          windowSvc.sendGraphToRadiator("newradiator", readConfiguration());
+          windowSvc.sendGraphToRadiator("newradiator", moduleConf.chart);
           break;
         case 'close':
           break;

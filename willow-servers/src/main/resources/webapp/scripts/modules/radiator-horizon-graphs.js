@@ -79,11 +79,12 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
     return "live:radiator:" + radiatorId + ":graph-";
   }
 
-  function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix) {
+  function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix, chartConfig) {
     var radiatorConfig = {
       configurationIdPrefix: radiatorIdPrefix,
       disableTerminalButton: true,
-      disableRadiatorShareButton: true
+      disableRadiatorShareButton: true,
+      chart: chartConfig
     };
     utils.setConfigurationElement(horizonGraphElement, radiatorConfig);
   }
@@ -92,7 +93,7 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
     var radiatorIdPrefix = radiatorGraphIdPrefix(radiatorName);
     var horizonGraphElement = parentElement.append("div")
       .attr("data-module","horizon-graph");
-    injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix);
+    injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix, chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(radiatorIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
   }
