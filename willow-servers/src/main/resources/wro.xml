@@ -6,7 +6,9 @@
   </group>
   <group name="libs">
     <css>/styles/nv.d3.css</css>
+    <css>/styles/jquery-ui.css</css>
     <js>/scripts/jquery.js</js>
+    <js>/scripts/jquery-ui.js</js>
     <js>/scripts/d3.v3.js</js>
     <js>/scripts/d3.promise.js</js>
     <js>/scripts/nv.d3.js</js>
