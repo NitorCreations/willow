@@ -1,0 +1,49 @@
+---
+willow-autoscaler:
+  groups:
+    - name: frontend
+      region: eu-west-1
+      cloudProvider: AWS
+      virtualMachineImage: ami-63b2d914
+      tags:
+        - myTag: myTagValue
+      sshKey: willow
+      instanceType: m2.small
+      userData: |
+        #!/bin/bash
+        touch ~/userDataTouchedThis.txt
+      network: vpc-18697c7a
+      subnet: subnet-4c0e0338
+      securityGroups: sg-a5b7f7c0,aaa
+      instanceBaseCount: "1"
+      instanceMaxCount: "5"
+      scalingPolicies:
+        - name: scaleOutOnCPUThreshold
+          metricName: cpu
+          metricThreshold: "80"
+          metricComparison: ">"
+          scalingAction: +50%
+        - name: scaleInOnCPUThreshold
+          metricName: cpu
+          metricThreshold: "40"
+          metricComparison: <
+          scalingAction: -50%
+# backend:
+#   cloudProvider: AWS
+#   virtualMachineImage:
+#   network:
+#   subnet:
+#   securityGroup:
+#   instanceBaseCount: 1
+#   instanceMaxCount: 3
+#   scalingPolicies:
+#     scaleOutOnCPUThreshold:
+#       metricName: cpu
+#       metricThreshold: 80
+#       metricComparison: ">"
+#       scale: +50%
+#     scaleInOnCPUThreshold:
+#       metricName: cpu
+#       metricThreshold: 40
+#       metricComparison: <
+#       scale: -50%
