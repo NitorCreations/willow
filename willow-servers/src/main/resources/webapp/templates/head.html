@@ -1,0 +1,28 @@
+<script type="text/javascript" src="session/current.js" charset="utf-8"></script>
+#set ($env = $system.getProperty("env"))
+#if ($env == "dev")
+#set ($debug = "true")
+#set ($wro = $xml.parse("classpath:wro.xml"))
+#set ($cssarr = $xml.xpath("//*[local-name()='css']", $wro))
+#foreach ($css in $cssarr)
+<link type="text/css" rel="stylesheet" href="$css.getTextContent().substring(1)"/>
+#end
+#set ($jsarr = $xml.xpath("//*[local-name()='js']", $wro))
+#foreach ($js in $jsarr)
+<script type="text/javascript" src="$js.getTextContent().substring(1)" charset="utf-8"></script>
+#end
+<!-- request -->
+#foreach ($key in $request.getAttributeNames())
+<!-- $key => $request.getAttribute($key) -->
+#end
+<!-- session -->
+#foreach ($key in $session.getAttributeNames())
+<!-- $key => $session.getAttribute($key) -->
+#end
+<!-- admin: $subject.isPermitted('admin'); -->
+<!-- monitor: $subject.isPermitted('monitor'); -->
+#else
+#set ($debug = "false")
+<link type="text/css" rel="stylesheet" href="styles/all.css">
+<script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
+#end

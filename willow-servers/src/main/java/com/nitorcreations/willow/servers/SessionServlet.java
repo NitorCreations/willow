@@ -22,13 +22,13 @@ public class SessionServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
-    res.setContentType("application/json");
+    res.setContentType("application/javascript");
     SessionInfo ret = new SessionInfo();
     Subject sub = SecurityUtils.getSubject();
     ret.username = sub.getPrincipal().toString();
     ret.isAdmin = sub.isPermitted("admin");
     ret.isMonitor = sub.isPermitted("monitor");
-    String retStr = new Gson().toJson(ret);
+    String retStr =  "var session=" + new Gson().toJson(ret)  + ";";
     res.getWriter().write(retStr);
   }
 }
