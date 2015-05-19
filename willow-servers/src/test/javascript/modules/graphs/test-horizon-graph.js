@@ -2,6 +2,7 @@ describe("Tests for horizon-graph module", function() {
   var module, sandbox, contextFake, windowSvc;
 
   beforeEach(function() {
+    sandbox = sinon.sandbox.create();
     windowSvc = {
       openRadiatorForHost: function(host) {},
       sendGraphToRadiator: function(host) {},
@@ -56,8 +57,11 @@ describe("Tests for horizon-graph module", function() {
       'd3': d3,
       'jQuery': jquery
     });
-    sandbox = sinon.sandbox.create();
-    contextFake.getConfig = sandbox.stub().returns({});
+    contextFake.getConfig = sandbox.stub().returns({
+      'chart': {
+        'metric': 'cpu'
+      }
+    });
     module = Box.Application.getModuleForTest('horizon-graph', contextFake);
     module.init();
   });
@@ -104,5 +108,10 @@ describe("Tests for horizon-graph module", function() {
   it('Receiving a "metric-changed" message should result calling setMetric', function() {
     sandbox.mock(module).expects('setMetric').once().withExactArgs("cpu");
     module.onmessage('metric-changed', 'cpu');
+  });
+
+  it('Receiving a "reload-graph-configuration" message should reset graph', function() {
+    sandbox.mock(module).expects('resetGraph').once();
+    module.onmessage('reload-graph-configuration');
   });
 });

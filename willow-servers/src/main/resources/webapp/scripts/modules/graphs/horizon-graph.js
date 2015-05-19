@@ -129,16 +129,16 @@ Box.Application.addModule('horizon-graph', function(context) {
   function execMessage(msg) {
     switch (msg.name) {
       case 'metric-changed':
-        setMetric(msg.data);
+        module.setMetric(msg.data);
         break;
       case 'cubism-context-reset':
       case 'reload-graph-configuration':
-        resetGraph();
+        module.resetGraph();
         break;
     }
   }
 
-  return {
+  var module = {
     init: function() {
       $          = context.getGlobal("jQuery");
       d3         = context.getGlobal("d3");
@@ -195,6 +195,9 @@ Box.Application.addModule('horizon-graph', function(context) {
       execMessage(msg);
     },
 
+    resetGraph: resetGraph,
     setMetric: setMetric
   };
+
+  return module;
 });
