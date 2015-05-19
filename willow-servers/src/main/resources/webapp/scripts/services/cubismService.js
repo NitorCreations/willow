@@ -13,9 +13,9 @@ Box.Application.addService('cubism-graphs', function(application) {
   }, cubismContext);
 
   // TODO: this may need debouncing, each graph will call this on it's reset
-  function resetCubismContext(step, widthInPx) {
+  function resetCubismContext(step, widthInPx, timescale) {
     widthInPx = (typeof widthInPx === 'number') ? widthInPx : $(window).width();
-    step = (typeof step === 'number') ? step : getStep();
+    step = (typeof step === 'number') ? step : getStep(timescale, widthInPx);
 
     cubismContext.step(step).size(widthInPx);
     application.broadcast("cubism-context-reset");
