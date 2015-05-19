@@ -1,7 +1,7 @@
 Box.Application.addModule('index-horizon-graphs', function(context) {
   'use strict';
 
-  var d3, $, moduleElem, metric, timescale,
+  var d3, $, moduleElem, metric, timescale, session,
     store, windowSvc, cubismGraphs, utils, metricsService;
 
   function reset() {

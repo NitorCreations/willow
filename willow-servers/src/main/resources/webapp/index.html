@@ -8,8 +8,10 @@
 <body>
 #include("/images/icons.svg")
 <div id="custom-radiator-list-dialog" data-module="custom-radiator-selection" style="display: none">
-  <script type='text/x-config'>{"graphConfiguration": {"host": "monoceros", "metric":"cpu"}}</script>
-  <label for="new">create new: <input type="text" id="new" name="radiator-id"><button id="create" data-type="create-new-radiator">Create</button></label>
+  <label for="new">create new: <input type="text" id="new" name="radiator-id">
+    <button id="create" data-type="create-new-radiator">Create</button>
+  </label>
+  <ul class="radiator-list"></ul>
 </div>
 <nav class="nav" tabindex="-1">
   <div class="container" data-module="index-navigation">

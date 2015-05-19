@@ -7,20 +7,32 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
     return "radiator name: " + data;
   }
 
-  function generateRadiatorListing() {
-    d3.select(moduleElement).selectAll("div")
-        .data(store.customRadiators.listAvailableRadiators())
-        .enter()
-        .append("li")
-        .classed("custom-radiator-selection-item", true)
-        .text(radiatorLabel)
-        .attr("data-type", "append-to-radiator")
-        .attr("data-radiator-id", function (d) { return d; });
+  function renderLatestRadiatorListing() {
+    d3.select(moduleElement).select("ul").selectAll("li")
+      .remove();
+    d3.select(moduleElement).select("ul").selectAll("li")
+      .data(store.customRadiators.listAvailableRadiators())
+      .enter()
+      .append("li")
+      .classed("custom-radiator-selection-item", true)
+      .text(radiatorLabel)
+      .attr("data-type", "append-to-radiator")
+      .attr("data-radiator-id", function (d) { return d; });
   }
 
   function dispatchConfigurationToRadiator(radiatorId, config) {
     store.customRadiators.appendConfig(radiatorId, config);
     windowService.sendGraphToRadiator(radiatorId, config);
+  }
+
+  function showDialog() {
+    $(moduleElement).dialog({
+      modal: true
+    });
+  }
+
+  function hideDialog() {
+    $(moduleElement).dialog("destroy");
   }
 
   return {
@@ -31,28 +43,43 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
 
       store = context.getService("configuration-store");
       windowService = context.getService("window");
-
-      graphConfiguration = context.getConfig("graphConfiguration"); //FIXME
-
-      generateRadiatorListing();
     },
 
     destroy: function() {
       moduleElement = null;
       d3 = null;
       store = null;
+      graphConfiguration = null;
     },
 
     onclick: function(event, element, elementType) {
       var radiatorId;
       switch (elementType) {
         case "create-new-radiator":
-          radiatorId = $("input[name=radiator-id]", moduleElement).val();
+          var inputField = $("input[name=radiator-id]", moduleElement);
+          radiatorId = inputField.val();
           dispatchConfigurationToRadiator(radiatorId, graphConfiguration);
+          graphConfiguration = null;
+          inputField.val("");
+          hideDialog();
           break;
         case "append-to-radiator":
           radiatorId = element.getAttribute("data-radiator-id");
           dispatchConfigurationToRadiator(radiatorId, graphConfiguration);
+          graphConfiguration = null;
+          hideDialog();
+          break;
+      }
+    },
+
+    messages: ["open-radiator-list"],
+
+    onmessage: function(name, data) {
+      switch (name) {
+        case "open-radiator-list":
+          graphConfiguration = data;
+          renderLatestRadiatorListing();
+          showDialog();
           break;
       }
     }

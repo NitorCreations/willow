@@ -76,8 +76,8 @@ describe("Tests for horizon-graph module", function() {
     module.onclick(event, target, 'start-terminal');
   });
 
-  it('Clicking an element with "to-radiator"" type should open the radiator window', function() {
-    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs("newradiator", {
+  it('Clicking an element with "to-radiator" type should broadcast message with graph configuration data as payload', function() {
+    sandbox.mock(contextFake).expects('broadcast').once().withExactArgs("open-radiator-list", {
       metric: "cpu",
       host: "test-host",
       instanceTag: 'test-instance',

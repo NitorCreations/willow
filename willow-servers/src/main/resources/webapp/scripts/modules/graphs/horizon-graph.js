@@ -41,10 +41,6 @@ Box.Application.addModule('horizon-graph', function(context) {
     moduleElem.remove();
   }
 
-  // function readConfiguration() {
-  //   return store.readConfiguration(moduleConf.configurationId);
-  // }
-
   function storeConfiguration(config) {
     store.storeConfiguration(moduleConf.configurationId, config);
   }
@@ -138,6 +134,10 @@ Box.Application.addModule('horizon-graph', function(context) {
     }
   }
 
+  function openRadiatorDialog() {
+    context.broadcast("open-radiator-list", moduleConf.chart);
+  }
+
   var module = {
     init: function() {
       $          = context.getGlobal("jQuery");
@@ -170,9 +170,7 @@ Box.Application.addModule('horizon-graph', function(context) {
           windowSvc.openTerminalToHost(user, host);
           break;
         case 'to-radiator':
-          $('#custom-radiator-list-dialog').dialog({
-            modal: true
-          });
+          openRadiatorDialog();
           break;
         case 'close':
           break;
