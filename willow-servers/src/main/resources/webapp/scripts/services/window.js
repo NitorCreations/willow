@@ -94,6 +94,33 @@ Box.Application.addService('window', function(application) {
     },
     setTitle: function(newTitle) {
       document.title = "Willow - " + utils.htmlEncode(newTitle);
+    },
+
+    /*
+     * Creates a popup
+     *
+     * @param {Object} opts
+     * @returns {Object} reference to created window
+     *
+     */
+    popup: function(opts) {
+      opts        = opts || {};
+
+      opts.width  = opts.width  || window.innerWidth * 0.75;
+      opts.height = opts.height || 200;
+      opts.posX   = opts.posX   || window.screenX + (window.innerWidth / 2 - opts.width / 2);
+      opts.posY   = opts.posY   || window.screenY + (window.innerHeight / 2 - opts.height / 2) + 100;
+      opts.name   = opts.name   || 'TODO: this name.';
+      opts.url    = opts.url    || '/';
+
+      return window.open(
+        opts.url,
+        opts.name,
+        'height=' + opts.height +
+        ',width=' + opts.width +
+        ',screenX=' + opts.posX +
+        ',screenY=' + opts.posY
+      );
     }
   };
 });
