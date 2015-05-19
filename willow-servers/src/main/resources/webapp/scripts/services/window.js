@@ -4,6 +4,7 @@ Box.Application.addService('window', function(application) {
   var localStorage = application.getGlobal("localStorage"); //application.getService("configuration-store");
   var name  = application.getGlobal("name");
   var hashChangeCallbacks = [];
+  var utils = application.getService("utils");
   // Add utilities here for communicating between browser windows
   // and keeping track of open windows, .i.e. routing component
 
@@ -28,7 +29,7 @@ Box.Application.addService('window', function(application) {
     config.type = graphConfig.type || "horizon";
     return JSON.stringify(config);
   }
-  
+
   function sendToRadiator(radiatorName, graphConfig) {
     var graphSpec = graphSpecificationString(graphConfig);
     var openWindows = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
@@ -90,6 +91,9 @@ Box.Application.addService('window', function(application) {
     onHashChange: function(callback) {
       hashChangeCallbacks.push(callback);
       return callback;
+    },
+    setTitle: function(newTitle) {
+      document.title = "Willow - " + utils.htmlEncode(newTitle);
     }
   };
 });
