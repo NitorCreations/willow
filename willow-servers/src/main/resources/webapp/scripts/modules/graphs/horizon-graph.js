@@ -74,6 +74,8 @@ Box.Application.addModule('horizon-graph', function(context) {
     if (!moduleConf.disableRadiatorShareButton) {
       horizonGraphElements.call(appendShareRadiatorIcon, host);
     }
+
+    horizonGraphElements.call(appendPopupGraphIcon, host);
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
@@ -108,12 +110,31 @@ Box.Application.addModule('horizon-graph', function(context) {
         .append("use").attr("xlink:href", "#shape-to-radiator");
   }
 
+  function appendPopupGraphIcon(parentElement, host) {
+    return parentElement.select('.horizon__icons').append("i")
+        .classed("icon fa fa-external-link popup-" + host, true)
+        .attr("data-type", "to-popup")
+        .append("use").attr("xlink:href", "#shape-to-radiator");
+  }
+
   function appendHostRadiatorLink(parentElement, title, host) {
     return parentElement.append("div").classed("host-link", true)
         .text(title).append("a")
         .attr("href", "radiator.html#host=" + host)
         .attr("data-host", host)
         .attr("data-type", "host-radiator").text(host);
+  }
+
+  function openGraphInPopup() {
+    var url = '/graph.html' +
+          '#metric=' + moduleConf.chart.metric +
+          '&timescale=' + windowSvc.getHashVariable("timescale") +
+          '&host=' + moduleConf.chart.host +
+          '&type=horizon';
+
+    windowSvc.popup({
+      url: url
+    });
   }
 
   //FIXME should these manipulations be in index level?
@@ -174,6 +195,9 @@ Box.Application.addModule('horizon-graph', function(context) {
         case 'to-radiator':
           openRadiatorDialog();
           break;
+        case 'to-popup':
+          openGraphInPopup();
+          break;
         case 'close':
           break;
         case 'host-radiator':
@@ -196,6 +220,7 @@ Box.Application.addModule('horizon-graph', function(context) {
       execMessage(msg);
     },
 
+    openGraphInPopup: openGraphInPopup,
     resetGraph: resetGraph,
     setMetric: setMetric
   };
