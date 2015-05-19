@@ -19,6 +19,19 @@ Box.Application.addService('utils', function(application) {
     },
     setConfigurationElement: function(container, config) {
       container.html("<script type='text/x-config'>" + JSON.stringify(config) + "</script>");
+    },
+    /*
+     * Replaces special characters with HTML entities
+     *
+     * @param {String} str
+     * @returns {String} str with special chars replaced to HTML entities
+     *
+     */
+    htmlEncode: function(str) {
+      var el = document.createElement("div");
+      el.innerText = el.textContent = str;
+      str = el.innerHTML;
+      return str;
     }
   };
 });
