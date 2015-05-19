@@ -1,8 +1,6 @@
 package com.nitorcreations.willow.metrics;
 
 import java.lang.reflect.ParameterizedType;
-import java.util.Collections;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 

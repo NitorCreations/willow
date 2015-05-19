@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -26,7 +25,6 @@ import javax.management.openmbean.CompositeDataSupport;
 
 import com.nitorcreations.willow.messages.GcInfo;
 import com.nitorcreations.willow.messages.JmxMessage;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 @Named("jmx")
 public class JMXStatsSender extends AbstractJMXStatisticsSender {
