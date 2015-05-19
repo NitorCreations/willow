@@ -1,7 +1,7 @@
 Box.Application.addService('window', function(application) {
   'use strict';
   var intercom = application.getGlobal("Intercom").getInstance();
-  var localStorage = application.getGlobal("localStorage");
+  var localStorage = application.getGlobal("localStorage"); //application.getService("configuration-store");
   var name  = application.getGlobal("name");
   var hashChangeCallbacks = [];
   // Add utilities here for communicating between browser windows
@@ -22,14 +22,20 @@ Box.Application.addService('window', function(application) {
   function openAlerts() {
     _open("alerts.html", "index-alerts");
   }
+
+  function graphSpecificationString(graphConfig) {
+    var config = graphConfig;
+    config.type = graphConfig.type || "horizon";
+    return JSON.stringify(config);
+  }
   
-  function sendToRadiator(graphConfig, radiatorname) {
-    var graphSpec = '{"type":"horizon","host":"' + graphConfig.host + '","metric":"' + graphConfig.metric + '"}';
-    var windowArr = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
-    if (windowArr.indexOf("radiator-" + radiatorname) == -1) {
-      _open("radiator.html#graph=" + encodeURIComponent(graphSpec) + "&name=" + radiatorname, "radiator-" + radiatorname);
+  function sendToRadiator(radiatorName, graphConfig) {
+    var graphSpec = graphSpecificationString(graphConfig);
+    var openWindows = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
+    if (openWindows.indexOf("radiator-" + radiatorName) == -1) {
+      _open("radiator.html#graph=" + encodeURIComponent(graphSpec) + "&name=" + radiatorName, "radiator-" + radiatorName);
     } else {
-      intercom.emit("radiator-" + radiatorname + "-addgraph", graphSpec);
+      intercom.emit("radiator-" + radiatorName + "-addgraph", graphSpec);
     }
   }
 

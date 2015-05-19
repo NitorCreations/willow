@@ -78,13 +78,13 @@ describe("Tests for horizon-graph module", function() {
   });
 
   it('Clicking an element with "to-radiator"" type should open the radiator window', function() {
-    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs({
+    sandbox.mock(windowSvc).expects('sendGraphToRadiator').once().withExactArgs("newradiator", {
       metric: "cpu",
       host: "test-host",
       instanceTag: 'test-instance',
       stop: 10,
       step: 1
-    }, "newradiator");
+    });
     var target = $(' <svg data-type="to-radiator" data-host="test"></svg>')[0];
     var event = $.Event('click', {
       target: target

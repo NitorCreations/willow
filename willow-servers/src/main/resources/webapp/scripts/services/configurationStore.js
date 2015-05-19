@@ -12,29 +12,43 @@ Box.Application.addService('configuration-store', function(application) {
   }
 
   //FIXME each sub config area to own scope (custom, index, host)
-  function customRadiatorKey(radiatorId) {
-    return "willow:custom_radiators:" + radiatorId;
+  function customRadiatorKey() {
+    return "willow:custom_radiators";
+  }
+
+  function readRadiatorConfigurations() {
+    return readConfiguration(customRadiatorKey()) || {};
   }
 
   function readRadiatorConfiguration(radiatorName) {
-    return readConfiguration(customRadiatorKey(radiatorName));
+    var configs = readRadiatorConfigurations();
+    return configs[radiatorName];
   }
 
   function storeRadiatorConfiguration(radiatorName, config) {
-    return storeConfiguration(customRadiatorKey(radiatorName), config);
+    var configs = readRadiatorConfigurations();
+    configs[radiatorName] = config;
+    storeConfiguration(customRadiatorKey(), configs);
   }
 
   function appendGraphToRadiator(radiatorName, config) {
-    var existingConfig = readRadiatorConfiguration(radiatorName) || [];
+    var configurations = readRadiatorConfigurations();
+    var existingConfig = configurations[radiatorName] || [];
     existingConfig.push(config);
-    storeRadiatorConfiguration(radiatorName, existingConfig);
+    configurations[radiatorName] = existingConfig;
+    storeConfiguration(customRadiatorKey(), configurations);
+  }
+
+  function listRadiatorNames() {
+    return Object.keys(readRadiatorConfigurations());
   }
 
   return {
     customRadiators: {
       readConfiguration: readRadiatorConfiguration,
       storeConfiguration: storeRadiatorConfiguration,
-      appendConfig: appendGraphToRadiator
+      appendConfig: appendGraphToRadiator,
+      listAvailableRadiators: listRadiatorNames
     },
     readConfiguration: readConfiguration,
     storeConfiguration: storeConfiguration

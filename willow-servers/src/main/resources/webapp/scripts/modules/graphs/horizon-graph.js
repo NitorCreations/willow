@@ -150,7 +150,7 @@ Box.Application.addModule('horizon-graph', function(context) {
           break;
         case 'to-radiator':
           // Actually should show a menu to select radiator
-          windowSvc.sendGraphToRadiator(readConfiguration(), "newradiator");
+          windowSvc.sendGraphToRadiator("newradiator", readConfiguration());
           break;
         case 'close':
           break;
