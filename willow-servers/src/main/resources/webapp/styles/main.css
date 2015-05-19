@@ -461,14 +461,6 @@ textarea, input[type=text] {
   color: white;
 }
 
-.navright {
-  float: right;
-  position: relative;
-  right: 57px;
-  top: 0px;
-  margin: 5px;
-}
-
 select.navcenter {
   margin: 0 0 0 20px;
   color: white;
@@ -543,4 +535,12 @@ ul.radiator-list {
   color: white;
   cursor: pointer;
   cursor: hand;
+}
+
+.navright {
+  float: right;
+  position: relative;
+  right: 57px;
+  top: 0;
+  margin: 5px;
 }
