@@ -40,7 +40,8 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
   }
 
   function injectModuleConfiguration(horizonGraphElement, configIdPrefix) {
-    var graphConfig = { configurationIdPrefix: configIdPrefix };
+    var graphConfig = { configurationIdPrefix: configIdPrefix,
+    disableTerminalButton: !session.isAdmin };
     utils.setConfigurationElement(horizonGraphElement, graphConfig);
   }
 
@@ -58,6 +59,7 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
       d3           = context.getGlobal("d3");
       $            = context.getGlobal("jQuery");
       moduleElem   = d3.select(context.getElement());
+      session      = context.getGlobal("session");
 
       utils        = context.getService("utils");
       windowSvc    = context.getService("window");
