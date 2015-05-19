@@ -64,6 +64,16 @@ Box.Application.addModule('radiator-controller', function(context) {
       cubismGraphs   = context.getService("cubism-graphs");
 
       initGraph( windowSvc.getHashVariable("type") );
+    },
+
+    messages: ["timescale-changed"],
+
+    onmessage: function(name, timescale) {
+      switch (name) {
+        case 'timescale-changed':
+          cubismGraphs.resetCubismContext();
+          break;
+      }
     }
   };
 });
