@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
   <title>Willow monitoring - Main</title>
   <meta charset="utf-8" />
@@ -7,6 +7,10 @@
 </head>
 <body>
 #include("/images/icons.svg")
+<div id="custom-radiator-list-dialog" data-module="custom-radiator-selection" style="display: none">
+  <script type='text/x-config'>{"graphConfiguration": {"host": "monoceros", "metric":"cpu"}}</script>
+  <label for="new">create new: <input type="text" id="new" name="radiator-id"><button id="create" data-type="create-new-radiator">Create</button></label>
+</div>
 <nav class="nav" tabindex="-1">
   <div class="container" data-module="index-navigation">
     <a id="cpu" href="#" data-type="select-metric">cpu</a>

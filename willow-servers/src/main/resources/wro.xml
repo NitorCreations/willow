@@ -34,6 +34,7 @@
     <js>/scripts/modules/radiator-detail-graphs.js</js>
     <js>/scripts/modules/radiator-horizon-graphs.js</js>
     <js>/scripts/modules/radiator-navigation.js</js>
+    <js>/scripts/modules/custom-radiator-selection.js</js>
     <js>/scripts/modules/graphs/horizon-graph.js</js>
     <js>/scripts/modules/graphs/filesystem-graph.js</js>
     <js>/scripts/modules/graphs/heap-graph.js</js>

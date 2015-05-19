@@ -170,8 +170,9 @@ Box.Application.addModule('horizon-graph', function(context) {
           windowSvc.openTerminalToHost(user, host);
           break;
         case 'to-radiator':
-          // Actually should show a menu to select radiator
-          windowSvc.sendGraphToRadiator("newradiator", moduleConf.chart);
+          $('#custom-radiator-list-dialog').dialog({
+            modal: true
+          });
           break;
         case 'close':
           break;
