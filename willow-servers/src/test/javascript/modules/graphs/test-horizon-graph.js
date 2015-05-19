@@ -31,16 +31,15 @@ describe("Tests for horizon-graph module", function() {
     jquery = {
       attr: function() {}
     };
+    mockChart = {
+      metric: "cpu",
+      host: "test-host",
+      instanceTag: 'test-instance',
+      stop: 10,
+      step: 1
+    };
     store = {
-      readConfiguration: function(id) {
-        return {
-          metric: "cpu",
-          host: "test-host",
-          instanceTag: 'test-instance',
-          stop: 10,
-          step: 1
-        }
-      },
+      readConfiguration: function() { return mockChart; },
       storeConfiguration: function() {}
     };
     cubismGraphs = {
@@ -48,7 +47,7 @@ describe("Tests for horizon-graph module", function() {
       resetCubismContext: function() {},
       onFocus: function() {},
       removeHorizonGraph: function() {}
-    }
+    };
     contextFake = new Box.TestServiceProvider({
       'window': windowSvc,
       'cubism-graphs' : cubismGraphs,
@@ -57,11 +56,7 @@ describe("Tests for horizon-graph module", function() {
       'd3': d3,
       'jQuery': jquery
     });
-    contextFake.getConfig = sandbox.stub().returns({
-      'chart': {
-        'metric': 'cpu'
-      }
-    });
+    contextFake.getConfig = sandbox.stub().returns({ 'chart': mockChart });
     module = Box.Application.getModuleForTest('horizon-graph', contextFake);
     module.init();
   });
