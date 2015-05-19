@@ -456,12 +456,6 @@ textarea, input[type=text] {
   padding: 1.5em;
 }
 
-.icon {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-}
-
 .white {
   fill: white;
   color: white;
@@ -485,19 +479,34 @@ select.navcenter {
   top: 12px
 }
 
-.shape-terminal {
+.horizon__icons {
   position: absolute;
-  top: 0px;
+  top: 0;
   left: 0.2em;
   height: 1.3em;
-  width: 1.3em;
+  display: inline-block;
+}
+
+.icon {
+  float: left;
+  font-size: 1.2em;
+  margin: 2px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
   opacity: 0.5;
 }
+
+.icon:hover {
+  opacity: 1;
+}
+
 .host-link {
   position: absolute;
   top: 25px;
   left: 0.2em;
 }
+
 .shape-share {
   position: absolute;
   top: 0;
