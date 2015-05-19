@@ -3,7 +3,9 @@ Box.Application.addModule('horizon-graph', function(context) {
 
   var moduleElem, configurationId,
       d3, $,
-      store, windowSvc, utils, metricsService, cubismGraphs;
+      store, windowSvc, utils, metricsService, cubismGraphs,
+      initDone = false,
+      messageQueue = [];
 
   var enableTerminalButton = true;
   var enableShareToRadiatorButton = true;
@@ -118,6 +120,26 @@ Box.Application.addModule('horizon-graph', function(context) {
         .attr("data-type", "host-radiator").text(host);
   }
 
+  //FIXME should these manipulations be in index level?
+  function setMetric(metric) {
+    var config = readConfiguration();
+    config.metric = metric;
+    storeConfiguration(config);
+    resetGraph();
+  }
+
+  function execMessage(msg) {
+    switch (msg.name) {
+      case 'metric-changed':
+        setMetric(msg.data);
+        break;
+      case 'cubism-context-reset':
+      case 'reload-graph-configuration':
+        resetGraph();
+        break;
+    }
+  }
+
   return {
     init: function() {
       $          = context.getGlobal("jQuery");
@@ -134,6 +156,9 @@ Box.Application.addModule('horizon-graph', function(context) {
       configurationId = context.getConfig('configurationIdPrefix') + moduleElem.attr('id');
       enableTerminalButton = !context.getConfig('disableTerminalButton');
       enableShareToRadiatorButton = !context.getConfig('disableRadiatorShareButton');
+
+      initDone = true;
+      messageQueue.forEach(execMessage);
     },
 
     destroy: function() {
@@ -164,23 +189,16 @@ Box.Application.addModule('horizon-graph', function(context) {
     messages: ["metric-changed", "reload-graph-configuration", "cubism-context-reset"],
 
     onmessage: function(name, data) {
-      switch (name) {
-        case 'metric-changed':
-          this.setMetric(data);
-          break;
-        case 'cubism-context-reset':
-        case 'reload-graph-configuration':
-          resetGraph();
-          break;
+      var msg = { name: name, data: data };
+
+      if (!initDone) {
+        messageQueue.push(msg);
+        return;
       }
+
+      execMessage(msg);
     },
 
-    //FIXME should these manipulations be in index level?
-    setMetric: function(metric) {
-      var config = readConfiguration();
-      config.metric = metric;
-      storeConfiguration(config);
-      resetGraph();
-    }
+    setMetric: setMetric
   };
 });
