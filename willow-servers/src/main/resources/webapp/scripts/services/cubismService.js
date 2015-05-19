@@ -1,6 +1,7 @@
 Box.Application.addService('cubism-graphs', function(application) {
   'use strict';
   var cubism    = application.getGlobal('cubism');
+  var windowSvc = application.getService('window');
 
   var cubismContext = cubism.context();
   var focusEvents   = {};
@@ -12,22 +13,29 @@ Box.Application.addService('cubism-graphs', function(application) {
   }, cubismContext);
 
   // TODO: this may need debouncing, each graph will call this on it's reset
-  function resetCubismContext(step, widthInPixels) {
-    cubismContext.step(step).size(widthInPixels);
+  function resetCubismContext(step, widthInPx) {
+    widthInPx = (typeof widthInPx === 'number') ? widthInPx : $(window).width();
+    step = (typeof step === 'number') ? step : getStep();
+
+    cubismContext.step(step).size(widthInPx);
     application.broadcast("cubism-context-reset");
   }
 
-  //FIXME service should not be dependent on the DOM on browser state
-  function init() {
-    var windowSvc = application.getService('window');
-    var timescale = windowSvc.getHashVariable('timescale') || 10800;
-    var widthInPx = $(window).width();
-    var step      = parseInt(timescale * 1000 / widthInPx);
-    resetCubismContext(step, widthInPx);
+  // TODO: move to utils
+  function getTimescale() {
+    return windowSvc.getHashVariable('timescale') || 10800;
+  }
+
+  // TODO: move to utils
+  function getStep(timescale, widthInPx) {
+    widthInPx = widthInPx || $(window).width();
+    timescale = timescale || getTimescale();
+    return parseInt(timescale * 1000 / widthInPx);
   }
 
   // create a context when service initializes
-  init();
+  //FIXME service should not be dependent on the DOM on browser state
+  resetCubismContext();
 
   // TODO should we only wrap cubism context handling into this service
   // or should we set default configurations such as the axis layout?

@@ -8,15 +8,8 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
     var stop = new Date().getTime();
     var start = stop - (timescale * 1000);
 
-    resetLayout();
+    cubismGraphs.resetCubismContext();
     initGraphs(metric, start, stop);
-  }
-
-  //FIXME should get reset variables as arguments
-  function resetLayout() {
-    var widthInPixels = $(window).width();
-    var step = parseInt(timescale * 1000 / widthInPixels);
-    cubismGraphs.resetCubismContext(step, widthInPixels);
   }
 
   function initGraphs(metric, start, stop) {
@@ -75,7 +68,7 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
       timescale    = windowSvc.getHashVariable("timescale") || 10800;
 
       reset();
-      $(window).resize(utils.debouncer(resetLayout));
+      $(window).resize(utils.debouncer(cubismGraphs.resetCubismContext));
     },
 
     destroy: function() {
@@ -90,7 +83,7 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
       switch (name) {
         case 'timescale-changed':
           timescale = data;
-          resetLayout();
+          cubismGraphs.resetCubismContext();
           break;
       }
     }
