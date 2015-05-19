@@ -6,17 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -26,6 +17,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import com.sun.scenario.effect.Merge;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 import com.nitorcreations.willow.protocols.Register;
@@ -79,7 +71,7 @@ public class MergeableProperties extends Properties {
     this(true, prefixes);
   }
 
-  public Properties merge(String name) {
+  public MergeableProperties merge(String name) {
     if (pathEndsWith(name.toLowerCase(), ".yml")) {
       mergeYml(name);
     } else {
@@ -98,7 +90,7 @@ public class MergeableProperties extends Properties {
     }
   }
 
-  public Properties merge(Properties prev, String name) {
+  public MergeableProperties merge(Properties prev, String name) {
     if (prev != null) {
       if (prev instanceof MergeableProperties) {
         putAll((MergeableProperties)prev);
@@ -184,6 +176,23 @@ public class MergeableProperties extends Properties {
       }
     }
     return ret;
+  }
+  public List<MergeableProperties> getPrefixedList(String prefix) {
+    List<MergeableProperties> propsList = new LinkedList<>();
+    MergeableProperties prefixed = getPrefixed(prefix);
+    MergeableProperties listItem;
+    int i = 0;
+    while (!(listItem = prefixed.getPrefixed("[" + i++ + "]")).isEmpty()) {
+      propsList.add(listItem);
+    }
+    return propsList;
+  }
+  public List<String> getDelimitedAsList(String key, String delimiter) {
+    String value = getProperty(key);
+    if (value != null) {
+      return Arrays.asList(value.split(delimiter));
+    }
+    return Collections.emptyList();
   }
   private boolean mergeProperties(String name) {
     boolean ret = false;

@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -162,5 +164,28 @@ public class TestPropertyMerge {
     assertEquals("My Cool App", p.getProperty("environments.prod.name"));
     assertEquals("foo", p.getProperty("myprop"));
     assertEquals("bar", p.getProperty("myarr[0]"));
+  }
+
+  @Test
+  public void testDelimitedPropertyAsList() {
+    MergeableProperties p = new MergeableProperties("classpath:", "file:./target/test-classes/");
+    p.merge("test.yml");
+    List<String> values = p.getDelimitedAsList("commaDelimitedValue", ",");
+    assertEquals(Arrays.asList("1", "2", "3"), values);
+  }
+
+  @Test
+  public void testPrefixedList() {
+    MergeableProperties p = new MergeableProperties("classpath:", "file:./target/test-classes/");
+    p.merge("test.yml");
+    List<MergeableProperties> props = p.getPrefixedList("listOfKeyValuePairs");
+    assertEquals(2, props.size());
+    MergeableProperties prefixed = props.get(0);
+    assertEquals("value", prefixed.getProperty("key"));
+    assertEquals("secondValue", prefixed.getProperty("secondKey"));
+    prefixed = props.get(1);
+    assertEquals("value2", prefixed.getProperty("key2"));
+    assertEquals("secondValue2", prefixed.getProperty("secondKey2"));
+
   }
 }

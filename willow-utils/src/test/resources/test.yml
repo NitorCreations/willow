@@ -5,4 +5,9 @@ environments:
   prod:
     url: http://foo.bar.com
     name: My Cool App
-
+commaDelimitedValue: 1,2,3
+listOfKeyValuePairs:
+  - key: value
+    secondKey: secondValue
+  - key2: value2
+    secondKey2: secondValue2
