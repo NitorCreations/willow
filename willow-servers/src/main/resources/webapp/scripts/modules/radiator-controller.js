@@ -17,7 +17,7 @@ Box.Application.addModule('radiator-controller', function(context) {
       $(window).resize(utils.debouncer(cubismGraphs.resetCubismContext));
       moduleElem.call(createHorizonGraph, chartConfig);
       context.broadcast("reload-graph-configuration");
-      windowSvc.setTitle(metric + " for " + host);
+      windowSvc.setTitle(metric.toUpperCase() + " for " + host);
     }
   };
 
