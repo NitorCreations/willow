@@ -4,7 +4,7 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
   var graphConfiguration, $, d3, moduleElement, store, windowService;
 
   function radiatorLabel(data) {
-    return "radiator name: " + data;
+    return data;
   }
 
   function renderLatestRadiatorListing() {
@@ -27,7 +27,8 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
 
   function showDialog() {
     $(moduleElement).dialog({
-      modal: true
+      modal: true,
+      title: "Append graph to radiator..."
     });
   }
 

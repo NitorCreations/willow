@@ -509,3 +509,40 @@ select.navcenter {
 .icon:hover {
   opacity: 1;
 }
+/* Dialog styling, dont' want to mix them with jquery-ui functional css */
+.ui-widget-overlay {
+  background: darkgray;
+  opacity: 0.35;
+}
+.ui-dialog {
+  background: white;
+}
+.ui-dialog-titlebar {
+  background: black;
+}
+.ui-dialog-title {
+  color: white;
+}
+
+button#create { /* FIXME remove these hacks when desired layout is known */
+  margin-top: 10px;
+}
+
+ul.radiator-list {
+  list-style-type: none;
+  padding-left: 0px;
+}
+
+.custom-radiator-selection-item {
+  padding: 5px 10px;
+  text-align: center;
+  background: lightgrey;
+  border: 1px black;
+}
+
+.custom-radiator-selection-item:hover {
+  background: black;
+  color: white;
+  cursor: pointer;
+  cursor: hand;
+}

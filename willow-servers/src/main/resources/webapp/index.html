@@ -7,12 +7,7 @@
 </head>
 <body>
 #include("/images/icons.svg")
-<div id="custom-radiator-list-dialog" data-module="custom-radiator-selection" style="display: none">
-  <label for="new">create new: <input type="text" id="new" name="radiator-id">
-    <button id="create" data-type="create-new-radiator">Create</button>
-  </label>
-  <ul class="radiator-list"></ul>
-</div>
+#include("/templates/radiator-selection-dialog.html")
 <nav class="nav" tabindex="-1">
   <div class="container" data-module="index-navigation">
     <a id="cpu" href="#" data-type="select-metric">cpu</a>
