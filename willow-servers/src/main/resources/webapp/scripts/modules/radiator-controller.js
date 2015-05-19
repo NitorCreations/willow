@@ -23,7 +23,7 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   function initGraph(type) {
     if (!render[type]) {
-      throw Error('Graph type not found.');
+      throw new Error('Graph type not found.');
     }
 
     render[type]();
