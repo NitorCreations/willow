@@ -2,8 +2,8 @@ package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -52,7 +53,10 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @SuppressWarnings("restriction")
+@SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
 public class DeployerControl {
   protected final static Logger log = Logger.getLogger("deployer");
   @Inject
@@ -61,19 +65,14 @@ public class DeployerControl {
   protected SigarProxy sigar;
   protected final List<MergeableProperties> launchPropertiesList = new ArrayList<>();
   protected String deployerName;
-  protected static Injector injector;
-  public static ObjectName OBJECT_NAME;
+  protected static final Injector injector = createInjector();
+  public static final ObjectName OBJECT_NAME = createObjectName();
   static {
     try {
-      OBJECT_NAME = new ObjectName("com.nitorcreations.willow.deployer:type=Main");
       setupLogging();
       Register.doIt();
-      injector = Guice.createInjector(
-        new WireModule(new DeployerModule(), new SpaceModule(
-            new URLClassSpace(DeployerControl.class.getClassLoader())
-            )));
       System.setProperty(PROPERTY_KEY_DEPLOYER_HOST, 
-        injector.getInstance(SigarProxy.class).getNetInfo().getHostName());
+          injector.getInstance(SigarProxy.class).getNetInfo().getHostName());
     } catch (Throwable e) {
       e.printStackTrace();
       assert false;
@@ -93,7 +92,7 @@ public class DeployerControl {
       String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
       long termTimeout = 60000;
       if (timeOutEnv != null) {
-        termTimeout = Long.valueOf(timeOutEnv);
+        termTimeout = Long.parseLong(timeOutEnv);
       }
       if (firstPid > 0) {
         try (JMXConnector conn = getJMXConnector(firstPid)) {
@@ -179,17 +178,22 @@ public class DeployerControl {
     System.err.println(error);
     System.exit(1);
   }
+  private static class SshAgentAuhtorizationRequestCustomizer implements RequestCustomizer {
+    private final String username;
+    public SshAgentAuhtorizationRequestCustomizer(String username) {
+      this.username = username;
+    }
+    @Override
+    public void customize(URLConnection conn) {
+      if (conn instanceof HttpURLConnection) {
+        conn.setRequestProperty("Authorization", WebSocketTransmitter.getSshAgentAuthorization(username));
+      }
+    }
+  }
   protected MergeableProperties getURLProperties(String url) {
     MergeableProperties launchProperties = new MergeableProperties();
     final String username = System.getProperty("user.name");
-    launchProperties.setRequestCustomizer(new RequestCustomizer() {
-      @Override
-      public void customize(URLConnection conn) {
-        if (conn instanceof HttpURLConnection) {
-          conn.setRequestProperty("Authorization", WebSocketTransmitter.getSshAgentAuthorization(username));
-        }
-      }
-    });
+    launchProperties.setRequestCustomizer(new SshAgentAuhtorizationRequestCustomizer(username));
     launchProperties.merge(System.getProperties(), url);
     return launchProperties;
   }
@@ -268,5 +272,18 @@ public class DeployerControl {
   }
   public void stop() {
     executor.shutdownNow();
+  }
+  private static ObjectName createObjectName() {
+    try {
+      return new ObjectName("com.nitorcreations.willow.deployer:type=Main");
+    } catch (MalformedObjectNameException e) {
+      throw new RuntimeException("Invalid ObjectName", e);
+    }
+  }
+  private static Injector createInjector() {
+    return Guice.createInjector(
+        new WireModule(new DeployerModule(), new SpaceModule(
+            new URLClassSpace(DeployerControl.class.getClassLoader())
+            )));
   }
 }

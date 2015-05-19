@@ -34,6 +34,18 @@ public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
   private long interval;
   private Map<String, JMXReader> props = new LinkedHashMap<>();
   private Map<Integer, OperationDesriptor> opDescs = new HashMap<>();
+  private static final class JMXAttributeReader implements JMXReader {
+    private final ObjectName objectName;
+    private final String attribute;
+    private JMXAttributeReader(ObjectName objectName, String attribute) {
+      this.objectName = objectName;
+      this.attribute = attribute;
+    }
+    @Override
+    public Object read(MBeanServerConnection server) throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+      return server.getAttribute(objectName, attribute);
+    }
+  }
   private interface JMXReader {
     Object read(MBeanServerConnection server) throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException, IOException, IntrospectionException, ClassNotFoundException;
   }
@@ -53,12 +65,7 @@ public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
         final ObjectName objectName = new ObjectName(properties.getProperty("property[" + i + "].objectname"));
         final String attribute = properties.getProperty("property[" + i + "].attribute");
         if (attribute != null) {
-          props.put(reportname, new JMXReader() {
-            @Override
-            public Object read(MBeanServerConnection server) throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-              return server.getAttribute(objectName, attribute);
-            }
-          });
+          props.put(reportname, new JMXAttributeReader(objectName, attribute));
         } else {
           final String operationName = properties.getProperty("property[" + i + "].method");
           final List<String> argList = tmp.getArrayProperty("property[" + i + "].argument");
@@ -78,6 +85,7 @@ public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
           }
         }
       } catch (MalformedObjectNameException e) {
+        logger.info("Malformed ObjectName:" + properties.getProperty("property[" + i + "].objectname"));
       }
     }
     interval = Long.parseLong(properties.getProperty("interval", "5000"));
@@ -113,28 +121,26 @@ public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
   public void execute() {
     MBeanServerConnection server = getMBeanServerConnection();
     long now = System.currentTimeMillis();
-    if (server != null) {
-      if (now > nextJmx) {
-        try {
-          Map<String, Object> map = new LinkedHashMap<>();
-          for (Entry<String, JMXReader> next : props.entrySet()) {
-            Object val = next.getValue().read(server);
-            if (val != null) {
-              map.put(next.getKey(), val.toString());
-            }
+    if (server != null && now > nextJmx) {
+      try {
+        Map<String, Object> map = new LinkedHashMap<>();
+        for (Entry<String, JMXReader> next : props.entrySet()) {
+          Object val = next.getValue().read(server);
+          if (val != null) {
+            map.put(next.getKey(), val.toString());
           }
-          if (!map.isEmpty()) {
-            HashMessage msg = HashMessage.create(map);
-            msg.addTags("category_customjmx_" + getChildName());
-            transmitter.queue(msg);
-          }
-        } catch (IOException | ReflectionException | AttributeNotFoundException
+        }
+        if (!map.isEmpty()) {
+          HashMessage msg = HashMessage.create(map);
+          msg.addTags("category_customjmx_" + getChildName());
+          transmitter.queue(msg);
+        }
+      } catch (IOException | ReflectionException | AttributeNotFoundException
           | InstanceNotFoundException | IntrospectionException | MBeanException
           | ClassNotFoundException e) {
-          logger.log(Level.WARNING, "Failed to get JMX statistics", e);
-        }
-        nextJmx = nextJmx + interval;
+        logger.log(Level.WARNING, "Failed to get JMX statistics", e);
       }
+      nextJmx = nextJmx + interval;
     }
     try {
       TimeUnit.MILLISECONDS.sleep(nextJmx - now);

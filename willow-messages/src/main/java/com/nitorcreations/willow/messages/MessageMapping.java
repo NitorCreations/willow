@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -61,7 +62,7 @@ public class MessageMapping {
     messageTypes.put(MessageType.OS, OsInfo.class);
     messageTypes.put(MessageType.EVENT, EventMessage.class);
     messageTypes.put(MessageType.HOSTINFO, HostInfoMessage.class);
-    for (java.util.Map.Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
+    for (Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
       messageClasses.put(next.getValue(), next.getKey());
     }
   }

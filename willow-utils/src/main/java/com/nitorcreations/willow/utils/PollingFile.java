@@ -23,7 +23,7 @@ public class PollingFile extends File implements Runnable {
   private transient FileListener listener;
 
   public interface FileListener {
-    public void fileChanged(File file, WatchEvent.Kind<Path> kind);
+    void fileChanged(File file, WatchEvent.Kind<Path> kind);
   }
   public PollingFile(File parent, String child, FileListener listener) {
     super(parent, child);
@@ -85,12 +85,13 @@ public class PollingFile extends File implements Runnable {
     }
   }
   @Override
+  @SuppressWarnings("PMD.UselessOverridingMethod")
   public int hashCode() {
     return super.hashCode();
   }
   @Override
   public boolean equals(Object obj) {
-    if ((obj != null) && obj.getClass().isAssignableFrom(PollingFile.class)) {
+    if (obj != null && obj.getClass().isAssignableFrom(PollingFile.class)) {
       return compareTo((File)obj) == 0;
     }
     return false;

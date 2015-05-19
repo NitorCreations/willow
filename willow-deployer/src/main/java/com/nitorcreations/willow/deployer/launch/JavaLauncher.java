@@ -7,12 +7,14 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_MAIN_CLASS;
 
 import java.io.File;
+import java.util.Locale;
 
 import javax.inject.Named;
 
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class JavaLauncher extends AbstractLauncher {
   protected String mainClass = "";
   protected File launchJar = null;
@@ -43,7 +45,7 @@ public class JavaLauncher extends AbstractLauncher {
     }
     File javaBin = new File(new File(System.getProperty("java.home")), "bin");
     File java = null;
-    if (System.getProperty("os.name").toLowerCase().contains("win")) {
+    if (System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win")) {
       java = new File(javaBin, "java.exe");
     } else {
       java = new File(javaBin, "java");

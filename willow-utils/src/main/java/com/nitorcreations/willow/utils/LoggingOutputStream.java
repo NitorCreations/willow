@@ -182,6 +182,7 @@ public class LoggingOutputStream extends OutputStream {
    *   stream, such bytes should immediately be written to their
    *   intended destination.
    */
+  @SuppressWarnings("PMD.UselessParentheses")
   public void flush() {
     if (count == 0) {
       return;

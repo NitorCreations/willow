@@ -1,5 +1,8 @@
 package com.nitorcreations.willow.deployer.download;
 
+import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.AT_DELIMITERS;
+import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.CURLY_DELIMITERS;;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -7,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import com.nitorcreations.willow.utils.ReplaceTokensInputStream;
@@ -69,7 +73,7 @@ public class FileUtil {
     return filterStream(original, out, replaceTokens, null);
   }
   public static long filterStream(InputStream original, FileOutputStream out, Map<String, String> replaceTokens, DownloadLogger logger) throws IOException {
-    try (InputStream in = new ReplaceTokensInputStream(new BufferedInputStream(original, BUFFER_LEN), replaceTokens, ReplaceTokensInputStream.MAVEN_DELIMITERS)) {
+    try (InputStream in = new ReplaceTokensInputStream(new BufferedInputStream(original, BUFFER_LEN), StandardCharsets.UTF_8, replaceTokens, AT_DELIMITERS, CURLY_DELIMITERS)) {
       long length = copyByteByByte(in, out, logger);
       return length;
     }

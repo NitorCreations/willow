@@ -8,10 +8,12 @@ import org.apache.shiro.guice.web.ShiroWebModule;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 
+import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.nitorcreations.willow.auth.AuthorizedKeys;
 import com.nitorcreations.willow.auth.GitHubOAuthAuthenticatingFilter;
+import com.nitorcreations.willow.auth.GitHubOAuthConfig;
 import com.nitorcreations.willow.auth.NitorGithubOAuthRealm;
 import com.nitorcreations.willow.auth.PublicKeyAuthenticationFilter;
 import com.nitorcreations.willow.auth.PublicKeyRealm;
@@ -50,7 +52,7 @@ public class WillowShiroModule extends ShiroWebModule {
   protected void bindEnduserRealm() {
     try {
       if(useGitHubOAuth()) {
-        bindRealm().to(NitorGithubOAuthRealm.class).asEagerSingleton();
+        bindRealm().toConstructor(NitorGithubOAuthRealm.class.getConstructor(GitHubOAuthConfig.class)).asEagerSingleton();
       } else {
         bindRealm().toConstructor(IniRealm.class.getConstructor(Ini.class)).asEagerSingleton();
       }
@@ -66,7 +68,10 @@ public class WillowShiroModule extends ShiroWebModule {
   AuthorizedKeys loadAuthorizedKeys() {
     return AuthorizedKeys.fromUrl(System.getProperty("authorized.keys", "classpath:authorized_keys"));
   }
-
+  @Provides
+  GitHubOAuthConfig loadGitHubOAuthConfig() {
+    return GitHubOAuthConfig.fromUrl(System.getProperty("github.oauthconf", "classpath:github-oauth.conf"));
+  }
   protected Key<? extends AuthenticatingFilter> getEndUserFilter() {
     return useGitHubOAuth()
             ? Key.get(GitHubOAuthAuthenticatingFilter.class)
@@ -76,7 +81,10 @@ public class WillowShiroModule extends ShiroWebModule {
     return Key.get(PublicKeyAuthenticationFilter.class);
   }
   private boolean useGitHubOAuth() {
-    return getClass().getResource("/github-oauth.properties") != null;
+    try {
+      return !GitHubOAuthConfig.fromUrl(System.getProperty("github.oauthconf", "classpath:github-oauth.conf")).getClientId().isEmpty();
+    } catch (ConfigurationException e) {
+      return false;
+    }
   }
-
 }

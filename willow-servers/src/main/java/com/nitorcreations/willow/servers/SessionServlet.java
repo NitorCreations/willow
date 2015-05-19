@@ -12,7 +12,11 @@ import org.apache.shiro.subject.Subject;
 
 import com.google.gson.Gson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @Singleton
+@SuppressFBWarnings(value={"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"},
+  justification="Fields encoded into JSON and thusly used")
 public class SessionServlet extends HttpServlet {
   private static final long serialVersionUID = -8042909270647592309L;
   public static class SessionInfo {

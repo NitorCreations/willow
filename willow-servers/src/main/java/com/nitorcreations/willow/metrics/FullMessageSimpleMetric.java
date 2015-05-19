@@ -20,10 +20,9 @@ public abstract class FullMessageSimpleMetric<T extends AbstractMessage> extends
       retTimes.add(Long.valueOf(curr));
       curr += step;
     }
-    Collection<T> preceeding = new ArrayList<T>();
     for (Long nextTime : retTimes) {
       long afterNextTime = nextTime + 1;
-      preceeding = rawData.headMap(afterNextTime).values();
+      Collection<T> preceeding = rawData.headMap(afterNextTime).values();
       rawData = rawData.tailMap(afterNextTime);
       List<T> tmplist = new ArrayList<T>(preceeding);
       if (tmplist.isEmpty()) {

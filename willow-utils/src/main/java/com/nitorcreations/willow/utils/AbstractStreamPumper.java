@@ -10,8 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractStreamPumper implements Runnable {
   protected AtomicBoolean running = new AtomicBoolean(true);
   protected final BufferedReader in;
-  protected final String name;
-
+  private final String name;
   public AbstractStreamPumper(InputStream in, String name, Charset charset) {
     this.in = new BufferedReader(new InputStreamReader(in, charset));
     this.name = name;
@@ -36,4 +35,8 @@ public abstract class AbstractStreamPumper implements Runnable {
   }
 
   public abstract void handle(String line);
+
+  public String getName() {
+    return name;
+  }
 }

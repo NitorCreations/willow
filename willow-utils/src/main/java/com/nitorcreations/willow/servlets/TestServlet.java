@@ -20,7 +20,7 @@ public class TestServlet extends HttpServlet {
     if (wait == null)
       wait = new String[] { randomWait() };
     try {
-      Thread.sleep(Integer.valueOf(wait[0]));
+      Thread.sleep(Integer.parseInt(wait[0]));
       res.setContentType("text/plain");
       res.getOutputStream().write("OK".getBytes(StandardCharsets.UTF_8), 0, 2);
       res.getOutputStream().close();

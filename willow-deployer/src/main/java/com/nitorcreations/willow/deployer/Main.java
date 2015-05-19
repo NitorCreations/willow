@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -69,8 +70,12 @@ import com.nitorcreations.willow.messages.event.DeployerStartEvent;
 import com.nitorcreations.willow.messages.event.DeployerStopEvent;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @Named
 @Singleton
+@SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class Main extends DeployerControl implements MainMBean {
   private List<LaunchMethod> children = new ArrayList<>();
   private List<StatisticsSender> statistics = new ArrayList<>();
@@ -135,8 +140,12 @@ public class Main extends DeployerControl implements MainMBean {
               injector.injectMembers(nextStat);
               nextStat.setProperties(mergedProperties.getPrefixed(PROPERTY_KEY_PREFIX_STATISTICS + "[" + i + "]"));
               statistics.add(nextStat);
-              executor.submit(nextStat);
+              Future<?> job = executor.submit(nextStat);
+              if (!job.isDone()) {
+                log.fine("Started " + stats.get(i));
+              }
             } catch (InstantiationException | IllegalAccessException e) {
+              log.info("Failed to start statistic " + stats.get(i) + ":" + e.getMessage());
             }
           }
         }
@@ -174,9 +183,9 @@ public class Main extends DeployerControl implements MainMBean {
     for (final MergeableProperties launchProps : launchPropertiesList) {
       LaunchMethod launcher = null;
       try {
-        String method = launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + "." + PROPERTY_KEY_SUFFIX_METHOD);
-        if (method != null && LaunchMethod.TYPE.valueOf(method.toUpperCase()) != null) {
-          launcher = injector.getInstance(LaunchMethod.TYPE.valueOf(method.toUpperCase()).getLauncher());
+        LaunchMethod.TYPE method = LaunchMethod.TYPE.fromString(launchProps.getProperty(PROPERTY_KEY_PREFIX_LAUNCH + "." + PROPERTY_KEY_SUFFIX_METHOD));
+        if (method != null) {
+          launcher = injector.getInstance(method.getLauncher());
         } else {
           continue;
         }
@@ -374,11 +383,11 @@ public class Main extends DeployerControl implements MainMBean {
       int i = 0;
       for (String nextMethod : properties.getArrayProperty(hookPrefix, "." + PROPERTY_KEY_SUFFIX_METHOD)) {
         LaunchMethod launcher = null;
-        launcher = injector.getInstance(LaunchMethod.TYPE.valueOf(nextMethod.toUpperCase()).getLauncher());
+        launcher = injector.getInstance(LaunchMethod.TYPE.valueOf(nextMethod.toUpperCase(Locale.ENGLISH)).getLauncher());
         String prefix = hookPrefix + "[" + i + "]";
         MergeableProperties childProps = getChildProperties(properties, prefix, i);
         launcher.setProperties(childProps);
-        long timeout = Long.valueOf(properties.getProperty(prefix + PROPERTY_KEY_SUFFIX_TIMEOUT, "30"));
+        long timeout = Long.parseLong(properties.getProperty(prefix + PROPERTY_KEY_SUFFIX_TIMEOUT, "30"));
         Future<Integer> ret = executor.submit(launcher);
         try {
           int retVal = ret.get(timeout, TimeUnit.SECONDS);

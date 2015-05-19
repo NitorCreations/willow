@@ -7,7 +7,10 @@ import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @Singleton
+@SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
 public class RestartChild extends DeployerControl {
   public static void main(String[] args) {
     injector.getInstance(RestartChild.class).doMain(args);

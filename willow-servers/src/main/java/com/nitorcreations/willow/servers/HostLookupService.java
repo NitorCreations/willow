@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.servers;
 
 public interface HostLookupService {
-	public String getAdminUserFor(String tagHost);
-	public String getResolvableHostname(String tagHost);
-	public int getSshPort(String host);
+	String getAdminUserFor(String tagHost);
+	String getResolvableHostname(String tagHost);
+	int getSshPort(String host);
 }

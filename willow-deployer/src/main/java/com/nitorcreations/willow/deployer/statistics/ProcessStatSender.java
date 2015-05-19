@@ -29,6 +29,9 @@ public class ProcessStatSender extends AbstractStatisticsSender {
 
   @Override
   public void execute() {
+    if (conf == null) {
+      throw new IllegalStateException("Tried to start unconfigured statistics sender");
+    }
     ProcCpu pCStat;
     long now = System.currentTimeMillis();
     if (now > nextProcCpus) {

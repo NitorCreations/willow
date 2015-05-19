@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
+@SuppressWarnings("PMD.UnusedModifier")
 public interface PropertyKeys {
   public static final String PROPERTY_KEY_LAUNCH_URLS = "deployer.launch.urls";
   public static final String PROPERTY_KEY_PREFIX_LAUNCH = "deployer.launch";

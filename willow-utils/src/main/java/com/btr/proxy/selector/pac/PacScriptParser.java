@@ -12,7 +12,7 @@ public interface PacScriptParser {
 	 * 
 	 * @return a PacScriptSource.
 	 **************************************************************************/
-	public PacScriptSource getScriptSource();
+	PacScriptSource getScriptSource();
 
 	/*************************************************************************
 	 * Evaluates the given URL and host against the PAC script.
@@ -25,5 +25,5 @@ public interface PacScriptParser {
 	 * @throws ProxyEvaluationException
 	 *             on execution error.
 	 ************************************************************************/
-	public String evaluate(String url, String host) throws ProxyEvaluationException;
+	String evaluate(String url, String host) throws ProxyEvaluationException;
 }

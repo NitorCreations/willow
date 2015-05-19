@@ -4,19 +4,15 @@ import java.lang.reflect.ParameterizedType;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 
 import com.google.gson.Gson;
 import com.nitorcreations.willow.messages.AbstractMessage;
 import com.nitorcreations.willow.messages.MessageMapping;
 
-public abstract class FullMessageMetric<T extends AbstractMessage, R> implements Metric {
+public abstract class FullMessageMetric<T extends AbstractMessage, R> extends AbstractMetric<T> {
   protected SortedMap<Long, T> rawData;
   private final Class<T> type;
   
@@ -30,17 +26,12 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> implements
     for (SearchHit next : response.getHits().getHits()) {
       T nextMsg = gson.fromJson(next.getSourceAsString(), type);
       nextMsg.setId(next.getId());
-      rawData.put(nextMsg.timestamp, nextMsg);
+      rawData.put(nextMsg.getTimestamp(), nextMsg);
     }
   }
   @Override
   public R calculateMetric(Client client, MetricConfig conf) {
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(MessageMapping.map(type).lcName()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.getStop() - conf.getStart()) / 10);
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop() + conf.getStep()).includeLower(false).includeUpper(true));
-    for (String tag : conf.getTags()) {
-      query = query.must(QueryBuilders.termQuery("tags", tag));
-    }
-    SearchResponse response = builder.setQuery(query).get();
+    SearchResponse response = executeQuery(client, conf, MessageMapping.map(type).lcName());
     readResponse(response);
     return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
   }

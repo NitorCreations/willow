@@ -22,6 +22,7 @@ import java.util.logging.*;
 
 @Named
 @Singleton
+@SuppressWarnings("PMD")
 public class Main {
 
   private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
@@ -59,7 +60,6 @@ public class Main {
     for (String arg : args) {
       properties = new MergeableProperties().merge(System.getProperties(), arg);
     }
-
     //read groups from configuration
     MergeableProperties allGroupProperties = properties.getPrefixed("willow-autoscaler.groups");
     int i = 0;

@@ -144,7 +144,9 @@ public class WebSocketTransmitter {
         try {
           byte[] sig = id.getSignature(sign);
           ret.append(" ").append(printBase64Binary(sig));
-        } catch (Throwable t) {}
+        } catch (Throwable t) {
+          logger.log(Level.FINE, "Failed to add signature: " + t.getMessage());
+        }
       }
     }
     return ret.toString();
@@ -163,7 +165,7 @@ public class WebSocketTransmitter {
         while (running && !Thread.currentThread().isInterrupted()) {
           try {
             try {
-              if ((!client.isRunning() && !client.isStarting()) || client.isFailed()) {
+              if (!client.isRunning() && !client.isStarting() || client.isFailed()) {
                 connect();
               }
             } catch (Exception e) {

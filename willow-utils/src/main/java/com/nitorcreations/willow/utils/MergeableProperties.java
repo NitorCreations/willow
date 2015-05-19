@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -33,17 +34,21 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 
 import com.nitorcreations.willow.protocols.Register;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class MergeableProperties extends Properties {
   public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
   public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
   public static final Pattern SCRIPT_REGEX = Pattern.compile("(.*?)(\\<script\\>(.*?)\\<\\/script\\>)", Pattern.DOTALL + Pattern.MULTILINE);
   public static final String URL_PREFIX_CLASSPATH = "classpath:";
   public static final String INCLUDE_PROPERTY = "include.properties";
+  @SuppressFBWarnings(value={"SE_TRANSIENT_FIELD_NOT_RESTORED"}, justification="log always freshly initialized")
   private final transient Logger log = Logger.getLogger(getClass().getName());
   private final String[] prefixes;
   private static final long serialVersionUID = -2166886363149152785L;
   private LinkedHashMap<String, String> table = new LinkedHashMap<>();
   private final HashMap<String, Integer> arrayIndexes = new HashMap<>();
+  @SuppressFBWarnings(value={"SE_TRANSIENT_FIELD_NOT_RESTORED"}, justification="engine always freshly initialized")
   private transient ScriptEngine engine = new ScriptEngineManager().getEngineByName("javascript");
   private final boolean allowScripts;
   private transient RequestCustomizer customizer = null;
@@ -83,7 +88,7 @@ public class MergeableProperties extends Properties {
   }
 
   public MergeableProperties merge(String name) {
-    if (pathEndsWith(name.toLowerCase(), ".yml")) {
+    if (pathEndsWith(name.toLowerCase(Locale.ENGLISH), ".yml")) {
       mergeYml(name);
     } else {
       mergeProperties(name);
@@ -109,7 +114,7 @@ public class MergeableProperties extends Properties {
         putAll(prev);
       }
     }
-    if (name.toLowerCase().endsWith(".yml")) {
+    if (name.toLowerCase(Locale.ENGLISH).endsWith(".yml")) {
       mergeYml(name);
     } else {
       mergeProperties(name);
@@ -145,9 +150,9 @@ public class MergeableProperties extends Properties {
       ret.append(m.group(1));
       try {
         if (allowEval) {
-          ret.append(engine.eval(m.group(3).toString()));
+          ret.append(engine.eval(m.group(3)));
         } else {
-          ret.append(m.group(3).toString());
+          ret.append(m.group(3));
         }
       } catch (ScriptException e) {
         ret.append(m.group(2));
@@ -236,10 +241,10 @@ public class MergeableProperties extends Properties {
         final int idx = pair.indexOf("=");
         try {
           final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
-          final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : null;
+          final String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : "";
           put(key, value);
         } catch (UnsupportedEncodingException e) {
-          assert false : "UTF-8 must be available";
+          assert false : "UTF-8 not available";
         }
       }
     }
@@ -289,6 +294,7 @@ public class MergeableProperties extends Properties {
   public Object put(Object key, Object value) {
     return put(key, value, allowScripts);
   }
+  @SuppressWarnings("PMD.UselessParentheses")
   public Object put(Object key, Object value, boolean allowEval) {
     String k = resolveIndexes((String) key);
     String v = resolveIndexes((String) value);
@@ -301,10 +307,8 @@ public class MergeableProperties extends Properties {
     }
     if (INCLUDE_PROPERTY.equals(k) || k.startsWith(INCLUDE_PROPERTY + "[")) {
       //Don't allow include if eval is disallowed
-      if (allowEval) {
-        if (!((v.toLowerCase().endsWith(".yml") && mergeYml(v)) || (mergeProperties(v)))) {
-          return table.put(k, v);
-        }
+      if (allowEval && !((v.toLowerCase(Locale.ENGLISH).endsWith(".yml") && mergeYml(v)) || (mergeProperties(v)))) {
+        return table.put(k, v);
       }
       return null;
     }
@@ -372,7 +376,7 @@ public class MergeableProperties extends Properties {
   @Override
   public String getProperty(String key) {
     String oval = table.get(key);
-    return ((oval == null) && (defaults != null)) ? defaults.getProperty(key) : oval;
+    return oval == null && defaults != null ? defaults.getProperty(key) : oval;
   }
 
   public List<String> getArrayProperty(String key, String suffix) {
@@ -457,7 +461,10 @@ public class MergeableProperties extends Properties {
   }
 
   @Override
+  @SuppressFBWarnings(value={"CN_IDIOM_NO_SUPER_CALL"}, 
+    justification="Don't actually want anything from parent class except for load and save functions" )
   public synchronized Object clone() {
+    super.clone();
     return new MergeableProperties(defaults, table, allowScripts, prefixes);
   }
 

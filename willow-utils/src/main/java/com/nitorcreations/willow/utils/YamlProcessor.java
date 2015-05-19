@@ -168,7 +168,7 @@ public class YamlProcessor {
     } catch (IOException ex) {
       handleProcessError(resource, ex);
     }
-    return (count > 0);
+    return count > 0;
   }
 
   private void handleProcessError(InputStream resource, IOException ex) {
@@ -394,33 +394,42 @@ public class YamlProcessor {
             node.getStartMark(), e.getMessage(), node.getEndMark());
       }
     }
-
+    private static class DefaultMap extends AbstractMap<Object, Object> {
+      private final Map<Object, Object> delegate;
+      public DefaultMap(Map<Object, Object> delegate) {
+        this.delegate = delegate;
+      }
+      @Override
+      public Object put(Object key, Object value) {
+        if (delegate.containsKey(key)) {
+          throw new IllegalStateException("duplicate key: " + key);
+        }
+        return delegate.put(key, value);
+      }
+      @Override
+      public Set<Entry<Object, Object>> entrySet() {
+        return delegate.entrySet();
+      }
+    }
     @Override
     protected Map<Object, Object> createDefaultMap() {
       final Map<Object, Object> delegate = super.createDefaultMap();
-      return new AbstractMap<Object, Object>() {
-        @Override
-        public Object put(Object key, Object value) {
-          if (delegate.containsKey(key)) {
-            throw new IllegalStateException("duplicate key: " + key);
-          }
-          return delegate.put(key, value);
-        }
-        @Override
-        public Set<Entry<Object, Object>> entrySet() {
-          return delegate.entrySet();
-        }
-      };
+      return new DefaultMap(delegate);
+    }
+  }
+  private static class PutAllMatchCallback implements MatchCallback {
+    private final Properties properties;
+    public PutAllMatchCallback(Properties properties) {
+      this.properties = properties;
+    }
+    @Override
+    public void process(Properties properties, Map<String, Object> map) {
+      this.properties.putAll(properties);
     }
   }
   protected Properties createProperties() {
     final Properties result = new Properties();
-    process(new MatchCallback() {
-      @Override
-      public void process(Properties properties, Map<String, Object> map) {
-        result.putAll(properties);
-      }
-    });
+    process(new PutAllMatchCallback(result));
     return result;
   }
 

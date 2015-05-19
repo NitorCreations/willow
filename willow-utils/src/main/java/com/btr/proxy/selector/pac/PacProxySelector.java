@@ -9,9 +9,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 
 /*****************************************************************************
@@ -143,13 +143,13 @@ public class PacProxySelector extends ProxySelector {
 			return Proxy.NO_PROXY;
 		}
 		String proxyDef = pacResult.trim();
-		if (proxyDef.toUpperCase().startsWith(PAC_DIRECT)) {
+		if (proxyDef.toUpperCase(Locale.ENGLISH).startsWith(PAC_DIRECT)) {
 			return Proxy.NO_PROXY;
 		}
 
 		// Check proxy type.
 		Proxy.Type type = Proxy.Type.HTTP;
-		if (proxyDef.toUpperCase().startsWith(PAC_SOCKS)) {
+		if (proxyDef.toUpperCase(Locale.ENGLISH).startsWith(PAC_SOCKS)) {
 			type = Proxy.Type.SOCKS;
 		}
 
@@ -169,7 +169,6 @@ public class PacProxySelector extends ProxySelector {
 	 public static final int DEFAULT_PROXY_PORT = 80;
 	  
 	  private static List<Proxy> noProxyList;
-	    private static Pattern pattern = Pattern.compile("\\w*?:?/*([^:/]+):?(\\d*)/?");
 	  
 	  /*************************************************************************
 	   * Gets an unmodifiable proxy list that will have as it's only entry an DIRECT proxy.

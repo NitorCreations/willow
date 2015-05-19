@@ -12,7 +12,7 @@ public interface CloudAdapter {
    *
    * @return cloudProviderId String
    */
-  public String getCloudProviderId();
+  String getCloudProviderId();
 
   /**
    * Query the cloud provider for status of an auto scaling group.

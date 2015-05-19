@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class MD5SumInputStream extends FilterInputStream {
   private final MessageDigest digest;
 
@@ -38,7 +40,8 @@ public class MD5SumInputStream extends FilterInputStream {
   public byte[] digest() {
     return digest.digest();
   }
-
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"},
+      justification="null check in check-with-resources magic bytecode")
   public static byte[] getMd5FromURL(URL url) throws IOException {
     try (ByteArrayOutputStream out = new ByteArrayOutputStream();
       InputStream in = url.openConnection().getInputStream()) {

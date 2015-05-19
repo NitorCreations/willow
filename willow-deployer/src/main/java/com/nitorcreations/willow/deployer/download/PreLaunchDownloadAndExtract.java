@@ -39,7 +39,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
     ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
     int downloads = 0;
     List<Future<Boolean>> futures = new ArrayList<>();
-    for (int i = 0; null != (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]")); i++) {
+    for (int i = 0; null != properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]"); i++) {
       final Properties downloadProperties = Main.getChildProperties(properties, PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]", i);
       Future<Boolean> next = executor.submit(new Callable<Boolean>() {
         @Override
@@ -62,7 +62,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
       });
       futures.add(next);
     }
-    for (int i = 0; null != (properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]")); i++) {
+    for (int i = 0; null != properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]"); i++) {
       final Properties downloadProperties = Main.getChildProperties(properties, PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]", i);
       Future<Boolean> next = executor.submit(new Callable<Boolean>() {
         @Override

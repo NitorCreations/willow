@@ -16,9 +16,9 @@ import com.nitorcreations.willow.utils.PollingFile.FileListener;
 public class FilePollingProperties implements FileListener {
   private Logger logger = Logger.getLogger(getClass().getCanonicalName());
   public interface PropertyChangeListerner {
-    public void propertyValueChanged(String key, String newValue, String oldValue);
-    public void propertyAdded(String key, String value);
-    public void propertyRemoved(String key, String value);
+    void propertyValueChanged(String key, String newValue, String oldValue);
+    void propertyAdded(String key, String value);
+    void propertyRemoved(String key, String value);
   }
   public static class LoggingPropertyChangeListener implements PropertyChangeListerner {
     private final Logger log;
@@ -102,6 +102,7 @@ public class FilePollingProperties implements FileListener {
             listener.propertyRemoved(next.getKey(), next.getValue());
           }
       } catch (IOException e) {
+        logger.fine("Failed to load new properties");
       }
     }
   }

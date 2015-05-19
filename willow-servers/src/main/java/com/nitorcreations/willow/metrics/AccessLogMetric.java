@@ -17,12 +17,21 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
   private interface ValueGetter {
     long getValue(AccessLogEntry next);
   }
-  private ValueGetter getter = new ValueGetter() {
+  private static class DurationValueGetter implements ValueGetter {
     @Override
     public long getValue(AccessLogEntry next) {
       return next.getDuration();
     }
-  };
+  }
+  private static class ReturnCodeValueGetter implements ValueGetter {
+    @Override
+    public long getValue(AccessLogEntry next) {
+      return next.getStatus();
+    }
+  }
+  private static final DurationValueGetter DURATION = new DurationValueGetter();
+  private static final ReturnCodeValueGetter RETURNCODE = new ReturnCodeValueGetter();
+  private ValueGetter getter = DURATION;
 
   @Override
   public Collection<SeriesData<Long, Long>> calculateMetric(Client client, MetricConfig conf) {
@@ -31,12 +40,7 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
       limitValues[i] = Long.parseLong(conf.getLimits()[i]);
     }
     if (conf.hasType("statuses")) {
-      getter = new ValueGetter() {
-        @Override
-        public long getValue(AccessLogEntry next) {
-          return next.getStatus();
-        }
-      };
+      getter = RETURNCODE;
       if (conf.getLimits().length == 0) {
         limitValues = new long[] { 200L, 300L, 400L, 500L, 600L };
       }

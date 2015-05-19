@@ -3,6 +3,6 @@ package com.nitorcreations.willow.deployer.statistics;
 import java.util.Properties;
 
 public interface StatisticsSender extends Runnable {
-  public void setProperties(Properties properties);
-  public void stop();
+  void setProperties(Properties properties);
+  void stop();
 }

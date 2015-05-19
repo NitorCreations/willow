@@ -74,6 +74,62 @@
           <autoReleaseAfterClose>true</autoReleaseAfterClose>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>checkfindbugs</id>
+            <phase>package</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <effort>Max</effort>
+              <threshold>Low</threshold>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.4</version>
+        <executions>
+          <execution>
+            <id>checkpmd</id>
+            <phase>package</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <linkXref>true</linkXref>
+              <minimumTokens>100</minimumTokens>
+              <targetJdk>1.7</targetJdk>
+              <excludes>
+                <exclude>**/test/*.java</exclude>
+                <exclude>**/HelpMojo.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>checkcpd</id>
+            <phase>package</phase>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
+            <configuration>
+              <linkXref>true</linkXref>
+              <minimumTokens>100</minimumTokens>
+              <targetJdk>1.7</targetJdk>
+              <excludes>
+                <exclude>**/test/*.java</exclude>
+                <exclude>**/HelpMojo.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -426,6 +482,7 @@
           <targetJdk>1.7</targetJdk>
           <excludes>
             <exclude>**/test/*.java</exclude>
+            <exclude>**/HelpMojo.java</exclude>
           </excludes>
         </configuration>
       </plugin>

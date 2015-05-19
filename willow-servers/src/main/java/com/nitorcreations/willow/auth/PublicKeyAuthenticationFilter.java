@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.auth;
 
+import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.inject.Singleton;
@@ -33,7 +34,7 @@ public class PublicKeyAuthenticationFilter extends BasicHttpAuthenticationFilter
     }
     
     String[] header = authorizationHeader.split("\\s+");
-    if (header.length < 3 || !scheme.equals(header[0].toUpperCase())) {
+    if (header.length < 3 || !scheme.equals(header[0].toUpperCase(Locale.ENGLISH))) {
       return createToken("", null, null, request);
     }
     String[] unameNow = Base64.decodeToString(header[1]).split(":");
@@ -42,7 +43,7 @@ public class PublicKeyAuthenticationFilter extends BasicHttpAuthenticationFilter
     long currentTime = System.currentTimeMillis();
     long wStart = currentTime - 15000;
     long wEnd = currentTime + 15000;
-    if (!((timestamp > wStart) && (timestamp < wEnd)) || timeStamps.contains(timestamp)) {
+    if (!(timestamp > wStart && timestamp < wEnd) || timeStamps.contains(timestamp)) {
       return createToken("", null, null, request);
     }
     timeStamps.add(timestamp);

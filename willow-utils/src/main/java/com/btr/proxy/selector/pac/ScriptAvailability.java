@@ -21,16 +21,10 @@ abstract class ScriptAvailability {
 			Class<?> managerClass = Class.forName("javax.script.ScriptEngineManager");
 			Method m = managerClass.getMethod("getEngineByMimeType", String.class);
 			engine = m.invoke(managerClass.newInstance(), "text/javascript");
-		} catch (ClassNotFoundException e) {
-			// javax.script not available
-		} catch (NoSuchMethodException e) {
-			// javax.script not available
-		} catch (IllegalAccessException e) {
-			// javax.script not available
-		} catch (InvocationTargetException e) {
-			// javax.script not available
-		} catch (InstantiationException e) {
-			// javax.script not available
+		} catch (ClassNotFoundException | NoSuchMethodException | 
+		    IllegalAccessException | InvocationTargetException | 
+		    InstantiationException e) {
+		  return false;
 		}
 
 		return engine != null;

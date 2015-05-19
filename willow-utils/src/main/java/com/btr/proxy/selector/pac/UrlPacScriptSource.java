@@ -12,6 +12,7 @@ import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,8 +52,8 @@ public class UrlPacScriptSource implements PacScriptSource {
 
 	public synchronized String getScriptContent() throws IOException {
 		if (this.scriptContent == null || 
-				(this.expireAtMillis > 0 
-						&& this.expireAtMillis < System.currentTimeMillis())) {
+				this.expireAtMillis > 0 
+						&& this.expireAtMillis < System.currentTimeMillis()) {
 			try {
 				// Reset it again with next download we should get a new expire info
 				this.expireAtMillis = 0;   
@@ -98,7 +99,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 				r.close();
 			} 
 			return result.toString();
-		} catch (Exception e) {
+		} catch (URISyntaxException e) {
 			System.out.println(System.getProperty("user.dir"));
 			log.log(Level.INFO, "File reading error.", e);
 			throw new IOException(e.getMessage());
@@ -232,7 +233,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 		if (contentType != null) {
 			String[] paramList = contentType.split(";");
 			for (String param : paramList) {
-				if (param.toLowerCase().trim().startsWith("charset") && param.indexOf("=") != -1) {
+				if (param.toLowerCase(Locale.ENGLISH).trim().startsWith("charset") && param.indexOf("=") != -1) {
 					result = param.substring(param.indexOf("=")+1).trim();
 				}
 			}
@@ -256,7 +257,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 	public boolean isScriptValid() {
 		try {
 			String script = getScriptContent();
-			if (script == null || script.trim().length() == 0) {
+			if (script.trim().length() == 0) {
 				log.log(Level.FINE, "PAC script is empty. Skipping script!");
 				return false;
 			}

@@ -38,7 +38,7 @@ public class ApplicationServletModule extends ServletModule {
     defaultInit.put("welcomeServlets", "true");
     if ("dev".equals(env)) {
       bind(ElasticsearchProxy.class);
-      bind(TestServlet.class).toInstance(new TestServlet());;
+      bind(TestServlet.class).toInstance(new TestServlet());
       serve("/test/*").with(TestServlet.class);
       serve("/search/*").with(ElasticsearchProxy.class);
       defaultInit.put("gzip", "false");

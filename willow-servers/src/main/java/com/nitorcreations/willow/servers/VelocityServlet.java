@@ -3,7 +3,6 @@ package com.nitorcreations.willow.servers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.LinkedHashMap;
 import java.util.Properties;
 
 import javax.servlet.ServletContext;
@@ -107,8 +106,5 @@ public class VelocityServlet extends HttpServlet {
     } catch (final MethodInvocationException e) {
       throw new ServletException(e);
     }
-  }
-  private LinkedHashMap<String, Object> newMap() {
-    return new LinkedHashMap<String, Object>();
   }
 }

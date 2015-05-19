@@ -40,7 +40,12 @@ public class PublicKeyRealm implements Realm {
   }
   @Override
   public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-    PublicKeyAuthenticationToken pkToken = (PublicKeyAuthenticationToken)token;
+    PublicKeyAuthenticationToken pkToken;
+    if (token instanceof PublicKeyAuthenticationToken) {
+      pkToken= (PublicKeyAuthenticationToken)token;
+    } else {
+      return null;
+    }
     boolean found = false;
     for (AuthorizedKey next : authorizedKeys.keys()) {
       for (byte[] nextSig : pkToken.getSignatures()) {
@@ -84,7 +89,8 @@ public class PublicKeyRealm implements Realm {
           sig.update(pkToken.getSign());
           try {
             verified = sig.verify(nextSig);
-          } catch (Throwable t) { // verify failed
+          } catch (Throwable t) {
+            log.finer("Did not verify with " + next.comment);
           }
           if (verified) {
             found = true;

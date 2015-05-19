@@ -43,6 +43,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
+@SuppressWarnings({"PMD.TooManyStaticImports", "PMD.AvoidUsingOctalValues"})
 public class Extractor implements Callable<Boolean> {
   private final Properties properties;
   private final File target;
@@ -95,7 +96,7 @@ public class Extractor implements Callable<Boolean> {
       }
       logger.log(Level.INFO, "Processed " + entries + " entries");
       return true;
-    } catch (Exception e) {
+    } catch (IOException | CompressorException | ArchiveException e) {
       logger.log(Level.WARNING, "Failed to extract " + target.getAbsolutePath(), e);
       return false;
     }
@@ -171,14 +172,15 @@ public class Extractor implements Callable<Boolean> {
 
   public Set<PosixFilePermission> getPermissions(int mode) {
     Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
-    for (int mask : perms.keySet()) {
+    for (Entry<Integer, PosixFilePermission> maskEntry : perms.entrySet()) {
+      int mask = maskEntry.getKey().intValue();
       if (mask == (mode & mask)) {
-        permissions.add(perms.get(mask));
+        permissions.add(maskEntry.getValue());
       }
     }
     return permissions;
   }
-
+  @SuppressWarnings("PMD.CollapsibleIfStatements")
   private void extractEntry(InputStream is, ArchiveEntry entry, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers, boolean overwrite) throws IOException {
     File dest = new File(destFolder, entry.getName()).getCanonicalFile();
     if (globMatches(entry.getName(), extractMatchers) && !globMatches(entry.getName(), skipMatchers)) {

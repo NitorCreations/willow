@@ -7,24 +7,19 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
-public abstract class SimpleMetric<L, T> implements Metric {
-  protected SortedMap<Long, L> rawData;
+public abstract class SimpleMetric<L, T> extends AbstractMetric<T> {
+  protected SortedMap<Long, L> rawData = new TreeMap<Long, L>();;
   private Map<String, SearchHitField> fields;
   public abstract String getType();
 
   public abstract String[] requiresFields();
 
   protected void readResponse(SearchResponse response) {
-    rawData = new TreeMap<Long, L>();
     for (SearchHit next : response.getHits().getHits()) {
       fields = next.getFields();
       Long timestamp = fields.get("timestamp").value();
@@ -47,12 +42,7 @@ public abstract class SimpleMetric<L, T> implements Metric {
 
   @Override
   public List<TimePoint> calculateMetric(Client client, MetricConfig conf) {
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(getType()).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.getStop() - conf.getStart()) / 10).addField("timestamp").addFields(requiresFields());
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop() + conf.getStep()).includeLower(false).includeUpper(true));
-    for (String tag : conf.getTags()) {
-      query = query.must(QueryBuilders.termQuery("tags", tag));
-    }
-    SearchResponse response = builder.setQuery(query).get();
+    SearchResponse response = executeQuery(client, conf, getType());
     readResponse(response);
     int len = (int) ((conf.getStop() - conf.getStart()) / conf.getStep()) + 1;
     List<TimePoint> ret = new ArrayList<TimePoint>();
@@ -64,10 +54,9 @@ public abstract class SimpleMetric<L, T> implements Metric {
       retTimes.add(Long.valueOf(curr));
       curr += conf.getStep();
     }
-    Collection<L> preceeding = new ArrayList<L>();
     for (Long nextTime : retTimes) {
       long afterNextTime = nextTime + 1;
-      preceeding = rawData.headMap(afterNextTime).values();
+      Collection<L> preceeding = rawData.headMap(afterNextTime).values();
       rawData = rawData.tailMap(afterNextTime);
       List<L> tmplist = new ArrayList<L>(preceeding);
       if (tmplist.isEmpty()) {

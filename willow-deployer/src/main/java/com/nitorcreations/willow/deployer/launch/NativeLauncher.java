@@ -8,7 +8,7 @@ import javax.inject.Named;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 @Named
-public class NativeLauncher extends AbstractLauncher implements LaunchMethod {
+public class NativeLauncher extends AbstractLauncher {
   @Override
   public void setProperties(MergeableProperties properties, LaunchCallback callback) {
     super.setProperties(properties, callback);

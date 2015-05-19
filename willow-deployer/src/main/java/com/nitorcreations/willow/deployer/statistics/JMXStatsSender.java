@@ -42,19 +42,15 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
   public void execute() {
     MBeanServerConnection server = getMBeanServerConnection();
     long now = System.currentTimeMillis();
-    if (server != null) {
-      if (now > nextJmx) {
-        try {
-          JmxMessage msg = getJmxStats();
-          if (msg != null) {
-            msg.addTags("category_jmx_" + getChildName());
-            transmitter.queue(msg);
-          }
-        } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
-          logger.log(Level.WARNING, "Failed to get JMX statistics", e);
-        }
-        nextJmx = nextJmx + conf.getIntervalJmx();
+    if (server != null && now > nextJmx) {
+      try {
+        JmxMessage msg = getJmxStats();
+        msg.addTags("category_jmx_" + getChildName());
+        transmitter.queue(msg);
+      } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
+        logger.log(Level.WARNING, "Failed to get JMX statistics", e);
       }
+      nextJmx = nextJmx + conf.getIntervalJmx();
     }
     try {
       TimeUnit.MILLISECONDS.sleep(conf.shortest());

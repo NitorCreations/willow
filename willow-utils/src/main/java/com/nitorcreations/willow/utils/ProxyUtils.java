@@ -14,6 +14,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +33,7 @@ public class ProxyUtils {
     }
     String proto = "" + target.getScheme();
     String hostName = target.getHost();
-    String proxyUrl = getEnvIgnoreCase(proto.toLowerCase() + "_proxy");
+    String proxyUrl = getEnvIgnoreCase(proto.toLowerCase(Locale.ENGLISH) + "_proxy");
     String proxyAutoconfig = getEnvIgnoreCase("autoconf_proxy");
     String noProxy = getEnvIgnoreCase("no_proxy");
     if (proxyUrl == null && proxyAutoconfig == null) {
@@ -85,9 +86,9 @@ public class ProxyUtils {
     return false;
   }
   public static String getEnvIgnoreCase(String name) {
-    String ret = System.getenv(name.toLowerCase());
+    String ret = System.getenv(name.toLowerCase(Locale.ENGLISH));
     if (ret == null) {
-      return System.getenv(name.toUpperCase());
+      return System.getenv(name.toUpperCase(Locale.ENGLISH));
     }
     return ret;
   }

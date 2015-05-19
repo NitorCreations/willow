@@ -13,6 +13,9 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressWarnings("PMD.EmptyCatchBlock")
 public class ObfuscatorTool {
   private static String obfuscatedPrefix="OBF:";
   public static final Pattern ENCRYPTED_TOKEN_PATTERN = Pattern.compile("^([^\\$\\{]*)\\$?\\{([^\\{]*)\\}(.*)$");
@@ -98,6 +101,8 @@ public class ObfuscatorTool {
       outProps.store(System.out, null);
     }
   }
+  @SuppressFBWarnings(value={"DM_EXIT"}, 
+      justification="ObfuscatorTool is a command-line utility and thus needs to convey proper exit value")
   private static void usage(String message) {
     System.err.println(message);
     System.err.println("usage: java -jar propertyobfuscator.jar obfuscate.properties [keyfile]");

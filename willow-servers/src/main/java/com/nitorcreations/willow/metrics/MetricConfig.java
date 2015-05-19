@@ -1,5 +1,8 @@
 package com.nitorcreations.willow.metrics;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,9 +15,9 @@ public class MetricConfig {
   private long stop;
   private int step;
   private int minSteps;
-  private String[] types;
-  private String[] limits;
-  private String[] tags;
+  private final List<String> types = new ArrayList<>();
+  private final List<String> limits = new ArrayList<>();;
+  private final List<String> tags = new ArrayList<>();;
 
   public String getMetricKey() {
     return metricKey;
@@ -57,34 +60,34 @@ public class MetricConfig {
     this.minSteps = minSteps;
   }
   public String[] getTypes() {
-    if (types == null) {
-      return new String[0];
-    } else {
-      return types;
-    }
+    return types.toArray(new String[types.size()]);
   }
   public void setTypes(String... types) {
-    this.types = types;
+    this.types.clear();
+    addTypes(types);
+  }
+  public void addTypes(String... types) {
+    this.types.addAll(Arrays.asList(types));
   }
   public String[] getLimits() {
-    if (limits == null) {
-      return new String[0];
-    } else {
-      return limits;
-    }
+    return limits.toArray(new String[limits.size()]);
   }
   public void setLimits(String... limits) {
-    this.limits = limits;
+    this.limits.clear();
+    addLimits(limits);
+  }
+  public void addLimits(String... limits) {
+    this.limits.addAll(Arrays.asList(limits));
   }
   public String[] getTags() {
-    if (tags == null) {
-      return new String[0];
-    } else {
-      return tags;
-    }
+    return tags.toArray(new String[tags.size()]);
   }
   public void setTags(String... tags) {
-    this.tags = tags;
+    this.tags.clear();
+    addTags(tags);
+  }
+  public void addTags(String... tags) {
+    this.tags.addAll(Arrays.asList(tags));
   }
   public MetricConfig() {
     long now = System.currentTimeMillis();
@@ -92,9 +95,6 @@ public class MetricConfig {
     stop = now;
     step = 0;
     minSteps = 1;
-    types = new String[0];
-    limits = new String[0];
-    tags = new String[0];
   }
   public MetricConfig(HttpServletRequest req) {
     long now = System.currentTimeMillis();
@@ -103,9 +103,9 @@ public class MetricConfig {
     stop = getLongParameter(req, "stop", now);
     step = (int)getLongParameter(req, "step", 0);
     minSteps = (int)getLongParameter(req, "minsteps", 1);
-    types = getListParameter(req, "type");
-    limits = getListParameter(req, "limits");
-    tags = getListParameter(req, "tag");
+    setTypes(getListParameter(req, "type"));
+    setLimits(getListParameter(req, "limits"));
+    setTags(getListParameter(req, "tag"));
   }
   protected long getLongParameter(HttpServletRequest req, String name, long def) {
     String attr = req.getParameter(name);
@@ -122,10 +122,7 @@ public class MetricConfig {
     return ret;
   }
   public boolean hasType(String type) {
-    if (types == null || types.length == 0 || type == null) return false;
-    for (String myType : types) {
-      if (type.equals(myType)) return true;
-    }
-    return false;
+    if (types.size() == 0 || type == null) return false;
+    return types.contains(type);
   }
 }

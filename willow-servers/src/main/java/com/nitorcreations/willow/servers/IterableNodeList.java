@@ -40,7 +40,7 @@ public class IterableNodeList implements Iterable<Node> {
   }
   public int getIndex() {
     synchronized (list) {
-      return (index - 1);
+      return index - 1;
     }               
   }
   @Override

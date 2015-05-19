@@ -8,7 +8,7 @@ import org.apache.shiro.authc.HostAuthenticationToken;
 
 public class PublicKeyAuthenticationToken implements AuthenticationToken, HostAuthenticationToken {
   private static final long serialVersionUID = -5835308990612834491L;
-  private byte[] sign;
+  private byte[] sign = new byte[0];
   private final List<byte[]> signatures = new ArrayList<>();
   private String username;
   private String host;
@@ -17,37 +17,59 @@ public class PublicKeyAuthenticationToken implements AuthenticationToken, HostAu
   }
   public PublicKeyAuthenticationToken(String username, byte[] sign, List<byte[]> signatures, String host) {
     this.username = username;
-    this.sign = sign;
     this.host = host;
+    setSign(sign);
     addSignatures(signatures);
   }
   public PublicKeyAuthenticationToken(String username, byte[] sign, byte[] signature, String host) {
     this.username = username;
-    this.sign = sign;
     this.host = host;
+    setSign(sign);
     addSignature(signature);
   }
+  public byte[] getSign() {
+    byte[] ret = new byte[sign.length];
+    System.arraycopy(sign, 0, ret, 0, sign.length);
+    return ret;
+  }
   public void setSign(byte[] sign) {
-    this.sign = sign;
+    if (sign != null) {
+      this.sign = new byte[sign.length];
+      System.arraycopy(sign, 0, this.sign, 0, sign.length);
+    } else {
+      this.sign = new byte[0];
+    }
+  }
+  public List<byte[]> getSignAndSignatures() {
+    ArrayList<byte[]> ret = new ArrayList<>();
+    ret.add(sign);
+    ret.addAll(signatures);
+    return ret;
+  }
+  public List<byte[]> getSignatures() {
+    ArrayList<byte[]> ret = new ArrayList<>();
+    ret.addAll(signatures);
+    return ret;
   }
   public void addSignature(byte[] signature) {
-    if (signature != null)
+    if (signature != null) {
       signatures.add(signature);
+    }
   }
   public void setSignatures(List<byte[]> signatures) {
-    signatures.clear();
-    signatures.addAll(signatures);
+    this.signatures.clear();
+    if (signatures != null) {
+      signatures.addAll(signatures);
+    }
   }
   public void addSignatures(List<byte[]> signatures) {
-    if (signatures == null) {
-      signatures = new ArrayList<>();
+    if (signatures != null) {
+      this.signatures.addAll(signatures);
     }
-    signatures.addAll(signatures);
   }
   public void setUsername(String username) {
     this.username = username;
   }
-  
   @Override
   public Object getPrincipal() {
     return getUsername();
@@ -56,20 +78,8 @@ public class PublicKeyAuthenticationToken implements AuthenticationToken, HostAu
   public Object getCredentials() {
     return getSignAndSignatures();
   }
-  public List<byte[]> getSignAndSignatures() {
-    ArrayList<byte[]> ret = new ArrayList<>();
-    ret.add(sign);
-    ret.addAll(signatures);
-    return ret;
-  }
   public String getUsername() {
     return username;
-  }
-  public byte[] getSign() {
-    return sign;
-  }
-  public List<byte[]> getSignatures() {
-    return signatures;
   }
   @Override
   public String getHost() {

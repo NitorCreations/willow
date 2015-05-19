@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
@@ -149,7 +150,7 @@ public class PacScriptMethods implements ScriptMethods {
     for (String part : parts) {
       long lpart = Long.parseLong(part);
 
-      result |= (lpart << shift);
+      result |= lpart << shift;
       shift -= 8;
     }
     return result;
@@ -301,8 +302,8 @@ public class PacScriptMethods implements ScriptMethods {
     Calendar cal = getCurrentTime(useGmt);
 
     int currentDay = cal.get(Calendar.DAY_OF_WEEK) - 1;
-    int from = DAYS.indexOf(wd1 == null ? null : wd1.toUpperCase());
-    int to = DAYS.indexOf(wd2 == null ? null : wd2.toUpperCase());
+    int from = DAYS.indexOf(wd1 == null ? null : wd1.toUpperCase(Locale.ENGLISH));
+    int to = DAYS.indexOf(wd2 == null ? null : wd2.toUpperCase(Locale.ENGLISH));
     if (to == -1) {
       to = from;
     }
@@ -463,7 +464,7 @@ public class PacScriptMethods implements ScriptMethods {
     }
 
     if (value instanceof String) {
-      int n = MONTH.indexOf(((String) value).toUpperCase());
+      int n = MONTH.indexOf(((String) value).toUpperCase(Locale.ENGLISH));
       if (n > -1) {
         // Its a month
         if (params.get("month1") == null) {

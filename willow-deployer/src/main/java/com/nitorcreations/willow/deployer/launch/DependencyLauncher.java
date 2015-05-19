@@ -8,7 +8,7 @@ import java.io.File;
 import com.nitorcreations.willow.deployer.download.AetherDownloader;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
-public class DependencyLauncher extends JavaLauncher implements LaunchMethod {
+public class DependencyLauncher extends JavaLauncher {
   String artifactCoords;
   private boolean transitive = false;
   private AetherDownloader downloader;

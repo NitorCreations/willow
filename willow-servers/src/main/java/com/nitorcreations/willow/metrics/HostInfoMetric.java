@@ -15,7 +15,7 @@ public class HostInfoMetric extends FullMessageMetric<HostInfoMessage, Collectio
   protected Collection<HostInfoMessage> processData(long start, long stop, int step, MetricConfig conf) {
     Map<String, HostInfoMessage> map = new HashMap<>();
     for (HostInfoMessage him : rawData.values()) {
-      map.put(him.instance, him);
+      map.put(him.getInstance(), him);
     }
     return map.values();
   }

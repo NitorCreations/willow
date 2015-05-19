@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -27,14 +26,10 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
 
     private static final String SCOPE = "user:email,read:org";
 
-    public GitHubOAuthAuthenticatingFilter() throws IOException {
-        Properties config = new Properties();
-        try (InputStream in = getClass().getResourceAsStream("/github-oauth.properties")) {
-          config.load(in);
-        }
-        setRedirectUri(config.getProperty("redirect_uri"));
-        setClientId(config.getProperty("client_id"));
-        setClientSecret(config.getProperty("client_secret"));
+    public GitHubOAuthAuthenticatingFilter(GitHubOAuthConfig config) throws IOException {
+        setRedirectUri(config.getRedirectUri());
+        setClientId(config.getClientId());
+        setClientSecret(config.getClientSecret());
         setLoginUrl("/");
     }
 

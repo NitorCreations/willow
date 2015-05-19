@@ -30,8 +30,13 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
 
   @Override
   public void log(Request request, int status, long written) {
-    if (transmitter == null)
-      init();
+    if (transmitter == null) {
+      try {
+        init();
+      } catch (URISyntaxException e) {
+        throw new RuntimeException("Failed to configure websocket logger", e);
+      }
+    }
     AccessLogEntry msg = new AccessLogEntry();
     if (_ignorePathMap != null && _ignorePathMap.getMatch(request.getRequestURI()) != null)
       return;
@@ -50,7 +55,7 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
         msg.setAuthentication(p.getName());
       }
     }
-    msg.timestamp = request.getTimeStamp();
+    msg.setTimestamp(request.getTimeStamp());
     msg.setMethod(request.getMethod());
     msg.setUri(request.getRequestURI().toString());
     msg.setProtocol(request.getProtocol());
@@ -69,13 +74,8 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog
     this._preferProxiedForAddress = b;
   }
 
-  private void init() {
-    try {
-      transmitter = WebSocketTransmitter.getSingleton(flushInterval, url);
-      transmitter.start();
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
+  private void init() throws URISyntaxException {
+    transmitter = WebSocketTransmitter.getSingleton(flushInterval, url);
     transmitter.start();
   }
 

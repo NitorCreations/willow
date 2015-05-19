@@ -10,7 +10,7 @@ import java.util.Properties;
 
 
 public class PropertyUrlConnection extends URLConnection {
-  public static ThreadLocal<Properties> currentProperties = new ThreadLocal<>();
+  public static final ThreadLocal<Properties> currentProperties = new ThreadLocal<>();
 
   protected PropertyUrlConnection(URL url) {
     super(url);

@@ -3,6 +3,7 @@ package com.nitorcreations.willow.servlets;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,8 +11,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,11 +20,14 @@ import org.apache.commons.lang.StringUtils;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.PropertySource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class PropertyServlet extends HttpServlet {
   private static final long serialVersionUID = -7870102334063578984L;
   ServletConfig config;
   private transient PropertySource propertySource;
   private String obfuscatedPrefix = "obfuscated:";
+  @SuppressFBWarnings(value={"SE_TRANSIENT_FIELD_NOT_RESTORED"}, justification="Logger always initialized freshly")
   private transient Logger log = Logger.getLogger(PropertyServlet.class.getName());
   @Override
   public void init(ServletConfig config) throws ServletException {
@@ -57,9 +59,9 @@ public class PropertyServlet extends HttpServlet {
   }
 
   @Override
-  public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-    if (!((HttpServletRequest) req).getMethod().equals("GET")) {
-      ((HttpServletResponse) res).sendError(405, "Only GET allowed");
+  public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+    if (!req.getMethod().equals("GET")) {
+      res.sendError(405, "Only GET allowed");
       return;
     }
     String path = ((HttpServletRequest) req).getPathInfo();
@@ -86,7 +88,7 @@ public class PropertyServlet extends HttpServlet {
     while (it.hasMoreElements()) {
       String key = it.nextElement();
       String value = ((HttpServletRequest) req).getHeader(key);
-      seed.setProperty(key.toLowerCase(), value, false);
+      seed.setProperty(key.toLowerCase(Locale.ENGLISH), value, false);
     }
     ServletContext ctx = getServletContext();
     seed.setProperty("path", path, false);

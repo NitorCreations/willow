@@ -95,6 +95,7 @@ public class RawSecureShellWS extends BasicWillowSocket{
     }
   }
   @OnWebSocketMessage
+  @SuppressWarnings("PMD.CollapsibleIfStatements")
   public void onMessage(String message) {
     if (session.isOpen()) {
       if (message != null && !message.isEmpty()) {

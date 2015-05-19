@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AbstractMessage {
-  public String instance = "";
-  public long timestamp = System.currentTimeMillis();
+  private String instance = "";
+  private  long timestamp = System.currentTimeMillis();
   public List<String> tags = new ArrayList<>();
   private String id = null;
 
@@ -36,5 +36,21 @@ public class AbstractMessage {
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public String getInstance() {
+    return instance;
+  }
+
+  public void setInstance(String instance) {
+    this.instance = instance;
+  }
+
+  public long getTimestamp() {
+    return timestamp;
+  }
+
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
   }
 }

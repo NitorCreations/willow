@@ -23,7 +23,10 @@ import org.hyperic.sigar.SigarException;
 
 import com.google.gson.Gson;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @Singleton
+@SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
 public class JMXOperation extends DeployerControl {
   public static void main(String[] args) {
     injector.getInstance(JMXOperation.class).doMain(args);

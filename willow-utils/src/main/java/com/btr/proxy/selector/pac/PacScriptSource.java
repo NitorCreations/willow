@@ -16,7 +16,7 @@ public interface PacScriptSource {
 	 * @throws IOException on read error. 
 	 ************************************************************************/
 	
-	public String getScriptContent() throws IOException;  
+	String getScriptContent() throws IOException;  
 	
 	/*************************************************************************
 	 * Checks if the content of the script is valid and if it is possible
@@ -26,6 +26,6 @@ public interface PacScriptSource {
 	 * @return true if everything is fine, else false.
 	 ************************************************************************/
 	
-	public boolean isScriptValid();
+	boolean isScriptValid();
 
 }

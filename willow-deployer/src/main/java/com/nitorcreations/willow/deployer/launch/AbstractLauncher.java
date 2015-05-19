@@ -52,7 +52,17 @@ import com.nitorcreations.willow.utils.AbstractStreamPumper;
 import com.nitorcreations.willow.utils.LoggingStreamPumper;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class AbstractLauncher implements LaunchMethod {
+  private final class WaitForChild implements Callable<Boolean> {
+    public Boolean call() throws InterruptedException {
+      if (child != null) {
+        child.waitFor();
+        pid.set(-1);
+      }
+      return true;
+    }
+  }
   @Inject
   protected WebSocketTransmitter transmitter;
   protected final String PROCESS_IDENTIFIER = new BigInteger(130, new SecureRandom()).toString(32);
@@ -70,7 +80,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
   @Inject
   private ExecutorService executor;
   private int restarts = 0;
-  private Logger log;
+  private Logger log = Logger.getAnonymousLogger();
   private LaunchCallback callback = null;
 
   @Override
@@ -118,7 +128,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
       if (callback != null) {
         autoRestartDefaultVal = Boolean.toString(callback.autoRestartDefault());
       }
-      boolean autoRestart = Boolean.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_AUTORESTART, autoRestartDefaultVal));
+      boolean autoRestart = launchProperties == null ? Boolean.parseBoolean(autoRestartDefaultVal) : Boolean.parseBoolean(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_AUTORESTART, autoRestartDefaultVal));
       if (autoRestart && !restarting.get()) {
         //launching the child instead of a one-off hook task
         transmitter.queue(new ChildStartingEvent(getName()));
@@ -204,8 +214,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
     if (child == null) {
       log.finest("No child to destroy, returning previous return value");
       return getReturnValue();
-    };
-    long timeout = Long.valueOf(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
+    }
+    long timeout = launchProperties == null ? 30 : Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
     if (isChildAlive()) {
       if (running.get()) {
         transmitter.queue(new ChildRestartingEvent(getName()));
@@ -216,13 +226,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
       child.destroy();
 
       try {
-        Future<Boolean> waitFor = executor.submit(new Callable<Boolean>() {
-          public Boolean call() throws InterruptedException {
-            child.waitFor();
-            pid.set(-1);
-            return true;
-          }
-        });
+        Future<Boolean> waitFor = executor.submit(new WaitForChild());
         waitFor.get(timeout, TimeUnit.SECONDS);
       } catch (InterruptedException | ExecutionException | TimeoutException e) {
         if (log != null) {
@@ -272,7 +276,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
     String extraEnvKeys = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS);
     if (extraEnvKeys != null) {
       for (String nextKey : extraEnvKeys.split(",")) {
-        extraEnv.put(nextKey.trim(), properties.getProperty((nextKey.trim())));
+        extraEnv.put(nextKey.trim(), properties.getProperty(nextKey.trim()));
       }
     }
     name = launchProperties.getProperty("", launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_NAME) + "." + launchProperties.getProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, "0"));
@@ -285,7 +289,10 @@ public abstract class AbstractLauncher implements LaunchMethod {
   }
   private boolean isChildAlive() {
     try {
-      child.exitValue();
+      if (child != null) {
+        child.exitValue();
+        return false;
+      }
       return false;
     } catch(IllegalThreadStateException e) {
       return true;

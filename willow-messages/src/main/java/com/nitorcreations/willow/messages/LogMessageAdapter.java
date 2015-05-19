@@ -1,10 +1,10 @@
 package com.nitorcreations.willow.messages;
 
 public interface LogMessageAdapter {
-  public long getLogEntryTimeStamp();
-  public String getLevel();
-  public String getMessage();
-  public String getThread();
-  public String getLogger();
-  public String getStackTrace();
+  long getLogEntryTimeStamp();
+  String getLevel();
+  String getMessage();
+  String getThread();
+  String getLogger();
+  String getStackTrace();
 }

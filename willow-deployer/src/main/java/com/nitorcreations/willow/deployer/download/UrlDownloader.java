@@ -32,6 +32,7 @@ import org.apache.commons.codec.binary.Hex;
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.ProxyUtils;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class UrlDownloader implements Callable<File> {
   private final Properties properties;
   private final byte[] md5;
@@ -41,13 +42,18 @@ public class UrlDownloader implements Callable<File> {
 
   public UrlDownloader(Properties properties, byte[] md5) {
     this.properties = properties;
-    this.md5 = md5;
+    if (md5 != null) {
+      this.md5 = new byte[md5.length];
+      System.arraycopy(md5, 0, this.md5, 0, md5.length);
+    } else {
+      this.md5 = null;
+    }
     this.url = properties.getProperty("");
     fileName = getFileName(url);
     logger = Logger.getLogger(fileName);
   }
-
   @Override
+  @SuppressWarnings("PMD.EmptyWhileStmt")
   public File call() throws IOException {
     if (url == null)
       return null;

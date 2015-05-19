@@ -47,16 +47,14 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
    */
   protected MBeanServerConnection getMBeanServerConnection() {
     long childPid = main.getFirstJavaChildPid(getChildName());
-    if (childPid > 0 && childPid != oldChildPid) {
-      if (connector != null) {
-        try {
-          connector.close();
-        } catch (IOException e) {
-          logger.log(Level.FINE, "Failed to close JMXConnector", e);
-        }
-        connector = null;
-        server = null;
+    if (childPid > 0 && childPid != oldChildPid && connector != null) {
+      try {
+        connector.close();
+      } catch (IOException e) {
+        logger.log(Level.FINE, "Failed to close JMXConnector", e);
       }
+      connector = null;
+      server = null;
     }
     if (childPid > 0) {
       try {
@@ -67,16 +65,14 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
           server = connector.getMBeanServerConnection();
           oldChildPid = childPid;
         }
-      } catch (Exception e) {
-        if (connector != null) {
-          try {
-            connector.close();
-          } catch (Exception e2) {
-            logger.log(Level.FINE, "Failed to close JMXConnector", e2);
-          }
-          connector = null;
-          server = null;
+      } catch (IOException e) {
+        try {
+          connector.close();
+        } catch (Exception e2) {
+          logger.log(Level.FINE, "Failed to close JMXConnector", e2);
         }
+        connector = null;
+        server = null;
       }
     }
     return server;

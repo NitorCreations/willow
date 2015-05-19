@@ -27,7 +27,7 @@ public class DeploymentScanner {
   private Map<String, AutoScalingGroupStatus> statuses = new ConcurrentHashMap<>();
 
   public void initialize(List<AutoScalingGroupConfig> groups) {
-    this.groups = groups;
+    this.setGroups(groups);
     statuses = new ConcurrentHashMap<>();
     if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
       scheduledExecutorService.shutdownNow();
@@ -53,6 +53,17 @@ public class DeploymentScanner {
 
   public void stop() {
     scheduledExecutorService.shutdownNow();
+  }
+
+  public List<AutoScalingGroupConfig> getGroups() {
+    ArrayList<AutoScalingGroupConfig> ret = new ArrayList<>();
+    ret.addAll(groups);
+    return ret;
+  }
+
+  public void setGroups(List<AutoScalingGroupConfig> groups) {
+    groups.clear();
+    this.groups.addAll(groups);
   }
 
 }

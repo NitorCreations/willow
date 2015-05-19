@@ -32,7 +32,6 @@ public class ReplaceTokensInputStream extends FilterInputStream {
   private final byte[] buffer;
   public static final StartEndDelimeters AT_DELIMITERS = new StartEndDelimeters("@", "@");
   public static final StartEndDelimeters CURLY_DELIMITERS = new StartEndDelimeters("${", "}");
-  public static final StartEndDelimeters[] MAVEN_DELIMITERS = new StartEndDelimeters[] { AT_DELIMITERS, CURLY_DELIMITERS };
 
   public ReplaceTokensInputStream(InputStream in, Map<String, String> tokens, StartEndDelimeters... delimiters) {
     this(in, Charset.defaultCharset(), tokens, delimiters);
@@ -109,7 +108,7 @@ public class ReplaceTokensInputStream extends FilterInputStream {
           return available.remove(0);
         }
       }
-    } while (matchToken == null && !streamExhausted);
+    } while (!streamExhausted);
     if (length < 1 && available.isEmpty())
       return -1;
     shift(1, true);

@@ -19,7 +19,10 @@ import com.google.gson.GsonBuilder;
 import com.nitorcreations.willow.metrics.Metric;
 import com.nitorcreations.willow.metrics.MetricConfig;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @Singleton
+@SuppressFBWarnings(value={"SE_TRANSIENT_FIELD_NOT_RESTORED"}, justification="metrics set by guice")
 public class MetricsServlet extends HttpServlet {
   private static final long serialVersionUID = -6704365246281136504L;
   @Inject

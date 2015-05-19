@@ -172,7 +172,7 @@ public class Obfuscator {
       }
       return raw;
     } catch (NoSuchAlgorithmException e) {
-      return null;
+      return new byte[0];
     }
   }
 

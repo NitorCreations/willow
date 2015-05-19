@@ -92,6 +92,49 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>checkfindbugs</id>
+            <phase>package</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.4</version>
+        <executions>
+          <execution>
+            <id>checkpmd</id>
+            <phase>package</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+          <execution>
+            <id>checkcpd</id>
+            <phase>package</phase>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <profiles>

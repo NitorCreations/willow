@@ -25,6 +25,8 @@ import com.nitorcreations.willow.messages.LongStatisticsMessage;
 import com.nitorcreations.willow.messages.MessageMapping;
 import com.nitorcreations.willow.messages.MessageMapping.MessageType;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @WebSocket
 @Named
 public class SaveEventsSocket extends BasicWillowSocket {
@@ -47,7 +49,8 @@ public class SaveEventsSocket extends BasicWillowSocket {
   public void onClose(int statusCode, String reason) {
     super.onClose(statusCode, reason);
   }
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({ "rawtypes" })
+  @SuppressFBWarnings(value={"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"}, justification="Messagetype encoded in the message used to determine type")
   @OnWebSocketMessage
   public void messageReceived(byte buf[], int offset, int length) {
     try (Client client = node.client()){
@@ -57,29 +60,13 @@ public class SaveEventsSocket extends BasicWillowSocket {
         Object stored = msgObject;
         if (type == MessageType.LONGSTATS) {
           stored = ((LongStatisticsMessage) msgObject).getMap();
-          String instance = (String) ((Map) stored).get("instance");
-          if (instance == null || instance.isEmpty()) {
-            ((Map) stored).put("instance", path);
-          }
-          List<String> tmpTags = new ArrayList<>();
-          tmpTags.addAll(tags);
-          tmpTags.addAll(msgObject.tags);
-          ((Map) stored).put("tags", tmpTags);
-          ((Map) stored).put("timestamp", msgObject.timestamp);
+          addFieldsToStoredMap(msgObject, (Map)stored);
         } else if (type == MessageType.HASH) {
           stored = ((HashMessage) msgObject).getMap();
-          String instance = (String) ((Map) stored).get("instance");
-          if (instance == null || instance.isEmpty()) {
-            ((Map) stored).put("instance", path);
-          }
-          List<String> tmpTags = new ArrayList<>();
-          tmpTags.addAll(tags);
-          tmpTags.addAll(msgObject.tags);
-          ((Map) stored).put("tags", tmpTags);
-          ((Map) stored).put("timestamp", msgObject.timestamp);
+          addFieldsToStoredMap(msgObject, (Map)stored);
         } else {
-          if (msgObject.instance == null || msgObject.instance.isEmpty()) {
-            msgObject.instance = path;
+          if (msgObject.getInstance() == null || msgObject.getInstance().isEmpty()) {
+            msgObject.setInstance(path);
           }
           msgObject.addTags(tags);
         }
@@ -87,7 +74,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
         if (System.getProperty("debug") != null) {
           System.out.println(type.lcName() + ": " + source);
         }
-        IndexResponse resp = client.prepareIndex(getIndex(msgObject.timestamp), type.lcName()).setSource(source).execute().actionGet(5000);
+        IndexResponse resp = client.prepareIndex(getIndex(msgObject.getTimestamp()), type.lcName()).setSource(source).execute().actionGet(5000);
         if (!resp.isCreated()) {
           log.warning("Failed to create index for " + source);
         }
@@ -96,7 +83,19 @@ public class SaveEventsSocket extends BasicWillowSocket {
       e.printStackTrace();
     }
   }
-
+  @SuppressWarnings("unchecked")
+  private void addFieldsToStoredMap(AbstractMessage msgObject, Map stored) {
+    String instance = (String) stored.get("instance");
+    if (instance == null || instance.isEmpty()) {
+      stored.put("instance", path);
+    }
+    List<String> tmpTags = new ArrayList<>();
+    tmpTags.addAll(tags);
+    tmpTags.addAll(msgObject.tags);
+    stored.put("tags", tmpTags);
+    stored.put("timestamp", msgObject.getTimestamp());
+    
+  }
   private static String getIndex(long timestamp) {
     Calendar cal = Calendar.getInstance();
     cal.setTime(new Date(timestamp));
