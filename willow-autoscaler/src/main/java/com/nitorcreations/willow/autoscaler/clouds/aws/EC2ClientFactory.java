@@ -16,7 +16,7 @@ public class EC2ClientFactory {
     if (region != null) {
       return region.createClient(AmazonEC2Client.class, null, null);
     } else {
-      return null;
+      throw new RuntimeException("Unable to create client for region " + regionName);
     }
   }
 
