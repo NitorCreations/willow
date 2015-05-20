@@ -100,11 +100,13 @@ describe("Tests for horizon-graph module", function() {
     module.onclick(event, target, 'host-radiator');
   });
 
+  //FIXME is this really testing anything if we mock the module functionality?
   it('Receiving a "metric-changed" message should result calling setMetric', function() {
     sandbox.mock(module).expects('setMetric').once().withExactArgs("cpu");
     module.onmessage('metric-changed', 'cpu');
   });
 
+  //FIXME is this really testing anything if we mock the module functionality?
   it('Receiving a "reload-graph-configuration" message should reset graph', function() {
     sandbox.mock(module).expects('resetGraph').once();
     module.onmessage('reload-graph-configuration');
