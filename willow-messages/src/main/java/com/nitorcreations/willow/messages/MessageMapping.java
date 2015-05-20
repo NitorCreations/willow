@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +31,7 @@ public class MessageMapping {
     PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS,
     HASH, NET, TCPINFO, DISKIO, THREADDUMP, OS, EVENT, HOSTINFO;
     public String lcName() {
-      return toString().toLowerCase();
+      return toString().toLowerCase(Locale.ENGLISH);
     }
 
     public static String[] lcNames() {

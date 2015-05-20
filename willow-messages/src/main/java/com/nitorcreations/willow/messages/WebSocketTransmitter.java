@@ -220,11 +220,15 @@ public class WebSocketTransmitter {
       }
 
       try {
-        client.stop();
+        synchronized (this) {
+          client.stop();
+        }
       } catch (Exception e) {
         logger.log(Level.INFO, "Exception while trying to stop", e);
       }
-      client.destroy();
+      synchronized (this) {
+        client.destroy();
+      }
     }
 
     private void connect() throws Exception {
@@ -256,9 +260,11 @@ public class WebSocketTransmitter {
     public void onClose(int statusCode, String reason) {
       logger.info(String.format("Connection closed: %d - %s", statusCode, reason));
       try {
-        if (client.isRunning()) {
-          client.stop();
-          client.destroy();
+        synchronized (this) {
+          if (client.isRunning()) {
+            client.stop();
+            client.destroy();
+          }
         }
       } catch (Exception e) {
         logger.log(Level.INFO, "Exception while trying to handle socket close", e);
@@ -269,9 +275,11 @@ public class WebSocketTransmitter {
     public void onError(Session wsSession, Throwable err) {
       logger.info(String.format("Connection error: %s - %s", wsSession, err.getMessage()));
       try {
-        if (client.isRunning()) {
-          client.stop();
-          client.destroy();
+        synchronized (this) {
+          if (client.isRunning()) {
+            client.stop();
+            client.destroy();
+          }
         }
       } catch (Exception e) {
         logger.log(Level.INFO, "Exception while trying to handle socket error", e);

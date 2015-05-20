@@ -1,5 +1,8 @@
 package com.nitorcreations.willow.messages.event;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings(value={"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, justification="Fields used in serialization")
 public class ChildDiedEvent extends Event {
 
   public final String deployerName;
