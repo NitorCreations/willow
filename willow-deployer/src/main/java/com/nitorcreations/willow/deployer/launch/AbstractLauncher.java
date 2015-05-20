@@ -128,7 +128,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
       if (callback != null) {
         autoRestartDefaultVal = Boolean.toString(callback.autoRestartDefault());
       }
-      boolean autoRestart = launchProperties == null ? Boolean.parseBoolean(autoRestartDefaultVal) : Boolean.parseBoolean(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_AUTORESTART, autoRestartDefaultVal));
+      boolean autoRestart = Boolean.parseBoolean(safeLaunchProperty(PROPERTY_KEY_SUFFIX_AUTORESTART, autoRestartDefaultVal));
+      boolean skipOutputRedirect = Boolean.parseBoolean(safeLaunchProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT, "false"));
       if (autoRestart && !restarting.get()) {
         //launching the child instead of a one-off hook task
         transmitter.queue(new ChildStartingEvent(getName()));
@@ -149,7 +150,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
         synchronized(this) {
           child = pb.start();
         }
-        if (transmitter.isRunning() && launchProperties.getProperty(PROPERTY_KEY_SUFFIX_SKIPOUTPUTREDIRECT) == null) {
+        if (transmitter.isRunning() &&  !skipOutputRedirect) {
           stdout = new StreamLinePumper(child.getInputStream(), transmitter, "STDOUT", StandardCharsets.UTF_8);
           stderr = new StreamLinePumper(child.getErrorStream(), transmitter, "STDERR", StandardCharsets.UTF_8);
         } else {
@@ -215,7 +216,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
       log.finest("No child to destroy, returning previous return value");
       return getReturnValue();
     }
-    long timeout = launchProperties == null ? 30 : Long.parseLong(launchProperties.getProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
+    long timeout = Long.parseLong(safeLaunchProperty(PROPERTY_KEY_SUFFIX_TERM_TIMEOUT, "30"));
     if (isChildAlive()) {
       if (running.get()) {
         transmitter.queue(new ChildRestartingEvent(getName()));
@@ -297,5 +298,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
     } catch(IllegalThreadStateException e) {
       return true;
     }
+  }
+  private String safeLaunchProperty(String name, String defaultValue) {
+    return launchProperties == null ? defaultValue : launchProperties.getProperty(name, defaultValue);
   }
 }

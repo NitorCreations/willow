@@ -92,7 +92,8 @@ public class PropertyServlet extends HttpServlet {
     }
     ServletContext ctx = getServletContext();
     seed.setProperty("path", path, false);
-    seed.setProperty("context", ctx.getContextPath(), false);
+    String context = ctx.getContextPath() == null ? "" : ctx.getContextPath();
+    seed.setProperty("context", context, false);
     res.setContentType("text/plain;charset=utf-8");
     ((HttpServletResponse) res).setStatus(200);
     mrg.merge(seed, rootProperties);

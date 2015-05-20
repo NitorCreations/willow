@@ -296,6 +296,7 @@ public class MergeableProperties extends Properties {
   }
   @SuppressWarnings("PMD.UselessParentheses")
   public Object put(Object key, Object value, boolean allowEval) {
+    if (key == null || value == null) throw new NullPointerException("Null keys or values not allowed");
     String k = resolveIndexes((String) key);
     String v = resolveIndexes((String) value);
     StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');

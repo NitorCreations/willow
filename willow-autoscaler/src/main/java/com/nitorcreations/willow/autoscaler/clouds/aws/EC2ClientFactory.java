@@ -12,7 +12,12 @@ import javax.inject.Singleton;
 public class EC2ClientFactory {
 
   public synchronized AmazonEC2Client getClient(String regionName) {
-    return Region.getRegion(Regions.fromName(regionName)).createClient(AmazonEC2Client.class, null, null);
+    Region region = Region.getRegion(Regions.fromName(regionName));
+    if (region != null) {
+      return region.createClient(AmazonEC2Client.class, null, null);
+    } else {
+      return null;
+    }
   }
 
 }
