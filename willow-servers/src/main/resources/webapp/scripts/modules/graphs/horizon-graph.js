@@ -111,10 +111,10 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function appendPopupGraphIcon(parentElement, host) {
-    return parentElement.select('.horizon__icons').append("i")
-        .classed("icon fa fa-external-link popup-" + host, true)
+    return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
+        .classed("icon popup-" + host, true)
         .attr("data-type", "to-popup")
-        .append("use").attr("xlink:href", "#shape-to-radiator");
+        .append("use").attr("xlink:href", "#shape-external-link");
   }
 
   function appendHostRadiatorLink(parentElement, title, host) {
