@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -31,7 +32,7 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> extends Ab
   }
   @Override
   public R calculateMetric(Client client, MetricConfig conf) {
-    SearchResponse response = executeQuery(client, conf, MessageMapping.map(type).lcName());
+    SearchResponse response = executeQuery(client, conf, MessageMapping.map(type).lcName(), Collections.<String>emptyList());
     readResponse(response);
     return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
   }

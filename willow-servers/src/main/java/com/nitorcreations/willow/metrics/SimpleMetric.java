@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,10 @@ public abstract class SimpleMetric<L, T> extends AbstractMetric<T> {
 
   @Override
   public List<TimePoint> calculateMetric(Client client, MetricConfig conf) {
-    SearchResponse response = executeQuery(client, conf, getType());
+    List<String> fields = new ArrayList<String>();
+    fields.add("timestamp");
+    fields.addAll(Arrays.asList(requiresFields()));
+    SearchResponse response = executeQuery(client, conf, getType(), fields);
     readResponse(response);
     int len = (int) ((conf.getStop() - conf.getStart()) / conf.getStep()) + 1;
     List<TimePoint> ret = new ArrayList<TimePoint>();
