@@ -17,6 +17,10 @@ Box.Application.addModule('radiator-controller', function(context) {
       moduleElem.call(createHorizonGraph, chartConfig);
       context.broadcast("reload-graph-configuration");
       windowSvc.setTitle(metric.toUpperCase() + " for " + host);
+    },
+    access: function() {
+      var host = windowSvc.getHashVariable("host");
+      moduleElem.call(createAccessGraph, host);
     }
   };
 
@@ -61,6 +65,13 @@ Box.Application.addModule('radiator-controller', function(context) {
       .attr("data-module", "horizon-graph");
     injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix, chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);
+  }
+
+  function createAccessGraph(parentElement, host) {
+    var accessGraphElement = parentElement.append("div")
+      .classed("nv-graph scalable", true)
+      .attr("data-module", "access-graph");
+    Box.Application.start(accessGraphElement[0][0]);
   }
 
   return {

@@ -299,6 +299,12 @@ textarea, input[type=text] {
 
 .nv-graph {
   height: 200px;
+  position: relative;
+}
+
+.nv-graph.scalable {
+  width: 100%;
+  height: 100%;
 }
 
 .addon {
@@ -476,12 +482,20 @@ select.navcenter {
   top: 12px
 }
 
-.horizon__icons {
+.horizon__icons,
+.nv-graph__icons {
   position: absolute;
-  top: 0;
-  left: 0.2em;
   height: 1.3em;
   display: inline-block;
+  top: 0;
+}
+
+.horizon__icons {
+  left: 0.2em;
+}
+
+.nv-graph__icons {
+  left: 60px;
 }
 
 .icon {
@@ -548,4 +562,15 @@ ul.radiator-list {
   right: 57px;
   top: 0;
   margin: 5px;
+}
+
+.radiator-controller {
+  height: calc(100% - 50px);
+  width: 100%;
+  display: inline-block;
+  float: left;
+}
+
+.radiator-controller [data-type="to-popup"] {
+  display: none;
 }

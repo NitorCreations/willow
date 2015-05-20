@@ -25,10 +25,27 @@ Box.Application.addModule('access-graph', function(context) {
     });
   }
 
+  function appendPopupGraphIcon(parentElement, host) {
+    return parentElement.select('.nv-graph__icons').append("i")
+        .classed("icon fa fa-external-link popup-" + host, true)
+        .attr("data-type", "to-popup")
+        .append("use").attr("xlink:href", "#shape-to-radiator");
+  }
+
   function reset() {
     moduleElement.selectAll("svg").remove();
     moduleElement.append("svg");
     metrics.metricsDataSource("access", "host_" + host, detailsStart, detailsStop, detailsStep)(createAccessGraph);
+  }
+
+  function openGraphInPopup() {
+    var url = '/graph.html#type=access&host=' + host;
+
+    windowSvc.popup({
+      url: url,
+      height: window.innerHeight * 0.75,
+      width: window.innerWidth * 0.75
+    });
   }
 
   return {
@@ -44,6 +61,9 @@ Box.Application.addModule('access-graph', function(context) {
       detailsStop  = parseInt(new Date().getTime());
       detailsStart = parseInt(detailsStop - (1000 * 60 * 60 * 3));
 
+      moduleElement.append("div").classed("nv-graph__icons", true);
+      moduleElement.call(appendPopupGraphIcon);
+
       reset();
     },
 
@@ -57,6 +77,14 @@ Box.Application.addModule('access-graph', function(context) {
           reset();
           break;
       }
-    }
+    },
+
+    onclick: function(event, element, elementType) {
+      switch (elementType) {
+        case 'to-popup':
+          openGraphInPopup();
+          break;
+      }
+    },
   };
 });
