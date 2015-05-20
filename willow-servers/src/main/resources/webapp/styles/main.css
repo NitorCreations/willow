@@ -498,6 +498,18 @@ select.navcenter {
   left: 60px;
 }
 
+.nv-graph__icons .icon {
+  opacity: 0;
+}
+
+.nv-graph:hover .icon {
+  opacity: 0.5;
+}
+
+.nv-graph__icons:hover .icon {
+  opacity: 1;
+}
+
 .icon {
   float: left;
   font-size: 1.2em;
@@ -506,6 +518,8 @@ select.navcenter {
   width: 20px;
   height: 20px;
   opacity: 0.5;
+  transition: opacity 0.35s ease;
+  cursor: pointer;
 }
 
 .icon:hover {

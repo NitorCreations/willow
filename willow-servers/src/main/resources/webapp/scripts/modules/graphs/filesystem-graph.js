@@ -33,10 +33,27 @@ Box.Application.addModule('filesystem-graph', function(context) {
     });
   };
 
+  function appendPopupGraphIcon(parentElement) {
+    return parentElement.select('.nv-graph__icons').append("i")
+        .classed("icon fa fa-external-link popup-" + host, true)
+        .attr("data-type", "to-popup")
+        .append("use").attr("xlink:href", "#shape-to-radiator");
+  }
+
   function reset() {
     moduleElement.selectAll("svg").remove();
     moduleElement.append("svg");
     metrics.metricsDataSource("disk", "host_" + host, undefined, detailsStop, undefined)(createFsGraph);
+  }
+
+  function openGraphInPopup() {
+    var url = '/graph.html#type=filesystem&host=' + host;
+
+    windowSvc.popup({
+      url: url,
+      height: window.innerHeight * 0.75,
+      width: window.innerWidth * 0.75
+    });
   }
 
   return {
@@ -48,6 +65,9 @@ Box.Application.addModule('filesystem-graph', function(context) {
       metrics    = context.getService("metrics");
 
       moduleElement = d3.select(context.getElement());
+
+      moduleElement.append("div").classed("nv-graph__icons", true);
+      moduleElement.call(appendPopupGraphIcon);
 
       host        = windowSvc.getHashVariable("host");
       detailsStop = parseInt(new Date().getTime());
@@ -64,6 +84,14 @@ Box.Application.addModule('filesystem-graph', function(context) {
           reset();
           break;
       }
-    }
+    },
+
+    onclick: function(event, element, elementType) {
+      switch (elementType) {
+        case 'to-popup':
+          openGraphInPopup();
+          break;
+      }
+    },
   };
 });

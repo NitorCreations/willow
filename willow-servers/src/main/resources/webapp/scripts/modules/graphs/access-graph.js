@@ -25,7 +25,7 @@ Box.Application.addModule('access-graph', function(context) {
     });
   }
 
-  function appendPopupGraphIcon(parentElement, host) {
+  function appendPopupGraphIcon(parentElement) {
     return parentElement.select('.nv-graph__icons').append("i")
         .classed("icon fa fa-external-link popup-" + host, true)
         .attr("data-type", "to-popup")
