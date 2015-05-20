@@ -83,6 +83,11 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
           showDialog();
           break;
       }
+    },
+
+    /* only for testing */
+    setGraphConfig: function(val) {
+      graphConfiguration = val;
     }
   };
 });
