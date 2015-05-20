@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +44,7 @@ public class WebSocketTransmitter {
   private final Worker worker = new Worker();
   private final Thread workerThread = new Thread(worker, "websocket-transfer");
   private final MessageMapping msgmap = new MessageMapping();
-  private boolean running = true;
+  private AtomicBoolean running = new AtomicBoolean(true);
   private static final Map<String, WebSocketTransmitter> singletonTransmitters = Collections.synchronizedMap(new HashMap<String, WebSocketTransmitter>());
 
   public static synchronized WebSocketTransmitter getSingleton(long flushInterval, String uri) throws URISyntaxException {
@@ -84,10 +85,7 @@ public class WebSocketTransmitter {
 
   public void stop() {
     logger.finest("Stopping the message transmitter");
-    synchronized (this) {
-      //stop accepting messages to the queue
-      running = false;
-    }
+    running.set(false);
     if (workerThread.isAlive()) {
       worker.stop();
     }
@@ -98,7 +96,7 @@ public class WebSocketTransmitter {
 
   public boolean queue(AbstractMessage msg) {
     synchronized (this) {
-      if (!running) {
+      if (!running.get()) {
         return false;
       }
     }
@@ -126,7 +124,7 @@ public class WebSocketTransmitter {
     this.username = username;
   }
   @SuppressWarnings("unchecked")
-  public static String getSshAgentAuthorization(String username) {
+  public static synchronized String getSshAgentAuthorization(String username) {
     StringBuilder ret = new StringBuilder("PUBLICKEY ");
     String now = "" + System.currentTimeMillis();
     Connector con = null;
@@ -154,45 +152,48 @@ public class WebSocketTransmitter {
 
   @WebSocket
   public class Worker implements Runnable {
-    private boolean running = true;
+    private AtomicBoolean running = new AtomicBoolean(true);
     private final ArrayList<AbstractMessage> send = new ArrayList<AbstractMessage>();
     private Session wsSession;
     private WebSocketClient client = new WebSocketClient();
 
     @Override
     public void run() {
-      synchronized (this) {
-        while (running && !Thread.currentThread().isInterrupted()) {
+      while (running.get() && !Thread.currentThread().isInterrupted()) {
+        try {
           try {
-            try {
-              if (!client.isRunning() && !client.isStarting() || client.isFailed()) {
-                connect();
-              }
-            } catch (Exception e) {
-              logger.log(Level.WARNING, "Failed to connect to " + uri.toString(), e);
-              continue;
-            }
-            try {
-              this.wait(flushInterval);
-              if (wsSession == null)
-                continue;
-              doSend();
-            } catch (IOException e) {
-              logger.log(Level.INFO, "Exception while sending messages", e);
-            } catch (InterruptedException e) {
-              logger.log(Level.INFO, "Interrupted", e);
-              try {
-                doSend();
-              } catch (IOException e1) {
-                logger.log(Level.INFO, "Exception while sending messages", e1);
-              }
-              return;
+            if (!client.isRunning() && !client.isStarting() || client.isFailed()) {
+              connect();
             }
           } catch (Exception e) {
-            logger.log(Level.INFO, "Exception while sending messages", e);
+            logger.log(Level.WARNING, "Failed to connect to " + uri.toString(), e);
+            continue;
           }
+          try {
+            synchronized (this) {
+              if (running.get() && !Thread.currentThread().isInterrupted()) {
+                this.wait(flushInterval);
+              }
+            }
+            if (wsSession == null)
+              continue;
+            doSend();
+          } catch (IOException e) {
+            logger.log(Level.INFO, "Exception while sending messages", e);
+          } catch (InterruptedException e) {
+            logger.log(Level.INFO, "Interrupted", e);
+            try {
+              doSend();
+            } catch (IOException e1) {
+              logger.log(Level.INFO, "Exception while sending messages", e1);
+            }
+            return;
+          }
+        } catch (Exception e) {
+          logger.log(Level.INFO, "Exception while sending messages", e);
         }
       }
+
     }
 
     private void doSend() throws IOException {
@@ -210,7 +211,7 @@ public class WebSocketTransmitter {
 
     public void stop() {
       synchronized (this) {
-        this.running = false;
+        this.running.set(false);
         this.notifyAll();
       }
       try {
@@ -235,20 +236,18 @@ public class WebSocketTransmitter {
       client.setConnectTimeout(2000);
       client.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
-      synchronized (this) {
-        request.setHeader("Authorization", getSshAgentAuthorization(username));
-        Future<Session> future = client.connect(this, uri, request);
-        logger.info(String.format("Connecting to : %s", uri));
+      request.setHeader("Authorization", getSshAgentAuthorization(username));
+      Future<Session> future = client.connect(this, uri, request);
+      logger.info(String.format("Connecting to : %s", uri));
+      try {
+        wsSession = future.get();
+      } catch (Exception e) {
+        logger.log(Level.INFO, "Exception while trying to connect", e);
         try {
-          wsSession = future.get();
-        } catch (Exception e) {
-          logger.log(Level.INFO, "Exception while trying to connect", e);
-          try {
-            client.stop();
-            client.destroy();
-          } catch (Exception e1) {
-            logger.log(Level.INFO, "Exception while trying to disconnect", e1);
-          }
+          client.stop();
+          client.destroy();
+        } catch (Exception e1) {
+          logger.log(Level.INFO, "Exception while trying to disconnect", e1);
         }
       }
     }
