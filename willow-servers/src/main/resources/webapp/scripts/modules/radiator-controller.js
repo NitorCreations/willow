@@ -25,6 +25,10 @@ Box.Application.addModule('radiator-controller', function(context) {
     filesystem: function() {
       var host = windowSvc.getHashVariable("host");
       moduleElem.call(createFilesystemGraph, host);
+    },
+    heap: function() {
+      var host = windowSvc.getHashVariable("host");
+      moduleElem.call(createHeapGraph, host);
     }
   };
 
@@ -83,6 +87,13 @@ Box.Application.addModule('radiator-controller', function(context) {
       .classed("nv-graph scalable", true)
       .attr("data-module", "filesystem-graph");
     Box.Application.start(filesystemGraphElement[0][0]);
+  }
+
+  function createHeapGraph(parentElement, host) {
+    var heapGraphElement = parentElement.append("div")
+      .classed("nv-graph scalable", true)
+      .attr("data-module", "heap-graph");
+    Box.Application.start(heapGraphElement[0][0]);
   }
 
   return {
