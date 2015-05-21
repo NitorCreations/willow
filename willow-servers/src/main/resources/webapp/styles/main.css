@@ -547,8 +547,10 @@ select.navcenter {
   color: white;
 }
 
-button#create { /* FIXME remove these hacks when desired layout is known */
+#custom-radiator-list-dialog button {
   margin-top: 10px;
+  width: 100%;
+  text-align: center;
 }
 
 ul.radiator-list {
@@ -557,10 +559,8 @@ ul.radiator-list {
 }
 
 .custom-radiator-selection-item {
-  padding: 5px 10px;
+  width: 100%;
   text-align: center;
-  background: lightgrey;
-  border: 1px black;
 }
 
 .custom-radiator-selection-item:hover {

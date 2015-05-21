@@ -14,7 +14,7 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
       .data(store.customRadiators.listAvailableRadiators())
       .enter()
       .append("li")
-      .classed("custom-radiator-selection-item", true)
+      .classed("custom-radiator-selection-item btn btn-sm smooth", true)
       .text(radiatorLabel)
       .attr("data-type", "append-to-radiator")
       .attr("data-radiator-id", function (d) { return d; });
