@@ -1,16 +1,12 @@
 package com.nitorcreations.willow.messages;
 
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
@@ -19,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.nitorcreations.willow.utils.SSHAgentAuthorizationUtil;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -26,12 +23,6 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
-import com.jcraft.jsch.Identity;
-import com.jcraft.jsch.IdentityRepository;
-import com.jcraft.jsch.agentproxy.AgentProxyException;
-import com.jcraft.jsch.agentproxy.Connector;
-import com.jcraft.jsch.agentproxy.ConnectorFactory;
-import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.nitorcreations.willow.messages.event.Event;
 
 public class WebSocketTransmitter {
@@ -123,32 +114,6 @@ public class WebSocketTransmitter {
   public void setUsername(String username) {
     this.username = username;
   }
-  @SuppressWarnings("unchecked")
-  public static synchronized String getSshAgentAuthorization(String username) {
-    StringBuilder ret = new StringBuilder("PUBLICKEY ");
-    String now = "" + System.currentTimeMillis();
-    Connector con = null;
-    try {
-      ConnectorFactory cf = ConnectorFactory.getDefault();
-      con = cf.createConnector();
-    } catch (AgentProxyException e) {
-      logger.log(Level.SEVERE, "Unable to fetch authorization keys!", e);
-    }
-    byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
-    ret.append(printBase64Binary(sign));
-    if (con != null) {
-      IdentityRepository irepo = new RemoteIdentityRepository(con);
-      for (Identity id : (List<Identity>)irepo.getIdentities()) {
-        try {
-          byte[] sig = id.getSignature(sign);
-          ret.append(" ").append(printBase64Binary(sig));
-        } catch (Throwable t) {
-          logger.log(Level.FINE, "Failed to add signature: " + t.getMessage());
-        }
-      }
-    }
-    return ret.toString();
-  }
 
   @WebSocket
   public class Worker implements Runnable {
@@ -236,7 +201,7 @@ public class WebSocketTransmitter {
       client.setConnectTimeout(2000);
       client.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
-      request.setHeader("Authorization", getSshAgentAuthorization(username));
+      request.setHeader("Authorization", SSHAgentAuthorizationUtil.getSshAgentAuthorization(username));
       Future<Session> future = client.connect(this, uri, request);
       logger.info(String.format("Connecting to : %s", uri));
       try {

@@ -14,6 +14,11 @@
   </parent>
   <dependencies>
     <dependency>
+      <groupId>com.nitorcreations</groupId>
+      <artifactId>willow-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.msgpack</groupId>
       <artifactId>msgpack</artifactId>
     </dependency>
