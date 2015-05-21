@@ -80,7 +80,7 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
     var radiatorConfig = {
       configurationIdPrefix: radiatorIdPrefix, //FIXME sami 21.5. remove, deprecated
       disableTerminalButton: true,
-      disableRadiatorShareButton: true,
+      disableRadiatorShareButton: false,
       chart: chartConfig
     };
     utils.setConfigurationElement(horizonGraphElement, radiatorConfig);

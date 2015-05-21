@@ -1,7 +1,7 @@
 Box.Application.addModule('filesystem-graph', function(context) {
   'use strict';
 
-  var nv, d3, $, host, windowSvc, metrics;
+  var nv, d3, $, host, windowSvc, metrics, moduleConf;
 
   var moduleElement, detailsStop;
 
@@ -41,6 +41,13 @@ Box.Application.addModule('filesystem-graph', function(context) {
         .append("use").attr("xlink:href", "#shape-external-link");
   }
 
+  function appendShareRadiatorIcon(parentElement) {
+    return parentElement.select('.nv-graph__icons').append("svg").attr("viewBox", "0 0 100 100")
+        .classed("icon share-" + host, true)
+        .attr("data-type", "to-radiator")
+        .append("use").attr("xlink:href", "#shape-to-radiator");
+  }
+
   function reset() {
     moduleElement.selectAll(".graph").remove();
     moduleElement.append("svg").classed("graph", true);
@@ -57,6 +64,10 @@ Box.Application.addModule('filesystem-graph', function(context) {
     });
   }
 
+  function openRadiatorDialog() {
+    context.broadcast("open-radiator-list", moduleConf.chart);
+  }
+
   return {
     init: function() {
       $          = context.getGlobal("jQuery");
@@ -67,10 +78,12 @@ Box.Application.addModule('filesystem-graph', function(context) {
 
       moduleElement = d3.select(context.getElement());
 
+      moduleConf = context.getConfig() || {};
+      host        = windowSvc.getHashVariable("host");
       moduleElement.append("div").classed("nv-graph__icons", true);
+      moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
 
-      host        = windowSvc.getHashVariable("host");
       detailsStop = parseInt(new Date().getTime());
 
       reset();
@@ -92,7 +105,10 @@ Box.Application.addModule('filesystem-graph', function(context) {
         case 'to-popup':
           openGraphInPopup();
           break;
-      }
+        case 'to-radiator':
+          openRadiatorDialog();
+          break;
+ }
     },
   };
 });

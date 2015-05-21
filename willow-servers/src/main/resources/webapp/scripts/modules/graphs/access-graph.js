@@ -3,7 +3,7 @@ Box.Application.addModule('access-graph', function(context) {
 
   var nv, d3, host, windowSvc, metrics;
 
-  var moduleElement, detailsStart, detailsStop, detailsStep = 60000;
+  var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep = 60000;
 
   function xTicks(d) {
     return d3.time.format('%X')(new Date(d));
@@ -31,6 +31,13 @@ Box.Application.addModule('access-graph', function(context) {
         .classed("icon popup-" + host, true)
         .attr("data-type", "to-popup")
         .append("use").attr("xlink:href", "#shape-external-link");
+  }
+
+  function appendShareRadiatorIcon(parentElement) {
+    return parentElement.select('.nv-graph__icons').append("svg").attr("viewBox", "0 0 100 100")
+        .classed("icon share-" + host, true)
+        .attr("data-type", "to-radiator")
+        .append("use").attr("xlink:href", "#shape-to-radiator");
   }
 
   function reset() {
@@ -63,6 +70,8 @@ Box.Application.addModule('access-graph', function(context) {
       detailsStart = parseInt(detailsStop - (1000 * 60 * 60 * 3));
 
       moduleElement.append("div").classed("nv-graph__icons", true);
+      moduleConf = context.getConfig() || {};
+      moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
 
       reset();
