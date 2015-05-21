@@ -11,13 +11,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.nitorcreations.willow.metrics.MetricConfig;
+import com.nitorcreations.willow.metrics.MetricConfigBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nitorcreations.willow.metrics.Metric;
-import com.nitorcreations.willow.metrics.MetricConfig;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -29,6 +30,8 @@ public class MetricsServlet extends HttpServlet {
   private transient Node node;
   @Inject
   private transient Map<String, Metric> metrics;
+  @Inject
+  private transient MetricConfigBuilder metricConfigBuilder;
   private ServletConfig config;
 
   @Override
@@ -47,7 +50,7 @@ public class MetricsServlet extends HttpServlet {
       res.sendError(405, "Only GET allowed");
       return;
     }
-    MetricConfig conf = new MetricConfig(req);
+    MetricConfig conf = metricConfigBuilder.fromRequest(req);
     Metric metric = metrics.get(conf.metricKey);
     if (metric == null) {
       ((HttpServletResponse) res).sendError(404, "Metric with key " + conf.metricKey + " not found");

@@ -17,6 +17,11 @@ public class TimePoint {
     this.value = value;
   }
 
+  public TimePoint(TimePoint toCopy) {
+    this.time = toCopy.time;
+    this.value = toCopy.value;
+  }
+
   public String getTime() {
     return time;
   }

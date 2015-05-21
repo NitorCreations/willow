@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletRequest;
-
 public class MetricConfig {
   public static final int MIN_STEPLEN = 1000;
   public static final long MAX_TIMEPERIOD = TimeUnit.DAYS.toMillis(30);
@@ -26,16 +24,16 @@ public class MetricConfig {
     this.metricKey = metricKey;
   }
   public long getStart() {
-	long ret;
+    long ret;
     if (stop - (minSteps * step) < start) {
       ret = stop - (minSteps * step);
     } else {
       ret = start;
     }
     if ((stop - ret) > MAX_TIMEPERIOD) {
-    	return stop - MAX_TIMEPERIOD;
+      return stop - MAX_TIMEPERIOD;
     } else {
-    	return ret;
+      return ret;
     }
   }
   public void setStart(long start) {
@@ -95,31 +93,6 @@ public class MetricConfig {
     stop = now;
     step = 0;
     minSteps = 1;
-  }
-  public MetricConfig(HttpServletRequest req) {
-    long now = System.currentTimeMillis();
-    metricKey = req.getPathInfo();
-    start = getLongParameter(req, "start", now - 30000);
-    stop = getLongParameter(req, "stop", now);
-    step = (int)getLongParameter(req, "step", 0);
-    minSteps = (int)getLongParameter(req, "minsteps", 1);
-    setTypes(getListParameter(req, "type"));
-    setLimits(getListParameter(req, "limits"));
-    setTags(getListParameter(req, "tag"));
-  }
-  protected long getLongParameter(HttpServletRequest req, String name, long def) {
-    String attr = req.getParameter(name);
-    if (attr == null) return def;
-    try {
-      return Long.parseLong(attr);
-    } catch (NumberFormatException e) {
-      return def;
-    }
-  }
-  protected String[] getListParameter(HttpServletRequest req, String name) {
-    String[] ret = req.getParameterValues(name);
-    if (ret == null) return new String[0];
-    return ret;
   }
   public boolean hasType(String type) {
     if (types.size() == 0 || type == null) return false;

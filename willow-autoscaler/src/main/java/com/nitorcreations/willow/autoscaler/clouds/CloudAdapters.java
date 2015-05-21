@@ -3,21 +3,19 @@ package com.nitorcreations.willow.autoscaler.clouds;
 import com.google.inject.Inject;
 
 import javax.inject.Named;
-import java.util.List;
+import java.util.Map;
 
 @Named
 public class CloudAdapters {
 
   @Inject
-  private List<CloudAdapter> cloudAdapters;
+  private Map<String, CloudAdapter> cloudAdapters;
 
   public CloudAdapter get(String cloudProviderId) {
-    for (CloudAdapter ca : cloudAdapters) {
-      if (ca.getCloudProviderId().equals(cloudProviderId)) {
-        return ca;
-      }
+    CloudAdapter cloud = cloudAdapters.get(cloudProviderId);
+    if (cloud == null) {
+      throw new IllegalArgumentException("Unknown cloud provider " + cloudProviderId);
     }
-    System.out.println("no adapter found");
-    throw new IllegalArgumentException("Unknown cloud provider " + cloudProviderId);
+    return cloud;
   }
 }
