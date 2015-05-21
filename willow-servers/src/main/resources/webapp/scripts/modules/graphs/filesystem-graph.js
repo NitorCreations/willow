@@ -28,21 +28,22 @@ Box.Application.addModule('filesystem-graph', function(context) {
         .showControls(false)
         .stacked(true);
       chart.yAxis.tickFormat(kiloBytesToString);
-      moduleElement.select("svg").datum(data).call(chart);
+      moduleElement.select(".graph").datum(data).call(chart);
       return chart;
     });
   };
 
   function appendPopupGraphIcon(parentElement) {
-    return parentElement.select('.nv-graph__icons').append("svg").attr("viewBox", "0 0 100 100")
+    return parentElement.select('.nv-graph__icons')
+        .append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon popup-" + host, true)
         .attr("data-type", "to-popup")
         .append("use").attr("xlink:href", "#shape-external-link");
   }
 
   function reset() {
-    moduleElement.selectAll("svg").remove();
-    moduleElement.append("svg");
+    moduleElement.selectAll(".graph").remove();
+    moduleElement.append("svg").classed("graph", true);
     metrics.metricsDataSource("disk", "host_" + host, undefined, detailsStop, undefined)(createFsGraph);
   }
 

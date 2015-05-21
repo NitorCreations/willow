@@ -14,7 +14,7 @@ Box.Application.addModule('heap-graph', function(context) {
       var chart = nv.models.lineChart();
       chart.xAxis.tickFormat(xTicks);
       chart.yAxis.tickFormat(d3.format(',.2s'));
-      moduleElement.select("svg")
+      moduleElement.select(".graph")
         .datum(data)
         .transition().duration(500)
         .call(chart);
@@ -23,15 +23,16 @@ Box.Application.addModule('heap-graph', function(context) {
   }
 
   function appendPopupGraphIcon(parentElement) {
-    return parentElement.select('.nv-graph__icons').append("svg").attr("viewBox", "0 0 100 100")
+    return parentElement.select('.nv-graph__icons')
+        .append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon popup-" + host, true)
         .attr("data-type", "to-popup")
         .append("use").attr("xlink:href", "#shape-external-link");
   }
 
   function reset() {
-    moduleElement.selectAll("svg").remove();
-    moduleElement.append("svg");
+    moduleElement.selectAll(".graph").remove();
+    moduleElement.append("svg").classed('graph', true);
     metrics.metricsDataSource("heap", "host_" + host, detailsStart, detailsStop, detailsStep)(createHeapGraph);
   }
 
