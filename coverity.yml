@@ -5,20 +5,8 @@ triage:
       issueKey: 4d2e3fde662f1aa2e2c9704ff0d7b25b
       comment: Falsely identify C&P error due to weird javascript style method overloading logic
     - action: suppress
-      issueKey: ff2335e1c5c42dea107a8463474b261c
-      comment: False positive - out closed by try-with-resources
-    - action: suppress
-      issueKey: 483a31668735b841ee7d5ab759556e69
-      comment: Might be used in the future, keep for completeness
-    - action: suppress
-      issueKey: 8b5dead0997f2b6ba791301e381ff6cb
-      comment: False positive - out closed by try-with-resources
-    - action: suppress
       issueKey: ee6c811666c31fa19c341aa05d8034e3
       comment: Not cryptography, but verifying downloaded data
-    - action: suppress
-      issueKey: 4f9a0294c5d56c7913be0e4345dcfae8
-      comment: False positive - out closed by try-with-resources
     - action: suppress
       issueKey: 8f7f78900a631c6ee3a8138b2a87c7e8
       comment: Obfuscator always adds random salt to plaintext
