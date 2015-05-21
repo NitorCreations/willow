@@ -3,12 +3,14 @@ package com.nitorcreations.willow.autoscaler;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.nitorcreations.willow.autoscaler.clouds.CloudAdapters;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
-import com.nitorcreations.willow.autoscaler.deployment.AutoScalingGroupStatus;
 import com.nitorcreations.willow.autoscaler.deployment.DeploymentScanner;
+import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
+import com.nitorcreations.willow.autoscaler.metrics.MetricPoller;
+import com.nitorcreations.willow.autoscaler.scaling.Scaler;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.eclipse.sisu.space.SpaceModule;
 import org.eclipse.sisu.space.URLClassSpace;
 import org.eclipse.sisu.wire.WireModule;
@@ -16,13 +18,16 @@ import org.eclipse.sisu.wire.WireModule;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.*;
 
 @Named
 @Singleton
-@SuppressWarnings("PMD")
+@SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
 public class Main {
 
   private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
@@ -32,10 +37,19 @@ public class Main {
   private MergeableProperties properties = new MergeableProperties();
 
   @Inject
-  private CloudAdapters cloudAdapters;
+  ExecutorService executorService;
 
   @Inject
   private DeploymentScanner deploymentScanner;
+
+  @Inject
+  private MetricPoller metricPoller;
+
+  @Inject
+  private AutoScalingStatus autoScalingStatus;
+
+  @Inject
+  private Scaler scaler;
 
   static {
     try {
@@ -69,25 +83,44 @@ public class Main {
       groups.add(AutoScalingGroupConfig.fromProperties(groupProperties));
     }
 
-    //query group status for all groups
-    deploymentScanner.initialize(groups);
-
-    while (true) {
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      AutoScalingGroupStatus status = deploymentScanner.getStatus("frontend");
-      if (status != null) {
-        System.out.println(status.getInstanceCount());
-      } else {
-        System.out.println("status null");
-      }
+    if (groups.isEmpty()) {
+      logger.info("No auto scaling groups configured. Exiting.");
+      System.exit(0);
     }
-    //start polling metrics
 
-    //make scaling decisions (profit)
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        Main.this.stop();
+      }
+    });
+
+    autoScalingStatus.initialize(groups);
+
+    //start scanning deployment for auto scaling groups
+    logger.info("Initializing deployment scanner");
+    deploymentScanner.initialize(groups);
+    executorService.submit(deploymentScanner);
+
+    //start polling metrics
+    try {
+      logger.info("Initializing metrics poller");
+      metricPoller.initialize(groups, new URI((String)properties.get("willow-autoscaler.metricsUri")));
+    } catch (URISyntaxException e) {
+      logger.log(Level.SEVERE, "Invalid URI: " + properties.get("willow-autoscaler.metricsUri"), e);
+      System.exit(1);
+    }
+
+    //start scaler component
+    logger.info("Initializing scaler");
+    scaler.initialize(groups);
+
+  }
+
+  private void stop() {
+    System.out.println("Willow Autoscaler stopping...");
+    executorService.shutdown();
+    deploymentScanner.stop();
   }
 
   private static void setupLogging() {

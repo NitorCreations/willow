@@ -26,6 +26,7 @@ public class AutoScalingGroupConfig {
   private Integer instanceMaxCount;
   private List<AutoScalingPolicy> scalingPolicies = new ArrayList<>();
   private List<Tag> tags = new ArrayList<>();
+  private Integer quietPeriodSeconds;
 
   public static AutoScalingGroupConfig fromProperties(MergeableProperties properties) {
     AutoScalingGroupConfig config = new AutoScalingGroupConfig();
@@ -40,6 +41,7 @@ public class AutoScalingGroupConfig {
     config.subnet = (String)properties.get("subnet");
     config.instanceBaseCount = Integer.valueOf((String)properties.get("instanceBaseCount"));
     config.instanceMaxCount = Integer.valueOf((String)properties.get("instanceMaxCount"));
+    config.quietPeriodSeconds = Integer.valueOf((String)properties.get("quietPeriodSeconds"));
 
     List<MergeableProperties> scalingProps = properties.getPrefixedList("scalingPolicies");
     config.scalingPolicies = new LinkedList<>();
@@ -169,5 +171,15 @@ public class AutoScalingGroupConfig {
     this.scalingPolicies = scalingPolicies;
   }
 
+  public List<Tag> getTags() {
+    return tags;
+  }
 
+  public void setTags(List<Tag> tags) {
+    this.tags = tags;
+  }
+
+  public Integer getQuietPeriodSeconds() {
+    return quietPeriodSeconds;
+  }
 }

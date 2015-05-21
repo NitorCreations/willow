@@ -1,57 +1,52 @@
 package com.nitorcreations.willow.autoscaler.deployment;
 
-import com.google.inject.Inject;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapter;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapters;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
+import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Named
-public class DeploymentScanner {
+public class DeploymentScanner implements Runnable {
+
+  private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
 
   @Inject
   private CloudAdapters cloudAdapters;
 
+  @Inject
   private ScheduledExecutorService scheduledExecutorService;
 
   private List<AutoScalingGroupConfig> groups = new ArrayList<>();
 
-  private Map<String, AutoScalingGroupStatus> statuses = new ConcurrentHashMap<>();
+  private Map<String, AutoScalingGroupDeploymentStatus> statuses = new ConcurrentHashMap<>();
+
+  @Inject
+  private AutoScalingStatus autoScalingStatus;
+
+  private AtomicBoolean running = new AtomicBoolean(true);
 
   public void initialize(List<AutoScalingGroupConfig> groups) {
+    if (groups == null) throw new IllegalArgumentException("List of groups can't be null");
+    logger.info(String.format("Initializing deployment scanner with %s groups", groups.size()));
     this.setGroups(groups);
-    statuses = new ConcurrentHashMap<>();
-    if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
-      scheduledExecutorService.shutdownNow();
-    }
-    scheduledExecutorService = Executors.newScheduledThreadPool(groups.size());
-    for (final AutoScalingGroupConfig group : groups) {
-      scheduledExecutorService.scheduleAtFixedRate(
-          new Runnable() {
-            @Override
-            public void run() {
-              System.out.println("running");
-              CloudAdapter cloud = cloudAdapters.get(group.getCloudProvider());
-              AutoScalingGroupStatus groupStatus = cloud.getGroupStatus(group.getRegion(), group.getName());
-              statuses.put(group.getName(), groupStatus);
-            }
-          }, 1, 10, TimeUnit.SECONDS);
-    }
   }
 
-  public AutoScalingGroupStatus getStatus(String groupId) {
+  public AutoScalingGroupDeploymentStatus getStatus(String groupId) {
     return statuses.get(groupId);
   }
 
   public void stop() {
+    running.set(false);
     scheduledExecutorService.shutdownNow();
   }
 
@@ -62,9 +57,45 @@ public class DeploymentScanner {
   }
 
   public void setGroups(List<AutoScalingGroupConfig> groups) {
-    groups.clear();
+    this.groups.clear();
     this.groups.addAll(groups);
   }
 
-}
+  @Override
+  public void run() {
+    while (running.get()) {
+      Map<ScheduledFuture<?>, AutoScalingGroupConfig> futures = new ConcurrentHashMap<>();
+      for (final AutoScalingGroupConfig group : groups) {
+        futures.put(scheduleGroupScan(group), group);
+      }
+      for (Map.Entry<ScheduledFuture<?>, AutoScalingGroupConfig> entry : futures.entrySet()) {
+        ScheduledFuture<?> f = entry.getKey();
+        try {
+          f.get();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          logger.log(Level.SEVERE, "deployment scanner execution failure", e);
+          futures.put(scheduleGroupScan(futures.get(f)), futures.get(f));
+          futures.remove(entry.getKey());
+        }
+      }
+    }
+    logger.info("DeploymentScanner exiting");
+  }
 
+  private ScheduledFuture<?> scheduleGroupScan(final AutoScalingGroupConfig group) {
+    return scheduledExecutorService.scheduleAtFixedRate(
+        new Runnable() {
+          @Override
+          public void run() {
+            CloudAdapter cloud = cloudAdapters.get(group.getCloudProvider());
+            AutoScalingGroupDeploymentStatus groupStatus = cloud.getGroupStatus(group.getRegion(), group.getName());
+            logger.info(String.format("Deployment status for %s group %s: %s instances", group.getCloudProvider(),
+                group.getName(), groupStatus.getInstanceCount()));
+            statuses.put(group.getName(), groupStatus); //TODO remove internal structure if unnecessary
+            autoScalingStatus.setDeploymentStatus(group.getName(), groupStatus);
+          }
+        }, 1, 10, TimeUnit.SECONDS);
+  }
+}
