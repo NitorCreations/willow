@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import org.apache.shiro.codec.Base64;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.spi.Message;
+import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
 import com.nitorcreations.willow.utils.ProxyUtils;
 
 public class AuthorizedKeys {
@@ -39,7 +39,7 @@ public class AuthorizedKeys {
           if (elems.length < 3) continue;
           AuthorizedKey key = new AuthorizedKey();
           key.type = elems[0];
-          key.keycomponents = components(Base64.decode(elems[1]));
+          key.keycomponents = SSHAgentAuthorizationUtil.components(Base64.decode(elems[1]));
           key.comment = elems[2];
           ret.addKey(key);
         }
@@ -54,21 +54,6 @@ public class AuthorizedKeys {
   }
   public void addKey(AuthorizedKey key) {
     keys.add(key);
-  }
-  public static List<byte[]> components(byte[] val) {
-    List<byte[]> ret = new ArrayList<>();
-    int index = 0;
-    while (index < val.length) {
-      byte[] len = new byte[4];
-      System.arraycopy(val, index, len, 0, 4);
-      BigInteger lenBi = new BigInteger(len);
-      index += 4;
-      byte[] next = new byte[lenBi.intValue()];
-      System.arraycopy(val, index, next, 0, next.length);
-      ret.add(next);
-      index += lenBi.intValue();
-    }
-    return ret;
   }
 
 }

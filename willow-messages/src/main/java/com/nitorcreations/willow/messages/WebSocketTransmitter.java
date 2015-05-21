@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nitorcreations.willow.utils.SSHAgentAuthorizationUtil;
+import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;

@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.auth;
 
-import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
+import static com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil.verify;
+
 import java.util.logging.Logger;
 
 import javax.inject.Singleton;
@@ -13,11 +13,7 @@ import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 
-import com.jcraft.jsch.Signature;
-import com.jcraft.jsch.jce.SignatureDSA;
-import com.jcraft.jsch.jce.SignatureRSA;
 import com.nitorcreations.willow.auth.AuthorizedKeys.AuthorizedKey;
-
 
 @Singleton
 public class PublicKeyRealm implements Realm {
@@ -49,59 +45,13 @@ public class PublicKeyRealm implements Realm {
     boolean found = false;
     for (AuthorizedKey next : authorizedKeys.keys()) {
       for (byte[] nextSig : pkToken.getSignatures()) {
-        String type = new String(AuthorizedKeys.components(nextSig).get(0), StandardCharsets.UTF_8);
-        if (!type.equals(next.type)) continue;
-        Signature sig = null;
-        if ("ssh-dss".equals(next.type)) {
-          SignatureDSA dsaSig = new SignatureDSA();
-          try {
-            dsaSig.init();
-          } catch (Exception e) {
-            assert false: "These algorithms should always be available";
-          }
-          try {
-            dsaSig.setPubKey(next.keycomponents.get(4), next.keycomponents.get(1), 
-              next.keycomponents.get(2), next.keycomponents.get(3));
-          } catch (Exception e) {
-            log.log(Level.WARNING, "Failed to set public key", e);
-            continue;
-          }
-          sig = dsaSig;
-        } else if ("ssh-rsa".equals(next.type)) {
-          SignatureRSA rsaSig = new SignatureRSA();
-          try {
-            rsaSig.init();
-          } catch (Exception e) {
-            assert false: "These algorithms should always be available";
-          }
-          try {
-            rsaSig.setPubKey(next.keycomponents.get(1), next.keycomponents.get(2));
-          } catch (Exception e) {
-            log.log(Level.WARNING, "Failed to set public key", e);
-            continue;
-          }
-          sig = rsaSig;
-        } else {
-          continue;
-        }
-        boolean verified = false;
-        try {
-          sig.update(pkToken.getSign());
-          try {
-            verified = sig.verify(nextSig);
-          } catch (Throwable t) {
-            log.finer("Did not verify with " + next.comment);
-          }
-          if (verified) {
-            found = true;
-            log.fine("Matched key " + next.comment);
-            break;
-          }
-        } catch (Exception e) {
-          log.log(Level.WARNING, "Failed to verify signature", e);
-          continue;
+        if (verify(nextSig, next.type, next.keycomponents, pkToken.getSign(), next.comment)) {
+          found = true;
+          log.fine("Successful auth for " + pkToken.getUsername());
+          break;
         }
       }
+      if (found) break;
     }
     if (found) {
       SimpleAuthenticationInfo ret = new SimpleAuthenticationInfo();
@@ -117,5 +67,4 @@ public class PublicKeyRealm implements Realm {
   public void setAuthorizedKeys(AuthorizedKeys authorizedKeys) {
     this.authorizedKeys = authorizedKeys;
   }
-  
 }

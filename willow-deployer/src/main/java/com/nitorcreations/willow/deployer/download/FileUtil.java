@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.deployer.download;
 
 import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.AT_DELIMITERS;
-import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.CURLY_DELIMITERS;;
+import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.CURLY_DELIMITERS;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>willow-messages</artifactId>
+  <artifactId>willow-sshagent-auth</artifactId>
   <packaging>jar</packaging>
-  <name>Willow messages</name>
+  <name>Willow ssh-agent authentication</name>
   <description>Cloud application messages</description>
   <parent>
     <groupId>com.nitorcreations</groupId>
@@ -14,21 +14,16 @@
   </parent>
   <dependencies>
     <dependency>
-      <groupId>com.nitorcreations</groupId>
-      <artifactId>willow-sshagent-auth</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.msgpack</groupId>
-      <artifactId>msgpack</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.connector-factory</artifactId>
     </dependency>
     <dependency>
-      <groupId>net.jpountz.lz4</groupId>
-      <artifactId>lz4</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-client</artifactId>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.jsch</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>

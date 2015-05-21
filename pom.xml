@@ -23,6 +23,7 @@
     </developer>
   </developers>
   <modules>
+    <module>willow-sshagent-auth</module>
     <module>willow-messages</module>
     <module>willow-servers</module>
     <module>willow-deployer</module>

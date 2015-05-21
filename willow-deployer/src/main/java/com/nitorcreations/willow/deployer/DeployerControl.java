@@ -30,7 +30,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.nitorcreations.willow.utils.SSHAgentAuthorizationUtil;
+import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
+
 import org.eclipse.sisu.space.SpaceModule;
 import org.eclipse.sisu.space.URLClassSpace;
 import org.eclipse.sisu.wire.WireModule;

@@ -6,13 +6,15 @@ import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
 import com.nitorcreations.willow.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.TimePoint;
-import com.nitorcreations.willow.utils.SSHAgentAuthorizationUtil;
+import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import javax.inject.Inject;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
