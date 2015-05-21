@@ -37,6 +37,7 @@ public class WillowShiroModule extends ShiroWebModule {
     addFilterChain("/search/**", endUserFilter);
     addFilterChain("/metrics/**", endUserFilter);
     addFilterChain("/poll/**", endUserFilter);
+    addFilterChain("/poll-internal/**", deployerFilter);
     addFilterChain("/logout/**", LOGOUT);
     addFilterChain("/rawterminal/**", endUserFilter);
     

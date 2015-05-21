@@ -50,6 +50,7 @@ public class ApplicationServletModule extends ServletModule {
     serve("/rawterminal/*").with(RawTerminalServlet.class);
     serve("/session/*").with(SessionServlet.class);
     serve("/poll/*").with(ServerSidePollingServlet.class);
+    serve("/poll-internal/*").with(ServerSidePollingServlet.class);
     serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
   }
