@@ -3,7 +3,7 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
 
   var d3, $,
     store, windowSvc, cubismGraphs, utils, metricsService,
-    moduleElem, radiatorName, host, instanceTag, timescale;
+    moduleElem, radiatorName, host, timescale;
 
   var detailsStart, detailsStop, dragStart, isDragging = false; //FIXME can usage of these be removed?
 
@@ -51,7 +51,8 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
 
   function reset() {
     resetLayout();
-    initGraphs();
+    var configDataSource = host ? defaultMetrics(host) : customRadiatorConfig(radiatorName);
+    initGraphs(configDataSource);
   }
 
   //FIXME should get reset variables as arguments
@@ -61,27 +62,23 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
     cubismGraphs.resetCubismContext(step, widthInPixels);
   }
 
-  function initGraphs() {
-    defaultMetrics(host)(function(metrics) {
-      metrics.forEach(function (metric) {
-        var chartConfig = {
-          metric: metric,
-          host: host,
-          instanceTag: instanceTag
-        };
+  function initGraphs(configDataSource) {
+    configDataSource(function(configurations) {
+      configurations.forEach(function(chartConfig) {
         moduleElem.call(createHorizonGraph, chartConfig);
       });
-      context.broadcast("reload-graph-configuration");
     });
+    context.broadcast("reload-graph-configuration");
   }
 
+  //FIXME sami 21.5. should we remove these local storage stores now that chart config is passed through module config
   function radiatorGraphIdPrefix(radiatorId) {
     return "live:radiator:" + radiatorId + ":graph-";
   }
 
   function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix, chartConfig) {
     var radiatorConfig = {
-      configurationIdPrefix: radiatorIdPrefix,
+      configurationIdPrefix: radiatorIdPrefix, //FIXME sami 21.5. remove, deprecated
       disableTerminalButton: true,
       disableRadiatorShareButton: true,
       chart: chartConfig
@@ -98,10 +95,25 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
     store.storeConfiguration(radiatorIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
   }
 
+  function customRadiatorConfig(radiatorName) {
+    return function(callback) {
+      callback(store.customRadiators.readConfiguration(radiatorName));
+    };
+  }
+
   //TODO resolve from backend
   function defaultMetrics(host) {
+    var defaults = ["cpu", "mem", "diskio", "tcpinfo"];
+    var configs = defaults.map(function(metric) {
+        return {
+          metric: metric,
+          host: host,
+          instanceTag: "host_" + host
+        };
+      }
+    );
     return function(callback) {
-      callback(["cpu", "mem", "diskio", "tcpinfo"]);
+      callback(configs);
     };
   }
 
@@ -119,17 +131,24 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
 
       // TODO: configSvc for configs
       timescale    = windowSvc.getHashVariable("timescale") || 10800;
-      radiatorName = windowSvc.getHashVariable("host");
+
+      //TODO: host hash variable is dominant over name variable
       host = windowSvc.getHashVariable("host");
-      instanceTag = "host_" + host;
-      if (!radiatorName) {
-        console.error("failed to resolve host name for the radiator metrics");
+      if (!host) {
+        radiatorName = windowSvc.getHashVariable("name");
+        if (!radiatorName) {
+          console.error("failed to resolve host name for the radiator metrics");
+        }
       }
+
       reset();
       $(window).resize(utils.debouncer(resetLayout));
     },
 
     destroy: function() {
+      timescale = null;
+      host = null;
+      radiatorName = null;
     },
 
     onmousedown: isDraggingMouseDown,

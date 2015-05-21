@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+  <title>Willow monitoring - Custom radiator</title>
+  <meta charset="utf-8" />
+  #parse("/templates/head.html")
+</head>
+<body>
+#include("/images/icons.svg")
+<nav class="nav" tabindex="-1">
+  <div class="container" data-module="radiator-navigation">
+    #include("/templates/time-scale-picker.html")
+  </div>
+</nav>
+<div class="mainchart" data-module="radiator-horizon-graphs">
+  #include("/templates/horizon-ruler.html")
+  <div id="horizon-graphs"></div>
+</div>
+<script id="bootstrap-application" type="text/javascript">
+  window.name = "index";
+  Box.Application.init({
+    debug: $debug
+  });
+</script>
+</body>
+</html>

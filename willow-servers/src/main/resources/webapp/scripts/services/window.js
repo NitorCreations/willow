@@ -31,7 +31,7 @@ Box.Application.addService('window', function(application) {
   }
 
   function sendToRadiator(radiatorName, graphConfig) {
-    var graphSpec = graphSpecificationString(graphConfig);
+    var graphSpec = graphSpecificationString(graphConfig); //FIXME 21.5. do we really need to send configuration in a URL?
     var openWindows = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
     if (openWindows.indexOf("radiator-" + radiatorName) == -1) {
       _open("radiator.html#graph=" + encodeURIComponent(graphSpec) + "&name=" + radiatorName, "radiator-" + radiatorName);
