@@ -300,6 +300,7 @@ textarea, input[type=text] {
 .nv-graph {
   height: 200px;
   position: relative;
+  overflow: hidden;
 }
 
 .nv-graph.scalable {
