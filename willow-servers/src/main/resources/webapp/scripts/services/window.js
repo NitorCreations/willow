@@ -29,7 +29,7 @@ Box.Application.addService('window', function(application) {
     if (openWindows.indexOf("radiator-" + radiatorName) == -1) {
       _open("radiator.html#&name=" + radiatorName, "radiator-" + radiatorName);
     } else {
-      intercom.emit("radiator-" + radiatorName + "-addgraph", graphSpec);
+      intercom.emit("radiator-" + radiatorName + "-addgraph");
     }
   }
 
