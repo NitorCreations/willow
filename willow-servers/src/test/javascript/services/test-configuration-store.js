@@ -50,7 +50,7 @@ describe("Tests for configuration store:", function() {
     var expectedConfiguration = existingConfigurations.rad1.push(testGraphConfig);
     sandbox.mock(localStorage).expects('setItem')
         .withExactArgs(radiatorConfigKey, JSON.stringify(expectedConfiguration));
-    service.customRadiators.appendConfig("rad1", testGraphConfig);
+    service.customRadiators.appendConfiguration("rad1", testGraphConfig);
   });
 
 /*
@@ -60,7 +60,7 @@ describe("Tests for configuration store:", function() {
     expectedConfiguration["new_rad"] = [testGraphConfig];
     sandbox.mock(localStorage).expects('setItem')
         .withExactArgs(radiatorConfigKey, JSON.stringify(expectedConfiguration));
-    service.customRadiators.appendConfig("new-rad", testGraphConfig);
+    service.customRadiators.appendConfiguration("new-rad", testGraphConfig);
   });
 
   //FIXME figure out why this expectation does not work

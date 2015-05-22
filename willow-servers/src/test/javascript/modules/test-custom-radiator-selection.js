@@ -36,7 +36,7 @@ describe("Tests for custom radiator ", function() {
     };
     store = {
       customRadiators: {
-        appendConfig: function() {},
+        appendConfiguration: function() {},
         listAvailableRadiators: function() { return ["existing-radiator"]; }
       }
     };
@@ -61,7 +61,7 @@ describe("Tests for custom radiator ", function() {
   });
 
   it('creating a new radiator stores the configuration with user given radiator name', function() {
-    sandbox.mock(store.customRadiators).expects('appendConfig').withExactArgs("test-new-radiator-name", testCharConfig).once();
+    sandbox.mock(store.customRadiators).expects('appendConfiguration').withExactArgs("test-new-radiator-name", testCharConfig).once();
     sandbox.mock(windowService).expects('sendGraphToRadiator').withExactArgs("test-new-radiator-name", testCharConfig).once();
     sandbox.mock(jQueryApi).expects('dialog').withExactArgs("destroy").once();
     module.setGraphConfig(testCharConfig);
@@ -69,7 +69,7 @@ describe("Tests for custom radiator ", function() {
   });
 
   it('selecting existing radiator stores the configuration with selected radiator name', function() {
-    sandbox.mock(store.customRadiators).expects('appendConfig').withExactArgs("existing-radiator", testCharConfig).once();
+    sandbox.mock(store.customRadiators).expects('appendConfiguration').withExactArgs("existing-radiator", testCharConfig).once();
     sandbox.mock(windowService).expects('sendGraphToRadiator').withExactArgs("existing-radiator", testCharConfig).once();
     sandbox.mock(jQueryApi).expects('dialog').withExactArgs("destroy").once();
     module.setGraphConfig(testCharConfig);

@@ -53,7 +53,7 @@ Box.Application.addService('configuration-store', function(application) {
     customRadiators: {
       readConfiguration:      readRadiatorConfiguration,
       storeConfiguration:     storeRadiatorConfiguration,
-      appendConfig:           appendGraphToRadiator,
+      appendConfiguration:    appendGraphToRadiator,
       removeConfiguration:    removeRadiatorConfiguration,
       listAvailableRadiators: listRadiatorNames
     },

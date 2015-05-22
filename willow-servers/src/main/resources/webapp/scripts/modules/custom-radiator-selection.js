@@ -21,7 +21,7 @@ Box.Application.addModule('custom-radiator-selection', function(context) {
   }
 
   function dispatchConfigurationToRadiator(radiatorId, config) {
-    store.customRadiators.appendConfig(radiatorId, config);
+    store.customRadiators.appendConfiguration(radiatorId, config);
     windowService.sendGraphToRadiator(radiatorId, config);
   }
 
