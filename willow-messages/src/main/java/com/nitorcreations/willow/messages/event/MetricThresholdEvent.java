@@ -9,16 +9,4 @@ public class MetricThresholdEvent extends Event {
   public Double value;
   public Double threshold;
 
-  public MetricThresholdEvent() {
-    super();
-  }
-
-  public MetricThresholdEvent(EventMessage eventMessage) {
-    super();
-    description = eventMessage.description;
-    metric = eventMessage.eventData.get("metric");
-    value = Double.valueOf(eventMessage.eventData.get("value"));
-    threshold = Double.valueOf(eventMessage.eventData.get("threshold"));
-  }
-
 }

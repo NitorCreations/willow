@@ -7,8 +7,12 @@ import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingGroupStatus;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,9 +34,15 @@ public class Scaler implements Runnable {
   @Inject
   private CloudAdapters cloudAdapters;
 
+  @Inject
+  private WebSocketTransmitter transmitter;
+
   public void initialize(List<AutoScalingGroupConfig> groups) {
     for (final AutoScalingGroupConfig group : groups) {
       scheduler.scheduleAtFixedRate(new Runnable() {
+
+        Set<AutoScalingPolicy> triggeredPolicyHistory = new HashSet<>();
+
         @Override
         public void run() {
           try {
@@ -59,9 +69,17 @@ public class Scaler implements Runnable {
             }
 
             List<AutoScalingPolicy> triggeredPolicies = groupStatus.getTriggeredPolicies();
-            if (triggeredPolicies != null && !triggeredPolicies.isEmpty()) {
-              AutoScalingPolicy policy = triggeredPolicies.get(0);
-              logger.info(String.format("Triggered policy %s for %s group %s", policy.getName(), group.getCloudProvider(), group.getName()));
+            for (AutoScalingPolicy policy : triggeredPolicies) {
+              if (!triggeredPolicyHistory.contains(policy)) {
+                logger.info(String.format("Triggered policy %s for %s group %s", policy.getName(), group.getCloudProvider(), group.getName()));
+                sendMetricThresholdEvent(policy, group, groupStatus);
+                triggeredPolicyHistory.add(policy);
+              }
+            }
+            triggeredPolicyHistory.retainAll(triggeredPolicies);
+            if (!triggeredPolicies.isEmpty()) {
+              AutoScalingPolicy policy = triggeredPolicies.get(0); //TODO priority order?
+              logger.info(String.format("Plan action for triggered policy %s for %s group %s", policy.getName(), group.getCloudProvider(), group.getName()));
               int currentInstances = groupStatus.getDeploymentStatus().getInstanceCount();
               int effect = policy.getPolicyEffect(currentInstances);
               if (effect > 0) {
@@ -77,7 +95,7 @@ public class Scaler implements Runnable {
               } else if (effect < 0) {
                 if (currentInstances + effect < group.getInstanceBaseCount()) {
                   effect = currentInstances - group.getInstanceBaseCount();
-                  logger.info(String.format("Sizing scale in effect to keep minimum of %s instances", group.getInstanceBaseCount()));
+                  logger.info(String.format("Capping scale in effect to keep minimum of %s instances", group.getInstanceBaseCount()));
                 }
                 effect = Math.abs(effect);
                 if (effect > 0) {
@@ -118,5 +136,21 @@ public class Scaler implements Runnable {
     this.running.set(false);
   }
 
+  public void sendMetricThresholdEvent(AutoScalingPolicy policy, AutoScalingGroupConfig groupConfig,
+                                       AutoScalingGroupStatus groupStatus) {
+    MetricThresholdEvent mte = new MetricThresholdEvent();
+    mte.metric = policy.getMetricName();
+    mte.threshold = policy.getMetricThreshold().doubleValue();
+    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue().doubleValue();
+    mte.addTag("group_" + groupConfig.getName());
+    mte.description = String.format(
+        "Metric %s value %s is past threshold of %s defined in scaling policy %s. Policy action: %s",
+        mte.metric,
+        mte.value,
+        mte.threshold,
+        policy.getName(),
+        policy.getScalingAction());
+    transmitter.queue(mte);
+  }
 
 }
