@@ -114,8 +114,8 @@ public class DeploymentScanner implements Runnable {
               msg.privateIpAddress = i.getPrivateIp();
               msg.publicHostname = i.getPublicHostname();
               msg.publicIpAddress = i.getPublicIp();
-              msg.setInstance(i.getInstanceId());
-              msg.addTags("host_"+i.getInstanceId(), "group_"+group.getName());
+              msg.setInstance(i.getInstanceId().replaceAll("-", "_"));
+              msg.addTags("host_"+msg.getInstance(), "group_"+group.getName());
               if (!messageTransmitter.queue(msg)) {
                 logger.warning("Unable to queue hostInfoMessage for sending!");
               }
