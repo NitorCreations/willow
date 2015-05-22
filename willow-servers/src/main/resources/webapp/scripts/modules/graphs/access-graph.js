@@ -1,7 +1,7 @@
 Box.Application.addModule('access-graph', function(context) {
   'use strict';
 
-  var nv, d3, host, windowSvc, metrics;
+  var nv, d3, host, windowSvc, metrics, store, utils;
 
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep = 60000;
 
@@ -47,7 +47,16 @@ Box.Application.addModule('access-graph', function(context) {
   }
 
   function openGraphInPopup() {
-    var url = '/graph.html#type=access&host=' + host;
+    var radiatorName = utils.guid(),
+        url = '/graph.html#name=' + radiatorName;
+
+    store.customRadiators.appendConfiguration(radiatorName, {
+      chart: {
+        type: 'access',
+        host: host
+      },
+      removeAfterUse: true
+    });
 
     windowSvc.popup({
       url: url,
@@ -58,19 +67,21 @@ Box.Application.addModule('access-graph', function(context) {
 
   return {
     init: function() {
-      d3         = context.getGlobal("d3");
-      nv         = context.getGlobal("nv");
-      windowSvc  = context.getService("window");
-      metrics    = context.getService("metrics");
+      d3        = context.getGlobal("d3");
+      nv        = context.getGlobal("nv");
+      windowSvc = context.getService("window");
+      metrics   = context.getService("metrics");
+      store     = context.getService("configuration-store");
+      utils     = context.getService("utils");
 
       moduleElement = d3.select(context.getElement());
 
-      host         = windowSvc.getHashVariable("host");
+      moduleConf   = context.getConfig() || {};
+      host         = moduleConf.chart ? moduleConf.chart.host : windowSvc.getHashVariable("host");
       detailsStop  = parseInt(new Date().getTime());
       detailsStart = parseInt(detailsStop - (1000 * 60 * 60 * 3));
 
       moduleElement.append("div").classed("nv-graph__icons", true);
-      moduleConf = context.getConfig() || {};
       moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
 
