@@ -507,7 +507,7 @@ select.navcenter {
   opacity: 0.5;
 }
 
-.nv-graph__icons:hover .icon {
+.nv-graph__icons .icon:hover {
   opacity: 1;
 }
 
