@@ -31,6 +31,12 @@ Box.Application.addService('configuration-store', function(application) {
     storeConfiguration(customRadiatorKey(), configs);
   }
 
+  function removeRadiatorConfiguration(radiatorName) {
+    var configs = readRadiatorConfigurations();
+    delete configs[radiatorName];
+    storeConfiguration(customRadiatorKey(), configs);
+  }
+
   function appendGraphToRadiator(radiatorName, config) {
     var configurations = readRadiatorConfigurations();
     var existingConfig = configurations[radiatorName] || [];
@@ -45,9 +51,10 @@ Box.Application.addService('configuration-store', function(application) {
 
   return {
     customRadiators: {
-      readConfiguration: readRadiatorConfiguration,
-      storeConfiguration: storeRadiatorConfiguration,
-      appendConfig: appendGraphToRadiator,
+      readConfiguration:      readRadiatorConfiguration,
+      storeConfiguration:     storeRadiatorConfiguration,
+      appendConfig:           appendGraphToRadiator,
+      removeConfiguration:    removeRadiatorConfiguration,
       listAvailableRadiators: listRadiatorNames
     },
     readConfiguration: readConfiguration,
