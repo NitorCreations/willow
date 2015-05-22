@@ -21,6 +21,8 @@ Box.Application.addModule('radiator-controller', function(context) {
   };
 
   function initGraph(config) {
+    // the config structure is a little different when it comes through custom radiator
+    config = config.chart ? config : { chart: config };
     var type = config.chart.type;
     if (!render[type]) {
       throw new Error('Graph type not found.');
