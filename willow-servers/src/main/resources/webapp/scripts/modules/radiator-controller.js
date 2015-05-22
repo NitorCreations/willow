@@ -106,7 +106,6 @@ Box.Application.addModule('radiator-controller', function(context) {
         // init all graphs found in radiator configuration
         initGraph(config);
         // wipe config if it is marked for deletion (e.g. single graph)
-        console.log(config)
         if (config.removeAfterUse) {
           store.customRadiators.removeConfiguration(radiatorName);
         }
