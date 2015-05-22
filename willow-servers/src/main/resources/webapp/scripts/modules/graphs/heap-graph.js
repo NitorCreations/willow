@@ -47,13 +47,9 @@ Box.Application.addModule('heap-graph', function(context) {
     var radiatorName = utils.guid(),
         url = '/graph.html#name=' + radiatorName;
 
-    store.customRadiators.appendConfiguration(radiatorName, {
-      chart: {
-        type: 'heap',
-        host: host
-      },
-      removeAfterUse: true
-    });
+    moduleConf.removeAfterUse = true;
+    store.customRadiators.appendConfiguration(radiatorName, moduleConf);
+    delete moduleConf.removeAfterUse;
 
     windowSvc.popup({
       url: url,
@@ -77,7 +73,11 @@ Box.Application.addModule('heap-graph', function(context) {
       moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
 
-      host         = moduleConf.chart ? moduleConf.chart.host : windowSvc.getHashVariable("host");
+      moduleConf.chart = moduleConf.chart || {
+        type: 'heap',
+        host: windowSvc.getHashVariable("host")
+      };
+      host = moduleConf.chart.host;
       detailsStop  = parseInt(new Date().getTime());
       detailsStart = parseInt(detailsStop - (1000 * 60 * 60 * 3));
 
@@ -100,6 +100,9 @@ Box.Application.addModule('heap-graph', function(context) {
       switch (elementType) {
         case 'to-popup':
           openGraphInPopup();
+          break;
+        case 'to-radiator':
+          context.broadcast("open-radiator-list", moduleConf.chart);
           break;
       }
     },

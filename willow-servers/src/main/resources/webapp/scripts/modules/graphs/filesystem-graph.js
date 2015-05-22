@@ -58,13 +58,9 @@ Box.Application.addModule('filesystem-graph', function(context) {
     var radiatorName = utils.guid(),
         url = '/graph.html#name=' + radiatorName;
 
-    store.customRadiators.appendConfiguration(radiatorName, {
-      chart: {
-        type: 'filesystem',
-        host: host
-      },
-      removeAfterUse: true
-    });
+    moduleConf.removeAfterUse = true;
+    store.customRadiators.appendConfiguration(radiatorName, moduleConf);
+    delete moduleConf.removeAfterUse;
 
     windowSvc.popup({
       url: url,
@@ -89,7 +85,11 @@ Box.Application.addModule('filesystem-graph', function(context) {
       moduleElement = d3.select(context.getElement());
 
       moduleConf = context.getConfig() || {};
-      host       = moduleConf.chart ? moduleConf.chart.host : windowSvc.getHashVariable("host");
+      moduleConf.chart = moduleConf.chart || {
+        type: 'filesystem',
+        host: windowSvc.getHashVariable("host")
+      };
+      host = moduleConf.chart.host;
       moduleElement.append("div").classed("nv-graph__icons", true);
       moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
@@ -118,7 +118,7 @@ Box.Application.addModule('filesystem-graph', function(context) {
         case 'to-radiator':
           openRadiatorDialog();
           break;
- }
+      }
     },
   };
 });
