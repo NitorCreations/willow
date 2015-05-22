@@ -4,45 +4,35 @@ Box.Application.addModule('radiator-controller', function(context) {
   var utils, store, windowSvc, intercom, d3, $, moduleElem, cubismGraphs;
 
   var render = {
-    horizon: function() {
-      var host          = windowSvc.getHashVariable("host"),
-          metric        = windowSvc.getHashVariable("metric"),
-          chartConfig   = {
-            metric:      metric,
-            host:        host,
-            instanceTag: "host_" + host
-          };
-
+    horizon: function(config) {
       cubismGraphs.resetCubismContext();
-      moduleElem.call(createHorizonGraph, chartConfig);
+      moduleElem.call(createHorizonGraph, config.chart);
       context.broadcast("reload-graph-configuration");
-      windowSvc.setTitle(metric.toUpperCase() + " for " + host);
+      windowSvc.setTitle(config.chart.metric.toUpperCase() + " for " + config.host);
     },
-    access: function() {
-      var host = windowSvc.getHashVariable("host");
-      moduleElem.call(createAccessGraph, host);
+    access: function(config) {
+      moduleElem.call(createAccessGraph, config.chart);
     },
-    filesystem: function() {
-      var host = windowSvc.getHashVariable("host");
-      moduleElem.call(createFilesystemGraph, host);
+    filesystem: function(config) {
+      moduleElem.call(createFilesystemGraph, config.chart);
     },
-    heap: function() {
-      var host = windowSvc.getHashVariable("host");
-      moduleElem.call(createHeapGraph, host);
+    heap: function(config) {
+      moduleElem.call(createHeapGraph, config.chart);
     }
   };
 
-  function initGraph(type) {
+  function initGraph(config) {
+    var type = config.chart.type;
     if (!render[type]) {
       throw new Error('Graph type not found.');
     }
 
-    render[type]();
+    render[type](config);
 
     // re-render the graph on resize
     $(window).resize(utils.debouncer(function() {
       moduleElem.html('');
-      render[type]();
+      render[type](config);
     }));
   }
 
@@ -50,14 +40,14 @@ Box.Application.addModule('radiator-controller', function(context) {
     return "live:radiator:" + radiatorId + ":graph-";
   }
 
-  function injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix, chartConfig) {
+  function injectModuleConfiguration(graphElement, radiatorIdPrefix, chartConfig) {
     var radiatorConfig = {
       configurationIdPrefix: radiatorIdPrefix,
       disableTerminalButton: true,
       disableRadiatorShareButton: false,
       chart: chartConfig
     };
-    utils.setConfigurationElement(horizonGraphElement, radiatorConfig);
+    utils.setConfigurationElement(graphElement, radiatorConfig);
   }
 
   function createHorizonGraph(parentElement, chartConfig) {
@@ -68,31 +58,33 @@ Box.Application.addModule('radiator-controller', function(context) {
     axisElement.append("div").classed("rule", true);
     Box.Application.start(axisElement[0][0]);
 
-    var radiatorIdPrefix = radiatorGraphIdPrefix('name');
     var horizonGraphElement = parentElement.append("div")
       .attr("data-module", "horizon-graph");
-    injectModuleConfiguration(horizonGraphElement, radiatorIdPrefix, chartConfig);
+    injectModuleConfiguration(horizonGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);
   }
 
-  function createAccessGraph(parentElement, host) {
+  function createAccessGraph(parentElement, chartConfig) {
     var accessGraphElement = parentElement.append("div")
       .classed("nv-graph scalable", true)
       .attr("data-module", "access-graph");
+    injectModuleConfiguration(accessGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(accessGraphElement[0][0]);
   }
 
-  function createFilesystemGraph(parentElement, host) {
+  function createFilesystemGraph(parentElement, chartConfig) {
     var filesystemGraphElement = parentElement.append("div")
       .classed("nv-graph scalable", true)
       .attr("data-module", "filesystem-graph");
+    injectModuleConfiguration(filesystemGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(filesystemGraphElement[0][0]);
   }
 
-  function createHeapGraph(parentElement, host) {
+  function createHeapGraph(parentElement, chartConfig) {
     var heapGraphElement = parentElement.append("div")
       .classed("nv-graph scalable", true)
       .attr("data-module", "heap-graph");
+    injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
   }
 
@@ -108,7 +100,17 @@ Box.Application.addModule('radiator-controller', function(context) {
       store          = context.getService("configuration-store");
       cubismGraphs   = context.getService("cubism-graphs");
 
-      initGraph( windowSvc.getHashVariable("type") );
+      var radiatorName = windowSvc.getHashVariable("name");
+      var configs = store.customRadiators.readConfiguration(radiatorName);
+      configs.forEach(function(config) {
+        // init all graphs found in radiator configuration
+        initGraph(config);
+        // wipe config if it is marked for deletion (e.g. single graph)
+        console.log(config)
+        if (config.removeAfterUse) {
+          store.customRadiators.removeConfiguration(radiatorName);
+        }
+      });
     },
 
     messages: ["timescale-changed"],
