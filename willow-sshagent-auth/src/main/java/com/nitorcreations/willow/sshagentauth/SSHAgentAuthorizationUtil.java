@@ -41,7 +41,9 @@ public class SSHAgentAuthorizationUtil {
       for (Identity id : (List<Identity>)irepo.getIdentities()) {
         try {
           byte[] sig = id.getSignature(sign);
-          ret.append(" ").append(printBase64Binary(sig));
+          if (sig != null) {
+            ret.append(" ").append(printBase64Binary(sig));
+          }
         } catch (Throwable t) {
           logger.log(Level.FINE, "Failed to add signature: " + t.getMessage());
         }
