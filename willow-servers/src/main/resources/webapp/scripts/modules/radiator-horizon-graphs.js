@@ -135,11 +135,10 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
 
       //TODO: host hash variable is dominant over name variable
       host = windowSvc.getHashVariable("host");
-      if (!host) {
-        radiatorName = windowSvc.getHashVariable("name");
-        if (!radiatorName) {
-          console.error("failed to resolve host name for the radiator metrics");
-        }
+      radiatorName = host || windowSvc.getHashVariable("name");
+
+      if (!radiatorName) {
+        console.error("failed to resolve host name for the radiator metrics");
       }
 
       reset();
