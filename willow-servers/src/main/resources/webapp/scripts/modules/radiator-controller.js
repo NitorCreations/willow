@@ -8,7 +8,6 @@ Box.Application.addModule('radiator-controller', function(context) {
       cubismGraphs.resetCubismContext();
       moduleElem.call(createHorizonGraph, config.chart);
       context.broadcast("reload-graph-configuration");
-      windowSvc.setTitle(config.chart.metric.toUpperCase() + " for " + config.host);
     },
     access: function(config) {
       moduleElem.call(createAccessGraph, config.chart);
@@ -115,6 +114,14 @@ Box.Application.addModule('radiator-controller', function(context) {
           store.customRadiators.removeConfiguration(radiatorName);
         }
       });
+
+      if (configs.length === 1) {
+        // we're showing single graph, might as well update title nicely
+        windowSvc.setTitle(configs[0].chart.metric.toUpperCase() + " for " + configs[0].chart.host);
+      } else {
+        // update title with radiator name
+        windowSvc.setTitle(radiatorName + " radiator");
+      }
     },
 
     messages: ["timescale-changed"],
