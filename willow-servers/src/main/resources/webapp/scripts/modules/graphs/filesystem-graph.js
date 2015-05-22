@@ -1,7 +1,7 @@
 Box.Application.addModule('filesystem-graph', function(context) {
   'use strict';
 
-  var nv, d3, $, host, windowSvc, metrics, moduleConf;
+  var nv, d3, host, windowSvc, metrics, moduleConf, store, utils;
 
   var moduleElement, detailsStop;
 
@@ -55,7 +55,16 @@ Box.Application.addModule('filesystem-graph', function(context) {
   }
 
   function openGraphInPopup() {
-    var url = '/graph.html#type=filesystem&host=' + host;
+    var radiatorName = utils.guid(),
+        url = '/graph.html#name=' + radiatorName;
+
+    store.customRadiators.appendConfiguration(radiatorName, {
+      chart: {
+        type: 'filesystem',
+        host: host
+      },
+      removeAfterUse: true
+    });
 
     windowSvc.popup({
       url: url,
@@ -70,16 +79,17 @@ Box.Application.addModule('filesystem-graph', function(context) {
 
   return {
     init: function() {
-      $          = context.getGlobal("jQuery");
-      d3         = context.getGlobal("d3");
-      nv         = context.getGlobal("nv");
-      windowSvc  = context.getService("window");
-      metrics    = context.getService("metrics");
+      d3        = context.getGlobal("d3");
+      nv        = context.getGlobal("nv");
+      windowSvc = context.getService("window");
+      metrics   = context.getService("metrics");
+      store     = context.getService("configuration-store");
+      utils     = context.getService("utils");
 
       moduleElement = d3.select(context.getElement());
 
       moduleConf = context.getConfig() || {};
-      host        = windowSvc.getHashVariable("host");
+      host       = moduleConf.chart ? moduleConf.chart.host : windowSvc.getHashVariable("host");
       moduleElement.append("div").classed("nv-graph__icons", true);
       moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
