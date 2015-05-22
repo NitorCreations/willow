@@ -64,9 +64,14 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
 
   function initGraphs(configDataSource) {
     configDataSource(function(configurations) {
-      configurations.forEach(function(chartConfig) {
-        moduleElem.call(createHorizonGraph, chartConfig);
-      });
+      configurations
+        // make sure we're printing only horizons
+        .filter(function(conf) {
+          return conf.type === 'horizon';
+        })
+        .forEach(function(chartConfig) {
+          moduleElem.call(createHorizonGraph, chartConfig);
+        });
     });
     context.broadcast("reload-graph-configuration");
   }
