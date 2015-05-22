@@ -7,9 +7,9 @@ import java.util.List;
 public class AutoScalingGroupDeploymentStatus {
 
   private final String name;
-  private final List<String> instances;
+  private final List<Instance> instances;
 
-  public AutoScalingGroupDeploymentStatus(String name, List<String> instances) {
+  public AutoScalingGroupDeploymentStatus(String name, List<Instance> instances) {
     this.name = name;
     this.instances = Collections.unmodifiableList(new ArrayList<>(instances));
   }
@@ -18,8 +18,8 @@ public class AutoScalingGroupDeploymentStatus {
     return name;
   }
 
-  public List<String> getInstances() {
-    return instances;
+  public List<Instance> getInstances() {
+    return Collections.unmodifiableList(instances);
   }
 
   public int getInstanceCount() {

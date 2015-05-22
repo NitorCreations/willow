@@ -4,6 +4,8 @@ import com.nitorcreations.willow.autoscaler.clouds.CloudAdapter;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapters;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
+import com.nitorcreations.willow.messages.HostInfoMessage;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,6 +34,11 @@ public class DeploymentScanner implements Runnable {
 
   @Inject
   private AutoScalingStatus autoScalingStatus;
+
+  @Inject
+  WebSocketTransmitter messageTransmitter;
+
+  private Map<AutoScalingGroupConfig, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
   private AtomicBoolean running = new AtomicBoolean(true);
 
@@ -64,20 +71,22 @@ public class DeploymentScanner implements Runnable {
   @Override
   public void run() {
     while (running.get()) {
-      Map<ScheduledFuture<?>, AutoScalingGroupConfig> futures = new ConcurrentHashMap<>();
       for (final AutoScalingGroupConfig group : groups) {
-        futures.put(scheduleGroupScan(group), group);
+        if (!futures.containsKey(group)) {
+          futures.put(group, scheduleGroupScan(group));
+        }
       }
-      for (Map.Entry<ScheduledFuture<?>, AutoScalingGroupConfig> entry : futures.entrySet()) {
-        ScheduledFuture<?> f = entry.getKey();
+      for (Map.Entry<AutoScalingGroupConfig, ScheduledFuture<?>> entry : futures.entrySet()) {
+        ScheduledFuture<?> f = entry.getValue();
         try {
-          f.get();
+          f.get(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
           e.printStackTrace();
         } catch (ExecutionException e) {
           logger.log(Level.SEVERE, "deployment scanner execution failure", e);
-          futures.put(scheduleGroupScan(futures.get(f)), futures.get(f));
           futures.remove(entry.getKey());
+        } catch (TimeoutException e) {
+          continue; //The timeouts allow periodic checking to ensure scanners keep running.
         }
       }
     }
@@ -95,6 +104,22 @@ public class DeploymentScanner implements Runnable {
                 group.getName(), groupStatus.getInstanceCount()));
             statuses.put(group.getName(), groupStatus); //TODO remove internal structure if unnecessary
             autoScalingStatus.setDeploymentStatus(group.getName(), groupStatus);
+            sendHostInfo(groupStatus);
+          }
+
+          public void sendHostInfo(AutoScalingGroupDeploymentStatus deploymentStatus) {
+            for (Instance i : deploymentStatus.getInstances()) {
+              HostInfoMessage msg = new HostInfoMessage();
+              msg.privateHostname = i.getPrivateHostname();
+              msg.privateIpAddress = i.getPrivateIp();
+              msg.publicHostname = i.getPublicHostname();
+              msg.publicIpAddress = i.getPublicIp();
+              msg.setInstance(i.getInstanceId());
+              msg.addTags("host_"+i.getInstanceId(), "group_"+group.getName());
+              if (!messageTransmitter.queue(msg)) {
+                logger.warning("Unable to queue hostInfoMessage for sending!");
+              }
+            }
           }
         }, 1, 10, TimeUnit.SECONDS);
   }
