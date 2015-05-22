@@ -126,11 +126,12 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function openGraphInPopup() {
-    var url = '/graph.html' +
-          '#metric=' + moduleConf.chart.metric +
-          '&timescale=' + windowSvc.getHashVariable("timescale") +
-          '&host=' + moduleConf.chart.host +
-          '&type=horizon';
+    var radiatorName = utils.guid(),
+        url = '/graph.html#name=' + radiatorName;
+
+    moduleConf.removeAfterUse = true;
+    store.customRadiators.appendConfiguration(radiatorName, moduleConf);
+    delete moduleConf.removeAfterUse; // TODO: clone the object instead of adding and removing prop
 
     windowSvc.popup({
       url: url

@@ -20,7 +20,8 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
           var chartConfig = {
             metric: metric,
             host: tag.host,
-            instanceTag: tag.raw
+            instanceTag: tag.raw,
+            type: 'horizon'
           };
           moduleElem.select("#horizon-graphs").call(createHorizonGraph, chartConfig);
         });

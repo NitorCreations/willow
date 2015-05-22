@@ -108,7 +108,8 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
         return {
           metric: metric,
           host: host,
-          instanceTag: "host_" + host
+          instanceTag: "host_" + host,
+          type: "horizon"
         };
       }
     );
