@@ -50,13 +50,18 @@ Box.Application.addModule('radiator-controller', function(context) {
     utils.setConfigurationElement(graphElement, radiatorConfig);
   }
 
-  function createHorizonGraph(parentElement, chartConfig) {
+  function createAxisRuler(parentElement) {
     var axisElement = parentElement.append("div")
       .attr("data-module", "horizon-ruler");
 
     axisElement.append("div").classed("axis", true);
     axisElement.append("div").classed("rule", true);
     Box.Application.start(axisElement[0][0]);
+  }
+
+  function createHorizonGraph(parentElement, chartConfig) {
+    if (!parentElement.selectAll('.axis, .rule')[0].length)
+      createAxisRuler(parentElement);
 
     var horizonGraphElement = parentElement.append("div")
       .attr("data-module", "horizon-graph");
