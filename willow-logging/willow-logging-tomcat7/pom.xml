@@ -7,8 +7,8 @@
     <artifactId>willow-logging</artifactId>
     <version>1.1-SNAPSHOT</version>
   </parent>
-  <artifactId>willow-logging-jetty</artifactId>
-  <name>Willow logging for jetty</name>
+  <artifactId>willow-logging-tomcat7</artifactId>
+  <name>Willow logging for Tomcat 7</name>
   <dependencies>
     <dependency>
       <groupId>com.nitorcreations</groupId>
@@ -21,12 +21,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-util</artifactId>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-core</artifactId>
     </dependency>
   </dependencies>
 </project>

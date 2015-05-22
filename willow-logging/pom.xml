@@ -11,7 +11,9 @@
   <packaging>pom</packaging>
   <name>Willow logging</name>
   <modules>
+    <module>willow-logging-common</module>
     <module>willow-logging-jetty</module>
+    <module>willow-logging-tomcat7</module>
     <module>willow-logging-logback</module>
     <module>willow-logging-jul</module>
   </modules>

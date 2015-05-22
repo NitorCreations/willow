@@ -1,82 +1,39 @@
 package com.nitorcreations.logging.jetty;
 
 import java.net.URISyntaxException;
-import java.security.Principal;
 
-import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.PathMap;
-import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
-import com.nitorcreations.willow.messages.AccessLogEntry;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
+import com.nitorcreations.logging.WillowAccessLogHelper;
 
 @ManagedObject("NCSA standard format request log")
-public class WebsocketRequestLog extends AbstractLifeCycle implements RequestLog {
-  private WebSocketTransmitter transmitter;
+public class WebsocketRequestLog extends AbstractLifeCycle implements
+    RequestLog {
+  private final WillowAccessLogHelper transmitter;
   private transient PathMap<String> _ignorePathMap = new PathMap<String>();
   private boolean _preferProxiedForAddress = true;
-  private final long flushInterval;
-  private final String url;
 
-  public WebsocketRequestLog(long flushInterval, String url) throws URISyntaxException {
+  public WebsocketRequestLog(long flushInterval, String url)
+      throws URISyntaxException {
     super();
-    this.flushInterval = flushInterval;
-    this.url = url;
+    this.transmitter = new WillowAccessLogHelper(flushInterval, url);
   }
 
   @Override
   public void log(Request request, int status, long written) {
-    if (transmitter == null) {
-      try {
-        init();
-      } catch (URISyntaxException e) {
-        throw new RuntimeException("Failed to configure websocket logger", e);
-      }
-    }
-    AccessLogEntry msg = new AccessLogEntry();
-    if (_ignorePathMap != null && _ignorePathMap.getMatch(request.getRequestURI()) != null)
+    if (_ignorePathMap != null
+        && _ignorePathMap.getMatch(request.getRequestURI()) != null)
       return;
-    String addr = null;
-    if (_preferProxiedForAddress) {
-      addr = request.getHeader(HttpHeader.X_FORWARDED_FOR.toString());
-    }
-    if (addr == null) {
-      addr = request.getRemoteAddr();
-    }
-    msg.setRemoteAddr(addr);
-    Authentication authentication = request.getAuthentication();
-    if (authentication instanceof Authentication.User) {
-      Principal p = ((Authentication.User) authentication).getUserIdentity().getUserPrincipal();
-      if (p != null) {
-        msg.setAuthentication(p.getName());
-      }
-    }
-    msg.setTimestamp(request.getTimeStamp());
-    msg.setMethod(request.getMethod());
-    msg.setUri(request.getRequestURI().toString());
-    msg.setProtocol(request.getProtocol());
-    if (status <= 0)
-      status = 404;
-    msg.setStatus(status);
-    msg.setResponseLength(written);
-    long now = System.currentTimeMillis();
-    msg.setDuration(now - request.getTimeStamp());
-    msg.setReferrer(request.getHeader(HttpHeader.REFERER.toString()));
-    msg.setAgent(request.getHeader(HttpHeader.USER_AGENT.toString()));
-    transmitter.queue(msg);
+    transmitter.queue(new AccessLogJettyAdapter(request, status, written,
+        _preferProxiedForAddress));
   }
 
   public void setPreferProxiedForAddress(boolean b) {
     this._preferProxiedForAddress = b;
-  }
-
-  private void init() throws URISyntaxException {
-    transmitter = WebSocketTransmitter.getSingleton(flushInterval, url);
-    transmitter.start();
   }
 
 }
