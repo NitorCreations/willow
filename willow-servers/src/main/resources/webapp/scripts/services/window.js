@@ -24,17 +24,10 @@ Box.Application.addService('window', function(application) {
     _open("alerts.html", "index-alerts");
   }
 
-  function graphSpecificationString(graphConfig) {
-    var config = graphConfig;
-    config.type = graphConfig.type || "horizon";
-    return JSON.stringify(config);
-  }
-
   function sendToRadiator(radiatorName, graphConfig) {
-    var graphSpec = graphSpecificationString(graphConfig); //FIXME 21.5. do we really need to send configuration in a URL?
     var openWindows = localStorage.willowWindows ? JSON.parse(localStorage.willowWindows) : [];
     if (openWindows.indexOf("radiator-" + radiatorName) == -1) {
-      _open("radiator.html#graph=" + encodeURIComponent(graphSpec) + "&name=" + radiatorName, "radiator-" + radiatorName);
+      _open("radiator.html#&name=" + radiatorName, "radiator-" + radiatorName);
     } else {
       intercom.emit("radiator-" + radiatorName + "-addgraph", graphSpec);
     }
