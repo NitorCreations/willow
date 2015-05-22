@@ -1,7 +1,7 @@
 Box.Application.addModule('heap-graph', function(context) {
   'use strict';
 
-  var nv, d3, host, windowSvc, metrics;
+  var nv, d3, host, windowSvc, metrics, store, utils;
 
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep = 150000;
 
@@ -44,7 +44,16 @@ Box.Application.addModule('heap-graph', function(context) {
   }
 
   function openGraphInPopup() {
-    var url = '/graph.html#type=heap&host=' + host;
+    var radiatorName = utils.guid(),
+        url = '/graph.html#name=' + radiatorName;
+
+    store.customRadiators.appendConfiguration(radiatorName, {
+      chart: {
+        type: 'heap',
+        host: host
+      },
+      removeAfterUse: true
+    });
 
     windowSvc.popup({
       url: url,
@@ -55,10 +64,12 @@ Box.Application.addModule('heap-graph', function(context) {
 
   return {
     init: function() {
-      d3         = context.getGlobal("d3");
-      nv         = context.getGlobal("nv");
-      windowSvc  = context.getService("window");
-      metrics    = context.getService("metrics");
+      d3        = context.getGlobal("d3");
+      nv        = context.getGlobal("nv");
+      windowSvc = context.getService("window");
+      metrics   = context.getService("metrics");
+      store     = context.getService("configuration-store");
+      utils     = context.getService("utils");
 
       moduleElement = d3.select(context.getElement());
       moduleElement.append("div").classed("nv-graph__icons", true);
@@ -66,7 +77,7 @@ Box.Application.addModule('heap-graph', function(context) {
       moduleElement.call(appendShareRadiatorIcon);
       moduleElement.call(appendPopupGraphIcon);
 
-      host         = windowSvc.getHashVariable("host");
+      host         = moduleConf.chart ? moduleConf.chart.host : windowSvc.getHashVariable("host");
       detailsStop  = parseInt(new Date().getTime());
       detailsStart = parseInt(detailsStop - (1000 * 60 * 60 * 3));
 
