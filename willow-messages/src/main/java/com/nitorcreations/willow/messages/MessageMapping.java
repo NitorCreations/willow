@@ -21,7 +21,7 @@ import org.msgpack.packer.Packer;
 import org.msgpack.unpacker.BufferUnpacker;
 
 import com.nitorcreations.willow.messages.event.EventMessage;
-import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
+import com.nitorcreations.willow.messages.event.MetricThresholdTriggeredEvent;
 
 public class MessageMapping {
   MessagePack msgpack = new MessagePack();
@@ -80,7 +80,7 @@ public class MessageMapping {
     msgpack.register(LockData.class);
     msgpack.register(MonitorData.class);
     msgpack.register(ThreadData.class);
-    msgpack.register(MetricThresholdEvent.class);
+    msgpack.register(MetricThresholdTriggeredEvent.class);
     for (Class<?> next : messageTypes.values()) {
       msgpack.register(next);
     }

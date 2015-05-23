@@ -32,8 +32,8 @@ public class HostInfoHostLookupService implements HostLookupService {
     Collection<HostInfoMessage> hostInfoMessages = hostInfoMetric.calculateMetric(node.client(), metricConfig);
     for (HostInfoMessage msg : hostInfoMessages) {
       if (msg.getInstance().equals(tagHost)) {
-        logger.info(String.format("Resolving %s to %s", tagHost, msg.privateHostname));
-        return msg.privateHostname; //TODO return public or private based on configuration
+        logger.info(String.format("Resolving %s to %s", tagHost, msg.publicHostname));
+        return msg.publicHostname; //TODO return public or private based on configuration
       }
     }
     return tagHost;

@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Named;
 
-import com.nitorcreations.willow.messages.event.MetricThresholdEvent;
+import com.nitorcreations.willow.messages.event.MetricThresholdTriggeredEvent;
 
 @Named("event")
 public class EventSender extends AbstractStatisticsSender {
@@ -15,7 +15,7 @@ public class EventSender extends AbstractStatisticsSender {
   @Override
   public void execute() {
     //note that this is just a test class that sends a hardcoded event...
-    MetricThresholdEvent mte = new MetricThresholdEvent();
+    MetricThresholdTriggeredEvent mte = new MetricThresholdTriggeredEvent();
     mte.description = "event description";
     mte.metric = "myMetric";
     mte.threshold = 10D;

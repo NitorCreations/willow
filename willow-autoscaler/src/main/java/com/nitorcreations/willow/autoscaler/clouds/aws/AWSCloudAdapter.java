@@ -37,7 +37,7 @@ public class AWSCloudAdapter implements CloudAdapter {
 
   @Override
   public AutoScalingGroupDeploymentStatus getGroupStatus(String regionId, String groupId) {
-    List<String> instanceIds = new LinkedList<>();
+    List<com.nitorcreations.willow.autoscaler.deployment.Instance> instances = new LinkedList<>();
     AmazonEC2Client client = ec2ClientFactory.getClient(regionId);
     DescribeInstancesRequest request = new DescribeInstancesRequest();
     request.withFilters(
@@ -51,27 +51,20 @@ public class AWSCloudAdapter implements CloudAdapter {
       result = client.describeInstances(request);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Failed to query AWS instance(s)", e);
-      return null;
+      throw e;
     }
 
     for (Reservation r : result.getReservations()) {
-      for (Instance instance : r.getInstances()) {
-        String state = instance.getState().getName();
-        if ("running".equalsIgnoreCase(state) || "pending".equalsIgnoreCase(state)) {
-          instanceIds.add(instance.getInstanceId());
-        }
-      }
+      addLiveInstancesToList(instances, r);
     }
     while (result.getNextToken() != null) {
       DescribeInstancesRequest moreRequest = new DescribeInstancesRequest().withNextToken(result.getNextToken());
       result = client.describeInstances(moreRequest);
       for (Reservation r : result.getReservations()) {
-        for (Instance instance : r.getInstances()) {
-          instanceIds.add(instance.getInstanceId());
-        }
+        addLiveInstancesToList(instances, r);
       }
     }
-    return new AutoScalingGroupDeploymentStatus(groupId, instanceIds);
+    return new AutoScalingGroupDeploymentStatus(groupId, instances);
   }
 
   @Override
@@ -119,7 +112,8 @@ public class AWSCloudAdapter implements CloudAdapter {
   }
 
   @Override
-  public boolean terminateInstances(AutoScalingGroupConfig config, int count) {
+  public List<String> terminateInstances(AutoScalingGroupConfig config, int count) {
+    List<String> instanceIds = new ArrayList<>();
     List<String> idsToTerminate = chooseInstancesToTerminate(config, count);
     TerminateInstancesRequest request = new TerminateInstancesRequest();
     request.withInstanceIds(idsToTerminate);
@@ -130,21 +124,25 @@ public class AWSCloudAdapter implements CloudAdapter {
       result = client.terminateInstances(request);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Failed to terminate AWS instance(s)", e);
-      return false;
+      return instanceIds;
     }
 
-    return result.getTerminatingInstances().size() == count;
+    for (InstanceStateChange i : result.getTerminatingInstances()) {
+      instanceIds.add(i.getInstanceId());
+    }
+    return instanceIds;
   }
 
   private List<String> chooseInstancesToTerminate(AutoScalingGroupConfig config, int count) {
     Set<String> idsToTerminate = new HashSet<>();
     AutoScalingGroupStatus groupStatus = autoScalingStatus.getStatus(config.getName());
     if (groupStatus != null && groupStatus.getDeploymentStatus() != null) {
-      List<String> instanceIds = groupStatus.getDeploymentStatus().getInstances();
-      assert instanceIds.size() >= count;
+      List<com.nitorcreations.willow.autoscaler.deployment.Instance> instances =
+          groupStatus.getDeploymentStatus().getInstances();
+      assert instances.size() >= count;
       while (idsToTerminate.size() < count) {
-        int index = random.nextInt(instanceIds.size());
-        String instanceId = instanceIds.get(index);
+        int index = random.nextInt(instances.size());
+        String instanceId = instances.get(index).getInstanceId();
         idsToTerminate.add(instanceId);
         logger.info(String.format("Chose instance %s to terminate", instanceId));
       }
@@ -159,5 +157,29 @@ public class AWSCloudAdapter implements CloudAdapter {
       tags.add(new Tag(t.name, t.value));
     }
     return tags;
+  }
+
+  private void addLiveInstancesToList(List<com.nitorcreations.willow.autoscaler.deployment.Instance> instances, Reservation r) {
+    for (Instance instance : r.getInstances()) {
+      String state = instance.getState().getName();
+      if ("running".equalsIgnoreCase(state) || "pending".equalsIgnoreCase(state)) {
+        instances.add(
+            new com.nitorcreations.willow.autoscaler.deployment.Instance(instance.getInstanceId())
+                .setInstanceType(instance.getInstanceType())
+                .setPrivateHostname(instance.getPrivateDnsName())
+                .setPrivateIp(instance.getPrivateIpAddress())
+                .setPublicHostname(instance.getPublicDnsName())
+                .setPublicIp(instance.getPublicIpAddress())
+                .setTags(convertToWillowTags(instance.getTags())));
+      }
+    }
+  }
+
+  private List<com.nitorcreations.willow.autoscaler.config.Tag> convertToWillowTags(List<Tag> awsTags) {
+    List<com.nitorcreations.willow.autoscaler.config.Tag> willowTags = new ArrayList<>();
+    for (Tag tag : awsTags) {
+      willowTags.add(new com.nitorcreations.willow.autoscaler.config.Tag(tag.getKey(), tag.getValue()));
+    }
+    return willowTags;
   }
 }

@@ -49,4 +49,5 @@ willow-autoscaler:
 #       metricComparison: <
 #       scale: -50%
   metricsUri: ws://localhost:5120/poll-internal/
+  messagesUri: ws://localhost:5120/statistics/
 #  metricsUri: ws://localhost:5120/statistics/mika1?tag=host_mika1&tag=group_frontend

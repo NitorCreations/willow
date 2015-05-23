@@ -8,6 +8,7 @@ import com.nitorcreations.willow.autoscaler.deployment.DeploymentScanner;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
 import com.nitorcreations.willow.autoscaler.metrics.MetricPoller;
 import com.nitorcreations.willow.autoscaler.scaling.Scaler;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -50,6 +51,9 @@ public class Main {
 
   @Inject
   private Scaler scaler;
+
+  @Inject
+  private WebSocketTransmitter messageTransmitter;
 
   static {
     try {
@@ -95,6 +99,15 @@ public class Main {
       }
     });
 
+    //initialize message transmitter
+    try {
+      messageTransmitter.setUri(new URI(properties.getProperty("willow-autoscaler.messagesUri")));
+    } catch (URISyntaxException e) {
+      logger.log(Level.SEVERE, "Invalid message websocket URI", e);
+      System.exit(1);
+    }
+    messageTransmitter.start();
+
     autoScalingStatus.initialize(groups);
 
     //start scanning deployment for auto scaling groups
@@ -121,6 +134,8 @@ public class Main {
     System.out.println("Willow Autoscaler stopping...");
     executorService.shutdown();
     deploymentScanner.stop();
+    messageTransmitter.stop();
+    System.out.println("Willow Autoscaler done stopping.");
   }
 
   private static void setupLogging() {

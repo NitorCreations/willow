@@ -90,4 +90,12 @@ public class AutoScalingGroupStatus {
     return triggeredPolicies;
   }
 
+  public TimePoint getLastValueFor(String metric) {
+    List<TimePoint> data = getMetricValues(metric);
+    if (!data.isEmpty()) {
+      return data.get(data.size() - 1);
+    } else {
+      return null;
+    }
+  }
 }
