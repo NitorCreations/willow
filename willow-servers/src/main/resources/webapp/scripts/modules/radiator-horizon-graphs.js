@@ -108,7 +108,7 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
 
   //TODO resolve from backend
   function defaultMetrics(host) {
-    var defaults = ["cpu", "mem", "diskio", "tcpinfo"];
+    var defaults = ["cpu", "mem", "net", "diskio", "tcpinfo"];
     var configs = defaults.map(function(metric) {
         return {
           metric: metric,
