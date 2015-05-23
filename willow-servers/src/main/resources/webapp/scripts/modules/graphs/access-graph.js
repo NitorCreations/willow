@@ -1,8 +1,11 @@
 Box.Application.addModule('access-graph', function(context) {
   'use strict';
 
-  var nv, d3, host, windowSvc, metrics, store, utils;
-
+  var nv, d3, host, windowSvc, metrics, store, utils, $;
+  var minute = 60000, tenMinutes = minute * 10, hour = tenMinutes * 6, twoHours = hour * 2;
+  var scales = [ { legend: "req/min", step: minute }, { legend: "req/10min", step: tenMinutes},
+    { legend: "req/h", step: hour }, { legend: "req/2h", step: twoHours } ];
+  var legend = "req/min";
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep = 60000;
 
   function xTicks(d) {
@@ -14,13 +17,20 @@ Box.Application.addModule('access-graph', function(context) {
       var chart =  nv.models.multiBarChart()
         .margin({top: 30, right: 20, bottom: 50, left: 75})
         .showControls(false)
-        .stacked(true);
+        .stacked(true)
+        .showLegend(true);
       chart.xAxis.tickFormat(xTicks);
       chart.yAxis.tickFormat(d3.format('0f'));
       moduleElement.select(".graph")
         .datum(data)
         .transition().duration(500)
         .call(chart);
+      moduleElement.select(".graph")
+        .append("text")
+        .attr("x", 50)
+        .attr("y", 10)
+        .attr("text-anchor", "left")
+        .text(legend);
       return chart;
     });
   }
@@ -50,7 +60,7 @@ Box.Application.addModule('access-graph', function(context) {
 
   function openGraphInPopup() {
     var radiatorName = utils.guid(),
-        url = '/graph.html#name=' + radiatorName;
+        url = 'graph.html#name=' + radiatorName;
 
     moduleConf.removeAfterUse = true;
     store.customRadiators.appendConfiguration(radiatorName, moduleConf);
@@ -67,6 +77,8 @@ Box.Application.addModule('access-graph', function(context) {
     init: function() {
       d3        = context.getGlobal("d3");
       nv        = context.getGlobal("nv");
+      $         = context.getGlobal("jQuery");
+
       windowSvc = context.getService("window");
       metrics   = context.getService("metrics");
       store     = context.getService("configuration-store");
@@ -90,13 +102,27 @@ Box.Application.addModule('access-graph', function(context) {
       reset();
     },
 
-    messages: [ "selected-time-range-updated" ],
+    messages: [ "selected-time-range-updated", "timescale-changed" ],
 
     onmessage: function(name, data) {
       switch (name) {
         case 'selected-time-range-updated':
           detailsStart = data.start;
           detailsStop = data.stop;
+          reset();
+          break;
+        case 'timescale-changed':
+          detailsStop = new Date().getTime();
+          detailsStart = detailsStop - (data * 1000);
+          detailsStep = 1;
+          var steps = parseInt((detailsStop - detailsStart) / detailsStep);
+          var i = 0;
+          while (steps > ($(moduleElement[0]).width() / 2)) {
+            detailsStep = scales[i].step;
+            legend = scales[i].legend;
+            steps = parseInt((detailsStop - detailsStart) / detailsStep);
+            i++;
+          }
           reset();
           break;
       }
