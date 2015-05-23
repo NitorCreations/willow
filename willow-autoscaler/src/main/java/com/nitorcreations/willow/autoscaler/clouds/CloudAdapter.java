@@ -28,5 +28,5 @@ public interface CloudAdapter {
    */
   List<String> launchInstances(AutoScalingGroupConfig config, int count);
 
-  boolean terminateInstances(AutoScalingGroupConfig config, int count);
+  List<String> terminateInstances(AutoScalingGroupConfig config, int count);
 }

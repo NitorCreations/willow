@@ -112,7 +112,8 @@ public class AWSCloudAdapter implements CloudAdapter {
   }
 
   @Override
-  public boolean terminateInstances(AutoScalingGroupConfig config, int count) {
+  public List<String> terminateInstances(AutoScalingGroupConfig config, int count) {
+    List<String> instanceIds = new ArrayList<>();
     List<String> idsToTerminate = chooseInstancesToTerminate(config, count);
     TerminateInstancesRequest request = new TerminateInstancesRequest();
     request.withInstanceIds(idsToTerminate);
@@ -123,10 +124,13 @@ public class AWSCloudAdapter implements CloudAdapter {
       result = client.terminateInstances(request);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Failed to terminate AWS instance(s)", e);
-      return false;
+      return instanceIds;
     }
 
-    return result.getTerminatingInstances().size() == count;
+    for (InstanceStateChange i : result.getTerminatingInstances()) {
+      instanceIds.add(i.getInstanceId());
+    }
+    return instanceIds;
   }
 
   private List<String> chooseInstancesToTerminate(AutoScalingGroupConfig config, int count) {
