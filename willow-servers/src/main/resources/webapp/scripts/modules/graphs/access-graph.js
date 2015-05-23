@@ -102,11 +102,11 @@ Box.Application.addModule('access-graph', function(context) {
       reset();
     },
 
-    messages: [ "selected-time-range-updated", "timescale-changed" ],
+    messages: [ "time-range-updated", "timescale-changed" ],
 
     onmessage: function(name, data) {
       switch (name) {
-        case 'selected-time-range-updated':
+        case 'time-range-updated':
           detailsStart = data.start;
           detailsStop = data.stop;
           reset();

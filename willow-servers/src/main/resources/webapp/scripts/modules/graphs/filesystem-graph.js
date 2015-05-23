@@ -101,11 +101,11 @@ Box.Application.addModule('filesystem-graph', function(context) {
       reset();
     },
 
-    messages: [ "selected-time-range-updated" ],
+    messages: [ "time-range-updated" ],
 
     onmessage: function(name, data) {
       switch (name) {
-        case 'selected-time-range-updated':
+        case 'time-range-updated':
           detailsStop = data.stop;
           reset();
           break;
