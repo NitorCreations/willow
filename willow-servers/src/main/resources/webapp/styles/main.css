@@ -588,7 +588,3 @@ ul.radiator-list {
   display: inline-block;
   float: left;
 }
-
-.radiator-controller [data-type="to-popup"] {
-  display: none;
-}
