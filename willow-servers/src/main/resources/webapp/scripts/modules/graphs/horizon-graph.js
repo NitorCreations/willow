@@ -176,6 +176,12 @@ Box.Application.addModule('horizon-graph', function(context) {
       case 'reload-graph-configuration':
         module.resetGraph();
         break;
+      case 'time-range-deselected':
+        cubismGraphs.start();
+        break;
+      case 'time-range-selected':
+        cubismGraphs.stop();
+        break;
     }
   }
 
@@ -229,7 +235,7 @@ Box.Application.addModule('horizon-graph', function(context) {
       }
     },
 
-    messages: ["metric-changed", "reload-graph-configuration", "cubism-context-reset"],
+    messages: ["metric-changed", "reload-graph-configuration", "cubism-context-reset", "time-range-deselected", "time-range-selected"],
 
     onmessage: function(name, data) {
       var msg = { name: name, data: data };

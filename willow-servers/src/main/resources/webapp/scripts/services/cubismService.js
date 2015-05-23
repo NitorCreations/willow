@@ -61,6 +61,12 @@ Box.Application.addService('cubism-graphs', function(application) {
     removeHorizonGraph: function() {
       return cubismContext.horizon().remove;
     },
+    start: function() {
+      return cubismContext.start();
+    },
+    stop: function() {
+      return cubismContext.stop();
+    },
     xToTime: function(pageX) {
       var timeStart = cubismContext.scale.domain()[0].getTime();
       return timeStart + (pageX * cubismContext.step());
