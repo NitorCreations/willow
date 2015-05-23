@@ -93,6 +93,26 @@ Box.Application.addModule('radiator-controller', function(context) {
     Box.Application.start(heapGraphElement[0][0]);
   }
 
+  // TODO resolve from backend
+  // TODO this whole ordeal could perhaps be moved to some
+  //      service, e.g. store, since it provides default metrics
+  function defaultMetrics(host) {
+    var defaults = ["cpu", "mem", "diskio", "tcpinfo"];
+    var configs = defaults.map(function(metric) {
+        return {
+          metric: metric,
+          host: host,
+          instanceTag: "host_" + host,
+          type: "horizon"
+        };
+      }
+    );
+    configs.push({ type: 'filesystem', host: host });
+    configs.push({ type: 'heap', host: host });
+    configs.push({ type: 'access', host: host });
+    return configs;
+  }
+
   return {
     init: function() {
       intercom   = context.getGlobal("Intercom").getInstance();
@@ -105,8 +125,9 @@ Box.Application.addModule('radiator-controller', function(context) {
       store          = context.getService("configuration-store");
       cubismGraphs   = context.getService("cubism-graphs");
 
+      var host         = windowSvc.getHashVariable("host");
       var radiatorName = windowSvc.getHashVariable("name");
-      var configs = store.customRadiators.readConfiguration(radiatorName);
+      var configs      = host ? defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
       configs.forEach(function(config, i) {
         // init all graphs found in radiator configuration
         configs[i] = config = config.chart ? config : { chart: config };
