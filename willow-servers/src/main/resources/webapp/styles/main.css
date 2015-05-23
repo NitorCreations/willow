@@ -309,6 +309,17 @@ textarea, input[type=text] {
   height: 100%;
 }
 
+.horizon-ruler {
+  margin-bottom: -1px;
+}
+
+#time-range-selection {
+  background-color: lightgray;
+  display: none;
+  height: 27px;
+  margin-top: -27px;
+}
+
 .addon {
   box-shadow: 0 0 0 1px #ccc;
   padding: 8px 12px

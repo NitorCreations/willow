@@ -24,8 +24,6 @@ Box.Application.addModule('radiator-horizon-graphs', function(context) {
         selectionArea().width(Math.abs(dragStart - e.pageX));
         var axisTop = $(".axis svg").offset().top;
         selectionArea().offset({ top: axisTop, left: Math.min(dragStart, e.pageX) });
-        var height = $($(moduleElem)[0]).height() - $(".axis").height();
-        //selectionArea().height(height); //FIXME height calculation doesn't work.
         detailsStart = cubismGraphs.xToTime(selectionArea().offset().left);
         detailsStop = cubismGraphs.xToTime(selectionArea().offset().left + selectionArea().width());
       }
