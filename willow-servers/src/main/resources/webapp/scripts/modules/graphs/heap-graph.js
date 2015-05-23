@@ -86,6 +86,8 @@ Box.Application.addModule('heap-graph', function(context) {
       reset();
     },
 
+    behaviors: [ "legend-click" ],
+
     messages: [ "time-range-updated" ],
 
     onmessage: function(name, data) {

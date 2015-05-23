@@ -102,6 +102,8 @@ Box.Application.addModule('access-graph', function(context) {
       reset();
     },
 
+    behaviors: [ "legend-click" ],
+
     messages: [ "time-range-updated", "timescale-changed" ],
 
     onmessage: function(name, data) {

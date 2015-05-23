@@ -24,6 +24,7 @@
     <js>/scripts/services/configurationStore.js</js>
     <js>/scripts/services/cubismService.js</js>
     <js>/scripts/services/metrics.js</js>
+    <js>/scripts/behaviors/legend-click.js</js>
     <js>/scripts/behaviors/metric-links.js</js>
     <js>/scripts/behaviors/navigation-common.js</js>
     <js>/scripts/modules/alerts-navigation.js</js>

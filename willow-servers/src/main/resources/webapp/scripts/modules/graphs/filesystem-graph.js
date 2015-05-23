@@ -101,6 +101,8 @@ Box.Application.addModule('filesystem-graph', function(context) {
       reset();
     },
 
+    behaviors: [ "legend-click" ],
+
     messages: [ "time-range-updated" ],
 
     onmessage: function(name, data) {
