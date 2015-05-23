@@ -49,8 +49,10 @@ Box.Application.addModule('filesystem-graph', function(context) {
   }
 
   function reset() {
-    moduleElement.selectAll(".graph").remove();
-    moduleElement.append("svg").classed("graph", true);
+    moduleElement.selectAll(".nv-graph").remove();
+    moduleElement
+      .append("div").classed('nv-graph', true)
+      .append("svg").classed("graph", true);
     metrics.metricsDataSource("disk", "host_" + host, undefined, detailsStop, undefined)(createFsGraph);
   }
 

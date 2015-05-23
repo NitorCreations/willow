@@ -297,13 +297,14 @@ textarea, input[type=text] {
   outline: 0;
 }
 
-.nv-graph {
-  height: 200px;
+.nv-graph__wrapper {
   position: relative;
   overflow: hidden;
+  height: 200px;
 }
 
-.nv-graph.scalable:only-of-type {
+.nv-graph,
+.nv-graph__wrapper.scalable:only-of-type {
   width: 100%;
   height: 100%;
 }
@@ -504,7 +505,7 @@ select.navcenter {
   opacity: 0;
 }
 
-.nv-graph:hover .icon,
+.nv-graph__wrapper:hover .icon,
 .horizon:hover .icon {
   opacity: 0.5;
 }

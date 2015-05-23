@@ -71,7 +71,7 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   function createAccessGraph(parentElement, chartConfig) {
     var accessGraphElement = parentElement.append("div")
-      .classed("nv-graph scalable col c6", true)
+      .classed("nv-graph__wrapper scalable col c6", true)
       .attr("data-module", "access-graph");
     injectModuleConfiguration(accessGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(accessGraphElement[0][0]);
@@ -79,7 +79,7 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   function createFilesystemGraph(parentElement, chartConfig) {
     var filesystemGraphElement = parentElement.append("div")
-      .classed("nv-graph scalable col c6", true)
+      .classed("nv-graph__wrapper scalable col c6", true)
       .attr("data-module", "filesystem-graph");
     injectModuleConfiguration(filesystemGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(filesystemGraphElement[0][0]);
@@ -87,7 +87,7 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   function createHeapGraph(parentElement, chartConfig) {
     var heapGraphElement = parentElement.append("div")
-      .classed("nv-graph scalable col c6", true)
+      .classed("nv-graph__wrapper scalable col c6", true)
       .attr("data-module", "heap-graph");
     injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
