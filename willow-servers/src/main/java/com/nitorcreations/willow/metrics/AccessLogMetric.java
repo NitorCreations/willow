@@ -35,11 +35,12 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
 
   @Override
   public Collection<SeriesData<Long, Long>> calculateMetric(Client client, MetricConfig conf) {
-    limitValues = new long[conf.getLimits().length];
-    for (int i = 0; i < conf.getLimits().length; i++) {
-      limitValues[i] = Long.parseLong(conf.getLimits()[i]);
-    }
-    if (conf.hasType("statuses")) {
+    if (conf.getLimits().length > 0) {
+      limitValues = new long[conf.getLimits().length];
+      for (int i = 0; i < conf.getLimits().length; i++) {
+        limitValues[i] = Long.parseLong(conf.getLimits()[i]);
+      }
+    } else if (conf.hasType("statuses")) {
       getter = RETURNCODE;
       if (conf.getLimits().length == 0) {
         limitValues = new long[] { 200L, 300L, 400L, 500L, 600L };
@@ -64,9 +65,15 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
         buckets[limitValues.length]++;
     }
     String lower = "";
-    addBucket(values, lower + "-", stepTime, buckets[0]);
+    String upper = "" + limitValues[0];
     for (int i = 0; i < limitValues.length; i++) {
+      addBucket(values, lower + "-" + upper, stepTime, buckets[i]);
       lower = Long.toString(limitValues[i]);
+      if (i < limitValues.length - 1) {
+        upper = "" + limitValues[i+1];
+      } else {
+        upper = "";
+      }
     }
     addBucket(values, lower + "-", stepTime, buckets[buckets.length - 1]);
   }
