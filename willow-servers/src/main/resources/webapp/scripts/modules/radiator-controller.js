@@ -22,7 +22,6 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   function initGraph(config) {
     // the config structure is a little different when it comes through custom radiator
-    config = config.chart ? config : { chart: config };
     var type = config.chart.type;
     if (!render[type]) {
       throw new Error('Graph type not found.');
@@ -108,8 +107,9 @@ Box.Application.addModule('radiator-controller', function(context) {
 
       var radiatorName = windowSvc.getHashVariable("name");
       var configs = store.customRadiators.readConfiguration(radiatorName);
-      configs.forEach(function(config) {
+      configs.forEach(function(config, i) {
         // init all graphs found in radiator configuration
+        configs[i] = config = config.chart ? config : { chart: config };
         initGraph(config);
         // wipe config if it is marked for deletion (e.g. single graph)
         if (config.removeAfterUse) {
@@ -117,9 +117,10 @@ Box.Application.addModule('radiator-controller', function(context) {
         }
       });
 
+      var metric = (configs[0].chart.metric || configs[0].chart.type).toUpperCase();
       if (configs.length === 1) {
         // we're showing single graph, might as well update title nicely
-        windowSvc.setTitle(configs[0].chart.metric.toUpperCase() + " for " + configs[0].chart.host);
+        windowSvc.setTitle(metric + " for " + configs[0].chart.host);
       } else {
         // update title with radiator name
         windowSvc.setTitle(radiatorName + " radiator");
