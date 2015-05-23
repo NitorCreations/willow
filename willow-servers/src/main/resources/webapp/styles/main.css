@@ -303,7 +303,7 @@ textarea, input[type=text] {
   overflow: hidden;
 }
 
-.nv-graph.scalable {
+.nv-graph.scalable:only-of-type {
   width: 100%;
   height: 100%;
 }
@@ -499,15 +499,18 @@ select.navcenter {
   left: 60px;
 }
 
-.nv-graph__icons .icon {
+.nv-graph__icons .icon,
+.horizon__icons .icon {
   opacity: 0;
 }
 
-.nv-graph:hover .icon {
+.nv-graph:hover .icon,
+.horizon:hover .icon {
   opacity: 0.5;
 }
 
-.nv-graph__icons .icon:hover {
+.nv-graph__icons .icon:hover,
+.horizon__icons .icon:hover {
   opacity: 1;
 }
 
