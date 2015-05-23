@@ -3,6 +3,8 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   var utils, store, windowSvc, intercom, d3, $, moduleElem, cubismGraphs;
 
+  var detailsStart, detailsStop, dragStart, isDragging = false; //FIXME can usage of these be removed?
+
   var render = {
     horizon: function(config) {
       cubismGraphs.resetCubismContext();
@@ -52,10 +54,12 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   function createAxisRuler(parentElement) {
     var axisElement = parentElement.append("div")
+      .classed("horizon-ruler", true)
       .attr("data-module", "horizon-ruler");
 
     axisElement.append("div").classed("axis", true);
     axisElement.append("div").classed("rule", true);
+    axisElement.append("div").attr("id", "time-range-selection");
     Box.Application.start(axisElement[0][0]);
   }
 
@@ -92,6 +96,48 @@ Box.Application.addModule('radiator-controller', function(context) {
     injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
   }
+
+  function timeRangeSelectionArea() {
+    return $("#time-range-selection");
+  }
+
+  var isDraggingMouseDown = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    var selectionArea = timeRangeSelectionArea;
+    $(window).mousemove(function(e) {
+      if (!isDragging) {
+        isDragging = true;
+        dragStart = e.pageX;
+      } else {
+        selectionArea().show();
+        selectionArea().width(Math.abs(dragStart - e.pageX));
+        var axisTop = $(".axis svg").offset().top;
+        selectionArea().offset({ top: axisTop, left: Math.min(dragStart, e.pageX) });
+        detailsStart = cubismGraphs.xToTime(selectionArea().offset().left);
+        detailsStop = cubismGraphs.xToTime(selectionArea().offset().left + selectionArea().width());
+      }
+    });
+    $(window).mouseup(isDraggingMouseUp);
+  };
+
+  var isDraggingMouseUp = function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    $(window).unbind("mousemove");
+    $(window).unbind("mouseup");
+    if (isDragging) {
+      context.broadcast("time-range-updated", {start: detailsStart, stop: detailsStop});
+      context.broadcast("time-range-selected");
+    } else {
+      timeRangeSelectionArea().hide();
+      var stop = new Date().getTime();
+      var start = parseInt(stop - (1000 * 60 * 60 * 3));
+      context.broadcast("time-range-updated", {start: start, stop: stop});
+      context.broadcast("time-range-deselected");
+    }
+    isDragging = false;
+  };
 
   // TODO resolve from backend
   // TODO this whole ordeal could perhaps be moved to some
@@ -144,9 +190,11 @@ Box.Application.addModule('radiator-controller', function(context) {
         windowSvc.setTitle(metric + " for " + configs[0].chart.host);
       } else {
         // update title with radiator name
-        windowSvc.setTitle(radiatorName + " radiator");
+        windowSvc.setTitle(radiatorName || host + " radiator");
       }
     },
+
+    onmousedown: isDraggingMouseDown,
 
     messages: ["timescale-changed"],
 
