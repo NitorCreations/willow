@@ -58,7 +58,7 @@ Box.Application.addModule('filesystem-graph', function(context) {
 
   function openGraphInPopup() {
     var radiatorName = utils.guid(),
-        url = '/graph.html#name=' + radiatorName;
+        url = '/radiator.html#name=' + radiatorName;
 
     moduleConf.removeAfterUse = true;
     store.customRadiators.appendConfiguration(radiatorName, moduleConf);

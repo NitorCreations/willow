@@ -19,18 +19,8 @@
     </svg>
   </div>
 </nav>
-<div data-module="radiator-horizon-graphs">
-  #include("/templates/horizon-ruler.html")
-</div>
-<div data-module="radiator-detail-graphs">
-  <div class="row">
-    <div class="col c6 nv-graph__wrapper" data-module="filesystem-graph"></div>
-    <div class="col c6 nv-graph__wrapper" data-module="heap-graph"></div>
-  </div>
-  <div class="row">
-    <div class="col c6 nv-graph__wrapper" data-module="access-graph"></div>
-  </div>
-</div>
+
+<div data-module="radiator-controller" class="radiator-controller"></div>
 
 <script id="bootstrap-application" type="text/javascript">
   Box.Application.init({
