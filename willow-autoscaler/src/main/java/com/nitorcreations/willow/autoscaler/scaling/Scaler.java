@@ -12,6 +12,9 @@ import com.nitorcreations.willow.messages.event.MetricThresholdClearedEvent;
 import com.nitorcreations.willow.messages.event.MetricThresholdTriggeredEvent;
 import com.nitorcreations.willow.messages.event.ScaleInEvent;
 import com.nitorcreations.willow.messages.event.ScaleOutEvent;
+import com.nitorcreations.willow.messages.metrics.TimePoint;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.HashSet;
 import java.util.List;
@@ -177,7 +180,12 @@ public class Scaler implements Runnable {
     MetricThresholdTriggeredEvent mte = new MetricThresholdTriggeredEvent();
     mte.metric = policy.getMetricName();
     mte.threshold = policy.getMetricThreshold().doubleValue();
-    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue();
+    TimePoint<Double> value = groupStatus.getLastValueFor(policy.getMetricName());
+    if (value != null) {
+      mte.value = value.getValue();
+    } else {
+      mte.value = 0D;
+    }
     mte.addTag("group_" + groupConfig.getName());
     mte.description = String.format(
         "Metric %s value %s is past threshold of %s defined in scaling policy %s. Policy action: %s",
@@ -194,7 +202,12 @@ public class Scaler implements Runnable {
     MetricThresholdClearedEvent mte = new MetricThresholdClearedEvent();
     mte.metric = policy.getMetricName();
     mte.threshold = policy.getMetricThreshold().doubleValue();
-    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue();
+    TimePoint<Double> value = groupStatus.getLastValueFor(policy.getMetricName());
+    if (value != null) {
+      mte.value = value.getValue();
+    } else {
+      mte.value = 0D;
+    }
     mte.addTag("group_" + groupConfig.getName());
     mte.description = String.format(
         "Metric %s value %s is back within threshold of %s defined in scaling policy %s.",
@@ -206,6 +219,8 @@ public class Scaler implements Runnable {
     transmitter.queue(mte);
   }
 
+  @SuppressFBWarnings(value={"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"},
+    justification="Fields used in serialization")
   private void sendScaleInEvent(AutoScalingPolicy policy, AutoScalingGroupConfig groupConfig,
                                 List<String> instanceIds)  {
     ScaleInEvent sie = new ScaleInEvent();

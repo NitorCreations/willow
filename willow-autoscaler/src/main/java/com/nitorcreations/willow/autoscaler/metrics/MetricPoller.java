@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 
 public class MetricPoller {
 
-  //private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
+  private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
 
   @Inject
   Gson gson;
@@ -51,7 +51,10 @@ public class MetricPoller {
         if (!groupListeners.containsKey(metricName)) {
           GroupMetricListener listener = new GroupMetricListener(group, metricName, uri);
           groupListeners.put(metricName, listener);
-          executorService.submit(listener);
+          Future<?> future = executorService.submit(listener);
+          if (!future.isDone()) {
+            logger.fine("Started metrics listener for " + listener.metricName);
+          }
         }
       }
     }
@@ -94,23 +97,23 @@ public class MetricPoller {
 
     public void connect() throws Exception {
       logger.info("Connecting metric listener for group " + group.getName() + ", metric " + metricName);
-        WebSocketClient client = createClient();
-        client.start();
-        client.setAsyncWriteTimeout(5000);
-        client.setConnectTimeout(2000);
-        client.setStopTimeout(5000);
-        ClientUpgradeRequest request = new ClientUpgradeRequest();
-        request.setHeader(
-            "Authorization",
-            SSHAgentAuthorizationUtil.getSshAgentAuthorization(System.getProperty("user.name", "willow")));
-        Future<Session> future = client.connect(this, uri, request);
-        logger.info(String.format("Connecting to : %s", uri));
+      WebSocketClient client = createClient();
+      client.start();
+      client.setAsyncWriteTimeout(5000);
+      client.setConnectTimeout(2000);
+      client.setStopTimeout(5000);
+      ClientUpgradeRequest request = new ClientUpgradeRequest();
+      request.setHeader(
+          "Authorization",
+          SSHAgentAuthorizationUtil.getSshAgentAuthorization(System.getProperty("user.name", "willow")));
+      Future<Session> future = client.connect(this, uri, request);
+      logger.info(String.format("Connecting to : %s", uri));
       try {
         future.get();
         logger.info(String.format("Connected to : %s", uri));
       } catch (Exception e) {
         logger.log(Level.SEVERE, "Failed to connect metric poller with uri " + uri, e);
-        if (client != null && client.isRunning()) {
+        if (client.isRunning()) {
           client.stop();
           client.destroy();
         }

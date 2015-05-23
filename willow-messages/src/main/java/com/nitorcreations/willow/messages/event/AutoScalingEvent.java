@@ -7,7 +7,9 @@ import java.util.List;
 /**
  * Base class for auto scaling events.
  */
-@SuppressFBWarnings(value={"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"}, justification="Fields used in serialization")
+@SuppressFBWarnings(value={"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD",
+    "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"},
+    justification="Fields used in serialization")
 public class AutoScalingEvent extends Event {
 
   public Integer instanceCount;

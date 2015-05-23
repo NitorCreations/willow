@@ -11,7 +11,9 @@ import com.nitorcreations.willow.autoscaler.scaling.Scaler;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import org.eclipse.sisu.space.SpaceModule;
 import org.eclipse.sisu.space.URLClassSpace;
 import org.eclipse.sisu.wire.WireModule;
@@ -19,11 +21,13 @@ import org.eclipse.sisu.wire.WireModule;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.logging.*;
 
 @Named
@@ -113,8 +117,10 @@ public class Main {
     //start scanning deployment for auto scaling groups
     logger.info("Initializing deployment scanner");
     deploymentScanner.initialize(groups);
-    executorService.submit(deploymentScanner);
-
+    Future<?> future = executorService.submit(deploymentScanner);
+    if (!future.isDone()) {
+      logger.info("Initialized deployment scanner");
+    }
     //start polling metrics
     try {
       logger.info("Initializing metrics poller");
