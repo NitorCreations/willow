@@ -1,53 +1,56 @@
 package com.nitorcreations.willow.metrics;
 
+import static com.nitorcreations.willow.metrics.MetricUtils.sumLong;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.inject.Named;
 
+import com.nitorcreations.willow.messages.NetInterface;
+
 @Named("/net")
-public class NetworkMetric extends SimpleMetric<NetData, Object> {
-  private HashMap<String, NetData> prevValues = new HashMap<>();
+public class NetworkMetric extends FullMessageSimpleMetric<NetInterface, Long> {
+  Map<String, NetInterface> prevValues = new HashMap<>();
 
   @Override
-  public String getType() {
-    return "net";
+  protected Long fillMissingValue() {
+    return 0L;
   }
 
   @Override
-  public String[] requiresFields() {
-    return new String[] { "name", "txBytes", "rxBytes" };
+  protected String getGroupBy(NetInterface message) {
+    return message.getName();
   }
-
   @Override
-  protected NetData getValue(List<Object> results) {
-    NetData ret = new NetData((String) results.get(0), ((Number) results.get(1)).longValue(), ((Number) results.get(2)).longValue());
-    if (!prevValues.containsKey(ret.name))
-      prevValues.put(ret.name, ret);
-    return ret;
-  }
-
-  @Override
-  protected Double estimateValue(List<NetData> preceeding, long stepTime, long stepLen, MetricConfig conf) {
-    HashMap<String, NetData> lasts = new HashMap<>();
-    for (NetData next : preceeding) {
-      lasts.put(next.name, next);
+  protected List<Long> filterGroupedData(HashMap<String, List<NetInterface>> groupedData) {
+    Map<String, Long> deviceData = new HashMap<>();
+    for (Entry<String, List<NetInterface>> nextEntry : groupedData.entrySet()) {
+      List<NetInterface> hostPrev = nextEntry.getValue();
+      NetInterface last = hostPrev.get(hostPrev.size() - 1);
+      long readEnd = last.getRxBytes();
+      long writtenEnd = last.getTxBytes();
+      long readStart = hostPrev.get(0).getRxBytes();
+      long writeStart = hostPrev.get(0).getTxBytes();
+      if (hostPrev.size() == 1) {
+        NetInterface prev = prevValues.get(nextEntry.getKey());
+        if (prev != null) {
+          readStart = prev.getRxBytes();
+          writeStart = prev.getTxBytes();
+        }
+      }
+      prevValues.put(nextEntry.getKey(), last);
+      long readDiff = readEnd - readStart;
+      long writtenDiff = writtenEnd - writeStart;
+      deviceData.put(nextEntry.getKey(), readDiff + writtenDiff);
     }
-    long netBytes = 0;
-    for (Entry<String, NetData> next : lasts.entrySet()) {
-      NetData start = prevValues.get(next.getKey());
-      if (start == null)
-        continue;
-      netBytes += (next.getValue().rx - start.rx);
-      netBytes += (next.getValue().tx - start.tx);
-    }
-    prevValues.putAll(lasts);
-    return (1000 * netBytes) / (double) (1024 * stepLen);
+    return new ArrayList<>(deviceData.values());
   }
-
   @Override
-  protected Double fillMissingValue() {
-    return 0D;
+  protected Long calculateValue(List<Long> values, long stepTime, long stepLen) {
+    return (1000 * sumLong(values)) / stepLen;
   }
 }

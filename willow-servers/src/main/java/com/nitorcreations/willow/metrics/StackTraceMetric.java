@@ -9,6 +9,7 @@ import javax.inject.Named;
 import com.nitorcreations.willow.messages.StackTraceData;
 import com.nitorcreations.willow.messages.ThreadData;
 import com.nitorcreations.willow.messages.ThreadDumpMessage;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 @Named("/stacktrace")
 public class StackTraceMetric extends FullMessageMetric<ThreadDumpMessage, StackTreeNode> {

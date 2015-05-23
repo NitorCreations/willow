@@ -1,53 +1,58 @@
 package com.nitorcreations.willow.metrics;
 
+import static com.nitorcreations.willow.metrics.MetricUtils.sumLong;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.inject.Named;
 
+import com.nitorcreations.willow.messages.DiskIO;
+
 @Named("/diskio")
-public class DiskIOMetric extends SimpleMetric<DiskIOData, Object> {
-  private HashMap<String, DiskIOData> prevValues = new HashMap<>();
+public class DiskIOMetric extends FullMessageSimpleMetric<DiskIO, Long> {
+  Map<String, DiskIO> prevValues = new HashMap<>();
 
   @Override
-  public String getType() {
-    return "diskio";
+  protected Long fillMissingValue() {
+    return 0L;
   }
 
   @Override
-  public String[] requiresFields() {
-    return new String[] { "device", "readBytes", "writeBytes" };
+  protected String getGroupBy(DiskIO message) {
+    return message.name;
   }
 
   @Override
-  protected DiskIOData getValue(List<Object> results) {
-    DiskIOData ret = new DiskIOData((String) results.get(0), ((Number) results.get(1)).longValue(), ((Number) results.get(2)).longValue());
-    if (!prevValues.containsKey(ret.device))
-      prevValues.put(ret.device, ret);
-    return ret;
-  }
-
-  @Override
-  protected Double estimateValue(List<DiskIOData> preceeding, long stepTime, long stepLen, MetricConfig conf) {
-    HashMap<String, DiskIOData> lasts = new HashMap<>();
-    for (DiskIOData next : preceeding) {
-      lasts.put(next.device, next);
+  protected List<Long> filterGroupedData(HashMap<String, List<DiskIO>> groupedData) {
+    Map<String, Long> deviceData = new HashMap<>();
+    for (Entry<String, List<DiskIO>> nextEntry : groupedData.entrySet()) {
+      List<DiskIO> hostPrev = nextEntry.getValue();
+      DiskIO last = hostPrev.get(hostPrev.size() - 1);
+      long readEnd = last.getReadBytes();
+      long writtenEnd = last.getWriteBytes();
+      long readStart = hostPrev.get(0).getReadBytes();
+      long writeStart = hostPrev.get(0).getWriteBytes();
+      if (hostPrev.size() == 1) {
+        DiskIO prev = prevValues.get(nextEntry.getKey());
+        if (prev != null) {
+          readStart = prev.getReadBytes();
+          writeStart = prev.getWriteBytes();
+        }
+      }
+      prevValues.put(nextEntry.getKey(), last);
+      long readDiff = readEnd - readStart;
+      long writtenDiff = writtenEnd - writeStart;
+      deviceData.put(nextEntry.getKey(), readDiff + writtenDiff);
     }
-    long netBytes = 0;
-    for (Entry<String, DiskIOData> next : lasts.entrySet()) {
-      DiskIOData start = prevValues.get(next.getKey());
-      if (start == null)
-        continue;
-      netBytes += (next.getValue().read - start.read);
-      netBytes += (next.getValue().write - start.write);
-    }
-    prevValues.putAll(lasts);
-    return (1000 * netBytes) / (double) (1024 * stepLen);
+    return new ArrayList<>(deviceData.values());
   }
 
   @Override
-  protected Double fillMissingValue() {
-    return 0D;
+  protected Long calculateValue(List<Long> values, long stepTime, long stepLen) {
+    return (1000 * sumLong(values)) / stepLen;
   }
 }

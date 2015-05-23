@@ -9,6 +9,7 @@ import javax.inject.Named;
 import org.elasticsearch.client.Client;
 
 import com.nitorcreations.willow.messages.AccessLogEntry;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 @Named("/access")
 public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry, Long, Long> {

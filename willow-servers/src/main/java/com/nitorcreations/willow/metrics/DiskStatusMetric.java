@@ -17,6 +17,8 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 
 @Named("/disk")
 public class DiskStatusMetric implements Metric {

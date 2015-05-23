@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.inject.Named;
 
 import com.nitorcreations.willow.messages.HostInfoMessage;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 @Named("/hostinfo")
 public class HostInfoMetric extends FullMessageMetric<HostInfoMessage, Collection<HostInfoMessage>> {

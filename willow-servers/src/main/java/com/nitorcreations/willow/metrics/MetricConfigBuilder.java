@@ -3,6 +3,8 @@ package com.nitorcreations.willow.metrics;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 @Named
 public class MetricConfigBuilder {
 

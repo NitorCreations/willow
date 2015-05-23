@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import javax.inject.Named;
 
 import com.nitorcreations.willow.messages.JmxMessage;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 
 @Named("/heap")

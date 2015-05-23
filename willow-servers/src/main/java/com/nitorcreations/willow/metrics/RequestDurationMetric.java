@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.inject.Named;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 @Named("/latency")
 public class RequestDurationMetric extends SimpleMetric<Long, Long> {
   @Override
@@ -21,5 +23,10 @@ public class RequestDurationMetric extends SimpleMetric<Long, Long> {
   @Override
   protected Long estimateValue(List<Long> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     return median(preceeding);
+  }
+
+  @Override
+  protected Long fillMissingValue() {
+    return 0L;
   }
 }

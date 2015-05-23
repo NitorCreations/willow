@@ -8,8 +8,8 @@ import javax.inject.Inject;
 import org.elasticsearch.node.Node;
 
 import com.nitorcreations.willow.messages.HostInfoMessage;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.HostInfoMetric;
-import com.nitorcreations.willow.metrics.MetricConfig;
 
 public class HostInfoHostLookupService implements HostLookupService {
 

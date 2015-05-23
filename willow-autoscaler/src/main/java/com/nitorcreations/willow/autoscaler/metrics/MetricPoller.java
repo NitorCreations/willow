@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
-import com.nitorcreations.willow.metrics.MetricConfig;
-import com.nitorcreations.willow.metrics.TimePoint;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+import com.nitorcreations.willow.messages.metrics.TimePoint;
 import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
@@ -124,11 +124,11 @@ public class MetricPoller {
         if (message == null || message.isEmpty()) {
           return;
         }
-        List<TimePoint> values = gson.fromJson(message, new TypeToken<List<TimePoint>>(){}.getType());
+        List<TimePoint<Double>> values = gson.fromJson(message, new TypeToken<List<TimePoint<Double>>>(){}.getType());
         if (values == null || values.isEmpty()) {
           return;
         }
-        TimePoint metricValue = values.get(values.size() - 1);
+        TimePoint<Double> metricValue = values.get(values.size() - 1);
         autoScalingStatus.addMetricValue(group.getName(), metricName, metricValue);
       } catch (Throwable e) {
         logger.log(Level.INFO, "fail in receiving metric data", e);

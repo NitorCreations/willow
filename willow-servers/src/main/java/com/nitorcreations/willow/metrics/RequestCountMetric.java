@@ -4,8 +4,10 @@ import java.util.List;
 
 import javax.inject.Named;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 @Named("/requests")
-public class RequestCountMetric extends SimpleMetric<Number, Long> {
+public class RequestCountMetric extends SimpleMetric<Integer, Long> {
   @Override
   public String getType() {
     return "access";
@@ -17,7 +19,12 @@ public class RequestCountMetric extends SimpleMetric<Number, Long> {
   }
 
   @Override
-  protected Number estimateValue(List<Number> preceeding, long stepTime, long stepLen, MetricConfig conf) {
+  protected Integer estimateValue(List<Integer> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     return preceeding.size();
+  }
+
+  @Override
+  protected Integer fillMissingValue() {
+    return 0;
   }
 }

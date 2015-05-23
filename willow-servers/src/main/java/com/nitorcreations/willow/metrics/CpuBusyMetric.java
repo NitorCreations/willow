@@ -13,24 +13,17 @@ import javax.inject.Named;
 import com.nitorcreations.willow.messages.CPU;
 
 @Named("/cpu")
-public class CpuBusyMetric extends FullMessageSimpleMetric<CPU> {
+public class CpuBusyMetric extends FullMessageSimpleMetric<CPU, Double> {
   Map<String, CPU> prevValues = new HashMap<>();
 
-
   @Override
-  protected Number estimateValue(List<CPU> preceeding, long stepTime, long stepLen) {
-    HashMap<String, List<CPU>> perHostCPUData = new HashMap<>();
-    for (CPU next : preceeding) {
-      String host = "" + next.getFirstTagWithPrefix("host_");
-      List<CPU> hostCpu = perHostCPUData.get(host);
-      if (hostCpu == null) {
-        hostCpu = new ArrayList<>();
-        perHostCPUData.put(host, hostCpu);
-      }
-      hostCpu.add(next);
-    }
+  protected String getGroupBy(CPU message) {
+    return "" + message.getFirstTagWithPrefix("host_");
+  }
+  @Override
+  protected List<Double> filterGroupedData(HashMap<String, List<CPU>> groupedData) {
     Map<String, Double> hostBusy = new HashMap<>();
-    for (Entry<String, List<CPU>> nextEntry : perHostCPUData.entrySet()) {
+    for (Entry<String, List<CPU>> nextEntry : groupedData.entrySet()) {
       List<CPU> hostPrev = nextEntry.getValue();
       CPU last = hostPrev.get(hostPrev.size() - 1);
       long idleEnd = last.getIdle();
@@ -54,6 +47,13 @@ public class CpuBusyMetric extends FullMessageSimpleMetric<CPU> {
         hostBusy.put(nextEntry.getKey(), nextBusy);
       }
     }
-    return median(new ArrayList<>(hostBusy.values()));
+    return new ArrayList<>(hostBusy.values());
+  }
+  protected Double calculateValue(List<Double> values, long stepTime, long stepLen) {
+    return median(values);
+  }
+  @Override
+  protected Double fillMissingValue() {
+    return 0D;
   }
 }

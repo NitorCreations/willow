@@ -2,10 +2,11 @@ package com.nitorcreations.willow.autoscaler.metrics;
 
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.deployment.AutoScalingGroupDeploymentStatus;
-import com.nitorcreations.willow.metrics.TimePoint;
+import com.nitorcreations.willow.messages.metrics.TimePoint;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

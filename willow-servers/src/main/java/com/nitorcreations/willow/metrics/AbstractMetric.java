@@ -9,14 +9,18 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 public abstract class AbstractMetric<T> implements Metric {
 
   public SearchResponse executeQuery(Client client, MetricConfig conf, String type, List<String> fields) {
-    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(type).setSearchType(SearchType.QUERY_AND_FETCH).setSize((int) (conf.getStop() - conf.getStart()) / 10);
+    SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
+        .setTypes(type).setSearchType(SearchType.QUERY_AND_FETCH)
+        .setSize((int) (conf.getStop() - conf.getStart()) / 10);
     for (String next : fields) {
       builder.addField(next);
     }
-    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop() + conf.getStep()).includeLower(false).includeUpper(true));
+    BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart() - conf.getStep()).to(conf.getStop()).includeLower(false).includeUpper(true));
     for (String tag : conf.getTags()) {
       query = query.must(QueryBuilders.termQuery("tags", tag));
     }

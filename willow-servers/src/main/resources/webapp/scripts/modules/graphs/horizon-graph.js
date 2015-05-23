@@ -6,14 +6,29 @@ Box.Application.addModule('horizon-graph', function(context) {
       store, windowSvc, utils, metricsService, cubismGraphs,
       initDone = false,
       messageQueue = [];
+  var kilobyte = 1024, megabyte = 1024*1024, gigabyte = 1024*1024*1024, teratybe = 1024*1024*1024*1024;
+  var bytesToString = function (bytes) {
+    var fmt = d3.format('.0f');
+    if (bytes < kilobyte) {
+      return fmt(bytes) + 'B/s';
+    } else if (bytes < megabyte) {
+      return fmt(bytes /kilobyte) + 'kB/s';
+    } else if (bytes < gigabyte) {
+      return fmt(bytes / megabyte) + 'MB/s';
+    } else if (bytes < teratybe) {
+      return fmt(bytes / gigabyte) + 'GB/s';
+    } else {
+      return fmt(bytes / teratybe) + 'TB/s';
+    }
+  };
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var cpuColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#006d2c", "#b07635", "#d01717"];
   var metricMap = {
     "cpu" : { "title" : "cpu: ", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
     "mem" : { "title" : "mem: ", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
-    "net" : { "title" : "net: ", "format" : ".2f", "extent": undefined, colors : defaultColors, height: 50 },
-    "diskio" : { "title" : "io: ", "format" : ".2f", "extent": undefined, colors : defaultColors, height: 50 },
+    "net" : { "title" : "net: ", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
+    "diskio" : { "title" : "io: ", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
     "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
 
@@ -87,12 +102,17 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function configureHorizonGraph(metricSettings) {
-    return cubismGraphs.createHorizonGraph()
+    var horizon = cubismGraphs.createHorizonGraph()
       .height(metricSettings.height)
       .colors(metricSettings.colors)
       .extent(metricSettings.extent)
-      .format(d3.format(metricSettings.format))
       .title(null);
+    if (typeof metricSettings.format == "function") {
+      horizon.format(metricSettings.format);
+    } else {
+      horizon.format(d3.format(metricSettings.format));
+    }
+    return horizon;
   }
 
   function appendTerminalIcon(parentElement, host) {

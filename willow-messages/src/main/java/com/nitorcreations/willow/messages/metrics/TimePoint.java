@@ -1,15 +1,15 @@
-package com.nitorcreations.willow.metrics;
+package com.nitorcreations.willow.messages.metrics;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class TimePoint {
+public class TimePoint<Y extends Comparable> {
   private String time;
-  private Number value;
+  private Y value;
 
-  public TimePoint(long millis, Number value) {
+  public TimePoint(long millis, Y value) {
     TimeZone tz = TimeZone.getTimeZone("UTC");
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     df.setTimeZone(tz);
@@ -17,7 +17,7 @@ public class TimePoint {
     this.value = value;
   }
 
-  public TimePoint(TimePoint toCopy) {
+  public TimePoint(TimePoint<Y> toCopy) {
     this.time = toCopy.time;
     this.value = toCopy.value;
   }
@@ -30,16 +30,16 @@ public class TimePoint {
     this.time = time;
   }
 
-  public Number getValue() {
+  public Y getValue() {
     return value;
   }
 
-  public void setValue(Number value) {
+  public void setValue(Y value) {
     this.value = value;
   }
 
   @Override
   public String toString() {
-    return "{ \"time\": " + value.toString() + " }";
+    return "{ \"time\": " + time + "\"value\":"+ value.toString() + " }";
   }
 }

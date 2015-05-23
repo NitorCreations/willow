@@ -11,14 +11,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nitorcreations.willow.metrics.MetricConfig;
-import com.nitorcreations.willow.metrics.MetricConfigBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.Metric;
+import com.nitorcreations.willow.metrics.MetricConfigBuilder;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

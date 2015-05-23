@@ -12,6 +12,8 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.InternalTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 public abstract class TagListMetric implements Metric {
   private final String tagPrefix;
   public TagListMetric(String tagPrefix) {

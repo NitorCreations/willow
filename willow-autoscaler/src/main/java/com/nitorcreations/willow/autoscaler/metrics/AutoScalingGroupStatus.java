@@ -3,7 +3,7 @@ package com.nitorcreations.willow.autoscaler.metrics;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
 import com.nitorcreations.willow.autoscaler.deployment.AutoScalingGroupDeploymentStatus;
-import com.nitorcreations.willow.metrics.TimePoint;
+import com.nitorcreations.willow.messages.metrics.TimePoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +15,7 @@ public class AutoScalingGroupStatus {
 
   private final AutoScalingGroupConfig group;
   private AutoScalingGroupDeploymentStatus deploymentStatus;
-  private final Map<String, List<TimePoint>> metricsData;
+  private final Map<String, List<TimePoint<Double>>> metricsData;
 
   public AutoScalingGroupStatus(AutoScalingGroupConfig group) {
     this.group = group;
@@ -27,8 +27,8 @@ public class AutoScalingGroupStatus {
     this.deploymentStatus = deploymentStatus;
   }
 
-  public synchronized void addMetricValue(String metricName, TimePoint value) {
-    List<TimePoint> data = metricsData.get(metricName);
+  public synchronized void addMetricValue(String metricName, TimePoint<Double> value) {
+    List<TimePoint<Double>> data = metricsData.get(metricName);
     if (data == null) {
       data = new ArrayList<>();
       metricsData.put(metricName, data);
@@ -39,8 +39,8 @@ public class AutoScalingGroupStatus {
     }
   }
 
-  public synchronized List<TimePoint> getMetricValues(String metricName) {
-    List<TimePoint> data = metricsData.get(metricName);
+  public synchronized List<TimePoint<Double>> getMetricValues(String metricName) {
+    List<TimePoint<Double>> data = metricsData.get(metricName);
     if (data == null) {
       return Collections.emptyList();
     }
@@ -65,16 +65,16 @@ public class AutoScalingGroupStatus {
   public List<AutoScalingPolicy> getTriggeredPolicies() {
     List<AutoScalingPolicy> triggeredPolicies = new ArrayList<>();
     for (AutoScalingPolicy policy : group.getScalingPolicies()) {
-      List<TimePoint> metricValues = getMetricValues(policy.getMetricName());
+      List<TimePoint<Double>> metricValues = getMetricValues(policy.getMetricName());
       int triggerCount = 0;
       int triggerThreshold = 3;
       int inspectCount = 0;
       if (metricValues != null && metricValues.size() > 2) {
-        List<TimePoint> reverse = new ArrayList<>(metricValues);
+        List<TimePoint<Double>> reverse = new ArrayList<>(metricValues);
         Collections.reverse(reverse);
-        for (TimePoint p : reverse) {
+        for (TimePoint<Double> p : reverse) {
           ComparisonOperation op = ComparisonOperation.fromSymbol(policy.getMetricComparison());
-          if (op.compare(p.getValue().doubleValue(), Double.valueOf(policy.getMetricThreshold()))) {
+          if (op.compare(p.getValue(), Double.valueOf(policy.getMetricThreshold()))) {
             triggerCount++;
           }
           inspectCount++;

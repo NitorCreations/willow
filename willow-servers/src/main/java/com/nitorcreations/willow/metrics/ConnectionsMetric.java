@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.inject.Named;
 
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+
 @Named("/tcpinfo")
 public class ConnectionsMetric extends SimpleMetric<Integer, Integer> {
   @Override
@@ -25,5 +27,10 @@ public class ConnectionsMetric extends SimpleMetric<Integer, Integer> {
   @Override
   protected Integer estimateValue(List<Integer> preceeding, long stepTime, long stepLen, MetricConfig conf) {
     return Collections.max(preceeding);
+  }
+
+  @Override
+  protected Integer fillMissingValue() {
+    return 0;
   }
 }

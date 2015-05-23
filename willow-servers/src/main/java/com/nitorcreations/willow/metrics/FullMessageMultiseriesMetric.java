@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.nitorcreations.willow.messages.AbstractMessage;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 public abstract class FullMessageMultiseriesMetric<T extends AbstractMessage, X extends Comparable<X>, Y extends Comparable<Y>> extends FullMessageMetric<T, Collection<SeriesData<X, Y>>>{
 

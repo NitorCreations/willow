@@ -13,7 +13,10 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
-public abstract class SimpleMetric<L, T> extends AbstractMetric<T> {
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+import com.nitorcreations.willow.messages.metrics.TimePoint;
+
+public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetric<T> {
   protected SortedMap<Long, L> rawData = new TreeMap<Long, L>();;
   private Map<String, SearchHitField> fields;
   public abstract String getType();
@@ -42,14 +45,14 @@ public abstract class SimpleMetric<L, T> extends AbstractMetric<T> {
   }
 
   @Override
-  public List<TimePoint> calculateMetric(Client client, MetricConfig conf) {
+  public List<TimePoint<L>> calculateMetric(Client client, MetricConfig conf) {
     List<String> fields = new ArrayList<String>();
     fields.add("timestamp");
     fields.addAll(Arrays.asList(requiresFields()));
     SearchResponse response = executeQuery(client, conf, getType(), fields);
     readResponse(response);
     int len = (int) ((conf.getStop() - conf.getStart()) / conf.getStep()) + 1;
-    List<TimePoint> ret = new ArrayList<TimePoint>();
+    List<TimePoint<L>> ret = new ArrayList<TimePoint<L>>();
     if (rawData.isEmpty())
       return ret;
     List<Long> retTimes = new ArrayList<Long>();
@@ -72,11 +75,9 @@ public abstract class SimpleMetric<L, T> extends AbstractMetric<T> {
     return ret;
   }
 
-  protected Number estimateValue(List<L> preceeding, long stepTime, long stepLen, MetricConfig conf) {
-    return (Number) preceeding.get(preceeding.size() - 1);
+  protected L estimateValue(List<L> preceeding, long stepTime, long stepLen, MetricConfig conf) {
+    return (L) preceeding.get(preceeding.size() - 1);
   }
 
-  protected Number fillMissingValue() {
-    return 0;
-  }
+  protected abstract L fillMissingValue();
 }

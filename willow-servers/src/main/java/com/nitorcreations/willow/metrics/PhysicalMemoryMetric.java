@@ -13,4 +13,9 @@ public class PhysicalMemoryMetric extends SimpleMetric<Double, Double> {
   public String[] requiresFields() {
     return new String[] { "usedPercent" };
   }
+
+  @Override
+  protected Double fillMissingValue() {
+    return 0D;
+  }
 }

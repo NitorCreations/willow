@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.metrics;
+package com.nitorcreations.willow.messages.metrics;
 
 import java.util.ArrayList;
 import java.util.Arrays;

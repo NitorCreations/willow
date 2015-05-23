@@ -22,8 +22,8 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.Metric;
-import com.nitorcreations.willow.metrics.MetricConfig;
 
 @WebSocket
 @Named

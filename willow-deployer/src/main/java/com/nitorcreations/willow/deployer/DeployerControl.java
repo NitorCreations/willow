@@ -70,7 +70,6 @@ public class DeployerControl {
   public static final ObjectName OBJECT_NAME = createObjectName();
   static {
     try {
-      setupLogging();
       Register.doIt();
       System.setProperty(PROPERTY_KEY_DEPLOYER_HOST, 
           injector.getInstance(SigarProxy.class).getNetInfo().getHostName());
@@ -282,6 +281,7 @@ public class DeployerControl {
     }
   }
   private static Injector createInjector() {
+    setupLogging();
     return Guice.createInjector(
         new WireModule(new DeployerModule(), new SpaceModule(
             new URLClassSpace(DeployerControl.class.getClassLoader())

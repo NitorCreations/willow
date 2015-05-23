@@ -12,6 +12,7 @@ import org.elasticsearch.search.SearchHit;
 import com.google.gson.Gson;
 import com.nitorcreations.willow.messages.AbstractMessage;
 import com.nitorcreations.willow.messages.MessageMapping;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 public abstract class FullMessageMetric<T extends AbstractMessage, R> extends AbstractMetric<T> {
   protected SortedMap<Long, T> rawData;
