@@ -177,7 +177,7 @@ public class Scaler implements Runnable {
     MetricThresholdTriggeredEvent mte = new MetricThresholdTriggeredEvent();
     mte.metric = policy.getMetricName();
     mte.threshold = policy.getMetricThreshold().doubleValue();
-    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue().doubleValue();
+    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue();
     mte.addTag("group_" + groupConfig.getName());
     mte.description = String.format(
         "Metric %s value %s is past threshold of %s defined in scaling policy %s. Policy action: %s",
@@ -194,7 +194,7 @@ public class Scaler implements Runnable {
     MetricThresholdClearedEvent mte = new MetricThresholdClearedEvent();
     mte.metric = policy.getMetricName();
     mte.threshold = policy.getMetricThreshold().doubleValue();
-    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue().doubleValue();
+    mte.value = groupStatus.getLastValueFor(policy.getMetricName()).getValue();
     mte.addTag("group_" + groupConfig.getName());
     mte.description = String.format(
         "Metric %s value %s is back within threshold of %s defined in scaling policy %s.",
