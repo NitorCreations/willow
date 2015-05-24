@@ -1,7 +1,12 @@
 Box.Application.addModule('radiator-controller', function(context) {
   'use strict';
 
+<<<<<<< HEAD
   var utils, store, windowSvc, metrics, intercom, d3, $, moduleElem, cubismGraphs;
+=======
+  var utils, store, windowSvc, intercom, d3, $, moduleElem, cubismGraphs,
+    radiatorName, host, configMap = {};
+>>>>>>> radiator graph sorting
 
   var detailsStart, detailsStop, dragStart,
     isDragging = false, //FIXME can usage of these be removed?
@@ -72,6 +77,7 @@ Box.Application.addModule('radiator-controller', function(context) {
       .attr("data-module", "horizon-graph");
     injectModuleConfiguration(horizonGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);
+    configMap[horizonGraphElement.attr('id')] = chartConfig;
   }
 
   function createAccessGraph(parentElement, chartConfig) {
@@ -80,6 +86,7 @@ Box.Application.addModule('radiator-controller', function(context) {
       .attr("data-module", "access-graph");
     injectModuleConfiguration(accessGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(accessGraphElement[0][0]);
+    configMap[accessGraphElement.attr('id')] = chartConfig;
   }
 
   function createFilesystemGraph(parentElement, chartConfig) {
@@ -88,6 +95,7 @@ Box.Application.addModule('radiator-controller', function(context) {
       .attr("data-module", "filesystem-graph");
     injectModuleConfiguration(filesystemGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(filesystemGraphElement[0][0]);
+    configMap[filesystemGraphElement.attr('id')] = chartConfig;
   }
 
   function createHeapGraph(parentElement, chartConfig) {
@@ -96,13 +104,44 @@ Box.Application.addModule('radiator-controller', function(context) {
       .attr("data-module", "heap-graph");
     injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
+    configMap[heapGraphElement.attr('id')] = chartConfig;
   }
 
   function timeRangeSelectionArea() {
     return $("#time-range-selection");
   }
 
+  function attachSorting() {
+    $(moduleElem).sortable({
+      connectWith: ".radiator-controller",
+      handle: ".drag-handle",
+      stop: function(e) {
+        if (!radiatorName) { return; }
+
+        var sortedConfigs = [];
+
+        var sortedIds = $('.radiator-controller > div').filter(function(i, elem) {
+          return $(elem).attr('data-module').indexOf('graph') > -1;
+        }).map(function(i, elem) {
+          return $(elem).attr('id');
+        });
+
+        sortedIds.each(function(i, id) {
+          sortedConfigs.push(configMap[id]);
+        });
+
+        store.customRadiators.storeConfiguration(radiatorName, sortedConfigs);
+      }
+    });
+  }
+
+  function isDragHandle(elem) {
+    return elem.matches('.drag-handle') || elem.parentNode.matches('.drag-handle');
+  }
+
   var isDraggingMouseDown = function(e) {
+    if (isDragHandle(e.target)) { return; }
+
     e.stopPropagation();
     e.preventDefault();
     var selectionArea = timeRangeSelectionArea;
@@ -157,10 +196,13 @@ Box.Application.addModule('radiator-controller', function(context) {
 
       $(window).resize(utils.debouncer(function() {
         moduleElem.html('');
+        setTimeout(attachSorting, 500);
       }));
 
-      var host         = windowSvc.getHashVariable("host");
-      var radiatorName = windowSvc.getHashVariable("name");
+      attachSorting();
+
+      host         = windowSvc.getHashVariable("host");
+      radiatorName = windowSvc.getHashVariable("name");
       var configs      = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
       configs.forEach(function(config, i) {
         // init all graphs found in radiator configuration

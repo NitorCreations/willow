@@ -507,6 +507,7 @@ select.navcenter {
   height: 1.3em;
   display: inline-block;
   top: 0;
+  width: 100%;
 }
 
 .horizon__icons {
@@ -546,6 +547,15 @@ select.navcenter {
 
 .icon:hover {
   opacity: 1;
+}
+
+.drag-handle {
+  float: right;
+  margin-right: 10px;
+}
+
+.nv-graph__icons .drag-handle {
+  margin-right: 45px;
 }
 
 .host-link {
