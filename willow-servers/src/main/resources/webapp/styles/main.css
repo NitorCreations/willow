@@ -302,6 +302,7 @@ textarea, input[type=text] {
   overflow: hidden;
   height: 200px;
   margin-top: 20px;
+  background: white;
 }
 
 .nv-graph,
