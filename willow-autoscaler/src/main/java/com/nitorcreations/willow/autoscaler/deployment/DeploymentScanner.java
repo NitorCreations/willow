@@ -104,16 +104,17 @@ public class DeploymentScanner implements Runnable {
                 group.getName(), groupStatus.getInstanceCount()));
             statuses.put(group.getName(), groupStatus); //TODO remove internal structure if unnecessary
             autoScalingStatus.setDeploymentStatus(group.getName(), groupStatus);
-            sendHostInfo(groupStatus);
+            sendHostInfo(groupStatus, group);
           }
 
-          public void sendHostInfo(AutoScalingGroupDeploymentStatus deploymentStatus) {
+          public void sendHostInfo(AutoScalingGroupDeploymentStatus deploymentStatus, AutoScalingGroupConfig group) {
             for (Instance i : deploymentStatus.getInstances()) {
               HostInfoMessage msg = new HostInfoMessage();
               msg.privateHostname = i.getPrivateHostname();
               msg.privateIpAddress = i.getPrivateIp();
               msg.publicHostname = i.getPublicHostname();
               msg.publicIpAddress = i.getPublicIp();
+              msg.username = group.getUsername();
               msg.setInstance(i.getInstanceId().replaceAll("-", "_"));
               msg.addTags("host_"+msg.getInstance(), "group_"+group.getName());
               if (!messageTransmitter.queue(msg)) {

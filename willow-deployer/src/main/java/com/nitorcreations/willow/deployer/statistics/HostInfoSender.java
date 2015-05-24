@@ -17,6 +17,7 @@ public class HostInfoSender extends AbstractStatisticsSender {
   @Override
   public void execute() {
     HostInfoMessage him = new HostInfoMessage();
+    him.username = System.getProperty("user.name");
     InetAddress privateAddress = HostUtil.getPrivateIpAddress();
     if (privateAddress != null) {
       him.privateIpAddress = privateAddress.getHostAddress();

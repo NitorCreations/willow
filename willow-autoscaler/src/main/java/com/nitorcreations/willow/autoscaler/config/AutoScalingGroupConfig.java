@@ -17,10 +17,12 @@ public class AutoScalingGroupConfig {
   private String cloudProvider;
   private String virtualMachineImage;
   private String sshKey;
+  private String username;
   private String instanceType;
   private String userData;
   private String network;
   private String subnet;
+  private String authorizationRole;
   private List<String> securityGroups = new ArrayList<>();
   private Integer instanceBaseCount;
   private Integer instanceMaxCount;
@@ -35,6 +37,7 @@ public class AutoScalingGroupConfig {
     config.cloudProvider = (String)properties.get("cloudProvider");
     config.virtualMachineImage = (String)properties.get("virtualMachineImage");
     config.sshKey = (String)properties.get("sshKey");
+    config.username = (String)properties.get("username");
     config.instanceType = (String)properties.get("instanceType");
     config.userData = (String)properties.get("userData");
     config.network = (String)properties.get("network");
@@ -49,6 +52,7 @@ public class AutoScalingGroupConfig {
       config.scalingPolicies.add(AutoScalingPolicy.fromProperties(p));
     }
 
+    config.authorizationRole = (String)properties.get("authorizationRole");
     config.securityGroups = properties.getDelimitedAsList("securityGroups", ",");
 
     List<MergeableProperties> tagProps = properties.getPrefixedList("tags");
@@ -181,5 +185,13 @@ public class AutoScalingGroupConfig {
 
   public Integer getQuietPeriodSeconds() {
     return quietPeriodSeconds;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getAuthorizationRole() {
+    return authorizationRole;
   }
 }

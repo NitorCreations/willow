@@ -5,6 +5,6 @@ import org.msgpack.annotation.Message;
 @Message
 public class HostInfoMessage extends AbstractMessage {
 
-  public String publicIpAddress, publicHostname, privateIpAddress, privateHostname;
+  public String publicIpAddress, publicHostname, privateIpAddress, privateHostname, username;
 
 }

@@ -73,6 +73,7 @@ public class AWSCloudAdapter implements CloudAdapter {
     RunInstancesRequest runInstancesRequest = new RunInstancesRequest();
 
     try {
+      logger.info(String.format("starting instance with authorization role %s", config.getAuthorizationRole()));
       runInstancesRequest
           .withImageId(config.getVirtualMachineImage())
           .withInstanceType(config.getInstanceType())
@@ -82,6 +83,7 @@ public class AWSCloudAdapter implements CloudAdapter {
           .withSecurityGroupIds(config.getSecurityGroups())
           .withSubnetId(config.getSubnet())
           .withUserData(Base64.encodeBase64String(config.getUserData().getBytes("UTF-8")))
+          .withIamInstanceProfile(new IamInstanceProfileSpecification().withArn(config.getAuthorizationRole()))
           ;
     } catch (UnsupportedEncodingException e) {
       logger.log(Level.SEVERE, "UTF-8 not supported, all bets are off!", e);

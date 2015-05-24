@@ -8,12 +8,14 @@ willow-autoscaler:
       tags:
         - willow-group: frontend
       sshKey: willow
+      username: ec2-user
       instanceType: t2.small
       userData: |
         #!/bin/bash
         touch ~/userDataTouchedThis.txt
       network: vpc-18697c7a
       subnet: subnet-4c0e0338
+      authorizationRole: arn:aws:iam::293246570391:instance-profile/willow-instances
       securityGroups: sg-a5b7f7c0
       instanceBaseCount: "1"
       instanceMaxCount: "5"

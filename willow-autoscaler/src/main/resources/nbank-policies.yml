@@ -1,0 +1,37 @@
+---
+willow-autoscaler:
+  groups:
+    - name: nbank_willow
+      region: eu-west-1
+      cloudProvider: AWS
+      virtualMachineImage: ami-f7dfa980 #nbank-demo snapshot image
+      tags:
+        - willow-group: nbank_willow
+      sshKey: willow
+      username: ubuntu
+      instanceType: t2.small
+      #userdata: fix hostname lookup, register to ELB, start nbank with willow-deployer
+      userData: |
+        #!/bin/bash
+        echo 127.0.0.1 `hostname` >>/etc/hosts
+        #aws elb register-instances-with-load-balancer --load-balancer-name nbank-willow --instances `curl http://169.254.169.254/latest/meta-data/instance-id`
+      network: vpc-18697c7a
+      subnet: subnet-4c0e0338
+      securityGroups: sg-a5b7f7c0
+      authorizationRole: arn:aws:iam::293246570391:instance-profile/willow-instances
+      instanceBaseCount: "1"
+      instanceMaxCount: "5"
+      quietPeriodSeconds: "60"
+      scalingPolicies:
+        - name: scaleOutOnCPUThreshold
+          metricName: /cpu
+          metricThreshold: "60"
+          metricComparison: ">"
+          scalingAction: +50%
+        - name: scaleInOnCPUThreshold
+          metricName: /cpu
+          metricThreshold: "30"
+          metricComparison: <
+          scalingAction: -50%
+  metricsUri: ws://ip-192-168-201-245.eu-west-1.compute.internal/poll-internal/
+  messagesUri: ws://ip-192-168-201-245.eu-west-1.compute.internal/statistics/
