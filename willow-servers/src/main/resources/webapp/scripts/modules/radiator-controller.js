@@ -3,7 +3,9 @@ Box.Application.addModule('radiator-controller', function(context) {
 
   var utils, store, windowSvc, intercom, d3, $, moduleElem, cubismGraphs;
 
-  var detailsStart, detailsStop, dragStart, isDragging = false; //FIXME can usage of these be removed?
+  var detailsStart, detailsStop, dragStart,
+    isDragging = false, //FIXME can usage of these be removed?
+    isTimeRangeSelected = false;
 
   var render = {
     horizon: function(config) {
@@ -129,12 +131,14 @@ Box.Application.addModule('radiator-controller', function(context) {
     if (isDragging) {
       context.broadcast("time-range-updated", {start: detailsStart, stop: detailsStop});
       context.broadcast("time-range-selected");
-    } else {
+      isTimeRangeSelected = true;
+    } else if (isTimeRangeSelected) {
       timeRangeSelectionArea().hide();
       var stop = new Date().getTime();
       var start = parseInt(stop - (1000 * 60 * 60 * 3));
       context.broadcast("time-range-updated", {start: start, stop: stop});
       context.broadcast("time-range-deselected");
+      isTimeRangeSelected = false;
     }
     isDragging = false;
   };
