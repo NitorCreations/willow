@@ -33,7 +33,7 @@ public class HostInfoHostLookupService implements HostLookupService {
     for (HostInfoMessage msg : hostInfoMessages) {
       if (msg.getInstance().equals(tagHost)) {
         logger.info(String.format("Resolving %s to %s", tagHost, msg.publicHostname));
-        return msg.publicHostname; //TODO return public or private based on configuration
+        return msg.privateHostname; //TODO return public or private based on configuration
       }
     }
     return tagHost;
