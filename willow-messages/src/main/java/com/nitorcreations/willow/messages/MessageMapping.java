@@ -49,7 +49,6 @@ public class MessageMapping {
     messageTypes.put(MessageType.CPU, CPU.class);
     messageTypes.put(MessageType.MEM, Memory.class);
     messageTypes.put(MessageType.DISK, DiskUsage.class);
-    messageTypes.put(MessageType.OUTPUT, OutputMessage.class);
     messageTypes.put(MessageType.LOG, LogMessage.class);
     messageTypes.put(MessageType.JMX, JmxMessage.class);
     messageTypes.put(MessageType.PROCESSCPU, ProcessCPU.class);

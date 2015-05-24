@@ -3,7 +3,7 @@ package com.nitorcreations.willow.deployer.launch;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import com.nitorcreations.willow.messages.OutputMessage;
+import com.nitorcreations.willow.messages.LogMessage;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.utils.AbstractStreamPumper;
 
@@ -17,7 +17,7 @@ class StreamLinePumper extends AbstractStreamPumper {
 
   @Override
   public void handle(String line) {
-    OutputMessage msg = new OutputMessage(getName(), line);
+    LogMessage msg = new LogMessage(System.currentTimeMillis(), getName(), line);
     transmitter.queue(msg);
   }
 }
