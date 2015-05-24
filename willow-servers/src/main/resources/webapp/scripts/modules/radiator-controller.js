@@ -1,7 +1,7 @@
 Box.Application.addModule('radiator-controller', function(context) {
   'use strict';
 
-  var utils, store, windowSvc, intercom, d3, $, moduleElem, cubismGraphs;
+  var utils, store, windowSvc, metrics, intercom, d3, $, moduleElem, cubismGraphs;
 
   var detailsStart, detailsStop, dragStart,
     isDragging = false, //FIXME can usage of these be removed?
@@ -142,26 +142,6 @@ Box.Application.addModule('radiator-controller', function(context) {
     isDragging = false;
   };
 
-  // TODO resolve from backend
-  // TODO this whole ordeal could perhaps be moved to some
-  //      service, e.g. store, since it provides default metrics
-  function defaultMetrics(host) {
-    var defaults = ["cpu", "mem", "net", "diskio", "tcpinfo"];
-    var configs = defaults.map(function(metric) {
-        return {
-          metric: metric,
-          host: host,
-          instanceTag: "host_" + host,
-          type: "horizon"
-        };
-      }
-    );
-    configs.push({ type: 'filesystem', host: host });
-    configs.push({ type: 'heap', host: host });
-    configs.push({ type: 'access', host: host });
-    return configs;
-  }
-
   return {
     init: function() {
       intercom   = context.getGlobal("Intercom").getInstance();
@@ -173,6 +153,7 @@ Box.Application.addModule('radiator-controller', function(context) {
       windowSvc      = context.getService("window");
       store          = context.getService("configuration-store");
       cubismGraphs   = context.getService("cubism-graphs");
+      metrics        = context.getService("metrics");
 
       $(window).resize(utils.debouncer(function() {
         moduleElem.html('');
@@ -180,7 +161,7 @@ Box.Application.addModule('radiator-controller', function(context) {
 
       var host         = windowSvc.getHashVariable("host");
       var radiatorName = windowSvc.getHashVariable("name");
-      var configs      = host ? defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
+      var configs      = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
       configs.forEach(function(config, i) {
         // init all graphs found in radiator configuration
         configs[i] = config = config.chart ? config : { chart: config };

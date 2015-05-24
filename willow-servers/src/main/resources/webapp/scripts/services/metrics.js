@@ -40,6 +40,23 @@ Box.Application.addService('metrics', function(application) {
         "&tag=" + instanceTag;
   }
 
+  function defaultMetrics(host) {
+    var defaults = ["cpu", "mem", "net", "diskio", "tcpinfo"];
+    var configs = defaults.map(function(metric) {
+        return {
+          metric: metric,
+          host: host,
+          instanceTag: "host_" + host,
+          type: "horizon"
+        };
+      }
+    );
+    configs.push({ type: 'filesystem', host: host });
+    configs.push({ type: 'heap', host: host });
+    configs.push({ type: 'access', host: host });
+    return configs;
+  }
+
   return {
     hostsDataSource: function(metric, start, stop) {
       var dataUrl = hostsUrl(metric, start, stop);
@@ -48,6 +65,7 @@ Box.Application.addService('metrics', function(application) {
     metricsDataSource: function(type, instanceTag, start, stop, step) {
       var dataUrl = metricUrl(type, instanceTag, start, stop, step);
       return createDataSource(dataUrl);
-    }
+    },
+    defaultMetrics: defaultMetrics
   };
 });
