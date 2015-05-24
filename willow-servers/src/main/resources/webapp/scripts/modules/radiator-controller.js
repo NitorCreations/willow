@@ -70,6 +70,7 @@ Box.Application.addModule('radiator-controller', function(context) {
       createAxisRuler(parentElement);
 
     var horizonGraphElement = parentElement.append("div")
+      .classed("col c12", true)
       .attr("data-module", "horizon-graph");
     injectModuleConfiguration(horizonGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);

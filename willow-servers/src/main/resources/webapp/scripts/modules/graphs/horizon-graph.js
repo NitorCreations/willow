@@ -185,8 +185,6 @@ Box.Application.addModule('horizon-graph', function(context) {
       moduleConf = context.getConfig() || {};
       moduleConf.configurationId = moduleConf.configurationIdPrefix + moduleElem.attr('id');
 
-      moduleElem.classed('col c12', true);
-
       initDone = true;
       messageQueue.forEach(execMessage);
     },
