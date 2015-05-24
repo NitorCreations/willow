@@ -83,7 +83,7 @@ a {
   border-bottom: solid 1px #000;
 }
 
-.horizon+.horizon {
+[data-module="horizon-graph"] + [data-module="horizon-graph"] .horizon {
   border-top: none;
 }
 
@@ -301,12 +301,17 @@ textarea, input[type=text] {
   position: relative;
   overflow: hidden;
   height: 200px;
+  margin-top: 20px;
 }
 
 .nv-graph,
 .nv-graph__wrapper.scalable:only-of-type {
   width: 100%;
   height: 100%;
+}
+
+.nv-graph__wrapper.scalable:only-of-type {
+  margin-top: 0;
 }
 
 .horizon-ruler {
