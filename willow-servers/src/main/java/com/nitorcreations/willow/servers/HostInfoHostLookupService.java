@@ -27,15 +27,17 @@ public class HostInfoHostLookupService implements HostLookupService {
 
   @Override
   public String getResolvableHostname(String tagHost) {
+    logger.info(String.format("Resolving hostname for %s", tagHost));
     MetricConfig metricConfig = new MetricConfig();
     metricConfig.setTags("host_" + tagHost);
     Collection<HostInfoMessage> hostInfoMessages = hostInfoMetric.calculateMetric(node.client(), metricConfig);
     for (HostInfoMessage msg : hostInfoMessages) {
       if (msg.getInstance().equals(tagHost)) {
-        logger.info(String.format("Resolving %s to %s", tagHost, msg.publicHostname));
+        logger.info(String.format("Resolved %s to %s", tagHost, msg.privateHostname));
         return msg.privateHostname; //TODO return public or private based on configuration
       }
     }
+    logger.info("Could not resolve hostname using HostInfo metric, returning host tag as is.")
     return tagHost;
   }
 
