@@ -45,10 +45,12 @@ Box.Application.addService('utils', function(application) {
           return v.toString(16);
         }).toUpperCase();
     },
+
     getStep: function(timescale, widthInPx) {
       widthInPx = widthInPx || $(window).width();
       return parseInt(timescale * 1000 / widthInPx);
     },
+
     appendPopupGraphIcon: function(parentElement, classed, host) {
       return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
@@ -56,6 +58,7 @@ Box.Application.addService('utils', function(application) {
         .attr("data-type", "to-popup")
         .append("use").attr("xlink:href", "#shape-external-link");
     },
+
     appendDraggableHandleIcon: function(parentElement, classed) {
     return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
@@ -63,6 +66,7 @@ Box.Application.addService('utils', function(application) {
         .attr("data-type", "graph-drag")
         .append("use").attr("xlink:href", "#shape-move");
     },
+
     appendShareRadiatorIcon: function(parentElement, classed, host) {
       return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
@@ -70,6 +74,7 @@ Box.Application.addService('utils', function(application) {
         .attr("data-type", "to-radiator")
         .append("use").attr("xlink:href", "#shape-to-radiator");
     },
+
     appendTerminalIcon: function(parentElement, classed, host) {
       return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
@@ -78,13 +83,24 @@ Box.Application.addService('utils', function(application) {
         .attr("data-host", host)
         .append("use").attr("xlink:href", "#shape-terminal");
     },
-    appendRemovalButton: function(parentElement, classed) {
+
+    appendRemovalButton: function(parentElement, classed, parentModuleId) {
       return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon remove", true)
         .attr("data-type", "close")
+        .attr("data-graph-module-id", parentModuleId)
         .append("use").attr("xlink:href", "#shape-close2");
     },
+
+    appendHostRadiatorLink: function(parentElement, title, host) {
+      return parentElement.append("div").classed("host-link", true)
+        .text(title).append("a")
+        .attr("href", "radiator.html#host=" + host)
+        .attr("data-host", host)
+        .attr("data-type", "host-radiator").text(host);
+    },
+
     getDetailsSteps: function(moduleElement, timescale) {
       var steps = timescale;
       var detailsStep = 1;
@@ -95,7 +111,6 @@ Box.Application.addService('utils', function(application) {
         steps = parseInt((detailsStop - detailsStart) / detailsStep);
         i++;
       }
-
     }
   };
 });

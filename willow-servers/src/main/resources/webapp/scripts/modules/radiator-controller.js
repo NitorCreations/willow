@@ -190,6 +190,15 @@ Box.Application.addModule('radiator-controller', function(context) {
     isDragging = false;
   };
 
+  function resolveModuleElement(moduleElement) {
+    return document.getElementById($(moduleElement).attr("data-graph-module-id")); //FIXME uggglyyy
+  }
+
+  function removeGraphConfig(moduleElement) {
+    var graphConfig = context.application.getModuleConfig(moduleElement);
+    store.customRadiators.removeRadiatorConfig(radiatorName, graphConfig.chart);
+  }
+
   return {
     init: function() {
       intercom   = context.getGlobal("Intercom").getInstance();
@@ -241,6 +250,16 @@ Box.Application.addModule('radiator-controller', function(context) {
       switch (name) {
         case 'timescale-changed':
           cubismGraphs.resetCubismContext();
+          break;
+      }
+    },
+
+    onclick: function(event, element, elementType) {
+      switch (elementType) {
+        case 'close':
+          var moduleElement = resolveModuleElement(element);
+          removeGraphConfig(moduleElement);
+          context.application.stop(moduleElement);
           break;
       }
     }
