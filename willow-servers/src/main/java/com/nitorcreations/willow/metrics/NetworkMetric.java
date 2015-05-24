@@ -12,6 +12,7 @@ import javax.inject.Named;
 
 import com.nitorcreations.willow.messages.NetInterface;
 
+@SuppressWarnings("CPD-START")
 @Named("/net")
 public class NetworkMetric extends FullMessageSimpleMetric<NetInterface, Long> {
   Map<String, NetInterface> prevValues = new HashMap<>();
@@ -51,6 +52,7 @@ public class NetworkMetric extends FullMessageSimpleMetric<NetInterface, Long> {
     }
     return new ArrayList<>(deviceData.values());
   }
+  @SuppressWarnings("CPD-END")
   @Override
   protected Long calculateValue(List<Long> values, long stepTime, long stepLen) {
     return (1000 * sumLong(values)) / stepLen;
