@@ -146,7 +146,7 @@ Box.Application.addModule('radiator-controller', function(context) {
   // TODO this whole ordeal could perhaps be moved to some
   //      service, e.g. store, since it provides default metrics
   function defaultMetrics(host) {
-    var defaults = ["cpu", "mem", "diskio", "tcpinfo"];
+    var defaults = ["cpu", "mem", "net", "diskio", "tcpinfo"];
     var configs = defaults.map(function(metric) {
         return {
           metric: metric,
