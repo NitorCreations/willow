@@ -21,6 +21,25 @@
 <script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
 #end
     <script type="text/javascript">
+    String.prototype.width = function(font) {
+      var f = font || '12px arial',
+      o = $('<div>' + this + '</div>')
+            .css({'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
+            .appendTo($('body')),
+      w = o.width();
+      o.remove();
+      return w;
+    }
+    String.prototype.height = function(font) {
+      var f = font || '12px arial',
+      o = $('<div>' + this + '</div>')
+            .css({'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
+            .appendTo($('body')),
+      h = o.height();
+      o.remove();
+      return h;
+    }
+
     var debouncer = function(func , timeout) {
         var timeoutID , timeout = timeout || 200;
         return function () {
@@ -31,9 +50,10 @@
             } , timeout );
         }
     };
+
     window.addEventListener('load', function() {
-    	var nCols = parseInt($(window).width() / parseFloat($("html").css("font-size")) * 1.637);
-    	var nRows = parseInt($(window).height() / parseFloat($("html").css("font-size")) * 0.837);
+        var nCols = parseInt(20 * $(window).width() / "0123456789ABCDEFGHIJK".width());
+        var nRows = parseInt($(window).height() / "0123456789ABCDEFGHIJK".height());
 		var loc = window.location, ws_uri;
 		if (loc.protocol === "https:") {
 			ws_uri = "wss:";
@@ -68,8 +88,8 @@
       };
     }, false);
     $(window).resize(debouncer(function (e) {
-    	var nCols = parseInt($(window).width() / parseFloat($("html").css("font-size")) * 1.63);
-    	var nRows = parseInt($(window).height() / parseFloat($("html").css("font-size")) * 0.83);
+        var nCols = parseInt(20 * $(window).width() / "0123456789ABCDEFGHIJK".width() + 1);
+        var nRows = parseInt($(window).height() / "0123456789ABCDEFGHIJK".height() - 1);
     	window.term.resize(nCols, nRows);
     	window.socket.send("{\"cols\":" + nCols + ",\"rows\":" + nRows + "}");
 	}));
