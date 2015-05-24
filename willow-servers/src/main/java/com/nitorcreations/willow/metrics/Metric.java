@@ -6,4 +6,5 @@ import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 public interface Metric {
   Object calculateMetric(Client client, MetricConfig conf);
+  boolean hasData(Client client, MetricConfig conf);
 }

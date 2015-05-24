@@ -16,6 +16,7 @@ import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.inject.Injector;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.Metric;
 import com.nitorcreations.willow.metrics.MetricConfigBuilder;
@@ -32,6 +33,9 @@ public class MetricsServlet extends HttpServlet {
   private transient Map<String, Metric> metrics;
   @Inject
   private transient MetricConfigBuilder metricConfigBuilder;
+  @Inject
+  private transient Injector injector;
+  
   private ServletConfig config;
 
   @Override
@@ -58,6 +62,7 @@ public class MetricsServlet extends HttpServlet {
     }
     try (Client client = node.client()){
       metric = metric.getClass().newInstance();
+      injector.injectMembers(metric);
       Object data = metric.calculateMetric(client, conf);
       res.setContentType("application/json");
       Gson out;

@@ -17,7 +17,7 @@ import com.nitorcreations.willow.messages.metrics.MetricConfig;
 public abstract class FullMessageMetric<T extends AbstractMessage, R> extends AbstractMetric<T> {
   protected SortedMap<Long, T> rawData;
   private final Class<T> type;
-  
+
   @SuppressWarnings("unchecked")
   public FullMessageMetric() {
     this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
@@ -33,9 +33,16 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> extends Ab
   }
   @Override
   public R calculateMetric(Client client, MetricConfig conf) {
-    SearchResponse response = executeQuery(client, conf, MessageMapping.map(type).lcName(), Collections.<String>emptyList());
+    SearchResponse response = executeQuery(client, conf, MessageMapping.map(type).lcName(), Collections.<String>emptyList(), getCustomizer());
     readResponse(response);
     return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
+  }
+
+  public String getType() {
+    return MessageMapping.map(this.type).lcName();
+  }
+  protected BuilderCustomizer getCustomizer() {
+    return null;
   }
   protected abstract R processData(long start, long stop, int step, MetricConfig conf);
 }

@@ -17,7 +17,7 @@ import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.messages.metrics.TimePoint;
 
 public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetric<T> {
-  protected SortedMap<Long, L> rawData = new TreeMap<Long, L>();;
+  protected SortedMap<Long, L> rawData = new TreeMap<Long, L>();
   private Map<String, SearchHitField> fields;
   public abstract String getType();
 

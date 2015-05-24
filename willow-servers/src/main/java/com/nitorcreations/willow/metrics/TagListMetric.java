@@ -19,7 +19,6 @@ public abstract class TagListMetric implements Metric {
   public TagListMetric(String tagPrefix) {
     this.tagPrefix = tagPrefix;
   }
-
   @Override
   public List<String> calculateMetric(Client client, MetricConfig conf) {
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
@@ -42,5 +41,8 @@ public abstract class TagListMetric implements Metric {
       }
     }
     return ret;
+  }
+  public boolean hasData(Client client, MetricConfig conf) {
+    return true;
   }
 }
