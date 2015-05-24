@@ -46,6 +46,7 @@ describe("Tests for horizon-graph module", function() {
       createMetrics: function() {},
       resetCubismContext: function() {},
       onFocus: function() {},
+      removeOnFocus: function() {},
       removeHorizonGraph: function() {}
     };
     contextFake = new Box.TestServiceProvider({

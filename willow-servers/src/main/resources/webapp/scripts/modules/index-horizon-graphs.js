@@ -49,6 +49,7 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
     });
 
   }
+
   function resolveHostName(tag) {
     return { raw: tag, host: tag.substring(5) };
   }
@@ -102,6 +103,16 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
       }
     });
   }
+
+  function resolveModuleElement(moduleElement) {
+    return document.getElementById($(moduleElement).attr("data-graph-module-id")); //FIXME uggglyyy
+  }
+
+  function removeGraphConfig(moduleElement) {
+    var graphConfig = context.getConfig(moduleElement);
+    //store.customRadiators.removeRadiatorConfig(radiatorName, graphConfig.chart);
+  }
+
   return {
     init: function() {
       d3           = context.getGlobal("d3");
@@ -128,6 +139,13 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
     },
 
     onclick: function(event, element, elementType) {
+      switch (elementType) {
+        case 'close':
+          var moduleElement = resolveModuleElement(element);
+          context.application.stop(moduleElement);
+          removeGraphConfig(moduleElement);
+          break;
+      }
     },
 
     messages: ["timescale-changed"],

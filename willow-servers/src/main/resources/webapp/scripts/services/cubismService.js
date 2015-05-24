@@ -42,6 +42,9 @@ Box.Application.addService('cubism-graphs', function(application) {
       // event cache will take care of executing all events
       focusEvents[moduleId] = eventHandler;
     },
+    removeOnFocus: function(moduleId) {
+      delete focusEvents[moduleId];
+    },
     createMetrics: function(dataSourceRequest, name) {
       return cubismContext.metric(dataSourceRequest, name);
     },

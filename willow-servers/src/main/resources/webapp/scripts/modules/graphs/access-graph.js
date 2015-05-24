@@ -11,6 +11,7 @@ Box.Application.addModule('access-graph', function(context) {
   function xTicks(d) {
     return d3.time.format('%X')(new Date(d));
   }
+
   function calculateStep(timescale) {
     var steps = timescale * 1000;
     var i = 0;
@@ -21,6 +22,7 @@ Box.Application.addModule('access-graph', function(context) {
       i++;
     }
   }
+
   function createAccessGraph(data) {
     nv.addGraph(function() {
       var chart =  nv.models.multiBarChart()
@@ -45,11 +47,15 @@ Box.Application.addModule('access-graph', function(context) {
   }
 
   function reset() {
-    moduleElement.selectAll(".nv-graph").remove();
+    removeGraph();
     moduleElement
       .append("div").classed('nv-graph', true)
       .append("svg").classed('graph', true);
     metrics.metricsDataSource("access", "host_" + host, detailsStart, detailsStop, detailsStep)(createAccessGraph);
+  }
+
+  function removeGraph() {
+    moduleElement.selectAll(".nv-graph").remove();
   }
 
   function openGraphInPopup() {
@@ -95,9 +101,14 @@ Box.Application.addModule('access-graph', function(context) {
       moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
-      moduleElement.call(utils.appendRemovalButton, "nv-graph__icons");
+      moduleElement.call(utils.appendRemovalButton, "nv-graph__icons", moduleElement.attr('id'));
 
       reset();
+    },
+
+    destroy: function() {
+      moduleElement.remove();
+      moduleElement = null;
     },
 
     behaviors: [ "legend-click" ],
@@ -129,6 +140,6 @@ Box.Application.addModule('access-graph', function(context) {
           context.broadcast("open-radiator-list", moduleConf.chart);
           break;
       }
-    },
+    }
   };
 });
