@@ -37,7 +37,7 @@ public class HostInfoHostLookupService implements HostLookupService {
         return msg.privateHostname; //TODO return public or private based on configuration
       }
     }
-    logger.info("Could not resolve hostname using HostInfo metric, returning host tag as is.")
+    logger.info("Could not resolve hostname using HostInfo metric, returning host tag as is.");
     return tagHost;
   }
 
