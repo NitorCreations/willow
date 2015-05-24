@@ -32,8 +32,6 @@
     <js>/scripts/modules/index-horizon-graphs.js</js>
     <js>/scripts/modules/index-navigation.js</js>
     <js>/scripts/modules/radiator-controller.js</js>
-    <js>/scripts/modules/radiator-detail-graphs.js</js>
-    <js>/scripts/modules/radiator-horizon-graphs.js</js>
     <js>/scripts/modules/radiator-navigation.js</js>
     <js>/scripts/modules/custom-radiator-selection.js</js>
     <js>/scripts/modules/graphs/horizon-graph.js</js>
