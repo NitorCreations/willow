@@ -1,12 +1,8 @@
 Box.Application.addModule('radiator-controller', function(context) {
   'use strict';
 
-<<<<<<< HEAD
-  var utils, store, windowSvc, metrics, intercom, d3, $, moduleElem, cubismGraphs;
-=======
-  var utils, store, windowSvc, intercom, d3, $, moduleElem, cubismGraphs,
+  var utils, store, windowSvc, metrics, intercom, d3, $, moduleElem, cubismGraphs,
     radiatorName, host, configMap = {};
->>>>>>> radiator graph sorting
 
   var detailsStart, detailsStop, dragStart,
     isDragging = false, //FIXME can usage of these be removed?
