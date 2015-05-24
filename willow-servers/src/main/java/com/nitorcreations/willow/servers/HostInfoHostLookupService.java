@@ -30,6 +30,9 @@ public class HostInfoHostLookupService implements HostLookupService {
     logger.info(String.format("Resolving hostname for %s", tagHost));
     MetricConfig metricConfig = new MetricConfig();
     metricConfig.setTags("host_" + tagHost);
+    long now = System.currentTimeMillis();
+    metricConfig.setStart(now - 90000);
+    metricConfig.setStop(now);
     Collection<HostInfoMessage> hostInfoMessages = hostInfoMetric.calculateMetric(node.client(), metricConfig);
     for (HostInfoMessage msg : hostInfoMessages) {
       if (msg.getInstance().equals(tagHost)) {
