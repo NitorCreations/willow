@@ -45,7 +45,9 @@ public class NetworkMetric extends FullMessageSimpleMetric<NetInterface, Long> {
       prevValues.put(nextEntry.getKey(), last);
       long readDiff = readEnd - readStart;
       long writtenDiff = writtenEnd - writeStart;
-      deviceData.put(nextEntry.getKey(), readDiff + writtenDiff);
+      long sum = readDiff + writtenDiff;
+      if (sum < 0) sum = 0;
+      deviceData.put(nextEntry.getKey(), sum);
     }
     return new ArrayList<>(deviceData.values());
   }
