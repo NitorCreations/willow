@@ -35,7 +35,6 @@ Box.Application.addModule('radiator-controller', function(context) {
 
     // re-render the graph on resize
     $(window).resize(utils.debouncer(function() {
-      moduleElem.html('');
       render[type](config);
     }));
   }
@@ -174,6 +173,10 @@ Box.Application.addModule('radiator-controller', function(context) {
       windowSvc      = context.getService("window");
       store          = context.getService("configuration-store");
       cubismGraphs   = context.getService("cubism-graphs");
+
+      $(window).resize(utils.debouncer(function() {
+        moduleElem.html('');
+      }));
 
       var host         = windowSvc.getHashVariable("host");
       var radiatorName = windowSvc.getHashVariable("name");
