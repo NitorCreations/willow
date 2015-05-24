@@ -50,7 +50,7 @@ Box.Application.addService('utils', function(application) {
       return parseInt(timescale * 1000 / widthInPx);
     },
     appendPopupGraphIcon: function(parentElement, classed, host) {
-    return parentElement.select('.' + classed)
+      return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon popup-" + host, true)
         .attr("data-type", "to-popup")
@@ -71,23 +71,30 @@ Box.Application.addService('utils', function(application) {
         .append("use").attr("xlink:href", "#shape-to-radiator");
     },
     appendTerminalIcon: function(parentElement, classed, host) {
-    return parentElement.select('.' + classed)
+      return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")
         .classed("icon shape-terminal terminal-" + host, true)
         .attr("data-type", "start-terminal")
         .attr("data-host", host)
         .append("use").attr("xlink:href", "#shape-terminal");
     },
+    appendRemovalButton: function(parentElement, classed) {
+      return parentElement.select('.' + classed)
+        .append("svg").attr("viewBox", "0 0 100 100")
+        .classed("icon remove", true)
+        .attr("data-type", "close")
+        .append("use").attr("xlink:href", "#shape-close2");
+    },
     getDetailsSteps: function(moduleElement, timescale) {
-          var steps = timescale;
-          var detailsStep = 1;
-          var i = 0;
-          while (steps > ($(moduleElement[0]).width() / 2)) {
-            detailsStep = scales[i].step;
-            legend = scales[i].legend;
-            steps = parseInt((detailsStop - detailsStart) / detailsStep);
-            i++;
-          }
+      var steps = timescale;
+      var detailsStep = 1;
+      var i = 0;
+      while (steps > ($(moduleElement[0]).width() / 2)) {
+        detailsStep = scales[i].step;
+        legend = scales[i].legend;
+        steps = parseInt((detailsStop - detailsStart) / detailsStep);
+        i++;
+      }
 
     }
   };

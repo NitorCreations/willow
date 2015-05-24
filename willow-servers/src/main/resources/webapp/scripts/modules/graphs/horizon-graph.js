@@ -93,6 +93,7 @@ Box.Application.addModule('horizon-graph', function(context) {
 
     horizonGraphElements.call(utils.appendPopupGraphIcon, 'horizon__icons', host);
     horizonGraphElements.call(utils.appendDraggableHandleIcon, 'horizon__icons');
+    horizonGraphElements.call(utils.appendRemovalButton, 'horizon__icons');
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
