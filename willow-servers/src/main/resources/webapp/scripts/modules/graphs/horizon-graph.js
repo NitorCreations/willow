@@ -85,13 +85,13 @@ Box.Application.addModule('horizon-graph', function(context) {
 
     horizonGraphElements.call(appendHorizonGraph, host, metric, metricSettings);
     if (!moduleConf.disableTerminalButton) {
-      horizonGraphElements.call(appendTerminalIcon, host);
+      horizonGraphElements.call(utils.appendTerminalIcon, 'horizon__icons', host);
     }
     if (!moduleConf.disableRadiatorShareButton) {
-      horizonGraphElements.call(appendShareRadiatorIcon, host);
+      horizonGraphElements.call(utils.appendShareRadiatorIcon, 'horizon__icons', host);
     }
 
-    horizonGraphElements.call(appendPopupGraphIcon, host);
+    horizonGraphElements.call(utils.appendPopupGraphIcon, 'horizon__icons', host);
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
@@ -114,28 +114,6 @@ Box.Application.addModule('horizon-graph', function(context) {
       horizon.format(d3.format(metricSettings.format));
     }
     return horizon;
-  }
-
-  function appendTerminalIcon(parentElement, host) {
-    return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon shape-terminal terminal-" + host, true)
-        .attr("data-type", "start-terminal")
-        .attr("data-host", host)
-        .append("use").attr("xlink:href", "#shape-terminal");
-  }
-
-  function appendShareRadiatorIcon(parentElement, host) {
-    return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon share-" + host, true)
-        .attr("data-type", "to-radiator")
-        .append("use").attr("xlink:href", "#shape-to-radiator");
-  }
-
-  function appendPopupGraphIcon(parentElement, host) {
-    return parentElement.select('.horizon__icons').append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon popup-" + host, true)
-        .attr("data-type", "to-popup")
-        .append("use").attr("xlink:href", "#shape-external-link");
   }
 
   function appendHostRadiatorLink(parentElement, title, host) {

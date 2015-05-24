@@ -114,6 +114,9 @@ Box.Application.addService('window', function(application) {
         ',screenX=' + opts.posX +
         ',screenY=' + opts.posY
       );
+    },
+    getTimescale: function() {
+      return this.getHashVariable('timescale') || 10800;
     }
   };
 });

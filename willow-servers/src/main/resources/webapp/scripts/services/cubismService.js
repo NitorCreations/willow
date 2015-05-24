@@ -2,7 +2,7 @@ Box.Application.addService('cubism-graphs', function(application) {
   'use strict';
   var cubism    = application.getGlobal('cubism');
   var windowSvc = application.getService('window');
-
+  var utils = application.getService('utils');
   var cubismContext = cubism.context();
   var focusEvents   = {};
 
@@ -15,22 +15,11 @@ Box.Application.addService('cubism-graphs', function(application) {
   // TODO: this may need debouncing, each graph will call this on it's reset
   function resetCubismContext(step, widthInPx, timescale) {
     widthInPx = (typeof widthInPx === 'number') ? widthInPx : $(window).width();
-    step = (typeof step === 'number') ? step : getStep(timescale, widthInPx);
+    timescale = (typeof timescale === 'number') ? timescale : windowSvc.getTimescale();
+    step = (typeof step === 'number') ? step : utils.getStep(timescale, widthInPx);
 
     cubismContext.step(step).size(widthInPx);
     application.broadcast("cubism-context-reset");
-  }
-
-  // TODO: move to utils
-  function getTimescale() {
-    return windowSvc.getHashVariable('timescale') || 10800;
-  }
-
-  // TODO: move to utils
-  function getStep(timescale, widthInPx) {
-    widthInPx = widthInPx || $(window).width();
-    timescale = timescale || getTimescale();
-    return parseInt(timescale * 1000 / widthInPx);
   }
 
   // create a context when service initializes

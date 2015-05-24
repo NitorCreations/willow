@@ -33,21 +33,6 @@ Box.Application.addModule('filesystem-graph', function(context) {
     });
   };
 
-  function appendPopupGraphIcon(parentElement) {
-    return parentElement.select('.nv-graph__icons')
-        .append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon popup-" + host, true)
-        .attr("data-type", "to-popup")
-        .append("use").attr("xlink:href", "#shape-external-link");
-  }
-
-  function appendShareRadiatorIcon(parentElement) {
-    return parentElement.select('.nv-graph__icons').append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon share-" + host, true)
-        .attr("data-type", "to-radiator")
-        .append("use").attr("xlink:href", "#shape-to-radiator");
-  }
-
   function reset() {
     moduleElement.selectAll(".nv-graph").remove();
     moduleElement
@@ -93,8 +78,8 @@ Box.Application.addModule('filesystem-graph', function(context) {
       };
       host = moduleConf.chart.host;
       moduleElement.append("div").classed("nv-graph__icons", true);
-      moduleElement.call(appendShareRadiatorIcon);
-      moduleElement.call(appendPopupGraphIcon);
+      moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
+      moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
 
       detailsStop = parseInt(new Date().getTime());
 

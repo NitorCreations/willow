@@ -11,7 +11,16 @@ Box.Application.addModule('access-graph', function(context) {
   function xTicks(d) {
     return d3.time.format('%X')(new Date(d));
   }
-
+  function calculateStep(timescale) {
+    var steps = timescale * 1000;
+    var i = 0;
+    while (steps > ($(moduleElement[0]).width() / 2)) {
+      detailsStep = scales[i].step;
+      legend = scales[i].legend;
+      steps = parseInt((timescale * 1000) / detailsStep);
+      i++;
+    }
+  }
   function createAccessGraph(data) {
     nv.addGraph(function() {
       var chart =  nv.models.multiBarChart()
@@ -27,27 +36,12 @@ Box.Application.addModule('access-graph', function(context) {
         .call(chart);
       moduleElement.select(".graph")
         .append("text")
-        .attr("x", 50)
-        .attr("y", 10)
+        .attr("x", 80)
+        .attr("y", 35)
         .attr("text-anchor", "left")
         .text(legend);
       return chart;
     });
-  }
-
-  function appendPopupGraphIcon(parentElement) {
-    return parentElement.select('.nv-graph__icons')
-        .append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon popup-" + host, true)
-        .attr("data-type", "to-popup")
-        .append("use").attr("xlink:href", "#shape-external-link");
-  }
-
-  function appendShareRadiatorIcon(parentElement) {
-    return parentElement.select('.nv-graph__icons').append("svg").attr("viewBox", "0 0 100 100")
-        .classed("icon share-" + host, true)
-        .attr("data-type", "to-radiator")
-        .append("use").attr("xlink:href", "#shape-to-radiator");
   }
 
   function reset() {
@@ -93,11 +87,13 @@ Box.Application.addModule('access-graph', function(context) {
       };
       host = moduleConf.chart.host;
       detailsStop  = parseInt(new Date().getTime());
-      detailsStart = parseInt(detailsStop - (1000 * 60 * 60 * 3));
+      var timescale = windowSvc.getTimescale();
+      detailsStart = parseInt(detailsStop - (1000 * timescale));
+      calculateStep(timescale);
 
       moduleElement.append("div").classed("nv-graph__icons", true);
-      moduleElement.call(appendShareRadiatorIcon);
-      moduleElement.call(appendPopupGraphIcon);
+      moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
+      moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
 
       reset();
     },
@@ -116,15 +112,7 @@ Box.Application.addModule('access-graph', function(context) {
         case 'timescale-changed':
           detailsStop = new Date().getTime();
           detailsStart = detailsStop - (data * 1000);
-          detailsStep = 1;
-          var steps = parseInt((detailsStop - detailsStart) / detailsStep);
-          var i = 0;
-          while (steps > ($(moduleElement[0]).width() / 2)) {
-            detailsStep = scales[i].step;
-            legend = scales[i].legend;
-            steps = parseInt((detailsStop - detailsStart) / detailsStep);
-            i++;
-          }
+          calculateStep(data);
           reset();
           break;
       }
