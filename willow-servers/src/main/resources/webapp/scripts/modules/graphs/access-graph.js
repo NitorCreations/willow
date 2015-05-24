@@ -94,6 +94,7 @@ Box.Application.addModule('access-graph', function(context) {
       moduleElement.append("div").classed("nv-graph__icons", true);
       moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
+      moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
 
       reset();
     },

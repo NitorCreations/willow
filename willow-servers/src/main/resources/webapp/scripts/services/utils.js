@@ -56,6 +56,13 @@ Box.Application.addService('utils', function(application) {
         .attr("data-type", "to-popup")
         .append("use").attr("xlink:href", "#shape-external-link");
     },
+    appendDraggableHandleIcon: function(parentElement, classed) {
+    return parentElement.select('.' + classed)
+        .append("svg").attr("viewBox", "0 0 100 100")
+        .classed("icon drag-handle", true)
+        .attr("data-type", "graph-drag")
+        .append("use").attr("xlink:href", "#shape-move");
+    },
     appendShareRadiatorIcon: function(parentElement, classed, host) {
       return parentElement.select('.' + classed)
         .append("svg").attr("viewBox", "0 0 100 100")

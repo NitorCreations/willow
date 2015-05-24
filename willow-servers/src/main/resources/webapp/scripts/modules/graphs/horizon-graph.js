@@ -92,6 +92,7 @@ Box.Application.addModule('horizon-graph', function(context) {
     }
 
     horizonGraphElements.call(utils.appendPopupGraphIcon, 'horizon__icons', host);
+    horizonGraphElements.call(utils.appendDraggableHandleIcon, 'horizon__icons');
     horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
   };
 
@@ -183,6 +184,8 @@ Box.Application.addModule('horizon-graph', function(context) {
       moduleElem = d3.select(context.getElement());
       moduleConf = context.getConfig() || {};
       moduleConf.configurationId = moduleConf.configurationIdPrefix + moduleElem.attr('id');
+
+      moduleElem.classed('col c12', true);
 
       initDone = true;
       messageQueue.forEach(execMessage);

@@ -73,6 +73,7 @@ Box.Application.addModule('heap-graph', function(context) {
 
       moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
+      moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
 
       reset();
     },
