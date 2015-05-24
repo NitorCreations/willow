@@ -67,7 +67,6 @@ Box.Application.addModule('heap-graph', function(context) {
       host = moduleConf.chart.host;
       detailsStop  = parseInt(new Date().getTime());
       var timescale = windowSvc.getTimescale();
-      var timescale = windowSvc.getTimescale();
       detailsStart = parseInt(detailsStop - (1000 * timescale));
       calculateStep(timescale);
 
