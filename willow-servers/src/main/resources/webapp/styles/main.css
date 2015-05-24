@@ -308,6 +308,7 @@ textarea, input[type=text] {
 .nv-graph__wrapper.scalable:only-of-type {
   width: 100%;
   height: 100%;
+  margin-left: -25px;
 }
 
 .nv-graph__wrapper.scalable:only-of-type {
@@ -513,7 +514,7 @@ select.navcenter {
 }
 
 .nv-graph__icons {
-  left: 60px;
+  left: 25px;
 }
 
 .nv-graph__icons .icon,

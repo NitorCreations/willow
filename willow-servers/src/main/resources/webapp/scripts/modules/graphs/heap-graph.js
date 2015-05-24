@@ -15,6 +15,7 @@ Box.Application.addModule('heap-graph', function(context) {
   function createHeapGraph(data) {
     nv.addGraph(function() {
       var chart = nv.models.lineChart();
+      chart.margin({right: 25});
       chart.xAxis.tickFormat(xTicks);
       chart.yAxis.tickFormat(d3.format(',.2s'));
       moduleElement.select(".graph")
