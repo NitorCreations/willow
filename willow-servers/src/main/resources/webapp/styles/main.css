@@ -553,6 +553,11 @@ select.navcenter {
 .drag-handle {
   float: right;
   margin-right: 10px;
+  display: none;
+}
+
+.radiator-controller .drag-handle {
+  display: inline-block;
 }
 
 .nv-graph__icons .drag-handle {
