@@ -22,7 +22,10 @@ Box.Application.addModule('radiator-controller', function(context) {
     },
     heap: function(config) {
       moduleElem.call(createHeapGraph, config.chart);
-    }
+    },
+    childcpu:  function(config) {
+      moduleElem.call(createChildCpuGraph, config.chart);
+    } 
   };
 
   function initGraph(config) {
@@ -99,6 +102,15 @@ Box.Application.addModule('radiator-controller', function(context) {
     var heapGraphElement = parentElement.append("div")
       .classed("nv-graph__wrapper scalable col c6", true)
       .attr("data-module", "heap-graph");
+    injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
+    Box.Application.start(heapGraphElement[0][0]);
+    configMap[heapGraphElement.attr('id')] = chartConfig;
+  }
+
+  function createChildCpuGraph(parentElement, chartConfig) {
+    var heapGraphElement = parentElement.append("div")
+      .classed("nv-graph__wrapper scalable col c6", true)
+      .attr("data-module", "childcpu-graph");
     injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
     configMap[heapGraphElement.attr('id')] = chartConfig;

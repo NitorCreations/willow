@@ -54,6 +54,7 @@ Box.Application.addService('metrics', function(application) {
     configs.push({ type: 'filesystem', host: host });
     configs.push({ type: 'heap', host: host });
     configs.push({ type: 'access', host: host });
+    configs.push({ type: 'childcpu', host: host });
     return configs;
   }
 

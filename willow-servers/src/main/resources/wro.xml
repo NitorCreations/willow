@@ -38,5 +38,6 @@
     <js>/scripts/modules/graphs/filesystem-graph.js</js>
     <js>/scripts/modules/graphs/heap-graph.js</js>
     <js>/scripts/modules/graphs/access-graph.js</js>
+    <js>/scripts/modules/graphs/childcpu-graph.js</js>
   </group>
 </groups>
