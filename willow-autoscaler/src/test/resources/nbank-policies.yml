@@ -22,16 +22,21 @@ willow-autoscaler:
       authorizationRole: arn:aws:iam::293246570391:instance-profile/willow-instances
       instanceBaseCount: "1"
       instanceMaxCount: "5"
-      quietPeriodSeconds: "180"
+      quietPeriodSeconds: "240"
       scalingPolicies:
         - name: scaleOutOnCPUThreshold
           metricName: /cpu
           metricThreshold: "70"
           metricComparison: ">"
-          scalingAction: +50%
-        - name: scaleInOnCPUThreshold
+          scalingAction: +200%
+        - name: scaleInOnCPUThresholdLowLoad
           metricName: /cpu
-          metricThreshold: "20"
+          metricThreshold: "10"
+          metricComparison: <
+          scalingAction: -80%
+        - name: scaleInOnCPUThresholdMidLoad
+          metricName: /cpu
+          metricThreshold: "40"
           metricComparison: <
           scalingAction: -20%
   metricsUri: ws://ip-192-168-201-245.eu-west-1.compute.internal/poll-internal/

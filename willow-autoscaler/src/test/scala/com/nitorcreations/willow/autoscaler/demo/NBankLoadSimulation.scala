@@ -539,5 +539,5 @@ class NBankLoadSimulation extends Simulation {
 			.headers(headers_2)))
 			}
 
-	setUp(scn.inject(atOnceUsers(10), rampUsers(200) over(30 seconds))).protocols(httpProtocol)
+	setUp(scn.inject(atOnceUsers(10), rampUsers(60) over(30 seconds))).protocols(httpProtocol)
 }
