@@ -32,7 +32,6 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
   }
 
   function initGraphs(metric, start, stop) {
-    Box.Application.stopAll(document.getElementById("horizon-graphs"));
     metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
       storedHosts = hosts;
@@ -49,9 +48,9 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
       context.broadcast("reload-graph-configuration");
     });
 
-    function resolveHostName(tag) {
-      return { raw: tag, host: tag.substring(5) };
-    }
+  }
+  function resolveHostName(tag) {
+    return { raw: tag, host: tag.substring(5) };
   }
 
   function injectModuleConfiguration(horizonGraphElement, configIdPrefix, chartConfig) {
@@ -79,7 +78,27 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
     metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
       if (!hosts.equals(storedHosts)) {
-        reset();
+        var oldHosts = storedHosts;
+        storedHosts = hosts.slice();
+        for (var i=0; i<oldHosts.length; i++) {
+          var foundIdx = hosts.indexOf(oldHosts[i]);
+          if (foundIdx > -1) {
+            hosts.splice(foundIdx, 1);
+          }
+        }
+        if (hosts.length > 0) {
+          hosts.map(resolveHostName)
+            .forEach(function (tag) {
+              var chartConfig = {
+              metric: metric,
+              host: tag.host,
+              instanceTag: tag.raw,
+              type: 'horizon'
+            };
+            moduleElem.select("#horizon-graphs").call(createHorizonGraph, chartConfig);
+          });
+          context.broadcast("reload-graph-configuration");
+        }
       }
     });
   }

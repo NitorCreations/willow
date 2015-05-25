@@ -15,8 +15,6 @@ Box.Application.addService('cubism-graphs', function(application) {
 
   // TODO: this may need debouncing, each graph will call this on it's reset
   function resetCubismContext(step, widthInPx, timescale) {
-    cubismContext.stop();
-    cubismContext = cubism.context();
     widthInPx = (typeof widthInPx === 'number') ? widthInPx : $(window).width();
     timescale = (typeof timescale === 'number') ? timescale : windowSvc.getTimescale();
     step = (typeof step === 'number') ? step : utils.getStep(timescale, widthInPx);
