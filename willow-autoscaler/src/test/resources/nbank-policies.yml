@@ -4,7 +4,7 @@ willow-autoscaler:
     - name: nbank_willow
       region: eu-west-1
       cloudProvider: AWS
-      virtualMachineImage: ami-f7dfa980 #nbank-demo snapshot image
+      virtualMachineImage: ami-a9b5c4de
       tags:
         - willow-group: nbank_willow
       sshKey: willow
@@ -14,24 +14,25 @@ willow-autoscaler:
       userData: |
         #!/bin/bash
         echo 127.0.0.1 `hostname` >>/etc/hosts
-        #aws elb register-instances-with-load-balancer --load-balancer-name nbank-willow --instances `curl http://169.254.169.254/latest/meta-data/instance-id`
+        aws elb register-instances-with-load-balancer --load-balancer-name nbank-willow --instances `curl http://169.254.169.254/latest/meta-data/instance-id`
+        su - ubuntu -c ./start-willow-nbank.sh
       network: vpc-18697c7a
       subnet: subnet-4c0e0338
       securityGroups: sg-a5b7f7c0
       authorizationRole: arn:aws:iam::293246570391:instance-profile/willow-instances
       instanceBaseCount: "1"
       instanceMaxCount: "5"
-      quietPeriodSeconds: "60"
+      quietPeriodSeconds: "180"
       scalingPolicies:
         - name: scaleOutOnCPUThreshold
           metricName: /cpu
-          metricThreshold: "60"
+          metricThreshold: "70"
           metricComparison: ">"
           scalingAction: +50%
         - name: scaleInOnCPUThreshold
           metricName: /cpu
-          metricThreshold: "30"
+          metricThreshold: "20"
           metricComparison: <
-          scalingAction: -50%
+          scalingAction: -20%
   metricsUri: ws://ip-192-168-201-245.eu-west-1.compute.internal/poll-internal/
   messagesUri: ws://ip-192-168-201-245.eu-west-1.compute.internal/statistics/
