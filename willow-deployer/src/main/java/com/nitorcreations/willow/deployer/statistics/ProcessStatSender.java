@@ -36,7 +36,7 @@ public class ProcessStatSender extends AbstractStatisticsSender {
     long now = System.currentTimeMillis();
     if (now > nextProcCpus) {
       try {
-        long pid = main.getChildPid(childName);
+        long pid = main.getChildPid(getChildName());
         if (pid > 0) {
           pCStat = sigar.getProcCpu(pid);
           ProcessCPU msg = new ProcessCPU();
@@ -62,11 +62,15 @@ public class ProcessStatSender extends AbstractStatisticsSender {
     conf = new StatisticsConfig(properties);
     nextProcCpus = System.currentTimeMillis() + conf.getIntervalProcCpus();
     childName = properties.getProperty("childName");
+  }
+
+  protected String getChildName() {
     if (childName == null) {
       String[] children = main.getChildNames();
       if (children.length > 0) {
         childName = children[0];
       }
     }
+    return childName;
   }
 }
