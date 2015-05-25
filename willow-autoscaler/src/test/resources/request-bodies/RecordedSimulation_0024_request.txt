@@ -1,0 +1,1 @@
+{"type":"processCreditApplication","requestData":{"accountNo":"FI1111222200000017","amount":567,"clientId":"2","productId":"1"}}
