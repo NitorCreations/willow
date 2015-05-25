@@ -2,7 +2,26 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
   'use strict';
 
   var d3, $, moduleElem, metric, timescale, session,
-    store, windowSvc, cubismGraphs, utils, metricsService;
+    store, windowSvc, cubismGraphs, utils, metricsService, storedHosts;
+  Array.prototype.equals = function (array) {
+    if (!array) {
+      return false;
+    }
+    if (this.length != array.length) {
+      return false;
+    }
+    for (var i = 0, l=this.length; i < l; i++) {
+      if (this[i] instanceof Array && array[i] instanceof Array) {
+        if (!this[i].equals(array[i])) {
+          return false;
+        }
+      }
+      else if (this[i] != array[i]) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   function reset() {
     var stop = new Date().getTime();
@@ -13,8 +32,10 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
   }
 
   function initGraphs(metric, start, stop) {
+    Box.Application.stopAll(document.getElementById("horizon-graphs"));
     metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
       hosts.sort();
+      storedHosts = hosts;
       hosts.map(resolveHostName)
         .forEach(function (tag) {
           var chartConfig = {
@@ -45,12 +66,23 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
   function createHorizonGraph(parentElement, chartConfig) {
     var metricIdPrefix = "live:metrics:graph-";
     var horizonGraphElement = parentElement.append("div")
+      .attr("class", "horizon-module")
       .attr("data-module", "horizon-graph");
     injectModuleConfiguration(horizonGraphElement, metricIdPrefix, chartConfig);
     Box.Application.start(horizonGraphElement[0][0]);
     store.storeConfiguration(metricIdPrefix + horizonGraphElement.attr('id'), chartConfig); //TODO this should use namespacing
   }
 
+  function checkHosts() {
+    var stop = new Date().getTime();
+    var start = stop - (timescale * 1000);
+    metricsService.hostsDataSource(metric, start, stop)(function(hosts) {
+      hosts.sort();
+      if (!hosts.equals(storedHosts)) {
+        reset();
+      }
+    });
+  }
   return {
     init: function() {
       d3           = context.getGlobal("d3");
@@ -70,6 +102,7 @@ Box.Application.addModule('index-horizon-graphs', function(context) {
 
       reset();
       $(window).resize(utils.debouncer(cubismGraphs.resetCubismContext));
+      setInterval(checkHosts, 3000);
     },
 
     destroy: function() {

@@ -1,5 +1,6 @@
 Box.Application.addService('cubism-graphs', function(application) {
   'use strict';
+  var d3        = application.getGlobal('cubism');
   var cubism    = application.getGlobal('cubism');
   var windowSvc = application.getService('window');
   var utils = application.getService('utils');
@@ -14,6 +15,8 @@ Box.Application.addService('cubism-graphs', function(application) {
 
   // TODO: this may need debouncing, each graph will call this on it's reset
   function resetCubismContext(step, widthInPx, timescale) {
+    cubismContext.stop();
+    cubismContext = cubism.context();
     widthInPx = (typeof widthInPx === 'number') ? widthInPx : $(window).width();
     timescale = (typeof timescale === 'number') ? timescale : windowSvc.getTimescale();
     step = (typeof step === 'number') ? step : utils.getStep(timescale, widthInPx);
@@ -46,9 +49,6 @@ Box.Application.addService('cubism-graphs', function(application) {
     },
     createHorizonGraph: function() {
       return cubismContext.horizon();
-    },
-    removeHorizonGraph: function() {
-      return cubismContext.horizon().remove;
     },
     start: function() {
       return cubismContext.start();

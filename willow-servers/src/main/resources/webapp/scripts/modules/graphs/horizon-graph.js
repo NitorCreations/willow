@@ -1,7 +1,7 @@
 Box.Application.addModule('horizon-graph', function(context) {
   'use strict';
 
-  var moduleElem, moduleConf,
+  var moduleElem, moduleConf, horizon = { remove: function() { return this; }},
       d3, $,
       store, windowSvc, utils, metricsService, cubismGraphs,
       initDone = false,
@@ -38,7 +38,7 @@ Box.Application.addModule('horizon-graph', function(context) {
     var metricSetting = $(metricMap).attr(chartConfig.metric);
 
     // TODO: this should be done by reconfiguring, not destroying
-    moduleElem.selectAll(".horizon").remove();
+    moduleElem.select(".horizon").call(horizon.remove).remove();
 
     var id = moduleElem.attr('id');
     cubismGraphs.onFocus(function(index) {
@@ -53,7 +53,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   // graph destroy, put this on a button or such
   function removeGraph() {
     cubismGraphs.onFocus(null);
-    moduleElem.select(".horizon").call(cubismGraphs.removeHorizonGraph());
+    moduleElem.select(".horizon").call(horizon.remove);
     moduleElem.remove();
   }
 
@@ -104,7 +104,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function configureHorizonGraph(metricSettings) {
-    var horizon = cubismGraphs.createHorizonGraph()
+    horizon = cubismGraphs.createHorizonGraph()
       .height(metricSettings.height)
       .colors(metricSettings.colors)
       .extent(metricSettings.extent)
