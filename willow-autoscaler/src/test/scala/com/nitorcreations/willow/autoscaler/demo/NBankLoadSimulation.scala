@@ -115,7 +115,7 @@ class NBankLoadSimulation extends Simulation {
             http("request_20")
 			.get(uri2 + "/views/creditapplication/new.html")
 			.headers(headers_2)))
-		.pause(4)
+		.pause(1)
 		.exec(http("request_21")
 			.get("/creditapplicationsystem/v1/applications?clientId=2")
 			.headers(headers_2)
@@ -196,7 +196,7 @@ class NBankLoadSimulation extends Simulation {
             http("request_44")
 			.get(uri2 + "/nflow/v1/workflow-instance?type=creditDecision&state=manualDecision&businessKey=3")
 			.headers(headers_2)))
-		.pause(4)
+		.pause(1)
 		.exec(http("request_45")
 			.get("/creditapplicationsystem/v1/applications")
 			.headers(headers_2)
@@ -206,7 +206,7 @@ class NBankLoadSimulation extends Simulation {
             http("request_47")
 			.get(uri2 + "/nflow/v1/workflow-instance?type=creditDecision&state=manualDecision&businessKey=3")
 			.headers(headers_2)))
-		.pause(3)
+		.pause(1)
 		.exec(http("request_48")
 			.put("/nflow/v1/workflow-instance/6")
 			.headers(headers_5)
@@ -220,7 +220,7 @@ class NBankLoadSimulation extends Simulation {
             http("request_51")
 			.get(uri2 + "/nflow/v1/workflow-instance?type=creditDecision&state=manualDecision&businessKey=3")
 			.headers(headers_2)))
-		.pause(4)
+		.pause(1)
 		.exec(http("request_52")
 			.get("/clerk/views/workflow.html")
 			.headers(headers_2)
@@ -539,5 +539,5 @@ class NBankLoadSimulation extends Simulation {
 			.headers(headers_2)))
 			}
 
-	setUp(scn.inject(atOnceUsers(10), rampUsers(100) over(30 seconds))).protocols(httpProtocol)
+	setUp(scn.inject(atOnceUsers(10), rampUsers(200) over(30 seconds))).protocols(httpProtocol)
 }
