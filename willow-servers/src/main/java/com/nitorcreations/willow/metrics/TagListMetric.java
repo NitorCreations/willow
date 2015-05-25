@@ -23,7 +23,7 @@ public abstract class TagListMetric implements Metric {
   public List<String> calculateMetric(Client client, MetricConfig conf) {
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
       .setTypes(conf.getTypes())
-        .setSize(0).addAggregation(AggregationBuilders.terms("tags")
+        .setSize(100).addAggregation(AggregationBuilders.terms("tags")
           .field("tags").include(tagPrefix + "_.*"));
     BoolQueryBuilder query = QueryBuilders.boolQuery()
       .must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart()).to(conf.getStop()));
