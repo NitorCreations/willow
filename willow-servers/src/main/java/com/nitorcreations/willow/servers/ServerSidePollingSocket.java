@@ -44,8 +44,8 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
     private final Gson gson = new Gson();
     public PollTask(Session session, MetricConfig conf) {
       this.conf = conf;
-      this.metric = metrics.get(conf.metricKey);
-      if (metric == null) throw new IllegalArgumentException("No metric found for " + conf.metricKey);
+      this.metric = metrics.get(conf.getMetricKey());
+      if (metric == null) throw new IllegalArgumentException("No metric found for " + conf.getMetricKey());
       long now = System.currentTimeMillis();
       this.currTimeDelay = now - conf.getStop();
       this.session = session;

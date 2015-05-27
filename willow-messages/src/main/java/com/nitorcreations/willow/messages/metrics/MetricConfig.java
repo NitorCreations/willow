@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MetricConfig {
+  private static final Pattern nonword= Pattern.compile("\\W");
   public static final int MIN_STEPLEN = 1000;
   public static final long MAX_TIMEPERIOD = TimeUnit.DAYS.toMillis(30);
-  public String metricKey = "";
+  private String metricKey = "";
   private long start;
   private long stop;
   private int step;
@@ -21,7 +24,14 @@ public class MetricConfig {
     return metricKey;
   }
   public void setMetricKey(String metricKey) {
-    this.metricKey = metricKey;
+    if (metricKey == null) {
+      metricKey = "";
+    }
+    while (metricKey.startsWith("/")) {
+      metricKey = metricKey.substring(1);
+    }
+
+    this.metricKey = "/" + firstWord(metricKey);
   }
   public long getStart() {
     long ret;
@@ -98,4 +108,14 @@ public class MetricConfig {
     if (types.size() == 0 || type == null) return false;
     return types.contains(type);
   }
+
+  private String firstWord(String input) {
+    Matcher matcher = nonword.matcher(input);
+    if (!matcher.find()) {
+      return input;
+    } else {
+      return input.substring(0, matcher.start());
+    }
+  }
+
 }

@@ -55,9 +55,9 @@ public class MetricsServlet extends HttpServlet {
       return;
     }
     MetricConfig conf = metricConfigBuilder.fromRequest(req);
-    Metric metric = metrics.get(conf.metricKey);
+    Metric metric = metrics.get(conf.getMetricKey());
     if (metric == null) {
-      ((HttpServletResponse) res).sendError(404, "Metric with key " + conf.metricKey + " not found");
+      res.sendError(404, "Metric with key " + conf.getMetricKey() + " not found");
       return;
     }
     try (Client client = node.client()){
