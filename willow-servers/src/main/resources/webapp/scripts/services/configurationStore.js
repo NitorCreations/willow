@@ -43,7 +43,7 @@ Box.Application.addService('configuration-store', function(application) {
     var storedConfig = existingConfig.filter(function(graph) {
       return graph.id !== config.id;
     });
-    configurations[radiatorName] = storedConfig
+    configurations[radiatorName] = storedConfig;
     storeConfiguration(customRadiatorKey(), configurations);
   }
 
