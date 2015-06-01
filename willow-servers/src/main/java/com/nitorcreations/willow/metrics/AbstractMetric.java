@@ -3,6 +3,8 @@ package com.nitorcreations.willow.metrics;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -14,11 +16,12 @@ import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 public abstract class AbstractMetric<T> implements Metric {
   public static final BuilderCustomizer ONE = new OneResultBuilderCustomizer();
-
+  @Inject
+  protected Client client;
   public SearchResponse executeQuery(Client client, MetricConfig conf, String type, List<String> fields) {
-    return this.executeQuery(client, conf, type, fields, null);
+    return this.executeQuery(conf, type, fields, null);
   }
-  public SearchResponse executeQuery(Client client, MetricConfig conf, String type, List<String> fields, BuilderCustomizer customizer) {
+  public SearchResponse executeQuery(MetricConfig conf, String type, List<String> fields, BuilderCustomizer customizer) {
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
         .setTypes(type).setSearchType(SearchType.QUERY_AND_FETCH)
         .setSize((int) (conf.getStop() - conf.getStart()) / 10);
@@ -36,8 +39,8 @@ public abstract class AbstractMetric<T> implements Metric {
     return builder.get();
   }
   @Override
-  public boolean hasData(Client client, MetricConfig conf) {
-    SearchResponse response = executeQuery(client, conf, getType(), Arrays.asList("timestamp"), AbstractMetric.ONE);
+  public boolean hasData(MetricConfig conf) {
+    SearchResponse response = executeQuery(conf, getType(), Arrays.asList("timestamp"), AbstractMetric.ONE);
     return response.getHits().getHits().length > 0;
   }
   public abstract String getType();

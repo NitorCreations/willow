@@ -57,7 +57,7 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
         long stop = System.currentTimeMillis() - currTimeDelay;
         long start = stop - conf.getStep();
         Metric nextMetric = metric.getClass().newInstance();
-        Object ret = nextMetric.calculateMetric(client, conf);
+        Object ret = nextMetric.calculateMetric(conf);
         conf.setStop(stop);
         conf.setStart(start);
         session.getRemote().sendString(gson.toJson(ret));

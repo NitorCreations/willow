@@ -10,7 +10,6 @@ import javax.inject.Named;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -24,7 +23,7 @@ import com.nitorcreations.willow.messages.metrics.MetricConfig;
 public class DiskStatusMetric extends AbstractMetric<List<SeriesData<String, Long>>> {
 
   @Override
-  public List<SeriesData<String, Long>> calculateMetric(Client client, MetricConfig conf) {
+  public List<SeriesData<String, Long>> calculateMetric(MetricConfig conf) {
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client)).setTypes(getType()).addField("timestamp").addField("name").addField("total").addField("free").setSize(50).addSort("timestamp", SortOrder.DESC);
     BoolQueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart()).to(conf.getStop()));
     for (String tag : conf.getTags()) {

@@ -6,7 +6,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 
 import com.google.gson.Gson;
@@ -32,8 +31,8 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> extends Ab
     }
   }
   @Override
-  public R calculateMetric(Client client, MetricConfig conf) {
-    SearchResponse response = executeQuery(client, conf, MessageMapping.map(type).lcName(), Collections.<String>emptyList(), getCustomizer());
+  public R calculateMetric(MetricConfig conf) {
+    SearchResponse response = executeQuery(conf, MessageMapping.map(type).lcName(), Collections.<String>emptyList(), getCustomizer());
     readResponse(response);
     return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
   }

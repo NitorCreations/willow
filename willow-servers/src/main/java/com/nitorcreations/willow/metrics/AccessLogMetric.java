@@ -6,8 +6,6 @@ import java.util.Map;
 
 import javax.inject.Named;
 
-import org.elasticsearch.client.Client;
-
 import com.nitorcreations.willow.messages.AccessLogEntry;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
@@ -35,7 +33,7 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
   private ValueGetter getter = DURATION;
 
   @Override
-  public Collection<SeriesData<Long, Long>> calculateMetric(Client client, MetricConfig conf) {
+  public Collection<SeriesData<Long, Long>> calculateMetric(MetricConfig conf) {
     if (conf.getLimits().length > 0) {
       limitValues = new long[conf.getLimits().length];
       for (int i = 0; i < conf.getLimits().length; i++) {
@@ -47,7 +45,7 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
         limitValues = new long[] { 200L, 300L, 400L, 500L, 600L };
       }
     }
-    return super.calculateMetric(client, conf);
+    return super.calculateMetric(conf);
   }
 
   @Override

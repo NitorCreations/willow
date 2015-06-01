@@ -54,7 +54,7 @@ public class HostInfoHostLookupService implements HostLookupService {
     long now = System.currentTimeMillis();
     metricConfig.setStart(now - 90000);
     metricConfig.setStop(now);
-    return hostInfoMetric.calculateMetric(node.client(), metricConfig);
+    return hostInfoMetric.calculateMetric(metricConfig);
   }
 
   @Override
