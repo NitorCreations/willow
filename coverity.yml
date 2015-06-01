@@ -16,12 +16,3 @@ triage:
     - action: suppress
       issueKey: 16da82dbcd5f98dbb0c01be980700d20
       comment: running is AtomicBoolean and thus thread safe
-    - action: suppress
-      issueKey: 8b5dead0997f2b6ba791301e381ff6cb
-      comment: try-with-resources causes false positive
-    - action: suppress
-      issueKey: ff2335e1c5c42dea107a8463474b261c
-      comment: try-with-resources causes false positive
-    - action: suppress
-      issueKey: 4f9a0294c5d56c7913be0e4345dcfae8
-      comment: try-with-resources causes false positive
