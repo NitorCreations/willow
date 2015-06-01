@@ -16,3 +16,9 @@ triage:
     - action: suppress
       issueKey: 16da82dbcd5f98dbb0c01be980700d20
       comment: running is AtomicBoolean and thus thread safe
+    - action: suppress
+      issueKey: 6c8c43b01cd3e714bde2174c2aef21d0
+      comment: allowEval argument passed as false with tainted data to prevent eval and proxy resolving for includes happening
+    - action: suppress
+      issueKey: b2c8164589574242d9eeaba3e972ee1e
+      comment: allowEval argument passed as false with tainted data to prevent eval and proxy resolving for includes happening
