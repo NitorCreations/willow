@@ -3,7 +3,7 @@
  1. Fork the repository from Github
  1. Do your proposed feature / fix
     * You will want to check from waffle if something like your feature is
-      being worked on or proposed and have and discuss it there
+      being worked on or proposed and discuss it there
  1. Create a Pull Request from your work
     * Our CI will pick the PR up and execute a build with tests and static
       code analysis
@@ -15,7 +15,7 @@
       reviewed before being accepted.
  1. Add the label 'ready to merge' to your pull request once you are confident
     that your fork is ready to be merged taking into account all of the above.
- 1. Your PR will be picked up and commented if necessary or merged it as is
+ 1. Your PR will be picked up and commented if necessary or merged as is
 
 # Links to the tools #
 
