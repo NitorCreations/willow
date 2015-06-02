@@ -7,7 +7,7 @@ Box.Application.addModule('horizon-graph', function(context) {
       initDone = false,
       messageQueue = [];
   var kilobyte = 1024, megabyte = 1024*1024, gigabyte = 1024*1024*1024, teratybe = 1024*1024*1024*1024;
-  var bytesToString = function (bytes) {
+  var bytesToString = function (bytes) { //FIXME to utils
     var fmt = d3.format('.0f');
     if (bytes < kilobyte) {
       return fmt(bytes) + 'B/s';
@@ -50,9 +50,9 @@ Box.Application.addModule('horizon-graph', function(context) {
     moduleElem.call(createHorizon, chartConfig.host, chartConfig.metric, chartData, metricSetting);
   }
 
-  // graph destroy, put this on a button or such
+
   function removeGraph() {
-    cubismGraphs.onFocus(null);
+    cubismGraphs.removeOnFocus(moduleElem.attr('id'));
     moduleElem.select(".horizon").call(horizon.remove);
     moduleElem.remove();
   }
@@ -93,7 +93,8 @@ Box.Application.addModule('horizon-graph', function(context) {
 
     horizonGraphElements.call(utils.appendPopupGraphIcon, 'horizon__icons', host);
     horizonGraphElements.call(utils.appendDraggableHandleIcon, 'horizon__icons');
-    horizonGraphElements.call(appendHostRadiatorLink, metricSettings.title, host);
+    horizonGraphElements.call(utils.appendRemovalButton, 'horizon__icons', moduleElem.attr('id'));
+    horizonGraphElements.call(utils.appendHostRadiatorLink, metricSettings.title, host);
   };
 
   function appendHorizonGraph(parentElement, host, metric, metricSettings) {
@@ -115,14 +116,6 @@ Box.Application.addModule('horizon-graph', function(context) {
       horizon.format(d3.format(metricSettings.format));
     }
     return horizon;
-  }
-
-  function appendHostRadiatorLink(parentElement, title, host) {
-    return parentElement.append("div").classed("host-link", true)
-        .text(title).append("a")
-        .attr("href", "radiator.html#host=" + host)
-        .attr("data-host", host)
-        .attr("data-type", "host-radiator").text(host);
   }
 
   function openGraphInPopup() {
@@ -207,8 +200,6 @@ Box.Application.addModule('horizon-graph', function(context) {
         case 'to-popup':
           openGraphInPopup();
           break;
-        case 'close':
-          break;
         case 'host-radiator':
           windowSvc.openRadiatorForHost(host);
           event.preventDefault();
@@ -221,7 +212,7 @@ Box.Application.addModule('horizon-graph', function(context) {
       "reload-graph-configuration",
       "cubism-context-reset",
       "time-range-selected",
-      "time-range-deselected",
+      "time-range-deselected"
     ],
 
     onmessage: function(name, data) {

@@ -8,10 +8,12 @@ Box.Application.addModule('heap-graph', function(context) {
   function xTicks(d) {
     return d3.time.format('%X')(new Date(d));
   }
+
   function calculateStep(timescale) {
     var steps = $(moduleElement[0]).width() / 2;
     detailsStep = parseInt((timescale *1000) / steps);
   }
+
   function createHeapGraph(data) {
     nv.addGraph(function() {
       var chart = nv.models.lineChart();
@@ -27,11 +29,15 @@ Box.Application.addModule('heap-graph', function(context) {
   }
 
   function reset() {
-    moduleElement.selectAll(".nv-graph").remove();
+    removeGraph();
     moduleElement
       .append("div").classed('nv-graph', true)
       .append("svg").classed('graph', true);
     metrics.metricsDataSource("heap", "host_" + host, detailsStart, detailsStop, detailsStep)(createHeapGraph);
+  }
+
+  function removeGraph() {
+    moduleElement.selectAll(".nv-graph").remove();
   }
 
   function openGraphInPopup() {
@@ -74,8 +80,14 @@ Box.Application.addModule('heap-graph', function(context) {
       moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
+      moduleElement.call(utils.appendRemovalButton, "nv-graph__icons", moduleElement.attr('id'));
 
       reset();
+    },
+
+    destroy: function() {
+      moduleElement.remove();
+      moduleElement = null;
     },
 
     behaviors: [ "legend-click" ],
@@ -97,6 +109,7 @@ Box.Application.addModule('heap-graph', function(context) {
           break;
       }
     },
+
     onclick: function(event, element, elementType) {
       switch (elementType) {
         case 'to-popup':
@@ -106,7 +119,7 @@ Box.Application.addModule('heap-graph', function(context) {
           context.broadcast("open-radiator-list", moduleConf.chart);
           break;
       }
-    },
+    }
 
   };
 });

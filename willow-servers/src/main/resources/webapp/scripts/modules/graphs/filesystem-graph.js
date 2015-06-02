@@ -34,11 +34,15 @@ Box.Application.addModule('filesystem-graph', function(context) {
   };
 
   function reset() {
-    moduleElement.selectAll(".nv-graph").remove();
+    removeGraph();
     moduleElement
       .append("div").classed('nv-graph', true)
       .append("svg").classed("graph", true);
     metrics.metricsDataSource("disk", "host_" + host, detailsStop - 600000, detailsStop, undefined)(createFsGraph);
+  }
+
+  function removeGraph() {
+    moduleElement.selectAll(".nv-graph").remove();
   }
 
   function openGraphInPopup() {
@@ -81,10 +85,16 @@ Box.Application.addModule('filesystem-graph', function(context) {
       moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
       moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
+      moduleElement.call(utils.appendRemovalButton, "nv-graph__icons", moduleElement.attr('id'));
 
       detailsStop = parseInt(new Date().getTime());
 
       reset();
+    },
+
+    destroy: function() {
+      moduleElement.remove();
+      moduleElement = null;
     },
 
     behaviors: [ "legend-click" ],
@@ -109,6 +119,6 @@ Box.Application.addModule('filesystem-graph', function(context) {
           openRadiatorDialog();
           break;
       }
-    },
+    }
   };
 });
