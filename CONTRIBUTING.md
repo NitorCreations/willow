@@ -15,6 +15,7 @@
       reviewed before being accepted.
  1. Add the label 'ready to merge' to your pull request once you are confident
     that your fork is ready to be merged taking into account all of the above.
+ 1. Your PR will be picked up and commented if necessary or merged it as is
 
 # Links to the tools #
 
