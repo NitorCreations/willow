@@ -47,13 +47,11 @@ describe("Tests for configuration store:", function() {
       rad1: [testGraphConfig2, testGraphConfig],
       rad2: [testGraphConfig2, testGraphConfig3]
     };
-
-    sandbox.stub(window.localStorage, "setItem")
-      .withArgs(
-        radiatorConfigKey,
-        JSON.stringify(expectedConfigurationsAfterAppend)
-      );
-
+    sandbox.mock(localStorage).expects('setItem')
+      .withExactArgs(
+      radiatorConfigKey,
+      JSON.stringify(expectedConfigurationsAfterAppend)
+    );
     service.customRadiators.appendConfiguration("rad1", testGraphConfig);
   });
 
@@ -63,13 +61,11 @@ describe("Tests for configuration store:", function() {
       'rad2': [testGraphConfig2, testGraphConfig3],
       'new-rad': [testGraphConfig]
     };
-
-    sandbox.stub(window.localStorage, "setItem")
-      .withArgs(
-        radiatorConfigKey,
-        JSON.stringify(expectedConfigurationsAfterAppend)
-      );
-
+    sandbox.mock(localStorage).expects('setItem')
+        .withExactArgs(
+      radiatorConfigKey,
+      JSON.stringify(expectedConfigurationsAfterAppend)
+    );
     service.customRadiators.appendConfiguration("new-rad", testGraphConfig);
   });
 
@@ -78,13 +74,11 @@ describe("Tests for configuration store:", function() {
       'rad1': [testGraphConfig2],
       'rad2': [testGraphConfig]
     };
-
-    sandbox.stub(window.localStorage, "setItem")
-      .withArgs(
-        radiatorConfigKey,
-        JSON.stringify(expectedConfigurationsAfterAppend)
-      );
-
+    sandbox.mock(localStorage).expects('setItem')
+        .withExactArgs(
+      radiatorConfigKey,
+      JSON.stringify(expectedConfigurationsAfterAppend)
+    );
     service.customRadiators.storeConfiguration("rad2", [testGraphConfig]);
   });
 
