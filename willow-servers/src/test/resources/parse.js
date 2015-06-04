@@ -89,11 +89,11 @@ console.log(JSON.stringify(modules, null, 2));
 var out = "t3model.dot";
 fs.write(out, "digraph G {\n", "w");
 
-writeSimpleNodes(globals);
-writeSimpleNodes(messages);
-writeModuleNodes(services);
-writeModuleNodes(behaviors);
-writeModuleNodes(modules);
+writeSimpleNodes(globals, "#5319e7");
+writeSimpleNodes(messages, "#fef2c0");
+writeModuleNodes(services, "#c7def8");
+writeModuleNodes(behaviors, "#84b6eb");
+writeModuleNodes(modules, "#cccccc");
 writeModuleDeps(services);
 writeModuleDeps(behaviors);
 writeModuleDeps(modules);
@@ -102,15 +102,19 @@ fs.write(out, "}\n", "a");
 
 phantom.exit();
 
-function writeSimpleNodes(arr) {
+function writeSimpleNodes(arr, color) {
   for (var i=0; i<arr.length;i++) {
-    fs.write(out, arr[i].replace(/-/g, "_") + " [\n  label = \"{" + arr[i] + "}\"\n  shape = \"record\"\n]\n", "a");
+    fs.write(out, arr[i].replace(/-/g, "_") + " [\n  label = \"{" + arr[i]
+      + "}\"\n  shape = \"record\"\n  style = \"filled\"\n  fillcolor = \""
+      + color + "\"\n]\n", "a");
   }
 }
-function writeModuleNodes(arr) {
+function writeModuleNodes(arr, color) {
   for (next in arr) {
     var mod = arr[next];
-    fs.write(out, mod.name.replace(/-/g, "_") + " [\n  label = \"{" + moduleLabel(mod) + "}\"\n  shape = \"record\"\n]\n", "a");
+    fs.write(out, mod.name.replace(/-/g, "_") + " [\n  label = \"{" +
+      moduleLabel(mod) + "}\"\n  shape = \"record\"\n  style = \"filled\"\n" +
+      "  fillcolor = \"" + color + "\"\n]\n", "a");
   }
 }
 function writeModuleDeps(arr) {
