@@ -11,9 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.client.Client;
-import org.elasticsearch.node.Node;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.inject.Injector;
@@ -27,8 +24,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @SuppressFBWarnings(value={"SE_TRANSIENT_FIELD_NOT_RESTORED"}, justification="metrics set by guice")
 public class MetricsServlet extends HttpServlet {
   private static final long serialVersionUID = -6704365246281136504L;
-  @Inject
-  private transient Node node;
   @Inject
   private transient Map<String, Metric> metrics;
   @Inject
@@ -60,10 +55,10 @@ public class MetricsServlet extends HttpServlet {
       res.sendError(404, "Metric with key " + conf.getMetricKey() + " not found");
       return;
     }
-    try (Client client = node.client()){
+    try {
       metric = metric.getClass().newInstance();
       injector.injectMembers(metric);
-      Object data = metric.calculateMetric(client, conf);
+      Object data = metric.calculateMetric(conf);
       res.setContentType("application/json");
       Gson out;
       if ("true".equals(req.getAttribute("pretty"))) {
@@ -80,10 +75,5 @@ public class MetricsServlet extends HttpServlet {
   @Override
   public String getServletInfo() {
     return "Cluster metrics";
-  }
-
-  @Override
-  public void destroy() {
-    node.stop();
   }
 }

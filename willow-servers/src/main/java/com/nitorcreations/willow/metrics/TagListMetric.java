@@ -3,6 +3,8 @@ package com.nitorcreations.willow.metrics;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -15,12 +17,14 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 public abstract class TagListMetric implements Metric {
+  @Inject
+  protected Client client;
   private final String tagPrefix;
   public TagListMetric(String tagPrefix) {
     this.tagPrefix = tagPrefix;
   }
   @Override
-  public List<String> calculateMetric(Client client, MetricConfig conf) {
+  public List<String> calculateMetric(MetricConfig conf) {
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
       .setTypes(conf.getTypes())
         .setSize(1000).addAggregation(AggregationBuilders.terms("tags")
@@ -42,7 +46,7 @@ public abstract class TagListMetric implements Metric {
     }
     return ret;
   }
-  public boolean hasData(Client client, MetricConfig conf) {
+  public boolean hasData(MetricConfig conf) {
     return true;
   }
 }

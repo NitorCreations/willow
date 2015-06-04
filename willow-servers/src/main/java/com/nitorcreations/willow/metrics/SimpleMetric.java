@@ -9,7 +9,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
@@ -45,7 +44,7 @@ public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetr
   }
 
   @Override
-  public List<TimePoint<L>> calculateMetric(Client client, MetricConfig conf) {
+  public List<TimePoint<L>> calculateMetric(MetricConfig conf) {
     List<String> fields = new ArrayList<String>();
     fields.add("timestamp");
     fields.addAll(Arrays.asList(requiresFields()));

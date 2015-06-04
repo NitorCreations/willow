@@ -16,7 +16,6 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.nitorcreations.willow.messages.AbstractMessage;
@@ -32,7 +31,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class SaveEventsSocket extends BasicWillowSocket {
   private final MessageMapping mapping = new MessageMapping();
   @Inject
-  private Node node;
+  private Client client;
   private String path;
   private List<String> tags;
 
@@ -53,7 +52,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
   @SuppressFBWarnings(value={"BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"}, justification="Messagetype encoded in the message used to determine type")
   @OnWebSocketMessage
   public void messageReceived(byte buf[], int offset, int length) {
-    try (Client client = node.client()){
+    try {
       Gson gson = new Gson();
       for (AbstractMessage msgObject : mapping.decode(buf, offset, length)) {
         MessageType type = MessageMapping.map(msgObject.getClass());
