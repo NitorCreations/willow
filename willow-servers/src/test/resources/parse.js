@@ -130,6 +130,15 @@ function writeModuleDeps(arr) {
       fs.write(out, mod.name.replace(/-/g, "_") + " -> "
         + mod.services[i].replace(/-/g, "_") + "\n", "a");
     }
+    if (mod.behaviors) {
+      for (var i=0;i<mod.behaviors.length;i++) {
+        fs.write(out, "edge [\n  arrowhead = \"normal\"\n  headlabel = \"\"\n", "a");
+        fs.write(out, "  taillabel = \"\"\n", "a")
+        fs.write(out, "]\n", "a");
+        fs.write(out, mod.name.replace(/-/g, "_") + " -> "
+          + mod.behaviors[i].replace(/-/g, "_") + "\n", "a");
+      }
+    }
     if (mod.broadcasts) {
       for (func in mod.broadcasts) {
         for (var i=0;i<mod.broadcasts[func].length;i++) {
