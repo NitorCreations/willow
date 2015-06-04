@@ -140,30 +140,13 @@ Box.Application.addModule('horizon-graph', function(context) {
   }
 
   function execMessage(msg) {
-    switch (msg.name) {
-      case 'metric-changed':
-        module.setMetric(msg.data);
-        break;
-      case 'cubism-context-reset':
-      case 'reload-graph-configuration':
-        module.resetGraph();
-        break;
-      case 'time-range-deselected':
-        // TODO: update horizon range
-        cubismGraphs.start();
-        break;
-      case 'time-range-selected':
-        // TODO: update horizon range
-        cubismGraphs.stop();
-        break;
-    }
   }
 
   function openRadiatorDialog() {
     context.broadcast("open-radiator-list", moduleConf.chart);
   }
 
-  var module = {
+  return {
     init: function() {
       $          = context.getGlobal("jQuery");
       d3         = context.getGlobal("d3");
@@ -216,20 +199,25 @@ Box.Application.addModule('horizon-graph', function(context) {
     ],
 
     onmessage: function(name, data) {
-      var msg = { name: name, data: data };
-
-      if (!initDone) {
-        messageQueue.push(msg);
-        return;
+      switch (name) {
+        case 'metric-changed':
+          this.setMetric(data);
+          break;
+        case 'cubism-context-reset':
+        case 'reload-graph-configuration':
+          this.resetGraph();
+          break;
+        case 'time-range-deselected':
+          // TODO: update horizon range
+          cubismGraphs.start();
+          break;
+        case 'time-range-selected':
+          // TODO: update horizon range
+          cubismGraphs.stop();
+          break;
       }
-
-      execMessage(msg);
     },
-
-    openGraphInPopup: openGraphInPopup,
-    resetGraph: resetGraph,
-    setMetric: setMetric
+    setMetric: setMetric,
+    resetGraph: resetGraph
   };
-
-  return module;
 });
