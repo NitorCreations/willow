@@ -89,7 +89,7 @@ console.log(JSON.stringify(modules, null, 2));
 var out = "t3model.dot";
 fs.write(out, "digraph G {\n", "w");
 
-writeSimpleNodes(globals, "#5319e7");
+writeSimpleNodes(globals, "#d4c5f9");
 writeSimpleNodes(messages, "#fef2c0");
 writeModuleNodes(services, "#c7def8");
 writeModuleNodes(behaviors, "#84b6eb");
