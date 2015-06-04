@@ -315,14 +315,18 @@ function findBroadcast(functionNode) {
 function findGlobals(functionNode) {
   var globals = [];
   traverse(functionNode, findBoxFunc(boxName, "getGlobal", function(arguments) {
-    globals.push(arguments[0].value);
+    if (globals.indexOf(arguments[0].value) == -1) {
+      globals.push(arguments[0].value);
+    }
   }));
   return globals;
 }
 function findServices(functionNode) {
   var services = [];
   traverse(functionNode, findBoxFunc(boxName, "getService", function(arguments) {
-    services.push(arguments[0].value);
+    if (services.indexOf(arguments[0].value)) {
+      services.push(arguments[0].value);
+    }
   }));
   return services;
 }
