@@ -22,3 +22,6 @@ application.properties
 .DS_Store
 icons/node_modules/
 icons/icons.svg
+
+# T3 modev viz
+t3model.*
