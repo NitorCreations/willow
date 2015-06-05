@@ -290,6 +290,8 @@
             <pattern>.*/spec/.*</pattern>
             <pattern>.*/lib/.*</pattern>
             <pattern>.*/jasmine/.*</pattern>
+            <pattern>.*/jquery.js</pattern>
+            <pattern>.*/intercom.js</pattern>
           </noInstrumentPatterns>
         </configuration>
       </plugin>
