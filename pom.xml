@@ -215,6 +215,13 @@
           <version>3.1.0</version>
           <configuration>
             <repoToken>${env.COVERALLS_TOKEN}</repoToken>
+            <sourceDirectories>
+              <sourceDirectory>willow-servers/src/main/resources/webapp/scripts</sourceDirectory>
+              <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules</sourceDirectory>
+              <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules/graphs</sourceDirectory>
+              <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/services</sourceDirectory>
+              <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/behaviors</sourceDirectory>
+            </sourceDirectories>
           </configuration>
         </plugin>
         <plugin>

@@ -288,6 +288,8 @@
           <outputDir>${project.build.directory}/saga-coverage</outputDir>
           <noInstrumentPatterns>
             <pattern>.*/spec/.*</pattern>
+            <pattern>.*/lib/.*</pattern>
+            <pattern>.*/jasmine/.*</pattern>
           </noInstrumentPatterns>
         </configuration>
       </plugin>
