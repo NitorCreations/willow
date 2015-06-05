@@ -1,4 +1,6 @@
 [![Stories in Ready](https://badge.waffle.io/NitorCreations/willow.png?label=ready&title=Ready)](https://waffle.io/NitorCreations/willow)
+[![Stories in progress](https://badge.waffle.io/NitorCreations/willow.png?label=in%20progress&title=In%20progress)](https://waffle.io/NitorCreations/willow)
+[![Stories ready to merge](https://badge.waffle.io/NitorCreations/willow.png?label=ready%20to%20merge&title=Ready%20to%20merge)](https://waffle.io/NitorCreations/willow)
 [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/streams/jdq5h6193p18d9k86859ro7t0c)](https://ondemand.coverity.com/streams/jdq5h6193p18d9k86859ro7t0c/jobs)
 [ ![Codeship Status for NitorCreations/willow](https://codeship.com/projects/eafd7080-e03e-0132-ef42-7a41f362b68c/status?branch=master)](https://codeship.com/projects/80769)
 # willow #
