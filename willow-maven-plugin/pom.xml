@@ -139,7 +139,7 @@
   </build>
   <profiles>
     <profile>
-      <id>run-its</id>
+      <id>run-mvn-its</id>
       <build>
         <plugins>
           <plugin>
