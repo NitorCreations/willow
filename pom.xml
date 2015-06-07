@@ -618,58 +618,29 @@
                   </artifactItems>
                 </configuration>
               </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
               <execution>
                 <id>extract-classes</id>
                 <phase>pre-integration-test</phase>
                 <goals>
-                  <goal>unpack</goal>
+                  <goal>run</goal>
                 </goals>
                 <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>com.nitorcreations</groupId>
-                      <artifactId>willow-deployer</artifactId>
-                      <version>${project.version}</version>
-                      <type>jar</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>target/classes</outputDirectory>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.nitorcreations</groupId>
-                      <artifactId>willow-servers</artifactId>
-                      <version>${project.version}</version>
-                      <type>jar</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>target/classes</outputDirectory>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.nitorcreations</groupId>
-                      <artifactId>willow-messages</artifactId>
-                      <version>${project.version}</version>
-                      <type>jar</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>target/classes</outputDirectory>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.nitorcreations</groupId>
-                      <artifactId>willow-utils</artifactId>
-                      <version>${project.version}</version>
-                      <type>jar</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>target/classes</outputDirectory>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.nitorcreations</groupId>
-                      <artifactId>willow-autoscaler</artifactId>
-                      <version>${project.version}</version>
-                      <type>jar</type>
-                      <overWrite>true</overWrite>
-                      <outputDirectory>target/classes</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
+                  <tasks>
+                    <unzip dest="target/classess">
+                      <fileset dir=".">
+                        <include name="**/willow-*${project.version}.jar"/>
+                      </fileset>
+                    </unzip>
+                  </tasks>
                 </configuration>
-              </execution>
-            </executions>
+                </execution>
+              </executions>
           </plugin>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
