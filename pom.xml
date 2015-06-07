@@ -589,7 +589,7 @@
       </build>
     </profile>
     <profile>
-      <id>run-its</id>
+      <id>codeship</id>
       <build>
         <plugins>
           <plugin>
@@ -735,13 +735,6 @@
               </execution>
             </executions>
           </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>codeship</id>
-      <build>
-        <plugins>
           <plugin>
             <groupId>org.eluder.coveralls</groupId>
             <artifactId>coveralls-maven-plugin</artifactId>
