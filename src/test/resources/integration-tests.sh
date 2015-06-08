@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 on_error() {
   echo $1
   exit 1
@@ -18,6 +20,7 @@ if [ -z "$SSH_AUTH_SOCK" ]; then
   ssh-agent > $TMP
   source $TMP
   rm $TMP
+  export SSH_AUTH_SOCK
   AGENT_STARTED="true"
   ssh-add src/test/resources/id_rsa
 fi
