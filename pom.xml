@@ -651,7 +651,7 @@
                 </goals>
                 <configuration>
                   <tasks>
-                    <unzip dest="target/classess">
+                    <unzip dest="target/classes">
                       <fileset dir=".">
                         <include name="**/willow-*${project.version}.jar"/>
                       </fileset>
