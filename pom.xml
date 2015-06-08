@@ -131,6 +131,10 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.coverity</groupId>
+        <artifactId>ondemand-maven-plugin</artifactId>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
@@ -611,10 +615,6 @@
           <plugin>
             <groupId>org.eluder.coveralls</groupId>
             <artifactId>coveralls-maven-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <groupId>com.coverity</groupId>
-            <artifactId>ondemand-maven-plugin</artifactId>
           </plugin>
         </plugins>
       </build>
