@@ -239,6 +239,7 @@
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules/graphs</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/services</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/behaviors</sourceDirectory>
+              <sourceDirectory>willow-maven-plugin/target/generated-sources/plugin</sourceDirectory>
             </sourceDirectories>
           </configuration>
         </plugin>
