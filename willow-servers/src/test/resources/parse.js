@@ -87,7 +87,7 @@ console.log("=============== MODULES ================")
 console.log("========================================")
 console.log(JSON.stringify(modules, null, 2));
 var out = "t3model.dot";
-fs.write(out, "digraph G {\n", "w");
+fs.write(out, "digraph \"Willow T3 model\" {\n", "w");
 
 writeSimpleNodes(globals, "#d4c5f9");
 writeSimpleNodes(messages, "#fef2c0");
