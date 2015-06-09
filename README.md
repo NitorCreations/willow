@@ -39,12 +39,9 @@ This enables the editing of markup, css and javascript so that changes are immed
   After this the ui should be accessible at `http://localhost:5120`.
 
 4. To stop
-  * in another terminal 
-    ```
-    $ willow-deployer/target/deployer.sh stop test
-    ```
-  * in same terminal 
-    ```
+  * in another terminal: `$ willow-deployer/target/deployer.sh stop test`
+  * in same terminal: 
+  ```
     Ctrl-c Ctrl-z
     $ kill -9 %1
     ```
