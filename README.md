@@ -21,9 +21,11 @@ This enables the editing of markup, css and javascript so that changes are immed
   $ cd willow
   $ mvn clean install
   ```
-  Please note that building requires unlimited JCE to be installed (openjdk has this out of the  box, oracle jdk needs you to download a set of jars and extract them http://lmgtfy.com/?q=install+jce). NOTE: if JCE is not correctly installed, tests will fail with `java.lang.NoClassDefFoundError: Could not initialize class javax.crypto.JceSecurity`.
+  Please note that building requires unlimited JCE to be installed (openjdk has this out of the  box, oracle jdk needs you to download a set of jars and extract them http://lmgtfy.com/?q=install+jce). **NOTE**: if JCE is not correctly installed, tests will fail with `java.lang.NoClassDefFoundError: Could not initialize class javax.crypto.JceSecurity`.
 
 2. Ensure ssh identity is set
+
+  **NOTE**: in the simplest development mode setup the statistics server and the deployer reside in the same machine, i.e. the statistics server monitors itself. 
   1. From deployer to statistics server: deployer agent authenticates with ssh agent signatures by default so you need to add a public key that matches a private key loaded into your ssh agent into
 `willow-servers/src/main/resources/authorized_keys` in openssh authorized_keys format. 
      * To check the private keys loaded into your ssh agent, run `ssh-add -l`. 
