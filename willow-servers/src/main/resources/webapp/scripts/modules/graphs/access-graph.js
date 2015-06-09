@@ -9,7 +9,7 @@ Box.Application.addModule('access-graph', function(context) {
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep = 60000;
 
   function xTicks(d) {
-    return d3.time.format('%X')(new Date(d));
+    return utils.timeFormat(new Date(d));
   }
 
   function calculateStep(timescale) {

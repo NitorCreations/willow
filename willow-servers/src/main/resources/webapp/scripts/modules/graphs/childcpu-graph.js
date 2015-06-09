@@ -6,7 +6,7 @@ Box.Application.addModule('childcpu-graph', function(context) {
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep;
 
   function xTicks(d) {
-    return d3.time.format('%X')(new Date(d));
+    return utils.timeFormat(new Date(d));
   }
 
   function calculateStep(timescale) {
