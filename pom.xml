@@ -241,6 +241,9 @@
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/behaviors</sourceDirectory>
               <sourceDirectory>willow-maven-plugin/target/generated-sources/plugin</sourceDirectory>
             </sourceDirectories>
+            <coberturaReports>
+              <coberturaReport>target/site/cobertura/cobertura-coverage.xml</coberturaReport>
+            </coberturaReports>
           </configuration>
         </plugin>
         <plugin>
@@ -697,6 +700,27 @@
                   <environmentVariables>
                     <SERVER_PORT>${server.port}</SERVER_PORT>
                   </environmentVariables>
+                </configuration>
+              </execution>
+              <execution>
+                <id>istanbul-report</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>istanbul</executable>
+                  <workingDirectory>${basedir}</workingDirectory>
+                  <arguments>
+                    <argument>report</argument>
+                    <argument>--include</argument>
+                    <argument>target/js-coverage/test*.json</argument>
+                    <argument>--dir</argument>
+                    <argument>target/site/cobertura</argument>
+                    <argument>-v</argument>
+                    <argument>html</argument>
+                    <argument>cobertura</argument>
+                  </arguments>
                 </configuration>
               </execution>
             </executions>
