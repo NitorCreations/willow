@@ -1,4 +1,5 @@
 var root = casper.cli.options.home;
+casper.options.viewportSize = { width: 1920, height: 1080 };
 casper.start(root);
 casper.setHttpAuth('admin', 'admin');
 var hostLink = { type: 'xpath', path: '//a[@data-host="integrationtest"]' };
