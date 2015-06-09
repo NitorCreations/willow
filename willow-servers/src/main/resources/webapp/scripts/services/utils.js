@@ -117,6 +117,7 @@ Box.Application.addService('utils', function(application) {
     },
 
     timeFormat: d3.time.format("%H:%M"),
-    dateFormat: d3.time.format("%a %e. %B")
+    dateFormat: d3.time.format("%a %e. %B"),
+    dayTimeFormat: d3.time.format("%a %H:%M")
   };
 });
