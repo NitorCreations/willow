@@ -38,12 +38,13 @@ This enables the editing of markup, css and javascript so that changes are immed
   $ willow-deployer/target/deployer.sh start test file:src/test/resources/develop-servers.properties
   ```
   
-  After this the ui should be accessible at `http://localhost:5120`.
+  After this the ui should be accessible at `http://localhost:5120` ([users] (../willow-servers/src/main/resources/shiro.ini)).
 
 4. To stop
   * in another terminal: `$ willow-deployer/target/deployer.sh stop test`
-  * in same terminal: 
-  ```
+  * in same terminal:
+  
+    ```
     Ctrl-c Ctrl-z
     $ kill -9 %1
     ```
