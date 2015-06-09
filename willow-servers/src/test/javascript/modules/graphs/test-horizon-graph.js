@@ -26,7 +26,8 @@ describe("Tests for horizon-graph module", function() {
       select: function() { return this; },
       attr: function() { return this; },
       resize: function() { return this; },
-      remove: function() { return this; }
+      remove: function() { return this; },
+      time: { format: function() {} }
     };
     jquery = {
       attr: function() {}
