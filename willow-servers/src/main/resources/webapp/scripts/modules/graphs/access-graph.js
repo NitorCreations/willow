@@ -6,10 +6,11 @@ Box.Application.addModule('access-graph', function(context) {
   var scales = [ { legend: "req/min", step: minute }, { legend: "req/10min", step: tenMinutes},
     { legend: "req/h", step: hour }, { legend: "req/2h", step: twoHours } ];
   var legend = "req/min";
-  var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep = 60000;
+  var moduleElement, moduleConf, isTimescaleLongerThanDay, detailsStart, detailsStop, detailsStep = 60000;
 
   function xTicks(d) {
-    return utils.timeFormat(new Date(d));
+    var date = new Date(d);
+    return isTimescaleLongerThanDay ? utils.dayTimeFormat(date) : utils.timeFormat(date);
   }
 
   function calculateStep(timescale) {
@@ -47,6 +48,7 @@ Box.Application.addModule('access-graph', function(context) {
   }
 
   function reset() {
+    isTimescaleLongerThanDay = windowSvc.getTimescale() > 86400;
     removeGraph();
     moduleElement
       .append("div").classed('nv-graph', true)

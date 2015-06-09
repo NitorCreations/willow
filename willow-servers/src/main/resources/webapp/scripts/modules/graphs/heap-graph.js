@@ -3,10 +3,11 @@ Box.Application.addModule('heap-graph', function(context) {
 
   var nv, d3, host, windowSvc, metrics, store, utils;
 
-  var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep;
+  var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep, isTimescaleLongerThanDay;
 
   function xTicks(d) {
-    return utils.timeFormat(new Date(d));
+    var date = new Date(d);
+    return isTimescaleLongerThanDay ? utils.dayTimeFormat(date) : utils.timeFormat(date);
   }
 
   function calculateStep(timescale) {
@@ -29,6 +30,7 @@ Box.Application.addModule('heap-graph', function(context) {
   }
 
   function reset() {
+    isTimescaleLongerThanDay = windowSvc.getTimescale() > 86400;
     removeGraph();
     moduleElement
       .append("div").classed('nv-graph', true)
