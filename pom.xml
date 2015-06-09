@@ -234,6 +234,7 @@
           <configuration>
             <repoToken>${env.COVERALLS_TOKEN}</repoToken>
             <sourceDirectories>
+              <sourceDirectory>.</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules/graphs</sourceDirectory>
