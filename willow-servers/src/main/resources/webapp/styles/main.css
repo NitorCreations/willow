@@ -517,6 +517,7 @@ select.navcenter {
 
 .nv-graph__icons {
   left: 25px;
+  height: 0;
 }
 
 .nv-graph__icons .icon,
