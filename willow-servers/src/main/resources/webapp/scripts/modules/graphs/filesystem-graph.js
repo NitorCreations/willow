@@ -81,11 +81,13 @@ Box.Application.addModule('filesystem-graph', function(context) {
         host: windowSvc.getHashVariable("host")
       };
       host = moduleConf.chart.host;
-      moduleElement.append("div").classed("nv-graph__icons", true);
-      moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
-      moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
-      moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
-      moduleElement.call(utils.appendRemovalButton, "nv-graph__icons", moduleElement.attr('id'));
+
+      var graphIconsElem = moduleElement.append("div").classed("nv-graph__icons", true);
+      graphIconsElem.call(utils.appendHostRadiatorLink, moduleConf.chart.type, host);
+      graphIconsElem.call(utils.appendShareRadiatorIcon, host);
+      graphIconsElem.call(utils.appendPopupGraphIcon, host);
+      graphIconsElem.call(utils.appendRemovalButton, moduleElement.attr('id'));
+      graphIconsElem.call(utils.appendDraggableHandleIcon);
 
       detailsStop = parseInt(new Date().getTime());
 
