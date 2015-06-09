@@ -51,42 +51,42 @@ Box.Application.addService('utils', function(application) {
       return parseInt(timescale * 1000 / widthInPx);
     },
 
-    appendPopupGraphIcon: function(parentElement, classed, host) {
-      return parentElement.select('.' + classed)
-        .append("svg").attr("viewBox", "0 0 100 100")
+    appendPopupGraphIcon: function(parentElement, host) {
+      return parentElement.append("svg")
+        .attr("viewBox", "0 0 100 100")
         .classed("icon popup-" + host, true)
         .attr("data-type", "to-popup")
         .append("use").attr("xlink:href", "#shape-external-link");
     },
 
-    appendDraggableHandleIcon: function(parentElement, classed) {
-    return parentElement.select('.' + classed)
-        .append("svg").attr("viewBox", "0 0 100 100")
+    appendDraggableHandleIcon: function(parentElement) {
+    return parentElement.append("svg")
+        .attr("viewBox", "0 0 100 100")
         .classed("icon drag-handle", true)
         .attr("data-type", "graph-drag")
         .append("use").attr("xlink:href", "#shape-move");
     },
 
-    appendShareRadiatorIcon: function(parentElement, classed, host) {
-      return parentElement.select('.' + classed)
-        .append("svg").attr("viewBox", "0 0 100 100")
+    appendShareRadiatorIcon: function(parentElement, host) {
+      return parentElement.append("svg")
+        .attr("viewBox", "0 0 100 100")
         .classed("icon share-" + host, true)
         .attr("data-type", "to-radiator")
         .append("use").attr("xlink:href", "#shape-to-radiator");
     },
 
-    appendTerminalIcon: function(parentElement, classed, host) {
-      return parentElement.select('.' + classed)
-        .append("svg").attr("viewBox", "0 0 100 100")
+    appendTerminalIcon: function(parentElement, host) {
+      return parentElement.append("svg")
+        .attr("viewBox", "0 0 100 100")
         .classed("icon shape-terminal terminal-" + host, true)
         .attr("data-type", "start-terminal")
         .attr("data-host", host)
         .append("use").attr("xlink:href", "#shape-terminal");
     },
 
-    appendRemovalButton: function(parentElement, classed, parentModuleId) {
-      return parentElement.select('.' + classed)
-        .append("svg").attr("viewBox", "0 0 100 100")
+    appendRemovalButton: function(parentElement, parentModuleId) {
+      return parentElement.append("svg")
+        .attr("viewBox", "0 0 100 100")
         .classed("icon remove", true)
         .attr("data-type", "close")
         .attr("data-graph-module-id", parentModuleId)
@@ -94,11 +94,13 @@ Box.Application.addService('utils', function(application) {
     },
 
     appendHostRadiatorLink: function(parentElement, title, host) {
-      return parentElement.append("div").classed("host-link", true)
-        .text(title).append("a")
+      var link = parentElement.append("div").classed("host-link", true);
+      link.append("span").text(title);
+      link.append("a")
         .attr("href", "radiator.html#host=" + host)
         .attr("data-host", host)
         .attr("data-type", "host-radiator").text(host);
+      return link;
     },
 
     getDetailsSteps: function(moduleElement, timescale) {
