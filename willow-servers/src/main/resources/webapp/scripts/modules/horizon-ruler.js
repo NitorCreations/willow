@@ -1,14 +1,17 @@
 Box.Application.addModule('horizon-ruler', function(context) {
   'use strict';
 
-  var d3, moduleElem, cubismGraphs;
+  var d3, moduleElem, cubismGraphs, utils;
 
   function initLayout() {
     moduleElem.select(".axis")
       .call(cubismGraphs
         .createGraphAxis()
         .orient("top")
-        .tickFormat(d3.time.format("%H:%M"))
+        .tickFormat(function (tickDate) {
+          var isMidnight = (tickDate.getMinutes() === 0) && (tickDate.getHours() ===0);
+          return isMidnight ? utils.dateFormat(tickDate) : utils.timeFormat(tickDate);
+        })
     );
     moduleElem.select(".rule")
       .call(cubismGraphs.createRulerOverGraphs());
@@ -28,6 +31,7 @@ Box.Application.addModule('horizon-ruler', function(context) {
       d3           = context.getGlobal("d3");
       moduleElem   = d3.select(context.getElement());
       cubismGraphs = context.getService("cubism-graphs");
+      utils        = context.getService("utils");
       initLayout();
     },
 

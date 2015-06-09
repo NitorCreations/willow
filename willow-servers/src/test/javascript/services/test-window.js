@@ -1,8 +1,11 @@
 describe("Tests for window service", function() {
-  var service ,sandbox, contextFake, openSpy;
+  var service, sandbox, contextFake;
 
   beforeEach(function() {
-    contextFake = new Box.TestServiceProvider();
+    d3 = { time: { 'format': function() {} } };
+    contextFake = new Box.TestServiceProvider({
+      'd3': d3
+    });
     service = Box.Application.getServiceForTest('window', contextFake);
     sandbox = sinon.sandbox.create();
   });

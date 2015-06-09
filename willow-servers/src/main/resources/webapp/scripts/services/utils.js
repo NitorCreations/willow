@@ -1,6 +1,7 @@
 Box.Application.addService('utils', function(application) {
   'use strict';
   var $ = application.getGlobal('jQuery');
+  var d3 = application.getGlobal('d3');
 
   return {
     debouncer: function(func , timeout) {
@@ -113,6 +114,10 @@ Box.Application.addService('utils', function(application) {
         steps = parseInt((detailsStop - detailsStart) / detailsStep);
         i++;
       }
-    }
+    },
+
+    timeFormat: d3.time.format("%H:%M"),
+    dateFormat: d3.time.format("%a %e. %B"),
+    dayTimeFormat: d3.time.format("%a %H:%M")
   };
 });
