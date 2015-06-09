@@ -81,19 +81,19 @@ Box.Application.addModule('horizon-graph', function(context) {
         .data([chart])
         .enter().append("div").classed("horizon", true);
 
-    horizonGraphElements.append("div").classed('horizon__icons', true);
+    var graphIconsElem = horizonGraphElements.append("div").classed('horizon__icons', true);
 
     horizonGraphElements.call(appendHorizonGraph, host, metric, metricSettings);
     if (!moduleConf.disableTerminalButton) {
-      horizonGraphElements.call(utils.appendTerminalIcon, 'horizon__icons', host);
+      graphIconsElem.call(utils.appendTerminalIcon, host);
     }
     if (!moduleConf.disableRadiatorShareButton) {
-      horizonGraphElements.call(utils.appendShareRadiatorIcon, 'horizon__icons', host);
+      graphIconsElem.call(utils.appendShareRadiatorIcon, host);
     }
 
-    horizonGraphElements.call(utils.appendPopupGraphIcon, 'horizon__icons', host);
-    horizonGraphElements.call(utils.appendDraggableHandleIcon, 'horizon__icons');
-    horizonGraphElements.call(utils.appendRemovalButton, 'horizon__icons', moduleElem.attr('id'));
+    graphIconsElem.call(utils.appendPopupGraphIcon, host);
+    graphIconsElem.call(utils.appendRemovalButton, moduleElem.attr('id'));
+    graphIconsElem.call(utils.appendDraggableHandleIcon);
     horizonGraphElements.call(utils.appendHostRadiatorLink, metricSettings.title, host);
   };
 

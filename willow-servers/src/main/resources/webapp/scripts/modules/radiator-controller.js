@@ -25,7 +25,7 @@ Box.Application.addModule('radiator-controller', function(context) {
     },
     childcpu:  function(config) {
       moduleElem.call(createChildCpuGraph, config.chart);
-    } 
+    }
   };
 
   function initGraph(config) {
