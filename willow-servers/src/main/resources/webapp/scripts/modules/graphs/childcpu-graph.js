@@ -65,7 +65,6 @@ Box.Application.addModule('childcpu-graph', function(context) {
       utils     = context.getService("utils");
 
       moduleElement = d3.select(context.getElement());
-      moduleElement.append("div").classed("nv-graph__icons", true);
       moduleConf = context.getConfig() || {};
       moduleConf.chart = moduleConf.chart || {
         type: 'childcpu',
@@ -77,10 +76,12 @@ Box.Application.addModule('childcpu-graph', function(context) {
       detailsStart = parseInt(detailsStop - (1000 * timescale));
       calculateStep(timescale);
 
-      moduleElement.call(utils.appendShareRadiatorIcon, "nv-graph__icons", host);
-      moduleElement.call(utils.appendPopupGraphIcon, "nv-graph__icons", host);
-      moduleElement.call(utils.appendDraggableHandleIcon, 'nv-graph__icons');
-      moduleElement.call(utils.appendRemovalButton, "nv-graph__icons", moduleElement.attr('id'));
+      var graphIconsElem = moduleElement.append("div").classed("nv-graph__icons", true);
+      graphIconsElem.call(utils.appendHostRadiatorLink, moduleConf.chart.type, host);
+      graphIconsElem.call(utils.appendShareRadiatorIcon, host);
+      graphIconsElem.call(utils.appendPopupGraphIcon, host);
+      graphIconsElem.call(utils.appendRemovalButton, moduleElement.attr('id'));
+      graphIconsElem.call(utils.appendDraggableHandleIcon);
 
       reset();
     },

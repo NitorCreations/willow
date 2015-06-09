@@ -26,11 +26,11 @@ Box.Application.addModule('horizon-graph', function(context) {
   var cpuColors = ["rgb(84,39,143)", "rgb(117,107,177)", "rgb(158,154,200)", "rgb(203,201,226)", "rgb(242,240,247)",
                    'rgb(235,235,128)','rgb(254,204,92)','rgb(253,141,60)','rgb(240,59,32)','rgb(189,0,38)'];
   var metricMap = {
-    "cpu" : { "title" : "cpu: ", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
-    "mem" : { "title" : "mem: ", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
-    "net" : { "title" : "net: ", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
-    "diskio" : { "title" : "io: ", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
-    "tcpinfo" : { "title" : "conn: ", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
+    "cpu" : { "title" : "cpu", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
+    "mem" : { "title" : "mem", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
+    "net" : { "title" : "net", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
+    "diskio" : { "title" : "io", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
+    "tcpinfo" : { "title" : "conn", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
   };
 
   function resetGraph() {
@@ -81,19 +81,19 @@ Box.Application.addModule('horizon-graph', function(context) {
         .data([chart])
         .enter().append("div").classed("horizon", true);
 
-    horizonGraphElements.append("div").classed('horizon__icons', true);
+    var graphIconsElem = horizonGraphElements.append("div").classed('horizon__icons', true);
 
     horizonGraphElements.call(appendHorizonGraph, host, metric, metricSettings);
     if (!moduleConf.disableTerminalButton) {
-      horizonGraphElements.call(utils.appendTerminalIcon, 'horizon__icons', host);
+      graphIconsElem.call(utils.appendTerminalIcon, host);
     }
     if (!moduleConf.disableRadiatorShareButton) {
-      horizonGraphElements.call(utils.appendShareRadiatorIcon, 'horizon__icons', host);
+      graphIconsElem.call(utils.appendShareRadiatorIcon, host);
     }
 
-    horizonGraphElements.call(utils.appendPopupGraphIcon, 'horizon__icons', host);
-    horizonGraphElements.call(utils.appendDraggableHandleIcon, 'horizon__icons');
-    horizonGraphElements.call(utils.appendRemovalButton, 'horizon__icons', moduleElem.attr('id'));
+    graphIconsElem.call(utils.appendPopupGraphIcon, host);
+    graphIconsElem.call(utils.appendRemovalButton, moduleElem.attr('id'));
+    graphIconsElem.call(utils.appendDraggableHandleIcon);
     horizonGraphElements.call(utils.appendHostRadiatorLink, metricSettings.title, host);
   };
 

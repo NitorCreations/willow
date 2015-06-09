@@ -571,6 +571,18 @@ select.navcenter {
   left: 0.2em;
 }
 
+.nv-graph__icons .host-link {
+  float: left;
+  left: 0;
+  margin-right: 12px;
+  position: relative;
+  top: 2px;
+}
+
+.host-link span:after {
+  content: ": ";
+}
+
 /* Dialog styling, dont' want to mix them with jquery-ui functional css */
 .ui-widget-overlay {
   background: darkgray;
