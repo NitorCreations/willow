@@ -22,6 +22,7 @@ if [ -z "$SSH_AUTH_SOCK" ]; then
   rm $TMP
   export SSH_AUTH_SOCK
   AGENT_STARTED="true"
+  chmod 600 src/test/resources/id_rsa
   ssh-add src/test/resources/id_rsa
 fi
 
