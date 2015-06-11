@@ -1,5 +1,6 @@
 <script type="text/javascript" src="session/current.js" charset="utf-8"></script>
 #set ($env = $system.getProperty("env"))
+#set ($its = $system.getProperty("integration-test"))
 #if ($env == "dev")
 #set ($debug = "true")
 #set ($wro = $xml.parse("classpath:wro.xml"))
@@ -9,7 +10,12 @@
 #end
 #set ($jsarr = $xml.xpath("//*[local-name()='js']", $wro))
 #foreach ($js in $jsarr)
+  #set ($groupName = $js.getParentNode().getAttributes().getNamedItem("name").getTextContent())
+  #if ($its == "true" && $groupName == "app")
+<script type="text/javascript" src="instrumented-$js.getTextContent().substring(1)" charset="utf-8"></script>
+  #else
 <script type="text/javascript" src="$js.getTextContent().substring(1)" charset="utf-8"></script>
+  #end
 #end
 <!-- request -->
 #foreach ($key in $request.getAttributeNames())

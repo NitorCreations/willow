@@ -132,6 +132,10 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.eluder.coveralls</groupId>
+        <artifactId>coveralls-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
         <groupId>com.coverity</groupId>
         <artifactId>ondemand-maven-plugin</artifactId>
       </plugin>
@@ -200,6 +204,16 @@
           <version>2.3</version>
         </plugin>
         <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.4.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.9.1</version>
+        </plugin>
+        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacoco.version}</version>
@@ -220,18 +234,33 @@
           <configuration>
             <repoToken>${env.COVERALLS_TOKEN}</repoToken>
             <sourceDirectories>
+              <sourceDirectory>.</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules/graphs</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/services</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/behaviors</sourceDirectory>
+              <sourceDirectory>willow-maven-plugin/target/generated-sources/plugin</sourceDirectory>
             </sourceDirectories>
+            <coberturaReports>
+              <coberturaReport>target/site/cobertura/cobertura-coverage.xml</coberturaReport>
+            </coberturaReports>
           </configuration>
         </plugin>
         <plugin>
           <groupId>com.coverity</groupId>
           <artifactId>ondemand-maven-plugin</artifactId>
           <version>1.3.637</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.searls</groupId>
+          <artifactId>jasmine-maven-plugin</artifactId>
+          <version>2.0-beta-02</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.timurstrekalov</groupId>
+          <artifactId>saga-maven-plugin</artifactId>
+          <version>1.5.4</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -583,38 +612,143 @@
       </build>
     </profile>
     <profile>
-      <id>run-its</id>
+      <id>codeship</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
-            <version>2.10</version>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.jacoco</groupId>
-                  <artifactId>org.jacoco.agent</artifactId>
-                  <version>${jacoco.version}</version>
-                  <classifier>runtime</classifier>
-                  <type>jar</type>
-                  <overWrite>false</overWrite>
-                  <outputDirectory>target</outputDirectory>
-                  <destFileName>jacoco-agent.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>jacoco-download</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.jacoco</groupId>
+                      <artifactId>org.jacoco.agent</artifactId>
+                      <version>${jacoco.version}</version>
+                      <classifier>runtime</classifier>
+                      <type>jar</type>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>target</outputDirectory>
+                      <destFileName>jacoco-agent.jar</destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>codeship</id>
-      <build>
-        <plugins>
           <plugin>
-            <groupId>org.eluder.coveralls</groupId>
-            <artifactId>coveralls-maven-plugin</artifactId>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>extract-classes</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <tasks>
+                    <unzip dest="target/classes">
+                      <fileset dir=".">
+                        <include name="**/willow-*${project.version}.jar"/>
+                      </fileset>
+                    </unzip>
+                  </tasks>
+                </configuration>
+                </execution>
+              </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>server-port</id>
+                <goals>
+                  <goal>reserve-network-port</goal>
+                </goals>
+                <configuration>
+                  <portNames>
+                    <portName>server.port</portName>
+                  </portNames>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>casperjs-test</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>src/test/resources/integration-tests.sh</executable>
+                  <workingDirectory>${basedir}</workingDirectory>
+                  <environmentVariables>
+                    <SERVER_PORT>${server.port}</SERVER_PORT>
+                  </environmentVariables>
+                </configuration>
+              </execution>
+              <execution>
+                <id>istanbul-report</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>istanbul</executable>
+                  <workingDirectory>${basedir}</workingDirectory>
+                  <arguments>
+                    <argument>report</argument>
+                    <argument>--include</argument>
+                    <argument>target/js-coverage/test*.json</argument>
+                    <argument>--dir</argument>
+                    <argument>target/site/cobertura</argument>
+                    <argument>-v</argument>
+                    <argument>html</argument>
+                    <argument>cobertura</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>merge-its</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>merge</goal>
+                </goals>
+                <configuration>
+                  <fileSets>
+                    <fileSet>
+                      <directory>${project.build.directory}/willow-deployer</directory>
+                      <includes>
+                        <include>*.exec</include>
+                      </includes>
+                    </fileSet>
+                  </fileSets>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

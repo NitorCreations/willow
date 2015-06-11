@@ -22,4 +22,7 @@ application.properties
 .DS_Store
 icons/node_modules/
 icons/icons.svg
+
+# Temporary artifacts
 t3model.*
+*screenshot.png
