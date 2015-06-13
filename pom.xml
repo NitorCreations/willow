@@ -236,6 +236,7 @@
             <repoToken>${env.COVERALLS_TOKEN}</repoToken>
             <sourceDirectories>
               <sourceDirectory>.</sourceDirectory>
+              <sourceDirectory>willow-integrationtests</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules/graphs</sourceDirectory>
@@ -243,9 +244,6 @@
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/behaviors</sourceDirectory>
               <sourceDirectory>willow-maven-plugin/target/generated-sources/plugin</sourceDirectory>
             </sourceDirectories>
-            <coberturaReports>
-              <coberturaReport>target/site/cobertura/cobertura-coverage.xml</coberturaReport>
-            </coberturaReports>
           </configuration>
         </plugin>
         <plugin>
