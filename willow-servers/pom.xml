@@ -305,7 +305,7 @@
   </build>
   <profiles>
     <profile>
-      <id>codeship</id>
+      <id>integrationtests</id>
       <build>
         <plugins>
           <plugin>
