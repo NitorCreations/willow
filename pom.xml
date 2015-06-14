@@ -631,6 +631,7 @@
         <sonar.jdbc.password>${env.SONAR_DB_PASSWORD}</sonar.jdbc.password>
         <sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
         <sonar.sources>src/main,pom.xml</sonar.sources>
+        <sonar.host.url>http://localhost:9000/sonar</sonar.host.url>
         <project.reporting.outputDirectory>target/site</project.reporting.outputDirectory>
       </properties>
     </profile>
