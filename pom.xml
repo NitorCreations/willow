@@ -7,6 +7,9 @@
   <version>1.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Willow</name>
+  <prerequisites>
+     <maven>3.2.2</maven>
+  </prerequisites>
   <description>Willow elastic cloud deployment componets</description>
   <scm>
     <developerConnection>scm:git:git@github.com:NitorCreations/willow.git</developerConnection>
@@ -210,6 +213,14 @@
           <version>1.4.0</version>
         </plugin>
         <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.10</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>1.9.1</version>
@@ -410,7 +421,7 @@
       <dependency>
         <groupId>org.elasticsearch</groupId>
         <artifactId>elasticsearch</artifactId>
-        <version>1.5.2</version>
+        <version>1.6.0</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -437,7 +448,7 @@
       <dependency>
         <groupId>com.jcraft</groupId>
         <artifactId>jsch</artifactId>
-        <version>0.1.52</version>
+        <version>0.1.53</version>
       </dependency>
       <dependency>
         <groupId>com.jcraft</groupId>
