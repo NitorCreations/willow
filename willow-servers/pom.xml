@@ -279,28 +279,6 @@
           </specIncludes>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>com.github.timurstrekalov</groupId>
-        <artifactId>saga-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>coverage</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <baseDir>http://localhost:${jasmine.serverPort}</baseDir>
-          <outputDir>${project.build.directory}/saga-coverage</outputDir>
-          <noInstrumentPatterns>
-            <pattern>.*/spec/.*</pattern>
-            <pattern>.*/lib/.*</pattern>
-            <pattern>.*/jasmine/.*</pattern>
-            <pattern>.*/jquery.js</pattern>
-            <pattern>.*/intercom.js</pattern>
-          </noInstrumentPatterns>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -308,6 +286,29 @@
       <id>integrationtests</id>
       <build>
         <plugins>
+          <plugin>
+            <groupId>com.github.timurstrekalov</groupId>
+            <artifactId>saga-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>coverage</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <baseDir>http://localhost:${jasmine.serverPort}</baseDir>
+              <outputDir>${project.build.directory}/saga-coverage</outputDir>
+              <noInstrumentPatterns>
+                <pattern>.*/spec/.*</pattern>
+                <pattern>.*/lib/.*</pattern>
+                <pattern>.*/jasmine/.*</pattern>
+                <pattern>.*/jquery.js</pattern>
+                <pattern>.*/intercom.js</pattern>
+              </noInstrumentPatterns>
+            </configuration>
+          </plugin>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
@@ -329,6 +330,25 @@
                 <argument>target/classes/webapp/instrumented-scripts</argument>
               </arguments>
             </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>extract-classes</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <copy file="target/saga-coverage/total-coverage.dat"
+                      tofile="target/jstestdriver/jsTestDriver.conf-coverage.dat"/>
+                  </target>
+                </configuration>
+                </execution>
+              </executions>
           </plugin>
         </plugins>
       </build>
