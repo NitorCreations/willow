@@ -272,6 +272,11 @@
           <artifactId>saga-maven-plugin</artifactId>
           <version>1.5.4</version>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.sonar</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>5.1</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -620,6 +625,14 @@
           </plugin>
         </plugins>
       </build>
+      <properties>
+        <sonar.jdbc.url>jdbc:postgresql://localhost/sonar</sonar.jdbc.url>
+        <sonar.jdbc.username>sonar</sonar.jdbc.username>
+        <sonar.jdbc.password>${env.SONAR_DB_PASSWORD}</sonar.jdbc.password>
+        <sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
+        <sonar.sources>src/main,pom.xml</sonar.sources>
+        <project.reporting.outputDirectory>target/site</project.reporting.outputDirectory>
+      </properties>
     </profile>
   </profiles>
 </project>
