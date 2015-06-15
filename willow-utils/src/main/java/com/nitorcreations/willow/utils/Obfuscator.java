@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
@@ -126,7 +128,7 @@ public class Obfuscator {
       }
       return printBase64Binary(bOut.toByteArray());
     } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
-      e.printStackTrace();
+      Logger.getAnonymousLogger().log(Level.FINE, "Failed to encrypt", e);
       return null;
     }
   }
@@ -156,7 +158,7 @@ public class Obfuscator {
       }
       return new String(result, SALT_LENGTH + 4, result.length - (SALT_LENGTH + 4), Charset.forName("UTF-8"));
     } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
-      e.printStackTrace();
+      Logger.getAnonymousLogger().log(Level.FINE, "Failed to encrypt", e);
       return null;
     }
   }
