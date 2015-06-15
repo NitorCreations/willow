@@ -44,7 +44,7 @@ public class SSHAgentAuthorizationUtil {
           if (sig != null) {
             ret.append(" ").append(printBase64Binary(sig));
           }
-        } catch (Throwable t) {
+        } catch (Exception t) {
           logger.log(Level.FINE, "Failed to add signature: " + t.getMessage());
         }
       }
@@ -94,7 +94,7 @@ public class SSHAgentAuthorizationUtil {
           logger.fine("Matched key " + keyInfo);
           return true;
         }
-      } catch (Throwable t) {
+      } catch (Exception t) {
         logger.finer("Did not verify with " + keyInfo);
       }
     } catch (Exception e) {

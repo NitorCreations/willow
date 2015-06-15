@@ -102,8 +102,8 @@ public abstract class AbstractLauncher implements LaunchMethod {
         }
       } catch (SigarException e) {
         log.log(Level.FINE, "Failed to get PID", e);
-      } catch (Throwable e) {
-        e.printStackTrace();
+      } catch (Exception e) {
+        log.log(Level.FINE, "Failed to get PID", e);
         try {
           Thread.sleep(500);
         } catch (InterruptedException e1) {}
