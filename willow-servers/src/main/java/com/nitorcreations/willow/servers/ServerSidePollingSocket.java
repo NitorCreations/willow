@@ -19,7 +19,6 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.node.Node;
 
 import com.google.gson.Gson;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
@@ -28,8 +27,6 @@ import com.nitorcreations.willow.metrics.Metric;
 @WebSocket
 @Named
 public class ServerSidePollingSocket extends BasicWillowSocket {
-  @Inject
-  private Node node;
   @Inject
   ScheduledExecutorService scheduler;
   private final Map<String, Metric> metrics;
@@ -53,7 +50,7 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
 
     @Override
     public void run() {
-      try (Client client = node.client()){
+      try {
         long stop = System.currentTimeMillis() - currTimeDelay;
         long start = stop - conf.getStep();
         Metric nextMetric = metric.getClass().newInstance();
