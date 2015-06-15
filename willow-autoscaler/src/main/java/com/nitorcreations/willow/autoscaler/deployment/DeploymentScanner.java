@@ -70,7 +70,7 @@ public class DeploymentScanner implements Runnable {
 
   @Override
   public void run() {
-    while (running.get()) {
+    while (running.get() && !Thread.interrupted()) {
       for (final AutoScalingGroupConfig group : groups) {
         if (!futures.containsKey(group)) {
           futures.put(group, scheduleGroupScan(group));
@@ -81,11 +81,12 @@ public class DeploymentScanner implements Runnable {
         try {
           f.get(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          logger.log(Level.INFO, "Interrupted", e);
         } catch (ExecutionException e) {
           logger.log(Level.SEVERE, "deployment scanner execution failure", e);
           futures.remove(entry.getKey());
         } catch (TimeoutException e) {
+          logger.log(Level.FINEST, "Timeout - retrying");
           continue; //The timeouts allow periodic checking to ensure scanners keep running.
         }
       }
