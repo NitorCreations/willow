@@ -42,8 +42,7 @@ public class RestartChild extends DeployerControl {
           System.out.println(proxy.getStatus());
           System.exit(0);
         } catch (Throwable e) {
-          log.info("Restart failed");
-          e.printStackTrace();
+          log.log(Level.INFO, "Restart failed", e);
           System.exit(1);
         }
       } else {

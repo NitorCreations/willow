@@ -95,7 +95,7 @@ public class Main extends DeployerControl implements MainMBean {
     try {
       mbs.registerMBean(this, OBJECT_NAME);
     } catch (InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException e) {
-      e.printStackTrace();
+      throw new RuntimeException("Failed to register management bean", e);
     }
   }
 
@@ -311,7 +311,7 @@ public class Main extends DeployerControl implements MainMBean {
 
   protected void usage(Throwable e) {
     stop();
-    e.printStackTrace();
+    log.log(Level.INFO, "Starting deployer faied", e);
     super.usage(e.getMessage());
   }
   public static String getStatisticsUrl() {
@@ -374,8 +374,9 @@ public class Main extends DeployerControl implements MainMBean {
         log.warning("Download failed: " + e.getMessage());
       }
     }
-    if (failures)
+    if (failures) {
       throw new RuntimeException("Some downloads failed - check logs");
+    }
   }
   protected void runHooks(String hookPrefix, List<MergeableProperties> propertiesList, boolean failFast) throws Exception {
     Exception lastThrown = null;
@@ -460,6 +461,7 @@ public class Main extends DeployerControl implements MainMBean {
           }
         }
       } catch (SigarException e) {
+        log.log(Level.FINE, "Failed to get java child", e);
         return -1;
       }
     }

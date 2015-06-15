@@ -66,6 +66,7 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
           oldChildPid = childPid;
         }
       } catch (IOException e) {
+        logger.log(Level.FINE, "Failed to get JMX connection", e);
         try {
           connector.close();
         } catch (Exception e2) {

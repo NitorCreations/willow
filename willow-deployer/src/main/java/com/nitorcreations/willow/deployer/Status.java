@@ -43,8 +43,7 @@ public class Status extends DeployerControl {
           System.out.println(proxy.getStatus());
           System.exit(0);
         } catch (Throwable e) {
-          log.info("JMX Status failed");
-          e.printStackTrace();
+          log.log(Level.INFO, "JMX Status failed", e);
           System.exit(1);
         }
       }

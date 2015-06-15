@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.deployer.statistics;
 
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Named;
@@ -26,7 +27,7 @@ public class EventSender extends AbstractStatisticsSender {
     try {
       Thread.sleep(10000);
     } catch (InterruptedException e1) {
-      e1.printStackTrace();
+      logger.log(Level.FINE, "Interrupted", e1);
     }
   }
 

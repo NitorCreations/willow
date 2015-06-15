@@ -3,6 +3,8 @@ package com.nitorcreations.willow.deployer.download;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class StreamPumper implements Runnable {
   private final InputStream in;
@@ -22,7 +24,7 @@ public class StreamPumper implements Runnable {
         out.write(buffer, 0, read);
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      Logger.getAnonymousLogger().log(Level.INFO, "Stream pumping exception", e);
     }
   }
 }
