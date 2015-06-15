@@ -3,7 +3,6 @@ package com.nitorcreations.willow.deployer;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +10,8 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.hyperic.sigar.Humidor;
 import org.hyperic.sigar.SigarProxy;
@@ -21,6 +22,7 @@ import com.nitorcreations.willow.deployer.download.FileUtil;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class DeployerModule extends AbstractModule {
+  private Logger log = Logger.getLogger(getClass().getCanonicalName());
   private static final class HumidorProvider implements Provider<SigarProxy> {
     Humidor humidor = Humidor.getInstance();
     @Override
@@ -70,31 +72,25 @@ public class DeployerModule extends AbstractModule {
     }
     File libFile = new File(libDir, libName.toString());
     if (!(libFile.exists() && libFile.canExecute())) {
-      InputStream lib = Main.class.getClassLoader().getResourceAsStream(libName.toString());
-      FileUtil.createDir(libDir);
-      if (lib != null) {
-        try (OutputStream out = new FileOutputStream(libFile)) {
-          byte[] buffer = new byte[1024];
-          int len;
-          while ((len = lib.read(buffer)) != -1) {
-            out.write(buffer, 0, len);
-          }
-          libFile.setExecutable(true, false);
-        } catch (FileNotFoundException e) {
-          e.printStackTrace();
-        } catch (IOException e) {
-          e.printStackTrace();
-        } finally {
-          try {
-            lib.close();
+      try (InputStream lib = Main.class.getClassLoader().getResourceAsStream(libName.toString())) {
+        FileUtil.createDir(libDir);
+        if (lib != null) {
+          try (OutputStream out = new FileOutputStream(libFile)) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = lib.read(buffer)) != -1) {
+              out.write(buffer, 0, len);
+            }
+            libFile.setExecutable(true, false);
           } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.INFO, "Failed to extract native library", e);
           }
+        } else {
+          throw new RuntimeException("Failed to find " + libName);
         }
-      } else {
-        throw new RuntimeException("Failed to find " + libName);
+      } catch (IOException e) {
+        log.log(Level.INFO, "Failed to close native library file", e);
       }
     }
   }
-
 }
