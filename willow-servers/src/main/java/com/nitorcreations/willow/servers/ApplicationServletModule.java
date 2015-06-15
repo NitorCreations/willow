@@ -65,6 +65,5 @@ public class ApplicationServletModule extends ServletModule {
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
       throw new RuntimeException("Unable to instantiate host lookupservice", e);
     }
-    return null;
   }
 }
