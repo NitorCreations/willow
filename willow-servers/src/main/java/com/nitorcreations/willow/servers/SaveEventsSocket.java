@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -78,8 +79,8 @@ public class SaveEventsSocket extends BasicWillowSocket {
           log.warning("Failed to create index for " + source);
         }
       }
-    } catch (Throwable e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      log.log(Level.INFO, "Exception while receiving message", e);
     }
   }
   @SuppressWarnings("unchecked")

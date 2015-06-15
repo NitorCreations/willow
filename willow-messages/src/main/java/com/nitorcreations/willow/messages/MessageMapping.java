@@ -131,7 +131,7 @@ public class MessageMapping {
       LZ4FastDecompressor decompressor = factory.fastDecompressor();
       try {
         decompressor.decompress(data, offset + 4, restored, 0, uclen);
-      } catch (Throwable e) {
+      } catch (Exception e) {
         String message = String.format("Failed to parse buffer[%d], %d, %d - uncompressed len %d", data.length, offset, length, uclen);
         throw new IOException(message, e);
       }

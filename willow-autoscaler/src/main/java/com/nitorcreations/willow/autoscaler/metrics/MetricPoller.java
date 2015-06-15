@@ -133,7 +133,7 @@ public class MetricPoller {
         }
         TimePoint<Double> metricValue = values.get(values.size() - 1);
         autoScalingStatus.addMetricValue(group.getName(), metricName, metricValue);
-      } catch (Throwable e) {
+      } catch (Exception e) {
         logger.log(Level.INFO, "fail in receiving metric data", e);
       }
     }

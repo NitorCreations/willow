@@ -59,7 +59,7 @@ public class PublicKeyAuthenticationToken implements AuthenticationToken, HostAu
   public void setSignatures(List<byte[]> signatures) {
     this.signatures.clear();
     if (signatures != null) {
-      signatures.addAll(signatures);
+      this.signatures.addAll(signatures);
     }
   }
   public void addSignatures(List<byte[]> signatures) {

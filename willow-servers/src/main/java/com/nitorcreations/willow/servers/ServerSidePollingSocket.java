@@ -74,7 +74,7 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
       PollTask task = new PollTask(session, conf);
       ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 0, conf.getStep(), TimeUnit.MILLISECONDS);
       pollers.add(handle);
-    } catch (Throwable e) {
+    } catch (Exception e) {
       log.log(Level.INFO, "Failed to schedule task", e);
     }
   }
