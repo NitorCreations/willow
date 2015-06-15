@@ -63,7 +63,7 @@ public class ApplicationServletModule extends ServletModule {
       Class<?> hlsClass = Class.forName(hlsClassName);
       return (HostLookupService)hlsClass.newInstance();
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException("Unable to instantiate host lookupservice", e);
     }
     return null;
   }

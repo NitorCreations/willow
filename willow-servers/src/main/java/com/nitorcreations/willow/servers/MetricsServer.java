@@ -80,12 +80,12 @@ public class MetricsServer {
       LOG.info("Succesfully started Jetty on port {} in {} seconds", port, (end - start) / 1000.0);
       server.join();
     } catch (Exception e) {
-      e.printStackTrace(); 
+      LOG.info("Exception starting server", e);
     } finally {
       try {
         server.stop();
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.info("Exception stopping server", e);
       }
     }    
   }
