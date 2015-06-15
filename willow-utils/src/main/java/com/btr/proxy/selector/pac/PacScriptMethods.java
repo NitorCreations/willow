@@ -23,23 +23,25 @@ import java.util.logging.Logger;
 
 /***************************************************************************
  * Implementation of PAC JavaScript functions.
- *  
+ * 
  * @author Bernd Rosstauscher (proxyvole@rosstauscher.de) Copyright 2009
  ***************************************************************************
  */
 public class PacScriptMethods implements ScriptMethods {
-  private final Logger log = Logger.getLogger(PacScriptMethods.class.getCanonicalName());
+  private final Logger log = Logger.getLogger(PacScriptMethods.class
+      .getCanonicalName());
   public static final String OVERRIDE_LOCAL_IP = "com.btr.proxy.pac.overrideLocalIP";
 
   private final static String GMT = "GMT";
 
-  private final static List<String> DAYS = Collections.unmodifiableList(
-    Arrays.asList("SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT")); 
+  private final static List<String> DAYS = Collections.unmodifiableList(Arrays
+      .asList("SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"));
 
-  private final static List<String> MONTH = Collections.unmodifiableList(
-    Arrays.asList("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"));
+  private final static List<String> MONTH = Collections.unmodifiableList(Arrays
+      .asList("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP",
+          "OCT", "NOV", "DEC"));
 
-  private Calendar currentTime; 
+  private Calendar currentTime;
 
   /*************************************************************************
    * Constructor
@@ -51,9 +53,10 @@ public class PacScriptMethods implements ScriptMethods {
 
   /*************************************************************************
    * isPlainHostName
+   * 
    * @see com.btr.proxy.selector.pac.ScriptMethods#isPlainHostName(java.lang.String)
    ************************************************************************/
-
+  @Override
   public boolean isPlainHostName(String host) {
     return host.indexOf(".") < 0;
   }
@@ -62,12 +65,12 @@ public class PacScriptMethods implements ScriptMethods {
    * Tests if an URL is in a given domain.
    * 
    * @param host
-   *            is the host name from the URL.
+   *          is the host name from the URL.
    * @param domain
-   *            is the domain name to test the host name against.
+   *          is the domain name to test the host name against.
    * @return true if the domain of host name matches.
    ************************************************************************/
-
+  @Override
   public boolean dnsDomainIs(String host, String domain) {
     return host.endsWith(domain);
   }
@@ -78,12 +81,12 @@ public class PacScriptMethods implements ScriptMethods {
    * name matches.
    * 
    * @param host
-   *            the host name from the URL.
+   *          the host name from the URL.
    * @param domain
-   *            fully qualified host name with domain to match against.
+   *          fully qualified host name with domain to match against.
    * @return true if matches else false.
    ************************************************************************/
-
+  @Override
   public boolean localHostOrDomainIs(String host, String domain) {
     return domain.startsWith(host);
   }
@@ -92,10 +95,10 @@ public class PacScriptMethods implements ScriptMethods {
    * Tries to resolve the host name. Returns true if succeeds.
    * 
    * @param host
-   *            is the host name from the URL.
+   *          is the host name from the URL.
    * @return true if resolvable else false.
    ************************************************************************/
-
+  @Override
   public boolean isResolvable(String host) {
     try {
       InetAddress.getByName(host).getHostAddress();
@@ -107,25 +110,25 @@ public class PacScriptMethods implements ScriptMethods {
   }
 
   /*************************************************************************
-   * Returns true if the IP address of the host matches the specified IP
-   * address pattern. Pattern and mask specification is done the same way as
-   * for SOCKS configuration.
+   * Returns true if the IP address of the host matches the specified IP address
+   * pattern. Pattern and mask specification is done the same way as for SOCKS
+   * configuration.
    * 
    * Example: isInNet(host, "198.95.0.0", "255.255.0.0") is true if the IP
    * address of the host matches 198.95.*.*.
    * 
    * @param host
-   *            a DNS host name, or IP address. If a host name is passed, it
-   *            will be resolved into an IP address by this function.
+   *          a DNS host name, or IP address. If a host name is passed, it will
+   *          be resolved into an IP address by this function.
    * @param pattern
-   *            an IP address pattern in the dot-separated format.
+   *          an IP address pattern in the dot-separated format.
    * @param mask
-   *            mask for the IP address pattern informing which parts of the
-   *            IP address should be matched against. 0 means ignore, 255
-   *            means match.
+   *          mask for the IP address pattern informing which parts of the IP
+   *          address should be matched against. 0 means ignore, 255 means
+   *          match.
    * @return true if it matches else false.
    ************************************************************************/
-
+  @Override
   public boolean isInNet(String host, String pattern, String mask) {
     host = dnsResolve(host);
     if (host == null || host.length() == 0) {
@@ -139,14 +142,15 @@ public class PacScriptMethods implements ScriptMethods {
 
   /*************************************************************************
    * Convert a string representation of a IP to a long.
-   * @param address to convert.
+   * 
+   * @param address
+   *          to convert.
    * @return the address as long.
    ************************************************************************/
-
   private long parseIpAddressToLong(String address) {
     long result = 0;
     String[] parts = address.split("\\.");
-    long shift = 24;	    
+    long shift = 24;
     for (String part : parts) {
       long lpart = Long.parseLong(part);
 
@@ -157,14 +161,14 @@ public class PacScriptMethods implements ScriptMethods {
   }
 
   /*************************************************************************
-   * Resolves the given DNS host name into an IP address, and returns it in
-   * the dot separated format as a string.
+   * Resolves the given DNS host name into an IP address, and returns it in the
+   * dot separated format as a string.
    * 
    * @param host
-   *            the host to resolve.
+   *          the host to resolve.
    * @return the resolved IP, empty string if not resolvable.
    ************************************************************************/
-
+  @Override
   public String dnsResolve(String host) {
     try {
       return InetAddress.getByName(host).getHostAddress();
@@ -180,33 +184,35 @@ public class PacScriptMethods implements ScriptMethods {
    * 
    * @return an IP as string.
    ************************************************************************/
-
+  @Override
   public String myIpAddress() {
     return getLocalAddressOfType(Inet4Address.class);
   }
 
   /*************************************************************************
-   * Get the current IP address of the computer.
-   * This will return the first address of the first network interface that is 
-   * a "real" IP address of the given type. 
-   * @param cl the type of address we are searching for.
+   * Get the current IP address of the computer. This will return the first
+   * address of the first network interface that is a "real" IP address of the
+   * given type.
+   * 
+   * @param cl
+   *          the type of address we are searching for.
    * @return the address as string or "" if not found.
    ************************************************************************/
-
   private String getLocalAddressOfType(Class<? extends InetAddress> cl) {
     try {
       String overrideIP = System.getProperty(OVERRIDE_LOCAL_IP);
       if (overrideIP != null && overrideIP.trim().length() > 0) {
-        return overrideIP.trim(); 
+        return overrideIP.trim();
       }
-      Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-      while (interfaces.hasMoreElements()){
+      Enumeration<NetworkInterface> interfaces = NetworkInterface
+          .getNetworkInterfaces();
+      while (interfaces.hasMoreElements()) {
         NetworkInterface current = interfaces.nextElement();
         if (!current.isUp() || current.isLoopback() || current.isVirtual()) {
           continue;
         }
         Enumeration<InetAddress> addresses = current.getInetAddresses();
-        while (addresses.hasMoreElements()){
+        while (addresses.hasMoreElements()) {
           InetAddress adr = addresses.nextElement();
           if (cl.isInstance(adr)) {
             log.log(Level.FINER, "Local address resolved to {0}", adr);
@@ -222,14 +228,13 @@ public class PacScriptMethods implements ScriptMethods {
   }
 
   /*************************************************************************
-   * Returns the number of DNS domain levels (number of dots) in the host
-   * name.
+   * Returns the number of DNS domain levels (number of dots) in the host name.
    * 
    * @param host
-   *            is the host name from the URL.
+   *          is the host name from the URL.
    * @return number of DNS domain levels.
    ************************************************************************/
-
+  @Override
   public int dnsDomainLevels(String host) {
     int count = 0;
     int startPos = 0;
@@ -245,12 +250,12 @@ public class PacScriptMethods implements ScriptMethods {
    * expressions.
    * 
    * @param str
-   *            is any string to compare (e.g. the URL, or the host name).
+   *          is any string to compare (e.g. the URL, or the host name).
    * @param shexp
-   *            is a shell expression to compare against.
+   *          is a shell expression to compare against.
    * @return true if the string matches, else false.
    ************************************************************************/
-
+  @Override
   public boolean shExpMatch(String str, String shexp) {
     StringTokenizer tokenizer = new StringTokenizer(shexp, "*");
     int startPos = 0;
@@ -263,7 +268,8 @@ public class PacScriptMethods implements ScriptMethods {
         return false;
       }
       // Last one ends with last token
-      if (!tokenizer.hasMoreTokens() && !shexp.endsWith("*") && !str.endsWith(token)) {
+      if (!tokenizer.hasMoreTokens() && !shexp.endsWith("*")
+          && !str.endsWith(token)) {
         return false;
       }
 
@@ -274,35 +280,35 @@ public class PacScriptMethods implements ScriptMethods {
       }
     }
 
-
     return true;
   }
 
   /*************************************************************************
    * Only the first parameter is mandatory. Either the second, the third, or
-   * both may be left out. If only one parameter is present, the function
-   * yields a true value on the weekday that the parameter represents. If the
-   * string "GMT" is specified as a second parameter, times are taken to be in
-   * GMT, otherwise in local time zone. If both wd1 and wd2 are defined, the
-   * condition is true if the current weekday is in between those two
-   * weekdays. Bounds are inclusive. If the "GMT" parameter is specified,
-   * times are taken to be in GMT, otherwise the local time zone is used.
+   * both may be left out. If only one parameter is present, the function yields
+   * a true value on the weekday that the parameter represents. If the string
+   * "GMT" is specified as a second parameter, times are taken to be in GMT,
+   * otherwise in local time zone. If both wd1 and wd2 are defined, the
+   * condition is true if the current weekday is in between those two weekdays.
+   * Bounds are inclusive. If the "GMT" parameter is specified, times are taken
+   * to be in GMT, otherwise the local time zone is used.
    * 
    * @param wd1
-   *            weekday 1 is one of SUN MON TUE WED THU FRI SAT
+   *          weekday 1 is one of SUN MON TUE WED THU FRI SAT
    * @param wd2
-   *            weekday 2 is one of SUN MON TUE WED THU FRI SAT
+   *          weekday 2 is one of SUN MON TUE WED THU FRI SAT
    * @param gmt
-   *            "GMT" for gmt time format else "undefined"
+   *          "GMT" for gmt time format else "undefined"
    * @return true if current day matches the criteria.
    ************************************************************************/
-
+  @Override
   public boolean weekdayRange(String wd1, String wd2, String gmt) {
     boolean useGmt = GMT.equalsIgnoreCase(wd2) || GMT.equalsIgnoreCase(gmt);
     Calendar cal = getCurrentTime(useGmt);
 
     int currentDay = cal.get(Calendar.DAY_OF_WEEK) - 1;
-    int from = DAYS.indexOf(wd1 == null ? null : wd1.toUpperCase(Locale.ENGLISH));
+    int from = DAYS.indexOf(wd1 == null ? null : wd1
+        .toUpperCase(Locale.ENGLISH));
     int to = DAYS.indexOf(wd2 == null ? null : wd2.toUpperCase(Locale.ENGLISH));
     if (to == -1) {
       to = from;
@@ -317,66 +323,62 @@ public class PacScriptMethods implements ScriptMethods {
 
   /*************************************************************************
    * Sets a calendar with the current time. If this is set all date and time
-   * based methods will use this calendar to determine the current time
-   * instead of the real time. This is only be used by unit tests and is not
-   * part of the public API.
+   * based methods will use this calendar to determine the current time instead
+   * of the real time. This is only be used by unit tests and is not part of the
+   * public API.
    * 
    * @param cal
-   *            a Calendar to set.
+   *          a Calendar to set.
    ************************************************************************/
-
   public void setCurrentTime(Calendar cal) {
     this.currentTime = cal;
   }
 
   /*************************************************************************
-   * Gets a calendar set to the current time. This is used by the date and
-   * time based methods.
+   * Gets a calendar set to the current time. This is used by the date and time
+   * based methods.
    * 
    * @param useGmt
-   *            flag to indicate if the calendar is to be created in GMT time
-   *            or local time.
+   *          flag to indicate if the calendar is to be created in GMT time or
+   *          local time.
    * @return a Calendar set to the current time.
    ************************************************************************/
-
   private Calendar getCurrentTime(boolean useGmt) {
     if (this.currentTime != null) { // Only used for unit tests
       return (Calendar) this.currentTime.clone();
     }
-    return Calendar.getInstance(useGmt ? TimeZone.getTimeZone(GMT)
-      : TimeZone.getDefault());
+    return Calendar.getInstance(useGmt ? TimeZone.getTimeZone(GMT) : TimeZone
+        .getDefault());
   }
 
   /*************************************************************************
-   * Only the first parameter is mandatory. All other parameters can be left
-   * out therefore the meaning of the parameters changes. The method
-   * definition shows the version with the most possible parameters filled.
-   * The real meaning of the parameters is guessed from it's value. If "from"
-   * and "to" are specified then the bounds are inclusive. If the "GMT"
-   * parameter is specified, times are taken to be in GMT, otherwise the local
-   * time zone is used.
+   * Only the first parameter is mandatory. All other parameters can be left out
+   * therefore the meaning of the parameters changes. The method definition
+   * shows the version with the most possible parameters filled. The real
+   * meaning of the parameters is guessed from it's value. If "from" and "to"
+   * are specified then the bounds are inclusive. If the "GMT" parameter is
+   * specified, times are taken to be in GMT, otherwise the local time zone is
+   * used.
    * 
    * @param day1
-   *            is the day of month between 1 and 31 (as an integer).
+   *          is the day of month between 1 and 31 (as an integer).
    * @param month1
-   *            one of JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC
+   *          one of JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC
    * @param year1
-   *            is the full year number, for example 1995 (but not 95).
-   *            Integer.
+   *          is the full year number, for example 1995 (but not 95). Integer.
    * @param day2
-   *            is the day of month between 1 and 31 (as an integer).
+   *          is the day of month between 1 and 31 (as an integer).
    * @param month2
-   *            one of JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC
+   *          one of JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC
    * @param year2
-   *            is the full year number, for example 1995 (but not 95).
-   *            Integer.
+   *          is the full year number, for example 1995 (but not 95). Integer.
    * @param gmt
-   *            "GMT" for gmt time format else "undefined"
+   *          "GMT" for gmt time format else "undefined"
    * @return true if the current date matches the given range.
    ************************************************************************/
-
+  @Override
   public boolean dateRange(Object day1, Object month1, Object year1,
-    Object day2, Object month2, Object year2, Object gmt) {
+      Object day2, Object month2, Object year2, Object gmt) {
 
     // Guess the parameter meanings.
     Map<String, Integer> params = new HashMap<String, Integer>();
@@ -438,11 +440,10 @@ public class PacScriptMethods implements ScriptMethods {
    * map.
    * 
    * @param params
-   *            a map to put the parsed parameters into.
+   *          a map to put the parsed parameters into.
    * @param value
-   *            to parse and specify the type for.
+   *          to parse and specify the type for.
    ************************************************************************/
-
   private void parseDateParam(Map<String, Integer> params, Object value) {
     if (value instanceof Number) {
       int n = ((Number) value).intValue();
@@ -483,10 +484,10 @@ public class PacScriptMethods implements ScriptMethods {
   /*************************************************************************
    * Some parameters can be left out therefore the meaning of the parameters
    * changes. The method definition shows the version with the most possible
-   * parameters filled. The real meaning of the parameters is guessed from
-   * it's value. If "from" and "to" are specified then the bounds are
-   * inclusive. If the "GMT" parameter is specified, times are taken to be in
-   * GMT, otherwise the local time zone is used.<br/>
+   * parameters filled. The real meaning of the parameters is guessed from it's
+   * value. If "from" and "to" are specified then the bounds are inclusive. If
+   * the "GMT" parameter is specified, times are taken to be in GMT, otherwise
+   * the local time zone is used.<br/>
    * 
    * <pre>
    * timeRange(hour)
@@ -497,28 +498,28 @@ public class PacScriptMethods implements ScriptMethods {
    * </pre>
    * 
    * @param hour1
-   *            is the hour from 0 to 23. (0 is midnight, 23 is 11 pm.)
+   *          is the hour from 0 to 23. (0 is midnight, 23 is 11 pm.)
    * @param min1
-   *            minutes from 0 to 59.
+   *          minutes from 0 to 59.
    * @param sec1
-   *            seconds from 0 to 59.
+   *          seconds from 0 to 59.
    * @param hour2
-   *            is the hour from 0 to 23. (0 is midnight, 23 is 11 pm.)
+   *          is the hour from 0 to 23. (0 is midnight, 23 is 11 pm.)
    * @param min2
-   *            minutes from 0 to 59.
+   *          minutes from 0 to 59.
    * @param sec2
-   *            seconds from 0 to 59.
+   *          seconds from 0 to 59.
    * @param gmt
-   *            "GMT" for gmt time format else "undefined"
+   *          "GMT" for gmt time format else "undefined"
    * @return true if the current time matches the given range.
    ************************************************************************/
-
+  @Override
   public boolean timeRange(Object hour1, Object min1, Object sec1,
-    Object hour2, Object min2, Object sec2, Object gmt) {
+      Object hour2, Object min2, Object sec2, Object gmt) {
     boolean useGmt = GMT.equalsIgnoreCase(String.valueOf(min1))
-      || GMT.equalsIgnoreCase(String.valueOf(sec1))
-      || GMT.equalsIgnoreCase(String.valueOf(min2))
-      || GMT.equalsIgnoreCase(String.valueOf(gmt));
+        || GMT.equalsIgnoreCase(String.valueOf(sec1))
+        || GMT.equalsIgnoreCase(String.valueOf(min2))
+        || GMT.equalsIgnoreCase(String.valueOf(gmt));
 
     Calendar cal = getCurrentTime(useGmt);
     cal.set(Calendar.MILLISECOND, 0);
@@ -580,18 +581,21 @@ public class PacScriptMethods implements ScriptMethods {
 
   /*************************************************************************
    * isResolvableEx
+   * 
    * @see com.btr.proxy.selector.pac.ScriptMethods#isResolvableEx(java.lang.String)
    ************************************************************************/
-
+  @Override
   public boolean isResolvableEx(String host) {
     return isResolvable(host);
   }
 
   /*************************************************************************
    * isInNetEx
-   * @see com.btr.proxy.selector.pac.ScriptMethods#isInNetEx(java.lang.String, java.lang.String)
+   * 
+   * @see com.btr.proxy.selector.pac.ScriptMethods#isInNetEx(java.lang.String,
+   *      java.lang.String)
    ************************************************************************/
-
+  @Override
   public boolean isInNetEx(String ipAddress, String ipPrefix) {
     // TODO rossi 27.06.2011 Auto-generated method stub
     return false;
@@ -599,9 +603,10 @@ public class PacScriptMethods implements ScriptMethods {
 
   /*************************************************************************
    * dnsResolveEx
+   * 
    * @see com.btr.proxy.selector.pac.ScriptMethods#dnsResolveEx(java.lang.String)
    ************************************************************************/
-
+  @Override
   public String dnsResolveEx(String host) {
     StringBuilder result = new StringBuilder();
     try {
@@ -618,18 +623,20 @@ public class PacScriptMethods implements ScriptMethods {
 
   /*************************************************************************
    * myIpAddressEx
+   * 
    * @see com.btr.proxy.selector.pac.ScriptMethods#myIpAddressEx()
    ************************************************************************/
-
+  @Override
   public String myIpAddressEx() {
     return getLocalAddressOfType(Inet6Address.class);
   }
 
   /*************************************************************************
    * sortIpAddressList
+   * 
    * @see com.btr.proxy.selector.pac.ScriptMethods#sortIpAddressList(java.lang.String)
    ************************************************************************/
-
+  @Override
   public String sortIpAddressList(String ipAddressList) {
     if (ipAddressList == null || ipAddressList.trim().length() == 0) {
       return "";
@@ -640,20 +647,19 @@ public class PacScriptMethods implements ScriptMethods {
       try {
         parsedAddresses.add(InetAddress.getByName(ip));
       } catch (UnknownHostException e) {
-        // TODO rossi 01.11.2011 Auto-generated catch block
-        e.printStackTrace();
+        log.log(Level.FINE, "Ip address not resolveable {0}.", ip);
       }
     }
     Collections.sort(parsedAddresses, null);
-    // TODO rossi 27.06.2011 Implement me.
     return ipAddressList;
   }
 
   /*************************************************************************
    * getClientVersion
+   * 
    * @see com.btr.proxy.selector.pac.ScriptMethods#getClientVersion()
    ************************************************************************/
-
+  @Override
   public String getClientVersion() {
     return "1.0";
   }

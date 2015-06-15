@@ -10,42 +10,49 @@ import java.io.IOException;
 
 public class ProxyEvaluationException extends IOException {
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	/*************************************************************************
-	 * Constructor
-	 ************************************************************************/
-	
-	public ProxyEvaluationException() {
-		super();
-	}
+  /*************************************************************************
+   * Constructor
+   ************************************************************************/
 
-	/*************************************************************************
-	 * Constructor
-	 * @param message the error message.
-	 * @param cause the causing exception for exception chaining.
-	 ************************************************************************/
-	
-	public ProxyEvaluationException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public ProxyEvaluationException() {
+    super();
+  }
 
-	/*************************************************************************
-	 * Constructor
-	 * @param message the error message.
-	 ************************************************************************/
-	
-	public ProxyEvaluationException(String message) {
-		super(message);
-	}
+  /*************************************************************************
+   * Constructor
+   * 
+   * @param message
+   *          the error message.
+   * @param cause
+   *          the causing exception for exception chaining.
+   ************************************************************************/
 
-	/*************************************************************************
-	 * Constructor
-	 * @param cause the causing exception for exception chaining.
-	 ************************************************************************/
-	
-	public ProxyEvaluationException(Throwable cause) {
-		super(cause);
-	}
+  public ProxyEvaluationException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  /*************************************************************************
+   * Constructor
+   * 
+   * @param message
+   *          the error message.
+   ************************************************************************/
+
+  public ProxyEvaluationException(String message) {
+    super(message);
+  }
+
+  /*************************************************************************
+   * Constructor
+   * 
+   * @param cause
+   *          the causing exception for exception chaining.
+   ************************************************************************/
+
+  public ProxyEvaluationException(Throwable cause) {
+    super(cause);
+  }
 
 }
