@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class Event {
 
@@ -25,7 +27,7 @@ public abstract class Event {
       try {
         msg.eventData.put(f.getName(), f.get(this).toString());
       } catch (IllegalAccessException e) {
-        e.printStackTrace();
+        Logger.getAnonymousLogger().log(Level.INFO, "Failed to add field to Event", e);
       }
     }
 

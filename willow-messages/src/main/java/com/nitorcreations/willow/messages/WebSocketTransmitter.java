@@ -64,7 +64,7 @@ public class WebSocketTransmitter {
   }
   public void setUri(URI uri) {
     this.uri = uri;
-    if (uri.getUserInfo() != null && uri.getUserInfo() != null) {
+    if (uri.getUserInfo() != null) {
       this.username = uri.getUserInfo().split(":")[0];
     }
   }
