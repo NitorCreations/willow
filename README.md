@@ -3,6 +3,7 @@
 [![Stories ready to merge](https://badge.waffle.io/NitorCreations/willow.png?label=ready%20to%20merge&title=Ready%20to%20merge)](https://waffle.io/NitorCreations/willow)
 [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/streams/jdq5h6193p18d9k86859ro7t0c)](https://ondemand.coverity.com/streams/jdq5h6193p18d9k86859ro7t0c/jobs)
 [![Build Status](https://bob.nitorio.us/jenkins/job/willow-integrationtests/badge/icon)](https://bob.nitorio.us/jenkins/job/willow-integrationtests)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.nitorcreations/willow-parent/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.nitorcreations/willow-parent/)
 
 # willow #
 
