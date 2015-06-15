@@ -2,7 +2,7 @@
 [![Stories in progress](https://badge.waffle.io/NitorCreations/willow.png?label=in%20progress&title=In%20progress)](https://waffle.io/NitorCreations/willow)
 [![Stories ready to merge](https://badge.waffle.io/NitorCreations/willow.png?label=ready%20to%20merge&title=Ready%20to%20merge)](https://waffle.io/NitorCreations/willow)
 [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/streams/jdq5h6193p18d9k86859ro7t0c)](https://ondemand.coverity.com/streams/jdq5h6193p18d9k86859ro7t0c/jobs)
-[![Build Status](https://bob.nitorio.us/jenkins/buildStatus/icon?job=willow-integrationtests)](https://bob.nitorio.us/jenkins/job/willow-integrationtests)
+[![Build Status](https://bob.nitorio.us/jenkins/job/willow-integrationtests/badge/icon)](https://bob.nitorio.us/jenkins/job/willow-integrationtests)
 
 # willow #
 
