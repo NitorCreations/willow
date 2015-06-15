@@ -174,7 +174,7 @@ public class Obfuscator {
       }
       return raw;
     } catch (NoSuchAlgorithmException e) {
-      return new byte[0];
+      throw new RuntimeException("Missing mandatory digest algorithm", e);
     }
   }
 
