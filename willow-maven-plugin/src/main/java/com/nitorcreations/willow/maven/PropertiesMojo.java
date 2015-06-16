@@ -27,6 +27,7 @@ public class PropertiesMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}", required = true)
   private MavenProject project;
 
+  @Override
   public void execute() throws MojoExecutionException {
     ensureDir(outputFile.getParentFile());
     if (prefixes == null || prefixes.length == 0) {
