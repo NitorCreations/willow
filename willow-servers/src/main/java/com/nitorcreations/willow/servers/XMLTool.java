@@ -28,6 +28,7 @@ import com.nitorcreations.willow.utils.ProxyUtils;
 public class XMLTool {
   private static final XPathFactory factory = XPathFactory.newInstance(); ;
   private static final class DummyEntityResolver implements EntityResolver {
+    @Override
     public InputSource resolveEntity(String publicID, String systemID) throws SAXException {
       return new InputSource(new StringReader(""));
     }

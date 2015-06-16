@@ -9,17 +9,17 @@ public class Handler extends URLStreamHandler {
   private final ClassLoader classLoader;
 
   public Handler() {
-      this.classLoader = getClass().getClassLoader();
+    this.classLoader = getClass().getClassLoader();
   }
   public Handler(ClassLoader classLoader) {
-      this.classLoader = classLoader;
+    this.classLoader = classLoader;
   }
   @Override
   protected URLConnection openConnection(URL u) throws IOException {
-      final URL resourceUrl = classLoader.getResource(u.getPath());
-      if (resourceUrl == null) {
-        throw new IOException("Resource " + u.getPath() + " not found on classpath");
-      }
-      return resourceUrl.openConnection();
+    final URL resourceUrl = classLoader.getResource(u.getPath());
+    if (resourceUrl == null) {
+      throw new IOException("Resource " + u.getPath() + " not found on classpath");
+    }
+    return resourceUrl.openConnection();
   }
 }

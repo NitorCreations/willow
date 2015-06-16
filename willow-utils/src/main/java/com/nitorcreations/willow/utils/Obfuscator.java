@@ -88,8 +88,9 @@ public class Obfuscator {
   }
 
   public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
-    if (args.length == 0)
+    if (args.length == 0) {
       return;
+    }
     Obfuscator pwdo = new Obfuscator();
     if (args[0].equals("-d")) {
       for (int i = 1; i < args.length; i++) {
@@ -179,7 +180,9 @@ public class Obfuscator {
   }
 
   public static String getFileMaster(File masterFile, KeyDigest digest) throws IOException {
-    if (!masterFile.exists()) throw new IOException("Master file not found");
+    if (!masterFile.exists()) {
+      throw new IOException("Master file not found");
+    }
     PosixFileAttributeView posix = Files.getFileAttributeView(masterFile.toPath(), PosixFileAttributeView.class);
     if (posix != null) {
       Set<PosixFilePermission> perms = posix.readAttributes().permissions();

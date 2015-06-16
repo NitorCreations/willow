@@ -104,8 +104,9 @@ public class Main extends DeployerControl implements MainMBean {
   }
 
   public void doMain(String[] args) {
-    if (args.length < 2)
+    if (args.length < 2) {
       usage("At least two arguments expected: {name} {launch.properties}");
+    }
     populateProperties(args);
     MergeableProperties mergedProperties = new MergeableProperties();
     for (int i = launchPropertiesList.size() - 1; i >= 0; i--) {
@@ -244,6 +245,7 @@ public class Main extends DeployerControl implements MainMBean {
     transmitter.queue(new DeployerStartEvent(sigar.getPid(), deployerName));
   }
 
+  @Override
   public void stop() {
     for (LaunchMethod next : children) {
       next.stopRelaunching();
@@ -331,7 +333,9 @@ public class Main extends DeployerControl implements MainMBean {
 
   @Override
   public long getChildPid(String childName) {
-    if (childName == null || childName.isEmpty()) return -1;
+    if (childName == null || childName.isEmpty()) {
+      return -1;
+    }
     for (LaunchMethod next : children) {
       if (childName.equals(next.getName())) {
         return next.getProcessId();
@@ -408,18 +412,19 @@ public class Main extends DeployerControl implements MainMBean {
         i++;
       }
     }
-    if (lastThrown != null)
+    if (lastThrown != null) {
       throw lastThrown;
+    }
   }
   public static MergeableProperties getChildProperties(MergeableProperties launchProps, String prefix, int index) {
     MergeableProperties childProps = launchProps.getPrefixed(prefix);
     childProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(index));
     for (String next : new String[] {
-      PROPERTY_KEY_DEPLOYER_NAME,
-      PROPERTY_KEY_WORKDIR,
-      PROPERTY_KEY_DOWNLOAD_DIRECTORY,
-      PROPERTY_KEY_DOWNLOAD_RETRIES,
-      PROPERTY_KEY_REMOTE_REPOSITORY }) {
+        PROPERTY_KEY_DEPLOYER_NAME,
+        PROPERTY_KEY_WORKDIR,
+        PROPERTY_KEY_DOWNLOAD_DIRECTORY,
+        PROPERTY_KEY_DOWNLOAD_RETRIES,
+        PROPERTY_KEY_REMOTE_REPOSITORY }) {
       if (launchProps.get(next) != null) {
         childProps.setProperty(next, launchProps.getProperty(next));
       }
@@ -435,6 +440,7 @@ public class Main extends DeployerControl implements MainMBean {
     return childProps;
   }
 
+  @Override
   public long getFirstJavaChildPid(String childName) {
     return getFirstJavaChildPid(getChildPid(childName));
   }

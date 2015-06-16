@@ -53,5 +53,5 @@ public class ElasticSearchModule extends AbstractModule {
   public String randomNodeId() {
     return new BigInteger(130, new SecureRandom()).toString(32);
   }
-  
+
 }

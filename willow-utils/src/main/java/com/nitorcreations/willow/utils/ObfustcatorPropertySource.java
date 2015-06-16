@@ -13,7 +13,9 @@ public class ObfustcatorPropertySource implements PropertySource {
   @Override
   public String getProperty(String key) {
     String ret = obfuscator.decrypt(key);
-    if (ret == null) return key;
+    if (ret == null) {
+      return key;
+    }
     return ret;
   }
 }

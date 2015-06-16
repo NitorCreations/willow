@@ -28,7 +28,7 @@ public class SftpURLConnection extends URLConnection {
   }
   public SftpURLConnection(URL url, Proxy proxy) {
     super(url);
-    this.proxy =proxy; 
+    this.proxy =proxy;
   }
   public static final int DEFAULT_TIMEOUT = 30000;
   private Session session;
@@ -95,10 +95,12 @@ public class SftpURLConnection extends URLConnection {
   }
 
   public void disconnect() throws IOException {
-    if (channel != null)
+    if (channel != null) {
       channel.disconnect();
-    if (session != null)
+    }
+    if (session != null) {
       session.disconnect();
+    }
   }
 
   public ChannelSftp getChannel() throws IOException {

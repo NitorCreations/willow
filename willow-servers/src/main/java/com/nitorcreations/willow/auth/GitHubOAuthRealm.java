@@ -15,29 +15,29 @@ import org.json.JSONObject;
 
 public abstract class GitHubOAuthRealm implements Realm {
 
-    @Override
-    public String getName() {
-        return getClass().getName();
-    }
+  @Override
+  public String getName() {
+    return getClass().getName();
+  }
 
-    @Override
-    public boolean supports(AuthenticationToken authenticationToken) {
-        return OAuth2AuthenticationToken.class.isInstance(authenticationToken);
-    }
+  @Override
+  public boolean supports(AuthenticationToken authenticationToken) {
+    return OAuth2AuthenticationToken.class.isInstance(authenticationToken);
+  }
 
-    @Override
-    public AuthenticationInfo getAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-        JSONObject user = (JSONObject) authenticationToken.getPrincipal();
-        try {
-            String userId = user.getString("login");
-            Set<String> memberOf = JSONTool.toStringSet(user.getJSONArray("member_of"));
-            return new SimpleAccount(userId, null, getName(), memberOf, memberShipsToPermissions(memberOf));
-        } catch (JSONException e) {
-            throw new AuthenticationException(e);
-        }
+  @Override
+  public AuthenticationInfo getAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+    JSONObject user = (JSONObject) authenticationToken.getPrincipal();
+    try {
+      String userId = user.getString("login");
+      Set<String> memberOf = JSONTool.toStringSet(user.getJSONArray("member_of"));
+      return new SimpleAccount(userId, null, getName(), memberOf, memberShipsToPermissions(memberOf));
+    } catch (JSONException e) {
+      throw new AuthenticationException(e);
     }
+  }
 
-    protected abstract Set<Permission> memberShipsToPermissions(Set<String> organizations);
+  protected abstract Set<Permission> memberShipsToPermissions(Set<String> organizations);
 
 
 }

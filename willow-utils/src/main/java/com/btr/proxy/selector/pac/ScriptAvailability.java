@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 /****************************************************************************
  * Utility to check availablility of javax.script
- * 
+ *
  * @author Bernd Rosstauscher (proxyvole@rosstauscher.de) Copyright 2009
  ***************************************************************************/
 abstract class ScriptAvailability {
@@ -13,7 +13,7 @@ abstract class ScriptAvailability {
   /*************************************************************************
    * Checks whether javax.script is available or not. Completely done per
    * Reflection to allow compilation under Java 1.5
-   * 
+   *
    * @return true if javax.script is available; false otherwise
    ************************************************************************/
   public static boolean isJavaxScriptingAvailable() {

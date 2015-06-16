@@ -73,8 +73,9 @@ public class Extractor implements Callable<Boolean> {
 
   @Override
   public Boolean call() {
-    if (target == null)
+    if (target == null) {
       return false;
+    }
     File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
     boolean overwrite = "false".equalsIgnoreCase(properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE)) ? false : true;
     String extractRoot = properties.getProperty(PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, workDir.getAbsolutePath());
@@ -142,7 +143,7 @@ public class Extractor implements Callable<Boolean> {
     int entries = 0;
     while (en.hasMoreElements()) {
       ZipArchiveEntry nextEntry = en.nextElement();
-      extractEntry(zipFile.getInputStream(nextEntry), (ArchiveEntry) nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
+      extractEntry(zipFile.getInputStream(nextEntry), nextEntry, destFolder, replaceTokens, extractMatchers, skipMatchers, filterMatchers, overwrite);
       entries++;
     }
     return entries;
@@ -150,16 +151,18 @@ public class Extractor implements Callable<Boolean> {
 
   private boolean globMatches(String path, Set<PathMatcher> matchers) {
     for (PathMatcher next : matchers) {
-      if (next.matches(Paths.get(path)))
+      if (next.matches(Paths.get(path))) {
         return true;
+      }
     }
     return false;
   }
 
   private Set<PathMatcher> getGlobMatchers(String expressions) {
     Set<PathMatcher> matchers = new LinkedHashSet<>();
-    if (expressions == null || expressions.isEmpty())
+    if (expressions == null || expressions.isEmpty()) {
       return matchers;
+    }
     FileSystem def = FileSystems.getDefault();
     for (String next : expressions.split("\\|")) {
       String trimmed = next.trim();
@@ -187,8 +190,9 @@ public class Extractor implements Callable<Boolean> {
       if (entry.isDirectory()) {
         FileUtil.createDir(dest);
       } else {
-        if (dest.exists() && !overwrite)
+        if (dest.exists() && !overwrite) {
           return;
+        }
         FileUtil.createDir(dest.getParentFile());
         if (globMatches(entry.getName(), filterMatchers)) {
           FileUtil.filterStream(is, dest, replaceTokens);
@@ -239,10 +243,12 @@ public class Extractor implements Callable<Boolean> {
         int ret = (int) ((e.getExternalAttributes() >> 16) & 0xFFF);
         if (ret == 0) {
           return 0644;
-        } else
+        } else {
           return ret;
-      } else
+        }
+      } else {
         return 0664;
+      }
     } else {
       try {
         return (int) ((Number) m.invoke(entry)).longValue() & 0xFFF;

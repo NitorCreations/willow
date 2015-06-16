@@ -100,7 +100,9 @@ public class JMXOperation extends DeployerControl {
     if (first.matches("\\d+")) {
       conn = getJMXConnector(Long.parseLong(first));
     }
-    if (conn != null) return conn;
+    if (conn != null) {
+      return conn;
+    }
     deployerName = first;
     long mypid = sigar.getPid();
     if (mypid <= 0) {

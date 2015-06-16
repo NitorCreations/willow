@@ -36,6 +36,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
   private String path;
   private List<String> tags;
 
+  @Override
   @OnWebSocketConnect
   public void onConnect(Session session) {
     super.onConnect(session);
@@ -45,6 +46,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
       tags = new ArrayList<>();
     }
   }
+  @Override
   @OnWebSocketClose
   public void onClose(int statusCode, String reason) {
     super.onClose(statusCode, reason);
@@ -94,7 +96,7 @@ public class SaveEventsSocket extends BasicWillowSocket {
     tmpTags.addAll(msgObject.tags);
     stored.put("tags", tmpTags);
     stored.put("timestamp", msgObject.getTimestamp());
-    
+
   }
   private static String getIndex(long timestamp) {
     Calendar cal = Calendar.getInstance();

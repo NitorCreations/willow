@@ -85,18 +85,20 @@ public class ReplaceTokensInputStream extends FilterInputStream {
     String matchToken = null;
     do {
       matchToken = getMatchToken(bufferStr, potentialMatches);
-      if (potentialMatches.isEmpty())
+      if (potentialMatches.isEmpty()) {
         break;
+      }
       if (matchToken != null) {
         for (byte next : matchToken.getBytes(charset)) {
-          available.add((int) next & 0xFF);
+          available.add(next & 0xFF);
         }
         if (available.size() > 0) {
           return available.remove(0);
         }
       }
-      if (length == buffer.length)
+      if (length == buffer.length) {
         break;
+      }
       append(superRead());
       bufferStr = getBufferString();
       if (matchToken != null) {
@@ -109,8 +111,9 @@ public class ReplaceTokensInputStream extends FilterInputStream {
         }
       }
     } while (!streamExhausted);
-    if (length < 1 && available.isEmpty())
+    if (length < 1 && available.isEmpty()) {
       return -1;
+    }
     shift(1, true);
     return available.remove(0);
   }
@@ -126,7 +129,7 @@ public class ReplaceTokensInputStream extends FilterInputStream {
     int doShift = Math.min(length, shift);
     if (makeAvailable) {
       for (int i = 0; i < doShift; i++) {
-        available.add((int) buffer[(start + i) % buffer.length] & 0xFF);
+        available.add(buffer[(start + i) % buffer.length] & 0xFF);
       }
     }
     length -= doShift;

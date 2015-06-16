@@ -55,6 +55,7 @@ import com.nitorcreations.willow.utils.MergeableProperties;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public abstract class AbstractLauncher implements LaunchMethod {
   private final class WaitForChild implements Callable<Boolean> {
+    @Override
     public Boolean call() throws InterruptedException {
       if (child != null) {
         child.waitFor();
@@ -87,6 +88,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
   public String getName() {
     return name;
   }
+  @Override
   public long getProcessId() {
     if (pid.get() > 0) {
       return pid.get();

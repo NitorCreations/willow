@@ -49,6 +49,7 @@ public class CpuBusyMetric extends FullMessageSimpleMetric<CPU, Double> {
     }
     return new ArrayList<>(hostBusy.values());
   }
+  @Override
   protected Double calculateValue(List<Double> values, long stepTime, long stepLen) {
     return median(values);
   }

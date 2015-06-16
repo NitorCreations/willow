@@ -72,8 +72,9 @@ public class ProxyUtils {
     return null;
   }
   protected static boolean noProxyMatches(String host, String noProxy) {
-    if (noProxy == null)
+    if (noProxy == null) {
       return false;
+    }
     for (String next : noProxy.split(",")) {
       String trimmed = next.trim();
       while (trimmed.startsWith(".")) {
@@ -133,8 +134,12 @@ public class ProxyUtils {
     } catch (IllegalArgumentException e) {
       throw new IOException("Invalid uri", e);
     }
-    if (conn == null) throw new IOException("Failed to get connection to " + url);
-    if (cust != null) cust.customize(conn);
+    if (conn == null) {
+      throw new IOException("Failed to get connection to " + url);
+    }
+    if (cust != null) {
+      cust.customize(conn);
+    }
     return conn.getInputStream();
   }
 

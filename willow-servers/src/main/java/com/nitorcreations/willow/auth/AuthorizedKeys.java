@@ -24,19 +24,21 @@ public class AuthorizedKeys {
     public String comment;
   }
   private final List<AuthorizedKey> keys = new ArrayList<>();
-  
+
   public static AuthorizedKeys fromUrl(String url) throws ConfigurationException {
     AuthorizedKeys ret = new AuthorizedKeys();
     try (InputStream in = ProxyUtils.getUriInputStream(null, null, url);
-      InputStreamReader ir = new InputStreamReader(in, StandardCharsets.UTF_8);
-      BufferedReader read = new BufferedReader(ir)) {
+        InputStreamReader ir = new InputStreamReader(in, StandardCharsets.UTF_8);
+        BufferedReader read = new BufferedReader(ir)) {
       String line = null;
       while (null != (line = read.readLine())) {
         if (line.isEmpty() || line.trim().startsWith("#")) {
           continue;
         } else {
           String[] elems = line.split("\\s+");
-          if (elems.length < 3) continue;
+          if (elems.length < 3) {
+            continue;
+          }
           AuthorizedKey key = new AuthorizedKey();
           key.type = elems[0];
           key.keycomponents = SSHAgentAuthorizationUtil.components(Base64.decode(elems[1]));
@@ -57,4 +59,3 @@ public class AuthorizedKeys {
   }
 
 }
- 

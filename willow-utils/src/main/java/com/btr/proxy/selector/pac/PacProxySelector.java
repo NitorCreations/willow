@@ -32,7 +32,7 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * Constructor
-   * 
+   *
    * @param pacSource
    *          the source for the PAC file.
    ************************************************************************/
@@ -45,7 +45,7 @@ public class PacProxySelector extends ProxySelector {
   /*************************************************************************
    * Can be used to enable / disable the proxy selector. If disabled it will
    * return DIRECT for all urls.
-   * 
+   *
    * @param enable
    *          the new status to set.
    ************************************************************************/
@@ -56,7 +56,7 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * Checks if the selector is currently enabled.
-   * 
+   *
    * @return true if enabled else false.
    ************************************************************************/
 
@@ -66,7 +66,7 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * Selects one of the available PAC parser engines.
-   * 
+   *
    * @param pacSource
    *          to use as input.
    ************************************************************************/
@@ -82,7 +82,7 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * connectFailed
-   * 
+   *
    * @see java.net.ProxySelector#connectFailed(java.net.URI,
    *      java.net.SocketAddress, java.io.IOException)
    ************************************************************************/
@@ -93,7 +93,7 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * select
-   * 
+   *
    * @see java.net.ProxySelector#select(java.net.URI)
    ************************************************************************/
   @Override
@@ -113,11 +113,11 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * Evaluation of the given URL with the PAC-file.
-   * 
+   *
    * Two cases can be handled here: DIRECT Fetch the object directly from the
    * content HTTP server denoted by its URL PROXY name:port Fetch the object via
    * the proxy HTTP server at the given location (name and port)
-   * 
+   *
    * @param uri
    *          <code>URI</code> to be evaluated.
    * @return <code>Proxy</code>-object list as result of the evaluation.
@@ -144,7 +144,7 @@ public class PacProxySelector extends ProxySelector {
   /*************************************************************************
    * The proxy evaluator will return a proxy string. This method will take this
    * string and build a matching <code>Proxy</code> for it.
-   * 
+   *
    * @param pacResult
    *          the result from the PAC parser.
    * @return a Proxy
@@ -186,7 +186,7 @@ public class PacProxySelector extends ProxySelector {
   /*************************************************************************
    * Gets an unmodifiable proxy list that will have as it's only entry an DIRECT
    * proxy.
-   * 
+   *
    * @return a list with a DIRECT proxy in it.
    ************************************************************************/
 
@@ -201,7 +201,7 @@ public class PacProxySelector extends ProxySelector {
 
   /*************************************************************************
    * Build a PAC proxy selector for the given URL.
-   * 
+   *
    * @param url
    *          to fetch the PAC script from.
    * @return a PacProxySelector or null if it is not possible to build a working

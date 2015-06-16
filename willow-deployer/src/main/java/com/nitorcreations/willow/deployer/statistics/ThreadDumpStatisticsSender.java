@@ -17,7 +17,7 @@ import com.nitorcreations.willow.messages.ThreadDumpMessage;
  * Statistics sender for sending thread dumps.
  * Takes a thread dump of the child (via JMX) at specified intervals
  * (default 1 second) and sends it as JSON to the statistics server.
- * 
+ *
  * @author Mikko Tommila
  */
 @Named("threaddump")

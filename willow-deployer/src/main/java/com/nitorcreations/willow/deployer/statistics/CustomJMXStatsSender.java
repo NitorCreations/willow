@@ -93,26 +93,28 @@ public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
   }
   private OperationDesriptor getOperationDescriptor(MBeanServerConnection server, ObjectName objectName, String operationName, List<String> argList, int i) throws InstanceNotFoundException, ReflectionException, IOException, IntrospectionException, ClassNotFoundException {
     OperationDesriptor desc = opDescs.get(i);
-    if (desc != null) return desc;
+    if (desc != null) {
+      return desc;
+    }
     desc = new OperationDesriptor();
     MBeanInfo mBeanInfo = server.getMBeanInfo(objectName);
     MBeanOperationInfo[] operations = mBeanInfo.getOperations();
     for (MBeanOperationInfo operation : operations) {
       if (operation.getName().equals(operationName)) {
-          MBeanParameterInfo[] parameters = operation.getSignature();
-          desc.signature = new String[parameters.length];
-          for (int j = 0; j < desc.signature.length; j++) {
-            desc.signature[j] = parameters[j].getType();
-          }
-          desc.params = argList.toArray(new Object[argList.size()]);
-          if (desc.params.length != desc.signature.length) {
-            continue;
-          }
-          for (int j = 0; j < desc.signature.length; j++) {
-            desc.params[j] = ConvertUtils.convert(desc.params[j], Class.forName(desc.signature[j]));
-          }
-          opDescs.put(i, desc);
-          return desc;
+        MBeanParameterInfo[] parameters = operation.getSignature();
+        desc.signature = new String[parameters.length];
+        for (int j = 0; j < desc.signature.length; j++) {
+          desc.signature[j] = parameters[j].getType();
+        }
+        desc.params = argList.toArray(new Object[argList.size()]);
+        if (desc.params.length != desc.signature.length) {
+          continue;
+        }
+        for (int j = 0; j < desc.signature.length; j++) {
+          desc.params[j] = ConvertUtils.convert(desc.params[j], Class.forName(desc.signature[j]));
+        }
+        opDescs.put(i, desc);
+        return desc;
       }
     }
     return null;

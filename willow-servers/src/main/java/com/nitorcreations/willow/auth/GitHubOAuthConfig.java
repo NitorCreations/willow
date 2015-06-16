@@ -28,7 +28,7 @@ public class GitHubOAuthConfig {
       return new GitHubOAuthConfig(redirectUri, clientId, clientSecret);
     } catch (IOException e) {
       throw new ConfigurationException(Arrays.asList(new Message("Failed to read GitHub OAuth config"), new Message(e.getMessage())));
-     }
+    }
   }
   public String getRedirectUri() {
     return redirectUri;

@@ -26,7 +26,7 @@ public class RawTerminalServlet extends WebSocketServlet {
 
   @Inject
   private transient Injector injector;
-  
+
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     if (!SecurityUtils.getSubject().isPermitted(Permissions.ADMIN)) {

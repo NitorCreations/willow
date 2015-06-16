@@ -44,7 +44,7 @@ public class MetricsServer {
   public static void main(final String... args) throws Exception {
     main(new MetricsServer());
   }
-  
+
   public static void main(MetricsServer metrics) throws Exception {
     metrics.start(getInteger("port", 5120));
   }
@@ -87,7 +87,7 @@ public class MetricsServer {
       } catch (Exception e) {
         LOG.info("Exception stopping server", e);
       }
-    }    
+    }
   }
   protected EventListener getServletContextListener() {
     return new WillowServletContextListener();
@@ -96,7 +96,7 @@ public class MetricsServer {
     Server server = new Server(new QueuedThreadPool(100));
     server.setStopAtShutdown(true);
     MBeanContainer mbContainer = new MBeanContainer(
-      ManagementFactory.getPlatformMBeanServer());
+        ManagementFactory.getPlatformMBeanServer());
     server.addBean(mbContainer);
     return server;
   }

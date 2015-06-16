@@ -28,7 +28,7 @@ public class GetList extends DeployerControl {
           }
         }
       } else {
-       firstPids = findOldDeployerPids();
+        firstPids = findOldDeployerPids();
       }
       for (long next : firstPids) {
         System.out.println(getOldDeployerName(next));

@@ -165,8 +165,9 @@ public class MergeableProperties extends Properties {
   }
 
   public void deObfuscate(PropertySource source, String obfuscatedPrefix) {
-    if (obfuscatedPrefix == null)
+    if (obfuscatedPrefix == null) {
       return;
+    }
     LinkedHashMap<String, String> finalTable = new LinkedHashMap<>();
     for (Entry<String, String> next : table.entrySet()) {
       String value = next.getValue();
@@ -213,8 +214,9 @@ public class MergeableProperties extends Properties {
   private boolean mergeProperties(String name) {
     boolean ret = false;
     try (InputStream in = getIncludeUriInputStream(name)) {
-      if (in == null)
+      if (in == null) {
         throw new IOException();
+      }
       includeQueryParameters(name);
       load(in);
       ret = true;
@@ -253,8 +255,9 @@ public class MergeableProperties extends Properties {
   private boolean mergeYml(String name) {
     boolean ret = false;
     try (InputStream in = getIncludeUriInputStream(name)) {
-      if (in == null)
+      if (in == null) {
         throw new IOException();
+      }
       YamlProcessor p = new YamlProcessor();
       p.setResources(in);
       Properties props = p.createProperties();
@@ -280,14 +283,14 @@ public class MergeableProperties extends Properties {
   }
   private InputStream getIncludeUriInputStream(String url) throws IOException, URISyntaxException {
     return ProxyUtils.getUriInputStream(getProperty(INCLUDE_PROPERTY + ".proxyautoconf"),
-      getProperty(INCLUDE_PROPERTY + ".proxy"), url, customizer);
+        getProperty(INCLUDE_PROPERTY + ".proxy"), url, customizer);
   }
   @SuppressWarnings("unchecked")
   @Override
   public Set<Entry<Object, Object>> entrySet() {
     @SuppressWarnings("rawtypes")
     Set ret = table.entrySet();
-    return (Set<Entry<Object, Object>>) ret;
+    return ret;
   }
 
   @Override
@@ -296,7 +299,9 @@ public class MergeableProperties extends Properties {
   }
   @SuppressWarnings("PMD.UselessParentheses")
   public Object put(Object key, Object value, boolean allowEval) {
-    if (key == null || value == null) throw new NullPointerException("Null keys or values not allowed");
+    if (key == null || value == null) {
+      throw new NullPointerException("Null keys or values not allowed");
+    }
     String k = resolveIndexes((String) key);
     String v = resolveIndexes((String) value);
     StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');
@@ -382,8 +387,9 @@ public class MergeableProperties extends Properties {
 
   public List<String> getArrayProperty(String key, String suffix) {
     int i = 0;
-    if (suffix == null)
+    if (suffix == null) {
       suffix = "";
+    }
     ArrayList<String> ret = new ArrayList<>();
     String next = getProperty(key + "[" + i + "]" + suffix);
     while (next != null) {
@@ -414,7 +420,7 @@ public class MergeableProperties extends Properties {
 
   @Override
   public Object remove(Object key) {
-    return table.remove((String) key);
+    return table.remove(key);
   }
 
   @Override
@@ -462,8 +468,8 @@ public class MergeableProperties extends Properties {
   }
 
   @Override
-  @SuppressFBWarnings(value={"CN_IDIOM_NO_SUPER_CALL"}, 
-    justification="Don't actually want anything from parent class except for load and save functions" )
+  @SuppressFBWarnings(value={"CN_IDIOM_NO_SUPER_CALL"},
+  justification="Don't actually want anything from parent class except for load and save functions" )
   public synchronized Object clone() {
     super.clone();
     return new MergeableProperties(defaults, table, allowScripts, prefixes);
@@ -474,6 +480,7 @@ public class MergeableProperties extends Properties {
     return new LinkedHashSet<Object>(table.keySet());
   }
 
+  @Override
   public Collection<Object> values() {
     return new LinkedHashSet<Object>(table.values());
   }
@@ -494,18 +501,23 @@ public class MergeableProperties extends Properties {
   }
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (!super.equals(obj))
+    }
+    if (!super.equals(obj)) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     MergeableProperties other = (MergeableProperties) obj;
     if (table == null) {
-      if (other.table != null)
+      if (other.table != null) {
         return false;
-    } else if (!table.equals(other.table))
+      }
+    } else if (!table.equals(other.table)) {
       return false;
+    }
     return true;
   }
 }

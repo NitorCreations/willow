@@ -35,6 +35,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
     this.properties = properties;
   }
 
+  @Override
   public Integer call() {
     ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
     int downloads = 0;
@@ -71,7 +72,7 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
           downloadProperties.putAll(properties);
           File target = dwn.call();
           if (target != null) {
-            return new Extractor(downloadProperties, target).call(); 
+            return new Extractor(downloadProperties, target).call();
           } else {
             return false;
           }
@@ -83,8 +84,9 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
     for (Future<Boolean> next : futures) {
       try {
         downloads++;
-        if (!next.get())
+        if (!next.get()) {
           failures = true;
+        }
       } catch (InterruptedException | ExecutionException e) {
         logger.log(Level.WARNING, "Failed download and extract", e);
       }

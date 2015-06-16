@@ -30,9 +30,9 @@ public class PublicKeyAuthenticationFilter extends BasicHttpAuthenticationFilter
     }
 
     if (log.isDebugEnabled()) {
-        log.debug("Attempting to execute login with headers [" + authorizationHeader + "]");
+      log.debug("Attempting to execute login with headers [" + authorizationHeader + "]");
     }
-    
+
     String[] header = authorizationHeader.split("\\s+");
     if (header.length < 3 || !scheme.equals(header[0].toUpperCase(Locale.ENGLISH))) {
       return createToken("", null, null, request);

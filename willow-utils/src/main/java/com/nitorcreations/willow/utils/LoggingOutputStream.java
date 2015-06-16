@@ -7,9 +7,9 @@ package com.nitorcreations.willow.utils;
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,18 +24,18 @@ import java.util.logging.Logger;
 
 /**
  * An OutputStream that flushes out to a Logger.<p>
- * 
+ *
  * Note that no data is written out to the Category until the stream is
  *   flushed or closed.<p>
- * 
+ *
  * Example:<pre>
  * // make sure everything sent to System.err is logged
  * System.setErr(new PrintStream(new LoggingOutputStream(Logger.getLogger(""), Level.WARNING), true));
- * 
+ *
  * // make sure everything sent to System.out is also logged
  * System.setOut(new PrintStream(new LoggingOutputStream(Logger.getLogger(""), Level.INFO), true));
  * </pre>
- * 
+ *
  * @author <a href="mailto://Jim.Moore@rocketmail.com">Jim Moore</a>
  * @see Logger
  */
@@ -46,13 +46,13 @@ public class LoggingOutputStream extends OutputStream {
    */
   protected boolean hasBeenClosed = false;
   /**
-   * The internal buffer where data is stored. 
+   * The internal buffer where data is stored.
    */
   protected byte[] buf;
   /**
-   * The number of valid bytes in the buffer. This value is always 
-   *   in the range <tt>0</tt> through <tt>buf.length</tt>; elements 
-   *   <tt>buf[0]</tt> through <tt>buf[count-1]</tt> contain valid 
+   * The number of valid bytes in the buffer. This value is always
+   *   in the range <tt>0</tt> through <tt>buf.length</tt>; elements
+   *   <tt>buf[0]</tt> through <tt>buf[count-1]</tt> contain valid
    *   byte data.
    */
   protected int count;
@@ -83,7 +83,7 @@ public class LoggingOutputStream extends OutputStream {
 
   /**
    * Creates the LoggingOutputStream to flush to the given Category with the default charset
-   * 
+   *
    * @param logger     the Logger to write to
    * @param level      the Level to use when writing to the logger
    * @exception IllegalArgumentException if logger == null or level == null
@@ -94,7 +94,7 @@ public class LoggingOutputStream extends OutputStream {
 
   /**
    * Creates the LoggingOutputStream to flush to the given Category.
-   * 
+   *
    * @param logger     the Logger to write to
    * @param level      the Level to use when writing to the logger
    * @param charset    the Charset to use when interpreting written bytes
@@ -121,6 +121,7 @@ public class LoggingOutputStream extends OutputStream {
    *   is that it closes the output stream. A closed stream cannot perform
    *   output operations and cannot be reopened.
    */
+  @Override
   public void close() {
     flush();
     hasBeenClosed = true;
@@ -132,14 +133,15 @@ public class LoggingOutputStream extends OutputStream {
    * to the output stream. The byte to be written is the eight
    * low-order bits of the argument <code>b</code>. The 24
    * high-order bits of <code>b</code> are ignored.
-   * 
+   *
    * @param b          the <code>byte</code> to write
-   * 
+   *
    * @exception IOException
    *                   if an I/O error occurs. In particular,
    *                   an <code>IOException</code> may be thrown if the
    *                   output stream has been closed.
    */
+  @Override
   public void write(final int b) throws IOException {
     if (hasBeenClosed) {
       throw new IOException("The stream has been closed.");
@@ -182,6 +184,7 @@ public class LoggingOutputStream extends OutputStream {
    *   stream, such bytes should immediately be written to their
    *   intended destination.
    */
+  @Override
   @SuppressWarnings("PMD.UselessParentheses")
   public void flush() {
     if (count == 0) {
@@ -189,7 +192,7 @@ public class LoggingOutputStream extends OutputStream {
     }
     // don't print out blank lines; flushing from PrintStream puts out these
     if ((count == LINE_SEPERATOR.length()) && ((char) buf[0]) == LINE_SEPERATOR.charAt(0) && ((count == 1) || // <- Unix & Mac, -> Windows
-      ((count == 2) && ((char) buf[1]) == LINE_SEPERATOR.charAt(1)))) {
+        ((count == 2) && ((char) buf[1]) == LINE_SEPERATOR.charAt(1)))) {
       reset();
       return;
     }

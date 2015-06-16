@@ -24,7 +24,9 @@ public class MetricConfigBuilder {
 
   private long getLongParameter(HttpServletRequest req, String name, long def) {
     String attr = req.getParameter(name);
-    if (attr == null) return def;
+    if (attr == null) {
+      return def;
+    }
     try {
       return Long.parseLong(attr);
     } catch (NumberFormatException e) {
@@ -34,7 +36,9 @@ public class MetricConfigBuilder {
 
   private String[] getListParameter(HttpServletRequest req, String name) {
     String[] ret = req.getParameterValues(name);
-    if (ret == null) return new String[0];
+    if (ret == null) {
+      return new String[0];
+    }
     return ret;
   }
 }

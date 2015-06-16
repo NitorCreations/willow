@@ -40,7 +40,8 @@ public class RawSecureShellWS extends BasicWillowSocket{
   public static final int BUFFER_LEN = 4 * 1024;
   @Inject
   HostLookupService hostLookupService;
-  
+
+  @Override
   @OnWebSocketConnect
   public void onConnect(Session session) {
     super.onConnect(session);
@@ -104,7 +105,7 @@ public class RawSecureShellWS extends BasicWillowSocket{
           shell.setPtySize(resize.cols, resize.rows, resize.getPixelWidth(), resize.getPixelHeight());
         } else if (message.startsWith("{\"ping\":")) {
           if (!shell.isConnected()) {
-             try {
+            try {
               session.getRemote().sendPing(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)));
             } catch (IOException e) {
               close(4, "IOException while sending ping data to client", e);
@@ -126,6 +127,7 @@ public class RawSecureShellWS extends BasicWillowSocket{
     session.close();
     onClose(1, reason);
   }
+  @Override
   @OnWebSocketClose
   public void onClose(int statusCode, String reason) {
     if (shell != null) {
@@ -138,7 +140,9 @@ public class RawSecureShellWS extends BasicWillowSocket{
   }
   private int getIntParameter(Map<String, List<String>> parameterMap, String name, int def) {
     List<String> vals = parameterMap.get(name);
-    if (vals == null || vals.isEmpty()) return def;
+    if (vals == null || vals.isEmpty()) {
+      return def;
+    }
     try {
       return Integer.parseInt(vals.get(0));
     } catch (NumberFormatException e) {
@@ -147,7 +151,9 @@ public class RawSecureShellWS extends BasicWillowSocket{
   }
   private String getStringParameter(Map<String, List<String>> parameterMap, String name, String def) {
     List<String> vals = parameterMap.get(name);
-    if (vals == null || vals.isEmpty()) return def;
+    if (vals == null || vals.isEmpty()) {
+      return def;
+    }
     return vals.get(0);
   }
   private static class Resize {

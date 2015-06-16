@@ -19,7 +19,7 @@ public class StatisticsServlet extends WebSocketServlet {
 
   @Inject
   private transient Injector injector;
-  
+
   @Override
   public void configure(WebSocketServletFactory factory) {
     factory.getPolicy().setIdleTimeout(TimeUnit.MINUTES.toMillis(10));

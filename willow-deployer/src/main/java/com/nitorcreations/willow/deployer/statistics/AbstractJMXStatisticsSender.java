@@ -13,7 +13,7 @@ import com.nitorcreations.willow.deployer.Main;
 
 /**
  * Abstract base class for statistics senders that use JMX to connect to the child process.
- * 
+ *
  * @author Mikko Tommila
  */
 public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSender {
@@ -42,7 +42,7 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
 
   /**
    * Return the MBean server connection to the child process.
-   * 
+   *
    * @return MBean server connection.
    */
   protected MBeanServerConnection getMBeanServerConnection() {
@@ -95,7 +95,7 @@ public abstract class AbstractJMXStatisticsSender extends AbstractStatisticsSend
 
   /**
    * Get the child name.
-   * 
+   *
    * @return The child name as configured, or the name of the first child by default.
    */
   protected String getChildName() {

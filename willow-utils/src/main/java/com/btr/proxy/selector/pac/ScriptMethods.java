@@ -2,7 +2,7 @@ package com.btr.proxy.selector.pac;
 
 /***************************************************************************
  * Defines the public interface for PAC scripts.
- * 
+ *
  * @author Bernd Rosstauscher (proxyvole@rosstauscher.de) Copyright 2009
  ***************************************************************************/
 public interface ScriptMethods {
@@ -11,7 +11,7 @@ public interface ScriptMethods {
 
   /*************************************************************************
    * Tests if an URL is in a given domain.
-   * 
+   *
    * @param host
    *          is the host name from the URL.
    * @param domain
@@ -25,7 +25,7 @@ public interface ScriptMethods {
    * Is true if the host name matches exactly the specified host name, or if
    * there is no domain name part in the host name, but the unqualified host
    * name matches.
-   * 
+   *
    * @param host
    *          the host name from the URL.
    * @param domain
@@ -37,7 +37,7 @@ public interface ScriptMethods {
 
   /*************************************************************************
    * Tries to resolve the host name. Returns true if succeeds.
-   * 
+   *
    * @param host
    *          is the host name from the URL.
    * @return true if resolvable else false.
@@ -48,7 +48,7 @@ public interface ScriptMethods {
   /*************************************************************************
    * Tries to resolve the host name. Returns true if succeeds to resolve the
    * host to an IPv4 or IPv6 address.
-   * 
+   *
    * @param host
    *          is the host name from the URL.
    * @return true if resolvable else false.
@@ -60,10 +60,10 @@ public interface ScriptMethods {
    * Returns true if the IP address of the host matches the specified IP address
    * pattern. Pattern and mask specification is done the same way as for SOCKS
    * configuration.
-   * 
+   *
    * Example: isInNet(host, "198.95.0.0", "255.255.0.0") is true if the IP
    * address of the host matches 198.95.*.*.
-   * 
+   *
    * @param host
    *          a DNS host name, or IP address. If a host name is passed, it will
    *          be resolved into an IP address by this function.
@@ -80,7 +80,7 @@ public interface ScriptMethods {
 
   /*************************************************************************
    * Extension of the isInNet method to support IPv6.
-   * 
+   *
    * @param ipAddress
    *          an IP4 or IP6 address
    * @param ipPrefix
@@ -95,7 +95,7 @@ public interface ScriptMethods {
   /*************************************************************************
    * Resolves the given DNS host name into an IP address, and returns it in the
    * dot separated format as a string.
-   * 
+   *
    * @param host
    *          the host to resolve.
    * @return the resolved IP, empty string if not resolvable.
@@ -115,7 +115,7 @@ public interface ScriptMethods {
   /*************************************************************************
    * Returns the IP address of the host that the process is running on, as a
    * string in the dot-separated integer format.
-   * 
+   *
    * @return an IP as string.
    ************************************************************************/
 
@@ -124,7 +124,7 @@ public interface ScriptMethods {
   /*************************************************************************
    * Returns a list of IP4 and IP6 addresses of the host that the process is
    * running on. The list is separated with semicolons.
-   * 
+   *
    * @return the list, empty string if not available.
    ************************************************************************/
 
@@ -132,7 +132,7 @@ public interface ScriptMethods {
 
   /*************************************************************************
    * Returns the number of DNS domain levels (number of dots) in the host name.
-   * 
+   *
    * @param host
    *          is the host name from the URL.
    * @return number of DNS domain levels.
@@ -144,7 +144,7 @@ public interface ScriptMethods {
    * Returns true if the string matches the specified shell expression.
    * Actually, currently the patterns are shell expressions, not regular
    * expressions.
-   * 
+   *
    * @param str
    *          is any string to compare (e.g. the URL, or the host name).
    * @param shexp
@@ -163,7 +163,7 @@ public interface ScriptMethods {
    * condition is true if the current weekday is in between those two weekdays.
    * Bounds are inclusive. If the "GMT" parameter is specified, times are taken
    * to be in GMT, otherwise the local time zone is used.
-   * 
+   *
    * @param wd1
    *          weekday 1 is one of SUN MON TUE WED THU FRI SAT
    * @param wd2
@@ -183,7 +183,7 @@ public interface ScriptMethods {
    * are specified then the bounds are inclusive. If the "GMT" parameter is
    * specified, times are taken to be in GMT, otherwise the local time zone is
    * used.
-   * 
+   *
    * @param day1
    *          is the day of month between 1 and 31 (as an integer).
    * @param month1
@@ -211,7 +211,7 @@ public interface ScriptMethods {
    * value. If "from" and "to" are specified then the bounds are inclusive. If
    * the "GMT" parameter is specified, times are taken to be in GMT, otherwise
    * the local time zone is used.<br/>
-   * 
+   *
    * <pre>
    * timeRange(hour)
    * timeRange(hour1, hour2)
@@ -219,7 +219,7 @@ public interface ScriptMethods {
    * timeRange(hour1, min1, sec1, hour2, min2, sec2)
    * timeRange(hour1, min1, sec1, hour2, min2, sec2, gmt)
    * </pre>
-   * 
+   *
    * @param hour1
    *          is the hour from 0 to 23. (0 is midnight, 23 is 11 pm.)
    * @param min1
@@ -243,7 +243,7 @@ public interface ScriptMethods {
   /*************************************************************************
    * Sorts a list of IP4 and IP6 addresses. Separated by semicolon. Dual
    * addresses first, then IPv6 and last IPv4.
-   * 
+   *
    * @param ipAddressList
    *          the address list.
    * @return the sorted list, empty string if sort is not possible
@@ -253,7 +253,7 @@ public interface ScriptMethods {
 
   /*************************************************************************
    * Gets the version of the PAC extension that is available.
-   * 
+   *
    * @return the extension version, currently 1.0
    ************************************************************************/
 

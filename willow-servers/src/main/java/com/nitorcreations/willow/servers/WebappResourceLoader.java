@@ -48,12 +48,14 @@ public class WebappResourceLoader extends ResourceLoader {
   public boolean isSourceModified(Resource resource) {
     try {
       URL url = servletContext.getResource(resource.getName());
-      if (url == null) return true;
+      if (url == null) {
+        return true;
+      }
       if (url.toString().startsWith("file:")) {
         return urlToFile(url).lastModified() > resource.getLastModified();
       } else if (url.toString().startsWith("jar:")) {
         String sUrl = url.toString();
-        String fName = sUrl.split("\\!")[0].substring(4); 
+        String fName = sUrl.split("\\!")[0].substring(4);
         return urlToFile(new URL(fName)).lastModified() > resource.getLastModified();
       } else {
         return true;
@@ -76,12 +78,14 @@ public class WebappResourceLoader extends ResourceLoader {
     long now = System.currentTimeMillis();
     try {
       URL url = servletContext.getResource(resource.getName());
-      if (url == null) return now;
+      if (url == null) {
+        return now;
+      }
       if (url.toString().startsWith("file:")) {
         return urlToFile(url).lastModified();
       } else if (url.toString().startsWith("jar:")) {
         String sUrl = url.toString();
-        String fName = sUrl.split("\\!")[0].substring(4); 
+        String fName = sUrl.split("\\!")[0].substring(4);
         return urlToFile(new URL(fName)).lastModified();
       } else {
         return now;

@@ -21,7 +21,9 @@ public class ChildCpuMetric extends FullMessageMultiseriesMetric<ProcessCPU, Lon
     HashMap<String, List<Double>> data = new HashMap<>();
     for (ProcessCPU next : preceeding) {
       String childName = next.getFirstTagWithPrefix(categoryPrefix);
-      if (childName != null) childName = childName.substring(categoryPrefix.length());
+      if (childName != null) {
+        childName = childName.substring(categoryPrefix.length());
+      }
       List<Double> nextData = data.get(childName);
       if (nextData == null) {
         nextData = new ArrayList<Double>();
@@ -40,6 +42,6 @@ public class ChildCpuMetric extends FullMessageMultiseriesMetric<ProcessCPU, Lon
       nextPoint.x = stepTime;
       nextPoint.y = median(next.getValue());
       result.values.add(nextPoint);
-    } 
+    }
   }
 }

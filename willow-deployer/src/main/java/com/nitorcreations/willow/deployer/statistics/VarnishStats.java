@@ -55,7 +55,7 @@ public class VarnishStats extends AbstractStatisticsSender {
           transmitter.queue(send);
         } else {
           logger.log(Level.INFO, "varnishstat returned " + ret + "\n" +  new String(out.toByteArray(), StandardCharsets.UTF_8) + "\n"
-             + new String(err.toByteArray(), StandardCharsets.UTF_8));
+              + new String(err.toByteArray(), StandardCharsets.UTF_8));
         }
         nextStats = now + interval;
       }

@@ -31,17 +31,17 @@ public class IterableNodeList implements Iterable<Node> {
   public Node item(int index) {
     synchronized (list) {
       return list.item(index);
-    }               
+    }
   }
   public int getLength() {
     synchronized (list) {
       return list.getLength();
-    }               
+    }
   }
   public int getIndex() {
     synchronized (list) {
       return index - 1;
-    }               
+    }
   }
   @Override
   public Iterator<Node> iterator() {
@@ -55,8 +55,9 @@ public class IterableNodeList implements Iterable<Node> {
       @Override
       public Node next() {
         synchronized (list) {
-          if (index >= list.getLength())
+          if (index >= list.getLength()) {
             throw new NoSuchElementException();
+          }
           return list.item(index++);
         }
       }

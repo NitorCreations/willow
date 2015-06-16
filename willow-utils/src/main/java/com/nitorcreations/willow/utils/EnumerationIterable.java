@@ -13,18 +13,18 @@ public class EnumerationIterable<T> implements Iterable<T> {
   @Override
   public Iterator<T> iterator() {
     return new Iterator<T>() {
-    	@Override
-  		public boolean hasNext() {
-	    	return enumeration.hasMoreElements();
-	    }
-  		@Override
-  		public T next() {
-  			return enumeration.nextElement();
-  		}
+      @Override
+      public boolean hasNext() {
+        return enumeration.hasMoreElements();
+      }
+      @Override
+      public T next() {
+        return enumeration.nextElement();
+      }
       @Override
       public void remove() {
         throw new UnsupportedOperationException("Remove not supported in underlying enumeration");
       }
-  	};
+    };
   }
 }

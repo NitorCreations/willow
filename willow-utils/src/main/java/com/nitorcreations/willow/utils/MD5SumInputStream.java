@@ -44,7 +44,7 @@ public class MD5SumInputStream extends FilterInputStream {
       justification="null check in check-with-resources magic bytecode")
   public static byte[] getMd5FromURL(URL url) throws IOException {
     try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-      InputStream in = url.openConnection().getInputStream()) {
+        InputStream in = url.openConnection().getInputStream()) {
       int read=0;
       byte[] buff = new byte[1024 * 4];
       while (-1 < (read = in.read(buff))) {
@@ -60,7 +60,7 @@ public class MD5SumInputStream extends FilterInputStream {
     byte[] data = new byte[len / 2];
     for (int i = 0; i < len; i += 2) {
       data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-        + Character.digit(s.charAt(i+1), 16));
+          + Character.digit(s.charAt(i+1), 16));
     }
     return data;
   }

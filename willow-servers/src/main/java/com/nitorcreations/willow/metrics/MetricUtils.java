@@ -37,15 +37,17 @@ public abstract class MetricUtils {
     return data.get(data.size() / 2);
   }
   public static Long sumLong(List<Long> list) {
-    Long sum= 0L; 
-    for (Long i:list)
-        sum = sum + i;
+    Long sum= 0L;
+    for (Long i:list) {
+      sum = sum + i;
+    }
     return sum;
   }
   public Double sumDouble(List<Double> list) {
-    Double sum= 0D; 
-    for (Double i:list)
-       sum = sum + i;
+    Double sum= 0D;
+    for (Double i:list) {
+      sum = sum + i;
+    }
     return sum;
   }
 }

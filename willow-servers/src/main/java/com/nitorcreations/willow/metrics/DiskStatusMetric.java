@@ -36,11 +36,13 @@ public class DiskStatusMetric extends AbstractMetric<List<SeriesData<String, Lon
       String name = (String) results.get("name").getValue();
       long[] retRes = new long[2];
       retRes[0] = ((Number) results.get("total").value()).longValue();
-      if (retRes[0] == 0)
+      if (retRes[0] == 0) {
         continue;
+      }
       retRes[1] = ((Number) results.get("free").value()).longValue();
-      if (data.containsKey(name))
+      if (data.containsKey(name)) {
         break;
+      }
       data.put(name, retRes);
     }
     List<SeriesData<String, Long>> ret = new ArrayList<>();

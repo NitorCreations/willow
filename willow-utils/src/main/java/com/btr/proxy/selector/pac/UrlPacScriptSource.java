@@ -37,7 +37,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * Constructor
-   * 
+   *
    * @param url
    *          the URL to download the script from.
    ************************************************************************/
@@ -50,10 +50,11 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * getScriptContent
-   * 
+   *
    * @see com.btr.proxy.selector.pac.PacScriptSource#getScriptContent()
    ************************************************************************/
 
+  @Override
   public synchronized String getScriptContent() throws IOException {
     if (this.scriptContent == null || this.expireAtMillis > 0
         && this.expireAtMillis < System.currentTimeMillis()) {
@@ -78,7 +79,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * Reads a PAC script from a local file.
-   * 
+   *
    * @param scriptUrl
    * @return the content of the script file.
    * @throws IOException
@@ -114,7 +115,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * Downloads the script from a webserver.
-   * 
+   *
    * @param url
    *          the URL to the script file.
    * @return the script content.
@@ -162,7 +163,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * Reads the whole content available into a String.
-   * 
+   *
    * @param r
    *          to read from.
    * @return the complete PAC file content.
@@ -180,7 +181,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * Build a BufferedReader around the open HTTP connection.
-   * 
+   *
    * @param con
    *          to read from
    * @return the BufferedReader.
@@ -198,7 +199,7 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * Configure the connection to download from.
-   * 
+   *
    * @param url
    *          to get the pac file content from
    * @return a HTTPUrlConnecion to this url.
@@ -207,9 +208,9 @@ public class UrlPacScriptSource implements PacScriptSource {
    ************************************************************************/
 
   private HttpURLConnection setupHTTPConnection(String url) throws IOException,
-      MalformedURLException {
+  MalformedURLException {
     HttpURLConnection con = (HttpURLConnection) new URL(url)
-        .openConnection(Proxy.NO_PROXY);
+    .openConnection(Proxy.NO_PROXY);
     con.setConnectTimeout(getTimeOut(OVERRIDE_CONNECT_TIMEOUT,
         DEFAULT_CONNECT_TIMEOUT));
     con.setReadTimeout(getTimeOut(OVERRIDE_READ_TIMEOUT, DEFAULT_READ_TIMEOUT));
@@ -222,7 +223,7 @@ public class UrlPacScriptSource implements PacScriptSource {
   /*************************************************************************
    * Gets the timeout value from a property or uses the given default value if
    * the property cannot be parsed.
-   * 
+   *
    * @param overrideProperty
    *          the property to define the timeout value in milliseconds
    * @param defaultValue
@@ -248,7 +249,7 @@ public class UrlPacScriptSource implements PacScriptSource {
   /*************************************************************************
    * Response Content-Type could be something like this:
    * application/x-ns-proxy-autoconfig; charset=UTF-8
-   * 
+   *
    * @param contentType
    *          header field.
    * @return the extracted charset if set else a default charset.
@@ -278,10 +279,11 @@ public class UrlPacScriptSource implements PacScriptSource {
 
   /*************************************************************************
    * isScriptValid
-   * 
+   *
    * @see com.btr.proxy.selector.pac.PacScriptSource#isScriptValid()
    ************************************************************************/
 
+  @Override
   public boolean isScriptValid() {
     try {
       String script = getScriptContent();

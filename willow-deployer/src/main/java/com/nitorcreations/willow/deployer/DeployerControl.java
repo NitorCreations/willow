@@ -2,8 +2,8 @@ package com.nitorcreations.willow.deployer;
 
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
+import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +30,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
-
 import org.eclipse.sisu.space.SpaceModule;
 import org.eclipse.sisu.space.URLClassSpace;
 import org.eclipse.sisu.wire.WireModule;
@@ -46,6 +44,7 @@ import sun.management.ConnectorAddressLink;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.protocols.Register;
+import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.RequestCustomizer;
 import com.nitorcreations.willow.utils.SimpleFormatter;
@@ -71,7 +70,7 @@ public class DeployerControl {
   static {
     try {
       Register.doIt();
-      System.setProperty(PROPERTY_KEY_DEPLOYER_HOST, 
+      System.setProperty(PROPERTY_KEY_DEPLOYER_HOST,
           injector.getInstance(SigarProxy.class).getNetInfo().getHostName());
     } catch (Throwable e) {
       e.printStackTrace();
@@ -80,14 +79,16 @@ public class DeployerControl {
   }
 
   public void stopOld(String[] args) {
-    if (args.length < 1)
+    if (args.length < 1) {
       usage("At least one argument expected: {name}");
+    }
     deployerName = args[0];
     // Stop
     try {
       long mypid = sigar.getPid();
-      if (mypid <= 0)
+      if (mypid <= 0) {
         throw new RuntimeException("Failed to resolve own pid");
+      }
       long firstPid = findOldDeployerPid(deployerName);
       String timeOutEnv = System.getenv(ENV_DEPLOYER_TERM_TIMEOUT);
       long termTimeout = 60000;
@@ -96,7 +97,9 @@ public class DeployerControl {
       }
       if (firstPid > 0) {
         try (JMXConnector conn = getJMXConnector(firstPid)) {
-          if (conn == null) throw new RuntimeException("Failed to connect to running deployer");
+          if (conn == null) {
+            throw new RuntimeException("Failed to connect to running deployer");
+          }
           MBeanServerConnection server = conn.getMBeanServerConnection();
           MainMBean proxy = JMX.newMBeanProxy(server, OBJECT_NAME, MainMBean.class);
           proxy.stop();
@@ -124,7 +127,7 @@ public class DeployerControl {
       }
     }
     return pidSet;
-  }    
+  }
   protected void killWithQuery(String query, long termTimeout, long mypid) throws SigarException, IOException, InterruptedException {
     long start = System.currentTimeMillis();
     List<Long> pids = getPidsExcludingPids(query, mypid);
@@ -134,8 +137,9 @@ public class DeployerControl {
       }
       TimeUnit.SECONDS.sleep(2);
       pids = getPidsExcludingPids(query, mypid);
-      if (System.currentTimeMillis() > (start + termTimeout))
+      if (System.currentTimeMillis() > (start + termTimeout)) {
         break;
+      }
     }
     while (pids.size() > 0) {
       for (Long nextpid : pids) {
@@ -149,8 +153,8 @@ public class DeployerControl {
     try {
       String address = ConnectorAddressLink.importFrom((int) pid);
       if (address == null) {
-          startManagementAgent(pid);
-          address = ConnectorAddressLink.importFrom((int) pid);
+        startManagementAgent(pid);
+        address = ConnectorAddressLink.importFrom((int) pid);
       }
       JMXServiceURL jmxUrl = new JMXServiceURL(address);
       return JMXConnectorFactory.connect(jmxUrl);
@@ -160,19 +164,19 @@ public class DeployerControl {
     }
   }
   private static void startManagementAgent(long pid) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
-      VirtualMachine attachedVm = VirtualMachine.attach("" + pid);
-      String home = attachedVm.getSystemProperties().getProperty("java.home");
-      File f = Paths.get(home, "jre", "lib", "management-agent.jar").toFile();
+    VirtualMachine attachedVm = VirtualMachine.attach("" + pid);
+    String home = attachedVm.getSystemProperties().getProperty("java.home");
+    File f = Paths.get(home, "jre", "lib", "management-agent.jar").toFile();
+    if (!f.exists()) {
+      f = Paths.get(home, "lib", "management-agent.jar").toFile();
       if (!f.exists()) {
-        f = Paths.get(home, "lib", "management-agent.jar").toFile();
-        if (!f.exists()) {
-          throw new IOException("Management agent not found");
-        }
+        throw new IOException("Management agent not found");
       }
-      String agent = f.getCanonicalPath();
-      log.fine("Loading " + agent + " into target VM...");
-      attachedVm.loadAgent(agent);
-      attachedVm.detach();
+    }
+    String agent = f.getCanonicalPath();
+    log.fine("Loading " + agent + " into target VM...");
+    attachedVm.loadAgent(agent);
+    attachedVm.detach();
   }
   protected void usage(String error) {
     System.err.println(error);
@@ -212,44 +216,44 @@ public class DeployerControl {
   protected List<Long> findChildPids(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
     return getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
-      ",Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
+        ",Env.W_DEPLOYER_IDENTIFIER.re=.+", mypid);
   }
   protected List<Long> findOldDeployerPids() throws SigarException {
     long mypid = sigar.getPid();
     List<Long> pids = getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".re=.+,Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
     List<Long> parentPids = new ArrayList<>();
     for (Long next : pids) {
-        String name = sigar.getProcExe(next).getName();
-        if (name.endsWith(".exe")) {
-          name = name.substring(0, name.length() - 4);
-        }
-        if (name.endsWith("w")) {
-          name = name.substring(0, name.length() - 1);
-        }
-        if (name.endsWith("java")) {
-          parentPids.add(next);
-        }
+      String name = sigar.getProcExe(next).getName();
+      if (name.endsWith(".exe")) {
+        name = name.substring(0, name.length() - 4);
+      }
+      if (name.endsWith("w")) {
+        name = name.substring(0, name.length() - 1);
+      }
+      if (name.endsWith("java")) {
+        parentPids.add(next);
+      }
     }
     return parentPids;
   }
   protected long findOldDeployerPid(String deployerName) throws SigarException {
     long mypid = sigar.getPid();
-    List<Long> pids = getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName + 
-      ",Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
+    List<Long> pids = getPidsExcludingPids("Env." + ENV_DEPLOYER_NAME + ".eq=" + deployerName +
+        ",Args.*.eq=com.nitorcreations.willow.deployer.Main", mypid);
     if (pids.isEmpty()) {
       return -1;
     }
     for (Long next : pids) {
-        String name = sigar.getProcExe(next).getName();
-        if (name.endsWith(".exe")) {
-          name = name.substring(0, name.length() - 4);
-        }
-        if (name.endsWith("w")) {
-          name = name.substring(0, name.length() - 1);
-        }
-        if (name.endsWith("java")) {
-          return next;
-        }
+      String name = sigar.getProcExe(next).getName();
+      if (name.endsWith(".exe")) {
+        name = name.substring(0, name.length() - 4);
+      }
+      if (name.endsWith("w")) {
+        name = name.substring(0, name.length() - 1);
+      }
+      if (name.endsWith("java")) {
+        return next;
+      }
     }
     return -1;
   }

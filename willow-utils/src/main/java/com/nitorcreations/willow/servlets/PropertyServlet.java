@@ -64,11 +64,11 @@ public class PropertyServlet extends HttpServlet {
       res.sendError(405, "Only GET allowed");
       return;
     }
-    String path = ((HttpServletRequest) req).getPathInfo();
+    String path = req.getPathInfo();
     if (path == null) {
-      path = ((HttpServletRequest) req).getServletPath();
+      path = req.getServletPath();
     }
-	String rootProperties = path.substring(1);
+    String rootProperties = path.substring(1);
     MergeableProperties mrg = null;
     if (config.getInitParameter("property.roots") != null) {
       String roots = config.getInitParameter("property.roots");
@@ -81,13 +81,13 @@ public class PropertyServlet extends HttpServlet {
       mrg = new MergeableProperties();
     }
     MergeableProperties seed = new MergeableProperties();
-    for (Entry<String, String[]> next : ((HttpServletRequest) req).getParameterMap().entrySet()) {
+    for (Entry<String, String[]> next : req.getParameterMap().entrySet()) {
       seed.setProperty(next.getKey(), StringUtils.join(next.getValue(), ","), false);
     }
-    Enumeration<String> it = ((HttpServletRequest) req).getHeaderNames();
+    Enumeration<String> it = req.getHeaderNames();
     while (it.hasMoreElements()) {
       String key = it.nextElement();
-      String value = ((HttpServletRequest) req).getHeader(key);
+      String value = req.getHeader(key);
       seed.setProperty(key.toLowerCase(Locale.ENGLISH), value, false);
     }
     ServletContext ctx = getServletContext();
@@ -95,7 +95,7 @@ public class PropertyServlet extends HttpServlet {
     String context = ctx.getContextPath() == null ? "" : ctx.getContextPath();
     seed.setProperty("context", context, false);
     res.setContentType("text/plain;charset=utf-8");
-    ((HttpServletResponse) res).setStatus(200);
+    res.setStatus(200);
     mrg.merge(seed, rootProperties);
     if (propertySource != null) {
       mrg.deObfuscate(propertySource, obfuscatedPrefix);

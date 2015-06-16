@@ -18,6 +18,7 @@ import com.nitorcreations.willow.messages.metrics.TimePoint;
 public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetric<T> {
   protected SortedMap<Long, L> rawData = new TreeMap<Long, L>();
   private Map<String, SearchHitField> fields;
+  @Override
   public abstract String getType();
 
   public abstract String[] requiresFields();
@@ -28,8 +29,9 @@ public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetr
       Long timestamp = fields.get("timestamp").value();
       List<T> nextData = new ArrayList<>();
       for (String nextField : requiresFields()) {
-        if (fields.get(nextField) == null)
+        if (fields.get(nextField) == null) {
           break;
+        }
         nextData.add((T) fields.get(nextField).value());
       }
       if (nextData.size() == requiresFields().length) {
@@ -52,8 +54,9 @@ public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetr
     readResponse(response);
     int len = (int) ((conf.getStop() - conf.getStart()) / conf.getStep()) + 1;
     List<TimePoint<L>> ret = new ArrayList<TimePoint<L>>();
-    if (rawData.isEmpty())
+    if (rawData.isEmpty()) {
       return ret;
+    }
     List<Long> retTimes = new ArrayList<Long>();
     long curr = conf.getStart();
     for (int i = 0; i < len; i++) {
@@ -75,7 +78,7 @@ public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetr
   }
 
   protected L estimateValue(List<L> preceeding, long stepTime, long stepLen, MetricConfig conf) {
-    return (L) preceeding.get(preceeding.size() - 1);
+    return preceeding.get(preceeding.size() - 1);
   }
 
   protected abstract L fillMissingValue();

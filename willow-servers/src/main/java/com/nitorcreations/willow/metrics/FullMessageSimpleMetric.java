@@ -15,15 +15,16 @@ public abstract class FullMessageSimpleMetric<T extends AbstractMessage, Y exten
   @Override
   public Collection<TimePoint<Y>> processData(long start, long stop, int step, MetricConfig conf) {
     List<TimePoint<Y>> ret = new ArrayList<TimePoint<Y>>();
-    if (rawData.isEmpty())
+    if (rawData.isEmpty()) {
       return ret;
+    }
     List<Long> retTimes = new LinkedList<Long>();
     long curr = stop;
     while (curr > start) {
       retTimes.add(0, Long.valueOf(curr));
       curr -= step;
     }
-    rawData = rawData.tailMap(curr - step + 1); 
+    rawData = rawData.tailMap(curr - step + 1);
     for (Long nextTime : retTimes) {
       long afterNextTime = nextTime + 1;
       Collection<T> preceeding = rawData.headMap(afterNextTime).values();

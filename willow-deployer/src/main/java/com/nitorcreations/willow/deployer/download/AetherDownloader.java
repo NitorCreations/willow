@@ -88,8 +88,9 @@ public class AetherDownloader implements Callable<File> {
   }
   @Override
   public File call() throws Exception {
-    if (artifact == null)
+    if (artifact == null) {
       return null;
+    }
     return downloadArtifact(artifact);
   }
 }

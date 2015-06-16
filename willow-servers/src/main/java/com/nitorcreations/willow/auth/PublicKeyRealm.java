@@ -23,8 +23,9 @@ public class PublicKeyRealm implements Realm {
   }
   public PublicKeyRealm(AuthorizedKeys authorizedKeys) {
     this();
-    if (authorizedKeys != null)
+    if (authorizedKeys != null) {
       this.setAuthorizedKeys(authorizedKeys);
+    }
   }
   @Override
   public String getName() {
@@ -51,7 +52,9 @@ public class PublicKeyRealm implements Realm {
           break;
         }
       }
-      if (found) break;
+      if (found) {
+        break;
+      }
     }
     if (found) {
       SimpleAuthenticationInfo ret = new SimpleAuthenticationInfo();

@@ -45,6 +45,7 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
   private long nextDiskIO;
   private long nextOs;
 
+  @Override
   public void stop() {
     synchronized (this) {
       running.set(false);

@@ -17,8 +17,9 @@ public class TestServlet extends HttpServlet {
   @Override
   public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
     String[] wait = req.getParameterValues("wait");
-    if (wait == null)
+    if (wait == null) {
       wait = new String[] { randomWait() };
+    }
     try {
       Thread.sleep(Integer.parseInt(wait[0]));
       res.setContentType("text/plain");

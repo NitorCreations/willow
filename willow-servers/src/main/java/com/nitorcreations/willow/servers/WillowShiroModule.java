@@ -27,7 +27,7 @@ public class WillowShiroModule extends ShiroWebModule {
   @Override
   protected void configureShiroWeb() {
     Key<? extends AuthenticatingFilter> endUserFilter = getEndUserFilter();
-    Key<? extends AuthenticatingFilter> deployerFilter = getDeployerFilter(); 
+    Key<? extends AuthenticatingFilter> deployerFilter = getDeployerFilter();
     bindDeployerRealm();
     bindEnduserRealm();
     addFilterChain("/test/**", ANON);
@@ -40,7 +40,7 @@ public class WillowShiroModule extends ShiroWebModule {
     addFilterChain("/poll-internal/**", deployerFilter);
     addFilterChain("/logout/**", LOGOUT);
     addFilterChain("/rawterminal/**", endUserFilter);
-    
+
     addFilterChain("/**", endUserFilter);
   }
   protected void bindDeployerRealm() {
@@ -48,7 +48,7 @@ public class WillowShiroModule extends ShiroWebModule {
       bindRealm().toConstructor(PublicKeyRealm.class.getConstructor(AuthorizedKeys.class)).asEagerSingleton();
     } catch (NoSuchMethodException e) {
       addError(e);
-    }    
+    }
   }
   protected void bindEnduserRealm() {
     try {
@@ -59,11 +59,11 @@ public class WillowShiroModule extends ShiroWebModule {
       }
     } catch (NoSuchMethodException e) {
       addError(e);
-    }    
+    }
   }
   @Provides
   Ini loadShiroIni() {
-      return Ini.fromResourcePath(System.getProperty("shiro.ini", "classpath:shiro.ini"));
+    return Ini.fromResourcePath(System.getProperty("shiro.ini", "classpath:shiro.ini"));
   }
   @Provides
   AuthorizedKeys loadAuthorizedKeys() {
@@ -75,7 +75,7 @@ public class WillowShiroModule extends ShiroWebModule {
   }
   protected Key<? extends AuthenticatingFilter> getEndUserFilter() {
     return useGitHubOAuth()
-            ? Key.get(GitHubOAuthAuthenticatingFilter.class)
+        ? Key.get(GitHubOAuthAuthenticatingFilter.class)
             : AUTHC_BASIC;
   }
   protected Key<? extends AuthenticatingFilter> getDeployerFilter() {

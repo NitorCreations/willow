@@ -12,14 +12,14 @@ import javax.script.ScriptException;
  * PAC parser using the Rhino JavaScript engine bundled with Java 1.6<br/>
  * If you need PAC support with Java 1.5 then you should have a look at
  * RhinoPacScriptParser.
- * 
+ *
  * More information about PAC can be found there:<br/>
  * <a
  * href="http://en.wikipedia.org/wiki/Proxy_auto-config">Proxy_auto-config</a><br/>
  * <a href=
  * "http://homepages.tesco.net/~J.deBoynePollard/FGA/web-browser-auto-proxy-configuration.html"
  * >web-browser-auto-proxy-configuration</a> </p>
- * 
+ *
  * @author Bernd Rosstauscher (proxyvole@rosstauscher.de) Copyright 2009
  ****************************************************************************/
 public class JavaxPacScriptParser implements PacScriptParser {
@@ -31,7 +31,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
 
   /*************************************************************************
    * Constructor
-   * 
+   *
    * @param source
    *          the source for the PAC script.
    * @throws ProxyEvaluationException
@@ -46,7 +46,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
   /*************************************************************************
    * Initializes the JavaScript engine and adds aliases for the functions
    * defined in ScriptMethods.
-   * 
+   *
    * @throws ProxyEvaluationException
    *           on error.
    ************************************************************************/
@@ -92,7 +92,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
 
   /*************************************************************************
    * Builds a JavaScript code snippet to call a function that we bind.
-   * 
+   *
    * @param functionName
    *          of the bound function
    * @param args
@@ -103,7 +103,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
   private String buildFunctionCallCode(String functionName, int args) {
     StringBuilder functionCall = new StringBuilder();
     functionCall.append(SCRIPT_METHODS_OBJECT).append(".").append(functionName)
-        .append("(");
+    .append("(");
     for (int i = 0; i < args; i++) {
       if (i > 0) {
         functionCall.append(",");
@@ -116,7 +116,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
 
   /***************************************************************************
    * Gets the source of the PAC script used by this parser.
-   * 
+   *
    * @return a PacScriptSource.
    **************************************************************************/
   @Override
@@ -126,7 +126,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
 
   /*************************************************************************
    * Evaluates the given URL and host against the PAC script.
-   * 
+   *
    * @param url
    *          the URL to evaluate.
    * @param host

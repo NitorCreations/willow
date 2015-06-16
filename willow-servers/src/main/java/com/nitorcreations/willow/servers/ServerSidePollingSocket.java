@@ -41,7 +41,9 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
     public PollTask(Session session, MetricConfig conf) {
       this.conf = conf;
       this.metric = metrics.get(conf.getMetricKey());
-      if (metric == null) throw new IllegalArgumentException("No metric found for " + conf.getMetricKey());
+      if (metric == null) {
+        throw new IllegalArgumentException("No metric found for " + conf.getMetricKey());
+      }
       long now = System.currentTimeMillis();
       this.currTimeDelay = now - conf.getStop();
       this.session = session;
@@ -78,10 +80,12 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
       log.log(Level.INFO, "Failed to schedule task", e);
     }
   }
+  @Override
   @OnWebSocketConnect
   public void onConnect(Session session) {
     super.onConnect(session);
   }
+  @Override
   @OnWebSocketClose
   public void onClose(int statusCode, String reason) {
     for (ScheduledFuture<?> next : pollers) {

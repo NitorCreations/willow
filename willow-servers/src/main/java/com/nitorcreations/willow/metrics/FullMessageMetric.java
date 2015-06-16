@@ -37,6 +37,7 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> extends Ab
     return processData(conf.getStart(), conf.getStop(), conf.getStep(), conf);
   }
 
+  @Override
   public String getType() {
     return MessageMapping.map(this.type).lcName();
   }

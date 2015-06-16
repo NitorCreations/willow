@@ -17,8 +17,9 @@ public class RestartChild extends DeployerControl {
   }
 
   public void doMain(String[] args) {
-    if (args.length < 1)
+    if (args.length < 1) {
       usage("At least one arguments expected: {role}");
+    }
     String deployerName = args[0];
     try {
       long firstPid = findOldDeployerPid(deployerName);

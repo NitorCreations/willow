@@ -46,7 +46,7 @@ public class VelocityServlet extends HttpServlet {
     velocity.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, JdkLogChute.class.getName());
     velocity.setProperty(RuntimeConstants.RESOURCE_LOADER, WebappResourceLoader.NAME);
     velocity.setProperty(WebappResourceLoader.NAME + '.' + RuntimeConstants.RESOURCE_LOADER + ".class",
-      WebappResourceLoader.class.getName());
+        WebappResourceLoader.class.getName());
     velocity.setApplicationAttribute(ServletContext.class.getName(), getServletContext());
     velocity.init(loadProperties());
     return velocity;
@@ -54,7 +54,7 @@ public class VelocityServlet extends HttpServlet {
 
   private Properties loadProperties() throws ServletException {
     try (InputStream resource = getClass().getClassLoader().getResourceAsStream(
-      this.configLocation)) {
+        this.configLocation)) {
       if (resource == null) {
         return new Properties();
       }
@@ -68,21 +68,21 @@ public class VelocityServlet extends HttpServlet {
 
   @Override
   protected void doGet(final HttpServletRequest request,
-    final HttpServletResponse response) throws ServletException,
-    IOException {
+      final HttpServletResponse response) throws ServletException,
+      IOException {
     render(request, response);
   }
 
   @Override
   protected void doPost(final HttpServletRequest request,
-    final HttpServletResponse response) throws ServletException,
-    IOException {
+      final HttpServletResponse response) throws ServletException,
+      IOException {
     render(request, response);
   }
 
   private void render(final HttpServletRequest request,
-    final HttpServletResponse response) throws ServletException, IOException {
-    
+      final HttpServletResponse response) throws ServletException, IOException {
+
     String templ = request.getServletPath();
     if (templ.isEmpty()) {
       templ = new URL(request.getRequestURL().toString()).getPath() + request.getRequestURI();

@@ -83,15 +83,16 @@ public class StatisticsConfig {
   }
 
   public long shortest() {
-    return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus, 
-      intervalProcs, intervalNet, intervalNetStat, intervalDiskIO, intervalOs);
+    return min(intervalCpus, intervalDisks, intervalJmx, intervalMem, intervalProcCpus,
+        intervalProcs, intervalNet, intervalNetStat, intervalDiskIO, intervalOs);
   }
 
   private static long min(long... vals) {
     long ret = Long.MAX_VALUE;
     for (long next : vals) {
-      if (next < ret)
+      if (next < ret) {
         ret = next;
+      }
     }
     return ret;
   }

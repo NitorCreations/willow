@@ -30,7 +30,7 @@ public class Status extends DeployerControl {
           }
         }
       } else {
-       firstPids = findOldDeployerPids();
+        firstPids = findOldDeployerPids();
       }
       for (long next : firstPids) {
         try (JMXConnector conn = getJMXConnector(next)) {

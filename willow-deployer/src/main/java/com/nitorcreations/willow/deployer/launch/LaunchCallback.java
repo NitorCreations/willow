@@ -4,5 +4,5 @@ public interface LaunchCallback {
   boolean autoRestartDefault();
   void postStart() throws Exception;
   void postStop() throws Exception;
-  
+
 }

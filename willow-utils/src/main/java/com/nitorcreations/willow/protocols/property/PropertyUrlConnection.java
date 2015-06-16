@@ -24,7 +24,9 @@ public class PropertyUrlConnection extends URLConnection {
     if (currentProperties.get() != null) {
       property = currentProperties.get().getProperty(url.getPath());
     }
-    if (property == null) throw new IOException("Property '" + url.getPath() + "' not found");
+    if (property == null) {
+      throw new IOException("Property '" + url.getPath() + "' not found");
+    }
     return new ByteArrayInputStream(property.getBytes(StandardCharsets.UTF_8));
   }
 }

@@ -22,7 +22,7 @@ public class ProxyEvaluationException extends IOException {
 
   /*************************************************************************
    * Constructor
-   * 
+   *
    * @param message
    *          the error message.
    * @param cause
@@ -35,7 +35,7 @@ public class ProxyEvaluationException extends IOException {
 
   /*************************************************************************
    * Constructor
-   * 
+   *
    * @param message
    *          the error message.
    ************************************************************************/
@@ -46,7 +46,7 @@ public class ProxyEvaluationException extends IOException {
 
   /*************************************************************************
    * Constructor
-   * 
+   *
    * @param cause
    *          the causing exception for exception chaining.
    ************************************************************************/

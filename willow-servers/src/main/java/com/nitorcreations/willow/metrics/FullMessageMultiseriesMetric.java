@@ -15,8 +15,9 @@ public abstract class FullMessageMultiseriesMetric<T extends AbstractMessage, X 
   public Collection<SeriesData<X, Y>> processData(long start, long stop, int step, MetricConfig conf) {
     int len = (int) ((stop - start) / step) + 1;
     Map<String, SeriesData<X, Y>> ret = new LinkedHashMap<String, SeriesData<X, Y>>();
-    if (rawData.isEmpty())
+    if (rawData.isEmpty()) {
       return ret.values();
+    }
     List<Long> retTimes = new ArrayList<Long>();
     long curr = start;
     for (int i = 0; i < len; i++) {

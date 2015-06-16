@@ -27,7 +27,7 @@ public class FilePollingProperties implements FileListener {
       this.log = Logger.getLogger(loggerName);
       this.level = level;
     }
-    
+
     @Override
     public void propertyValueChanged(String key, String newValue, String oldValue) {
       log.log(level, "CHANGE: " + key + " = " + oldValue + " => " + newValue);
@@ -60,7 +60,7 @@ public class FilePollingProperties implements FileListener {
     PollingFile backend = new PollingFile(source, this);
     backend.startListening();
   }
-  
+
   public MergeableProperties getProperties() {
     synchronized (properties) {
       return (MergeableProperties) properties.clone();
@@ -69,7 +69,7 @@ public class FilePollingProperties implements FileListener {
   public static void main(String[] args) throws IOException {
     new FilePollingProperties(args[0], new LoggingPropertyChangeListener("main", Level.INFO));
   }
-  
+
   @Override
   public void fileChanged(File file, Kind<Path> kind) {
     MergeableProperties oldProps ;
@@ -89,18 +89,18 @@ public class FilePollingProperties implements FileListener {
           properties.putAll(newProps);
         }
         for (Entry<String, String> next : newProps.backingEntrySet()) {
-            if (oldProps.containsKey(next.getKey())) {
-              if (!oldProps.getProperty(next.getKey()).equals(next.getValue())) {
-                listener.propertyValueChanged(next.getKey(), next.getValue(), oldProps.getProperty(next.getKey()));
-              }
-              oldProps.remove(next.getKey());
-            } else {
-              listener.propertyAdded(next.getKey(), next.getValue());
+          if (oldProps.containsKey(next.getKey())) {
+            if (!oldProps.getProperty(next.getKey()).equals(next.getValue())) {
+              listener.propertyValueChanged(next.getKey(), next.getValue(), oldProps.getProperty(next.getKey()));
             }
+            oldProps.remove(next.getKey());
+          } else {
+            listener.propertyAdded(next.getKey(), next.getValue());
           }
-          for (Entry<String, String> next : oldProps.backingEntrySet()) {
-            listener.propertyRemoved(next.getKey(), next.getValue());
-          }
+        }
+        for (Entry<String, String> next : oldProps.backingEntrySet()) {
+          listener.propertyRemoved(next.getKey(), next.getValue());
+        }
       } catch (IOException e) {
         logger.fine("Failed to load new properties");
       }

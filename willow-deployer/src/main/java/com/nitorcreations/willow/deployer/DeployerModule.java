@@ -53,13 +53,13 @@ public class DeployerModule extends AbstractModule {
       libName.append("libsigar-");
     }
     if (os.contains("mac") || os.contains("darwin")) {
-        if (arch.contains("64")) {
-            libName.append("universal64");
-        } else {
-            libName.append("universal");
-        }
+      if (arch.contains("64")) {
+        libName.append("universal64");
+      } else {
+        libName.append("universal");
+      }
     } else {
-        libName.append(arch);
+      libName.append(arch);
     }
     if (os.contains("win")) {
       libName.append("-winnt").append(".dll");

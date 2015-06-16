@@ -55,8 +55,9 @@ public class UrlDownloader implements Callable<File> {
   @Override
   @SuppressWarnings("PMD.EmptyWhileStmt")
   public File call() throws IOException {
-    if (url == null)
+    if (url == null) {
       return null;
+    }
     int retries = Integer.parseInt(properties.getProperty(PROPERTY_KEY_SUFFIX_RETRIES, properties.getProperty(PROPERTY_KEY_DOWNLOAD_RETRIES, "3")));
     int tryNo = 1;
     File workDir = new File(properties.getProperty(PROPERTY_KEY_WORKDIR, "."));
@@ -99,8 +100,8 @@ public class UrlDownloader implements Callable<File> {
           }
         }
         try (InputStream bIn = new BufferedInputStream(ProxyUtils.getUriInputStream(
-          properties.getProperty(PROPERTY_KEY_SUFFIX_PROXYAUTOCONF),
-          properties.getProperty(PROPERTY_KEY_SUFFIX_PROXY), url), FileUtil.BUFFER_LEN)) {
+            properties.getProperty(PROPERTY_KEY_SUFFIX_PROXYAUTOCONF),
+            properties.getProperty(PROPERTY_KEY_SUFFIX_PROXY), url), FileUtil.BUFFER_LEN)) {
           InputStream in = null;
           MD5SumInputStream md5in = null;
           if (md5 != null) {
@@ -148,8 +149,9 @@ public class UrlDownloader implements Callable<File> {
         }
       }
     }
-    if (target == null)
+    if (target == null) {
       throw new IOException("Failed to download " + url);
+    }
     return target;
   }
 }

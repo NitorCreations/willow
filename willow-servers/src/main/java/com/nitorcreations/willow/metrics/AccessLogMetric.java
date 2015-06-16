@@ -60,8 +60,9 @@ public class AccessLogMetric extends FullMessageMultiseriesMetric<AccessLogEntry
           break;
         }
       }
-      if (!inLimits)
+      if (!inLimits) {
         buckets[limitValues.length]++;
+      }
     }
     String lower = "";
     String upper = "" + limitValues[0];

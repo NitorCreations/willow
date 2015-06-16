@@ -21,7 +21,9 @@ public class ObfuscatorTool {
   public static final Pattern ENCRYPTED_TOKEN_PATTERN = Pattern.compile("^([^\\$\\{]*)\\$?\\{([^\\{]*)\\}(.*)$");
 
   public static void main(String[] args) throws FileNotFoundException, IOException {
-    if (args.length == 0) usage("At least one argument expected");
+    if (args.length == 0) {
+      usage("At least one argument expected");
+    }
     obfuscatedPrefix = System.getProperty("obfuscatedPrefix", obfuscatedPrefix);
     SecureRandom random = new SecureRandom();
     MergeableProperties in = new MergeableProperties();
@@ -47,14 +49,30 @@ public class ObfuscatorTool {
         out.write(printBase64Binary(key).getBytes(StandardCharsets.UTF_8));
         out.flush();
       }
-      if (!keyFile.setExecutable(false, true)) System.out.println("# Failed to set keyfile as not executable");
-      if (!keyFile.setExecutable(false, false)) System.out.println("# Failed to set keyfile as not executable");
-      if (!keyFile.setReadable(false, true)) System.out.println("# Failed to set keyfile as not readable");
-      if (!keyFile.setReadable(false, false)) System.out.println("# Failed to set keyfile as not readable");
-      if (!keyFile.setWritable(false, true)) System.out.println("# Failed to set keyfile as not writable");
-      if (!keyFile.setWritable(false, false)) System.out.println("# Failed to set keyfile as not readable");
-      if (!keyFile.setReadable(true, true)) System.out.println("# Failed to set keyfile as readable by owner");
-      if (!keyFile.setWritable(true, true)) System.out.println("# Failed to set keyfile as writable by owner");
+      if (!keyFile.setExecutable(false, true)) {
+        System.out.println("# Failed to set keyfile as not executable");
+      }
+      if (!keyFile.setExecutable(false, false)) {
+        System.out.println("# Failed to set keyfile as not executable");
+      }
+      if (!keyFile.setReadable(false, true)) {
+        System.out.println("# Failed to set keyfile as not readable");
+      }
+      if (!keyFile.setReadable(false, false)) {
+        System.out.println("# Failed to set keyfile as not readable");
+      }
+      if (!keyFile.setWritable(false, true)) {
+        System.out.println("# Failed to set keyfile as not writable");
+      }
+      if (!keyFile.setWritable(false, false)) {
+        System.out.println("# Failed to set keyfile as not readable");
+      }
+      if (!keyFile.setReadable(true, true)) {
+        System.out.println("# Failed to set keyfile as readable by owner");
+      }
+      if (!keyFile.setWritable(true, true)) {
+        System.out.println("# Failed to set keyfile as writable by owner");
+      }
     }
     Obfuscator.KeyDigest digest = Obfuscator.KeyDigest.MD5;
     if (System.getProperty("digest") != null) {
@@ -101,7 +119,7 @@ public class ObfuscatorTool {
       outProps.store(System.out, null);
     }
   }
-  @SuppressFBWarnings(value={"DM_EXIT"}, 
+  @SuppressFBWarnings(value={"DM_EXIT"},
       justification="ObfuscatorTool is a command-line utility and thus needs to convey proper exit value")
   private static void usage(String message) {
     System.err.println(message);

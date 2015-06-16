@@ -26,11 +26,11 @@ public abstract class TagListMetric implements Metric {
   @Override
   public List<String> calculateMetric(MetricConfig conf) {
     SearchRequestBuilder builder = client.prepareSearch(MetricUtils.getIndexes(conf.getStart(), conf.getStop(), client))
-      .setTypes(conf.getTypes())
+        .setTypes(conf.getTypes())
         .setSize(1000).addAggregation(AggregationBuilders.terms("tags")
-          .field("tags").size(500).include(tagPrefix + "_.*"));
+            .field("tags").size(500).include(tagPrefix + "_.*"));
     BoolQueryBuilder query = QueryBuilders.boolQuery()
-      .must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart()).to(conf.getStop()));
+        .must(QueryBuilders.rangeQuery("timestamp").from(conf.getStart()).to(conf.getStop()));
     for (String tag : conf.getTags()) {
       query = query.must(QueryBuilders.termQuery("tags", tag));
     }
@@ -46,6 +46,7 @@ public abstract class TagListMetric implements Metric {
     }
     return ret;
   }
+  @Override
   public boolean hasData(MetricConfig conf) {
     return true;
   }

@@ -30,7 +30,7 @@ public class MetricsServlet extends HttpServlet {
   private transient MetricConfigBuilder metricConfigBuilder;
   @Inject
   private transient Injector injector;
-  
+
   private ServletConfig config;
 
   @Override

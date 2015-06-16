@@ -15,9 +15,9 @@ public class HostUtil {
   public static String getHostName() {
     try {
       InetAddress ip = InetAddress.getLocalHost();
-        return ip.getHostName();
+      return ip.getHostName();
     } catch (UnknownHostException e) {
-        return "localhost";
+      return "localhost";
     }
   }
 

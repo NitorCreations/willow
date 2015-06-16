@@ -1,12 +1,13 @@
 package com.nitorcreations.willow.servers;
 
+import java.util.Collection;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+
 import com.nitorcreations.willow.messages.HostInfoMessage;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.HostInfoMetric;
-
-import javax.inject.Inject;
-import java.util.Collection;
-import java.util.logging.Logger;
 
 public class HostInfoHostLookupService implements HostLookupService {
 

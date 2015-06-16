@@ -19,15 +19,18 @@ public class FileUtil {
   public static final int BUFFER_LEN = 8 * 1024;
 
   public static synchronized boolean createDir(File dir) {
-    if (dir == null) return false;
+    if (dir == null) {
+      return false;
+    }
     return dir.exists() || dir.mkdirs();
   }
 
   public static String getFileName(String name) {
     int lastSeparator = Math.max(Math.max(name.lastIndexOf(':'), name.lastIndexOf('/')), name.lastIndexOf('\\'));
     int queryIndex = name.lastIndexOf("?");
-    if (queryIndex < 0)
+    if (queryIndex < 0) {
       queryIndex = name.length();
+    }
     return name.substring(lastSeparator + 1, queryIndex);
   }
 
@@ -113,13 +116,15 @@ public class FileUtil {
         throw e0;
       } finally {
         try {
-          if (in != null)
+          if (in != null) {
             in.close();
+          }
         } catch (IOException e1) {
           throw e1;
         } finally {
-          if (bOut != null)
+          if (bOut != null) {
             bOut.close();
+          }
         }
       }
     }

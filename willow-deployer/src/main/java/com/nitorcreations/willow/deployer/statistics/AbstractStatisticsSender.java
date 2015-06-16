@@ -28,6 +28,7 @@ public abstract class AbstractStatisticsSender implements StatisticsSender {
     }
   }
 
+  @Override
   public void stop() {
     running.set(false);
     if (thread != null) {
