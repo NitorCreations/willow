@@ -47,10 +47,10 @@ public abstract class SimpleMetric<L extends Comparable, T> extends AbstractMetr
 
   @Override
   public List<TimePoint<L>> calculateMetric(MetricConfig conf) {
-    List<String> fields = new ArrayList<String>();
-    fields.add("timestamp");
-    fields.addAll(Arrays.asList(requiresFields()));
-    SearchResponse response = executeQuery(client, conf, getType(), fields);
+    List<String> reqFields = new ArrayList<String>();
+    reqFields.add("timestamp");
+    reqFields.addAll(Arrays.asList(requiresFields()));
+    SearchResponse response = executeQuery(client, conf, getType(), reqFields);
     readResponse(response);
     int len = (int) ((conf.getStop() - conf.getStart()) / conf.getStep()) + 1;
     List<TimePoint<L>> ret = new ArrayList<TimePoint<L>>();

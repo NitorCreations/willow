@@ -32,22 +32,22 @@ public class ThreadData {
     this.suspended = threadInfo.isSuspended();
     this.threadState = threadInfo.getThreadState().toString();
 
-    StackTraceElement[] stackTrace = threadInfo.getStackTrace();
-    this.stackTrace = new StackTraceData[stackTrace.length];
-    for (int i = 0; i < stackTrace.length; i++) {
-      this.stackTrace[i] = new StackTraceData(stackTrace[i]);
+    StackTraceElement[] stackTraceData = threadInfo.getStackTrace();
+    this.stackTrace = new StackTraceData[stackTraceData.length];
+    for (int i = 0; i < stackTraceData.length; i++) {
+      this.stackTrace[i] = new StackTraceData(stackTraceData[i]);
     }
 
-    MonitorInfo[] lockedMonitors = threadInfo.getLockedMonitors();
-    this.lockedMonitors = new MonitorData[lockedMonitors.length];
-    for (int i = 0; i < lockedMonitors.length; i++) {
-      this.lockedMonitors[i] = new MonitorData(lockedMonitors[i]);
+    MonitorInfo[] lockedMonitorsData = threadInfo.getLockedMonitors();
+    this.lockedMonitors = new MonitorData[lockedMonitorsData.length];
+    for (int i = 0; i < lockedMonitorsData.length; i++) {
+      this.lockedMonitors[i] = new MonitorData(lockedMonitorsData[i]);
     }
 
-    LockInfo[] lockedSynchronizers = threadInfo.getLockedSynchronizers();
-    this.lockedSynchronizers = new LockData[lockedSynchronizers.length];
-    for (int i = 0; i < lockedSynchronizers.length; i++) {
-      this.lockedSynchronizers[i] = new LockData(lockedSynchronizers[i]);
+    LockInfo[] lockedSynchronizersData = threadInfo.getLockedSynchronizers();
+    this.lockedSynchronizers = new LockData[lockedSynchronizersData.length];
+    for (int i = 0; i < lockedSynchronizersData.length; i++) {
+      this.lockedSynchronizers[i] = new LockData(lockedSynchronizersData[i]);
     }
   }
 

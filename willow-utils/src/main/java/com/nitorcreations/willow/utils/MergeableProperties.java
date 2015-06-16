@@ -404,9 +404,9 @@ public class MergeableProperties extends Properties {
   }
 
   public void putAll(MergeableProperties toMerge) {
-    boolean allowScripts = this.allowScripts && toMerge.allowScripts;
+    boolean doAllowScripts = this.allowScripts && toMerge.allowScripts;
     for (Entry<String, String> next : toMerge.table.entrySet()) {
-      put(next.getKey(), next.getValue(), allowScripts);
+      put(next.getKey(), next.getValue(), doAllowScripts);
     }
   }
 

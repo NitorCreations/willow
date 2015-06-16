@@ -52,9 +52,9 @@ public class JavaxPacScriptParser implements PacScriptParser {
    ************************************************************************/
   private ScriptEngine setupEngine() throws ProxyEvaluationException {
     ScriptEngineManager mng = new ScriptEngineManager();
-    ScriptEngine engine = mng.getEngineByMimeType("text/javascript");
-    assert engine != null : "Javascript engine not available";
-    engine.put(SCRIPT_METHODS_OBJECT, new PacScriptMethods());
+    ScriptEngine newEngine = mng.getEngineByMimeType("text/javascript");
+    assert newEngine != null : "Javascript engine not available";
+    newEngine.put(SCRIPT_METHODS_OBJECT, new PacScriptMethods());
 
     Class<?> scriptMethodsClazz = ScriptMethods.class;
     Method[] scriptMethods = scriptMethodsClazz.getMethods();
@@ -79,7 +79,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
       }
       toEval.append(functionCall).append("; }");
       try {
-        engine.eval(toEval.toString());
+        newEngine.eval(toEval.toString());
       } catch (ScriptException e) {
         log.log(Level.INFO, "JS evaluation error when creating alias for "
             + name + ".", e);
@@ -87,7 +87,7 @@ public class JavaxPacScriptParser implements PacScriptParser {
       }
     }
 
-    return engine;
+    return newEngine;
   }
 
   /*************************************************************************
