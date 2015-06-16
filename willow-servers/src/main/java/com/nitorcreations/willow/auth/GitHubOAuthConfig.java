@@ -21,6 +21,7 @@ public class GitHubOAuthConfig {
   public static GitHubOAuthConfig fromUrl(String url) throws ConfigurationException {
     try (InputStream in = new URL(url).openStream()){
       Properties config = new Properties();
+      config.load(in);
       String redirectUri = config.getProperty("redirect_uri", "");
       String clientId = config.getProperty("client_id", "");
       String clientSecret = config.getProperty("client_secret", "");
