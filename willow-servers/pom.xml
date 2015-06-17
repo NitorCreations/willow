@@ -187,9 +187,9 @@
             <phase>test</phase>
             <goals>
               <goal>csslint</goal>
-            </goals>
-            <configuration>
-              <targetGroups>app</targetGroups>
+             </goals>
+             <configuration>
+               <targetGroups>app</targetGroups>
             </configuration>
           </execution>
         </executions>
@@ -344,7 +344,7 @@
                 <configuration>
                   <target>
                     <copy file="target/saga-coverage/total-coverage.dat"
-                      tofile="target/jstestdriver/jsTestDriver.conf-coverage.dat"/>
+                      tofile="target/jasmine/jsTestDriver.conf-coverage.dat"/>
                   </target>
                 </configuration>
                 </execution>

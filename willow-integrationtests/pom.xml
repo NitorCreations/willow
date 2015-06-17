@@ -117,6 +117,7 @@
                     <argument>-v</argument>
                     <argument>html</argument>
                     <argument>cobertura</argument>
+                    <argument>lcovonly</argument>
                   </arguments>
                 </configuration>
               </execution>
