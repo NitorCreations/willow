@@ -53,7 +53,7 @@ public class VelocityServlet extends HttpServlet {
   }
 
   private Properties loadProperties() throws ServletException {
-    try (InputStream resource = getClass().getClassLoader().getResourceAsStream(
+    try (InputStream resource =  Thread.currentThread().getContextClassLoader().getResourceAsStream(
         this.configLocation)) {
       if (resource == null) {
         return new Properties();

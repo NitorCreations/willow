@@ -24,7 +24,7 @@ public class WillowServletContextListener extends GuiceServletContextListener {
 
   @Override
   protected Injector getInjector() {
-    ClassLoader classloader = getClass().getClassLoader();
+    ClassLoader classloader =  Thread.currentThread().getContextClassLoader();
     return  Guice.createInjector(
         new WireModule(new ApplicationServletModule(),
             getShiroModule(), ShiroWebModule.guiceFilterModule(),

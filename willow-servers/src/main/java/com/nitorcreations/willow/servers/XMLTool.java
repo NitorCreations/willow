@@ -41,6 +41,7 @@ public class XMLTool {
       DocumentBuilder db = null;
       dbf.setValidating(false);
       dbf.setCoalescing(true);
+      dbf.setExpandEntityReferences(false);
       dbf.setNamespaceAware(true);
 
       db = dbf.newDocumentBuilder();
