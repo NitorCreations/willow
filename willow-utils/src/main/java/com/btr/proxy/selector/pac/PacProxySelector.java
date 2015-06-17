@@ -22,7 +22,8 @@ public class PacProxySelector extends ProxySelector {
   static final Logger log = Logger.getLogger(PacProxySelector.class
       .getCanonicalName());
 
-  // private static final String PAC_PROXY = "PROXY";
+  private final static int PROXY_TYPE_LEN = 6;
+  //private static final String PAC_PROXY = "PROXY";
   private static final String PAC_SOCKS = "SOCKS";
   private static final String PAC_DIRECT = "DIRECT";
 
@@ -149,9 +150,8 @@ public class PacProxySelector extends ProxySelector {
    *          the result from the PAC parser.
    * @return a Proxy
    ************************************************************************/
-
   public static Proxy buildProxyFromPacResult(String pacResult) {
-    if (pacResult == null || pacResult.trim().length() < 6) {
+    if (pacResult == null || pacResult.trim().length() < PROXY_TYPE_LEN) {
       return Proxy.NO_PROXY;
     }
     String proxyDef = pacResult.trim();
@@ -165,7 +165,7 @@ public class PacProxySelector extends ProxySelector {
       type = Proxy.Type.SOCKS;
     }
 
-    String host = proxyDef.substring(6);
+    String host = proxyDef.substring(PROXY_TYPE_LEN);
     Integer port = DEFAULT_PROXY_PORT;
 
     // Split port from host
