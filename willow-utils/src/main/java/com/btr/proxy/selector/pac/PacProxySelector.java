@@ -13,6 +13,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 /*****************************************************************************
  * ProxySelector that will use a PAC script to find an proxy for a given URI.
  *
@@ -131,7 +133,7 @@ public class PacProxySelector extends ProxySelector {
           uri.getHost());
       String[] proxyDefinitions = parseResult.split("[;]");
       for (String proxyDef : proxyDefinitions) {
-        if (proxyDef.trim().length() > 0) {
+        if (!StringUtils.isBlank(proxyDef)) {
           proxies.add(buildProxyFromPacResult(proxyDef));
         }
       }

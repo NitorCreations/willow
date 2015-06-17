@@ -1,7 +1,8 @@
 package com.btr.proxy.selector.pac;
 
 import static com.btr.proxy.selector.pac.TestUtil.toUrl;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,7 +18,7 @@ import org.junit.Test;
 
 /*****************************************************************************
  * Tests for the Pac script parser and proxy selector.
- * 
+ *
  * @author Bernd Rosstauscher (proxyvole@rosstauscher.de) Copyright 2009
  ****************************************************************************/
 
@@ -25,7 +26,7 @@ public class PacProxySelectorTest {
 
   /*************************************************************************
    * Test method
-   * 
+   *
    * @throws ProxyException
    *           on proxy detection error.
    * @throws MalformedURLException
@@ -36,15 +37,45 @@ public class PacProxySelectorTest {
     PacProxySelector test = PacProxySelector
         .buildPacSelectorForUrl(toUrl("test1.pac"));
     List<Proxy> result = test.select(TestUtil.HTTP_TEST_URI);
-    assertTrue(test.isEnabled());
+    assertTrue(PacProxySelector.isEnabled());
     assertEquals(TestUtil.HTTP_TEST_PROXY, result.get(0));
   }
+
   @Test
   public void testNullUrl() throws Exception {
+    try {
+      PacProxySelector test = PacProxySelector
+          .buildPacSelectorForUrl(toUrl("test1.pac"));
+      test.select(null);
+      assertTrue("Null url should throw exception", false);
+    } catch (IllegalArgumentException e) {
+    }
+  }
+
+  @Test
+  public void testInvalid() throws Exception {
+    PacProxySelector test = PacProxySelector
+        .buildPacSelectorForUrl(toUrl("testInvalid.pac"));
+    assertEquals("Invalid return value should return no_proxy", Proxy.NO_PROXY,
+        test.select(new URI("http://test1")).get(0));
+  }
+  @Test
+  public void testInvalid2() throws Exception {
+    PacProxySelector test = PacProxySelector
+        .buildPacSelectorForUrl(toUrl("testInvalid.pac"));
+    assertEquals("Invalid return value should return no_proxy", Proxy.NO_PROXY,
+        test.select(new URI("http://test2")).get(0));
+  }
+  @Test
+  public void testInvalid3() throws Exception {
+    PacProxySelector test = PacProxySelector
+        .buildPacSelectorForUrl(toUrl("testInvalid.pac"));
+    assertTrue("Invalid return value should return no_proxy",
+        test.select(new URI("http://test3")).isEmpty());
   }
   /*************************************************************************
    * Test method
-   * 
+   *
    * @throws ProxyException
    *           on proxy detection error.
    * @throws MalformedURLException
@@ -63,7 +94,7 @@ public class PacProxySelectorTest {
 
   /*************************************************************************
    * Test download fix to prevent infinite loop.
-   * 
+   *
    * @throws ProxyException
    *           on proxy detection error.
    * @throws MalformedURLException
@@ -95,7 +126,7 @@ public class PacProxySelectorTest {
 
   /*************************************************************************
    * Test method
-   * 
+   *
    * @throws ProxyException
    *           on proxy detection error.
    * @throws MalformedURLException
@@ -117,7 +148,7 @@ public class PacProxySelectorTest {
 
   /*************************************************************************
    * Test method for the override local IP feature.
-   * 
+   *
    * @throws ProxyException
    *           on proxy detection error.
    * @throws MalformedURLException
@@ -139,5 +170,15 @@ public class PacProxySelectorTest {
     }
 
   }
+  @Test
+  public void testSocksType() throws Exception {
+    PacProxySelector pacProxySelector = new PacProxySelector(
+        new UrlPacScriptSource(toUrl("testSocks.pac")));
+    Proxy ret = pacProxySelector.select(TestUtil.SOCKS_TEST_URI).get(0);
+    assertEquals("socks url should return socks type", TestUtil.SOCKS_TEST_PROXY.type(),
+        ret.type());
+    assertEquals("socks url should return socks type", TestUtil.SOCKS_TEST_PROXY.address(),
+        ret.address());
 
+  }
 }
