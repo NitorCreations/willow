@@ -187,9 +187,9 @@
             <phase>test</phase>
             <goals>
               <goal>csslint</goal>
-             </goals>
-             <configuration>
-               <targetGroups>app</targetGroups>
+            </goals>
+            <configuration>
+              <targetGroups>app</targetGroups>
             </configuration>
           </execution>
         </executions>
