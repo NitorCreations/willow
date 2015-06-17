@@ -31,14 +31,25 @@ export W_JAVA_OPTS="-Dserver.port=$SERVER_PORT "$JACOCO_PREFIX"willow-deployer/r
 bash -x $DEPLOYER start integration-test file:src/test/resources/integration-test.properties &
 sleep 60
 casperjs test --verbose --no-colors --concise --home=http://localhost:$SERVER_PORT src/test/casperjs/suites
+TEST_RETURN=$?
 
 export W_JAVA_OPTS=$JACOCO_PREFIX"willow-deployer/status.exec"
 $DEPLOYER status integration-test
+TEST_RETURN=$(($TEST_RETURN + $?))
 export W_JAVA_OPTS=$JACOCO_PREFIX"willow-deployer/jmxoperation.exec"
 $DEPLOYER jmxoperation integration-test metrics_server "org.eclipse.jetty.util.thread:type=queuedthreadpool,id=0" threads
+TEST_RETURN=$(($TEST_RETURN + $?))
+export W_JAVA_OPTS=$JACOCO_PREFIX"willow-deployer/restartchild.exec"
+$DEPLOYER restartchild integration-test
+TEST_RETURN=$(($TEST_RETURN + $?))
+export W_JAVA_OPTS=$JACOCO_PREFIX"willow-deployer/status2.exec"
+$DEPLOYER status integration-test | grep 'restarts: 2'
+TEST_RETURN=$(($TEST_RETURN + $?))
 export W_JAVA_OPTS=$JACOCO_PREFIX"willow-deployer/stop.exec"
 $DEPLOYER stop integration-test
+TEST_RETURN=$(($TEST_RETURN + $?))
 
 if [ -n "$AGENT_STARTED" ]; then
   kill "$SSH_AGENT_PID"
 fi
+exit $TEST_RETURN
