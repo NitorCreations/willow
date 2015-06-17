@@ -19,11 +19,11 @@ import java.util.logging.Logger;
  * @author Bernd Rosstauscher (proxyvole@rosstauscher.de) Copyright 2009
  ****************************************************************************/
 public class PacProxySelector extends ProxySelector {
-  static final Logger log = Logger.getLogger(PacProxySelector.class
+  protected static final Logger log = Logger.getLogger(PacProxySelector.class
       .getCanonicalName());
 
   private final static int PROXY_TYPE_LEN = 6;
-  //private static final String PAC_PROXY = "PROXY";
+  private static final String PAC_PROXY = "PROXY";
   private static final String PAC_SOCKS = "SOCKS";
   private static final String PAC_DIRECT = "DIRECT";
 
@@ -163,6 +163,8 @@ public class PacProxySelector extends ProxySelector {
     Proxy.Type type = Proxy.Type.HTTP;
     if (proxyDef.toUpperCase(Locale.ENGLISH).startsWith(PAC_SOCKS)) {
       type = Proxy.Type.SOCKS;
+    } else if (!proxyDef.toUpperCase(Locale.ENGLISH).startsWith(PAC_PROXY)) {
+      return Proxy.NO_PROXY;
     }
 
     String host = proxyDef.substring(PROXY_TYPE_LEN);

@@ -1,7 +1,7 @@
 package com.btr.proxy.selector.pac;
 
 import static com.btr.proxy.selector.pac.TestUtil.toUrl;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,12 +33,15 @@ public class PacProxySelectorTest {
    ************************************************************************/
   @Test
   public void testScriptExecution() throws Exception {
-    List<Proxy> result = new PacProxySelector(new UrlPacScriptSource(
-        toUrl("test1.pac"))).select(TestUtil.HTTP_TEST_URI);
-
+    PacProxySelector test = PacProxySelector
+        .buildPacSelectorForUrl(toUrl("test1.pac"));
+    List<Proxy> result = test.select(TestUtil.HTTP_TEST_URI);
+    assertTrue(test.isEnabled());
     assertEquals(TestUtil.HTTP_TEST_PROXY, result.get(0));
   }
-
+  @Test
+  public void testNullUrl() throws Exception {
+  }
   /*************************************************************************
    * Test method
    * 
