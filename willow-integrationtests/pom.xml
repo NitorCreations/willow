@@ -10,6 +10,18 @@
   <artifactId>willow-integrationtests</artifactId>
   <packaging>jar</packaging>
   <name>Willow integration test module</name>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>willow-servers</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>willow-deployer</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
   <profiles>
     <profile>
       <id>integrationtests</id>
@@ -53,13 +65,13 @@
                   <goal>run</goal>
                 </goals>
                 <configuration>
-                  <tasks>
+                  <target>
                     <unzip dest="target/classes">
                       <fileset dir="..">
                         <include name="**/willow-*${project.version}.jar"/>
                       </fileset>
                     </unzip>
-                  </tasks>
+                  </target>
                 </configuration>
                 </execution>
               </executions>

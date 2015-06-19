@@ -196,8 +196,8 @@
         <configuration>
           <minimize>true</minimize>
           <destinationFolder>${project.build.directory}/target/classes/webapp</destinationFolder>
-          <jsDestinationFolder>${project.build.directory}/classes/webapp/scripts</jsDestinationFolder>
-          <cssDestinationFolder>${project.build.directory}/classes/webapp/styles</cssDestinationFolder>
+          <jsDestinationFolder>${project.build.directory}/classes/webapp/scripts/lib</jsDestinationFolder>
+          <cssDestinationFolder>${project.build.directory}/classes/webapp/styles/lib</cssDestinationFolder>
           <contextFolder>${basedir}/src/main/resources/webapp</contextFolder>
           <wroFile>${basedir}/src/main/resources/wro.xml</wroFile>
           <ignoreMissingResources>false</ignoreMissingResources>
@@ -264,10 +264,10 @@
           <jsSrcDir>${project.basedir}/src/main/resources/webapp/scripts</jsSrcDir>
           <keepServerAlive>true</keepServerAlive>
           <preloadSources>
-            <source>jquery.js</source>
-            <source>t3-testing.js</source>
-            <source>sinon.js</source>
-            <source>intercom.js</source>
+            <source>lib/jquery.js</source>
+            <source>lib/t3-testing.js</source>
+            <source>lib/sinon.js</source>
+            <source>lib/intercom.js</source>
           </preloadSources>
           <sourceIncludes>
             <include>behaviors/**/*.js</include>
@@ -336,7 +336,7 @@
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
               <execution>
-                <id>extract-classes</id>
+                <id>fix-test-reports</id>
                 <phase>verify</phase>
                 <goals>
                   <goal>run</goal>
@@ -345,10 +345,13 @@
                   <target>
                     <copy file="target/saga-coverage/total-coverage.dat"
                       tofile="target/jasmine/jsTestDriver.conf-coverage.dat"/>
+                    <xslt style="src/test/resources/fix-jasmine-report.xsl"
+                      in="target/jasmine/TEST-jasmine.xml"
+                      out="target/saga-coverage/TEST-jasmine.xml" />
                   </target>
                 </configuration>
-                </execution>
-              </executions>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

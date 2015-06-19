@@ -12,6 +12,7 @@ import java.net.Proxy.Type;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.junit.Test;
@@ -92,13 +93,20 @@ public class PacProxySelectorTest {
     assertEquals(Proxy.NO_PROXY, result.get(0));
   }
 
-  /*************************************************************************
-   * Test download fix to prevent infinite loop.
-   *
-   * @throws ProxyException
-   *           on proxy detection error.
-   * @throws MalformedURLException
-   *           on URL erros
+  public class UsedProxyException extends RuntimeException{
+    private static final long serialVersionUID = 1L;
+
+    public UsedProxyException(String msg) {
+      super(msg);
+    }
+  }
+   /*************************************************************************
+    * Test download fix to prevent infinite loop.
+    *
+    * @throws ProxyException
+    *           on proxy detection error.
+    * @throws MalformedURLException
+    *           on URL erros
    ************************************************************************/
   @Test
   public void pacDownloadFromURLShouldNotUseProxy() throws Exception {
@@ -107,7 +115,7 @@ public class PacProxySelectorTest {
       ProxySelector.setDefault(new ProxySelector() {
         @Override
         public List<Proxy> select(URI uri) {
-          throw new IllegalStateException("Should not download via proxy");
+          throw new UsedProxyException("Should not download via proxy");
         }
 
         @Override
@@ -115,10 +123,12 @@ public class PacProxySelectorTest {
           // Not used
         }
       });
-
       PacProxySelector pacProxySelector = new PacProxySelector(
           new UrlPacScriptSource("http://www.test.invalid/wpad.pac"));
-      pacProxySelector.select(TestUtil.HTTPS_TEST_URI);
+      List<Proxy> ret = pacProxySelector.select(TestUtil.HTTPS_TEST_URI);
+      assertEquals("Should return no proxy for invalid pac url", Proxy.NO_PROXY, ret.get(0));
+    } catch (UsedProxyException e) {
+      assertTrue("Tried to use a proxy", false);
     } finally {
       ProxySelector.setDefault(oldOne);
     }

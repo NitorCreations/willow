@@ -5,18 +5,18 @@
     <group-ref>app</group-ref>
   </group>
   <group name="libs">
-    <css>/styles/nv.d3.css</css>
-    <css>/styles/jquery-ui.css</css>
-    <js>/scripts/jquery.js</js>
-    <js>/scripts/jquery-ui.js</js>
-    <js>/scripts/promise.js</js>
-    <js>/scripts/d3.v3.js</js>
-    <js>/scripts/d3.promise.js</js>
-    <js>/scripts/nv.d3.js</js>
-    <js>/scripts/cubism.v1.js</js>
-    <js>/scripts/term.js</js>
-    <js>/scripts/t3.js</js>
-    <js>/scripts/intercom.js</js>
+    <css>/styles/lib/nv.d3.css</css>
+    <css>/styles/lib/jquery-ui.css</css>
+    <js>/scripts/lib/jquery.js</js>
+    <js>/scripts/lib/jquery-ui.js</js>
+    <js>/scripts/lib/promise.js</js>
+    <js>/scripts/lib/d3.v3.js</js>
+    <js>/scripts/lib/d3.promise.js</js>
+    <js>/scripts/lib/nv.d3.js</js>
+    <js>/scripts/lib/cubism.v1.js</js>
+    <js>/scripts/lib/term.js</js>
+    <js>/scripts/lib/t3.js</js>
+    <js>/scripts/lib/intercom.js</js>
   </group>
   <group name="app">
     <css>/styles/main.css</css>
