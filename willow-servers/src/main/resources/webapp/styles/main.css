@@ -58,7 +58,7 @@ a {
   background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)  100%);
   background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
-  top: 0px;
+  top: 0;
   padding: 0 0 24px 0;
 }
 
@@ -68,7 +68,7 @@ a {
   background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
-  bottom: 0px;
+  bottom: 0;
   padding: 24px 0 0 0;
 }
 
@@ -149,7 +149,7 @@ a {
 
 .selection {
   background: #BAE4B3;
-  opacity: 0.3;
+  opacity: .3;
   top: 50px;
   z-index: 1;
   position: absolute;
@@ -512,7 +512,7 @@ select.navcenter {
 }
 
 .horizon__icons {
-  left: 0.2em;
+  left: .2em;
 }
 
 .nv-graph__icons {
@@ -527,7 +527,7 @@ select.navcenter {
 
 .nv-graph__wrapper:hover .icon,
 .horizon:hover .icon {
-  opacity: 0.5;
+  opacity: .5;
 }
 
 .nv-graph__icons .icon:hover,
@@ -542,7 +542,7 @@ select.navcenter {
   display: inline-block;
   width: 20px;
   height: 20px;
-  opacity: 0.5;
+  opacity: .5;
   transition: opacity 0.35s ease;
   cursor: pointer;
 }
@@ -568,7 +568,7 @@ select.navcenter {
 .host-link {
   position: absolute;
   top: 25px;
-  left: 0.2em;
+  left: .2em;
 }
 
 .nv-graph__icons .host-link {
@@ -586,7 +586,7 @@ select.navcenter {
 /* Dialog styling, dont' want to mix them with jquery-ui functional css */
 .ui-widget-overlay {
   background: darkgray;
-  opacity: 0.35;
+  opacity: .35;
 }
 .ui-dialog {
   background: white;
@@ -606,7 +606,7 @@ select.navcenter {
 
 ul.radiator-list {
   list-style-type: none;
-  padding-left: 0px;
+  padding-left: 0;
 }
 
 .custom-radiator-selection-item {
