@@ -127,8 +127,6 @@ public class PacProxySelectorTest {
           new UrlPacScriptSource("http://www.test.invalid/wpad.pac"));
       List<Proxy> ret = pacProxySelector.select(TestUtil.HTTPS_TEST_URI);
       assertEquals("Should return no proxy for invalid pac url", Proxy.NO_PROXY, ret.get(0));
-    } catch (UsedProxyException e) {
-      assertTrue("Tried to use a proxy", false);
     } finally {
       ProxySelector.setDefault(oldOne);
     }
