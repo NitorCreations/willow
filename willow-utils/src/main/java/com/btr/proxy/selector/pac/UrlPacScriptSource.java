@@ -98,31 +98,6 @@ public class UrlPacScriptSource implements PacScriptSource {
     }
   }
 
-  /*************************************************************************
-   * Gets the timeout value from a property or uses the given default value if
-   * the property cannot be parsed.
-   *
-   * @param overrideProperty
-   *          the property to define the timeout value in milliseconds
-   * @param defaultValue
-   *          the default timeout value in milliseconds.
-   * @return the value to use.
-   ************************************************************************/
-  protected int getTimeOut(String overrideProperty, int defaultValue) {
-    int timeout = defaultValue;
-    String prop = System.getProperty(overrideProperty);
-    if (prop != null && prop.trim().length() > 0) {
-      try {
-        timeout = Integer.parseInt(prop.trim());
-      } catch (NumberFormatException e) {
-        log.log(Level.INFO, "Invalid override property : " + overrideProperty
-            + "=" + prop);
-        // In this case use the default value.
-      }
-    }
-    return timeout;
-  }
-
   /***************************************************************************
    * @see java.lang.Object#toString()
    **************************************************************************/
