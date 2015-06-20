@@ -261,18 +261,18 @@
             <baseUrl></baseUrl>
             <outputDirectory>target/phantomjs</outputDirectory>
           </phantomjs>
-          <jsSrcDir>${project.basedir}/src/main/resources/webapp/scripts</jsSrcDir>
+          <jsSrcDir>${project.basedir}/src</jsSrcDir>
           <keepServerAlive>true</keepServerAlive>
           <preloadSources>
-            <source>lib/jquery.js</source>
+            <source>main/resources/webapp/scripts/lib/jquery.js</source>
             <source>lib/t3-testing.js</source>
             <source>lib/sinon.js</source>
-            <source>lib/intercom.js</source>
+            <source>main/resources/webapp/scripts/lib/intercom.js</source>
           </preloadSources>
           <sourceIncludes>
-            <include>behaviors/**/*.js</include>
-            <include>services/**/*.js</include>
-            <include>modules/**/*.js</include>
+            <include>main/resources/webapp/scripts/behaviors/**/*.js</include>
+            <include>main/resources/webapp/scripts/services/**/*.js</include>
+            <include>main/resources/webapp/scripts/modules/**/*.js</include>
           </sourceIncludes>
           <specIncludes>
             <include>**/*.js</include>
