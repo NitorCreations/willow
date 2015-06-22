@@ -93,7 +93,7 @@ public class PacProxySelectorTest {
     assertEquals(Proxy.NO_PROXY, result.get(0));
   }
 
-  public class UsedProxyException extends RuntimeException{
+  public static class UsedProxyException extends RuntimeException{
     private static final long serialVersionUID = 1L;
 
     public UsedProxyException(String msg) {
