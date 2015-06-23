@@ -448,6 +448,8 @@
                 </goals>
                 <configuration>
                   <target>
+                    <copy file="${project.build.directory}/jacoco.exec"
+                      tofile="${project.build.directory}/willow-deployer/unit-tests.exec"/>
                     <unzip dest="target/classes">
                       <fileset dir="..">
                         <include name="**/willow-*${project.version}.jar"/>
@@ -464,11 +466,11 @@
                 </goals>
                 <configuration>
                   <target>
-                    <copy file="target/saga-coverage/total-coverage.dat"
-                      tofile="target/jasmine/jsTestDriver.conf-coverage.dat"/>
+                    <copy file="${project.build.directory}/saga-coverage/total-coverage.dat"
+                      tofile="${project.build.directory}/jasmine/jsTestDriver.conf-coverage.dat"/>
                     <xslt style="src/test/resources/fix-jasmine-report.xsl"
-                      in="target/jasmine/TEST-jasmine.xml"
-                      out="target/saga-coverage/TEST-jasmine.xml" />
+                      in="${project.build.directory}/jasmine/TEST-jasmine.xml"
+                      out="${project.build.directory}/saga-coverage/TEST-jasmine.xml" />
                   </target>
                 </configuration>
               </execution>
