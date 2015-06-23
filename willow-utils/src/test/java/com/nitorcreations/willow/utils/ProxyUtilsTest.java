@@ -52,7 +52,8 @@ public class ProxyUtilsTest {
       setEnv(newEnv);
       List<Proxy> result = ProxyUtils.resolveSystemProxy(TestUtil.HTTP_TEST_URI);
       assertTrue(PacProxySelector.isEnabled());
-      assertEquals(TestUtil.HTTP_TEST_PROXY, result.get(0));
+      assertTrue("Result should be non null and not empty", result != null && !result.isEmpty());
+      assertEquals("Result should have the test proxy", TestUtil.HTTP_TEST_PROXY, result.get(0));
     } finally {
       setEnv(oldEnv);
     }
