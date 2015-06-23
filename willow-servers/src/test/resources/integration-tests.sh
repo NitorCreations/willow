@@ -29,7 +29,11 @@ ssh-add src/test/resources/id_rsa
 JACOCO_PREFIX="-javaagent:target/jacoco-agent.jar=jmx=true,destfile=target/"
 export W_JAVA_OPTS="-Dserver.port=$SERVER_PORT "$JACOCO_PREFIX"willow-deployer/run-its.exec"
 bash -x $DEPLOYER start integration-test file:src/test/resources/integration-test.properties &
-sleep 120
+START=$(($(date +%s) * 1000 - 15000))
+while ! curl -sf 'http://admin:admin@localhost:'$SERVER_PORT'/metrics/available?start='$START'&stop='$(($(date +%s) * 1000))'&tag=host_integrationtest' | grep '"/cpu":true'; do
+  echo "Waiting for data"
+  sleep 2
+done
 casperjs test --verbose --no-colors --concise --home=http://localhost:$SERVER_PORT src/test/casperjs/suites
 TEST_RETURN=$?
 

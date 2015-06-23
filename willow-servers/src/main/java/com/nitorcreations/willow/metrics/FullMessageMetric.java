@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.metrics;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -19,7 +20,13 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> extends Ab
 
   @SuppressWarnings("unchecked")
   public FullMessageMetric() {
-    this.type = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    Class<? extends AbstractMetric<T>> cls = (Class<? extends AbstractMetric<T>>) getClass();
+    Type genSup = cls.getGenericSuperclass();
+    while (!(genSup instanceof ParameterizedType)) {
+      cls = (Class<? extends AbstractMetric<T>>) cls.getSuperclass();
+      genSup = cls.getGenericSuperclass();
+    }
+    this.type = (Class<T>) ((ParameterizedType)genSup).getActualTypeArguments()[0];
   }
   protected void readResponse(SearchResponse response) {
     rawData = new TreeMap<Long, T>();

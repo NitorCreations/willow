@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.google.inject.Injector;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 @Named("/available")
@@ -16,6 +17,8 @@ public class AvailableMetricsMetric implements Metric {
   private final Logger log = Logger.getLogger(getClass().getCanonicalName());
   @Inject
   private transient Map<String, Metric> metrics;
+  @Inject
+  Injector injector;
 
   @Override
   public Object calculateMetric(MetricConfig conf) {
@@ -25,6 +28,7 @@ public class AvailableMetricsMetric implements Metric {
       if (nextClass != this.getClass()) {
         try {
           Metric m = nextClass.newInstance();
+          injector.injectMembers(m);
           ret.put(next.getKey(), m.hasData(conf));
         } catch (InstantiationException | IllegalAccessException e) {
           log.log(Level.FINE, "Failed to create metric", e);
