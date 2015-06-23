@@ -29,7 +29,7 @@ public class ProxyUtils {
     if (Boolean.getBoolean(USE_SYSTEMPROXIES)) {
       List<Proxy> l = null;
       try {
-         l = ProxySelector.getDefault().select(target);
+        l = ProxySelector.getDefault().select(target);
       } catch (IllegalArgumentException e) {
         log.log(Level.FINE, "Failed to resolve with default system proxy", e);
       }

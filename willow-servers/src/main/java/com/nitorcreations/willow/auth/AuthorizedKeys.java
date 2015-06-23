@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.codec.Base64;
 
 import com.google.inject.ConfigurationException;
@@ -32,7 +33,7 @@ public class AuthorizedKeys {
         BufferedReader read = new BufferedReader(ir)) {
       String line = null;
       while (null != (line = read.readLine())) {
-        if (line.isEmpty() || line.trim().startsWith("#")) {
+        if (StringUtils.isBlank(line) || line.trim().startsWith("#")) {
           continue;
         } else {
           String[] elems = line.split("\\s+");
