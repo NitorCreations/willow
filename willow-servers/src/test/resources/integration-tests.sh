@@ -29,7 +29,7 @@ ssh-add src/test/resources/id_rsa
 JACOCO_PREFIX="-javaagent:target/jacoco-agent.jar=jmx=true,destfile=target/"
 export W_JAVA_OPTS="-Dserver.port=$SERVER_PORT "$JACOCO_PREFIX"willow-deployer/run-its.exec"
 bash -x $DEPLOYER start integration-test file:src/test/resources/integration-test.properties &
-sleep 60
+sleep 120
 casperjs test --verbose --no-colors --concise --home=http://localhost:$SERVER_PORT src/test/casperjs/suites
 TEST_RETURN=$?
 

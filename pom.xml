@@ -28,14 +28,13 @@
   <modules>
     <module>willow-sshagent-auth</module>
     <module>willow-messages</module>
-    <module>willow-servers</module>
     <module>willow-deployer</module>
     <module>willow-utils</module>
     <module>willow-simulate</module>
     <module>willow-logging</module>
     <module>willow-maven-plugin</module>
     <module>willow-autoscaler</module>
-    <module>willow-integrationtests</module>
+    <module>willow-servers</module>
   </modules>
   <licenses>
     <license>
@@ -247,7 +246,6 @@
             <repoToken>${env.COVERALLS_TOKEN}</repoToken>
             <sourceDirectories>
               <sourceDirectory>.</sourceDirectory>
-              <sourceDirectory>willow-integrationtests</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules</sourceDirectory>
               <sourceDirectory>willow-servers/src/main/resources/webapp/scripts/modules/graphs</sourceDirectory>

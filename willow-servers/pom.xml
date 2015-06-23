@@ -209,6 +209,7 @@
         <version>1.8</version>
         <executions>
           <execution>
+            <id>compress-statics</id>
             <phase>compile</phase>
             <goals>
               <goal>run</goal>
@@ -291,6 +292,7 @@
             <artifactId>saga-maven-plugin</artifactId>
             <executions>
               <execution>
+                <id>ut-coveraeg</id>
                 <phase>integration-test</phase>
                 <goals>
                   <goal>coverage</goal>
@@ -310,31 +312,150 @@
             </configuration>
           </plugin>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.4.0</version>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
             <executions>
               <execution>
+                <id>jacoco-download</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.jacoco</groupId>
+                      <artifactId>org.jacoco.agent</artifactId>
+                      <version>${jacoco.version}</version>
+                      <classifier>runtime</classifier>
+                      <type>jar</type>
+                      <overWrite>false</overWrite>
+                      <outputDirectory>target</outputDirectory>
+                      <destFileName>jacoco-agent.jar</destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>server-port</id>
+                <goals>
+                  <goal>reserve-network-port</goal>
+                </goals>
+                <configuration>
+                  <portNames>
+                    <portName>server.port</portName>
+                  </portNames>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>instrument</id>
                 <phase>generate-sources</phase>
                 <goals>
                   <goal>exec</goal>
                 </goals>
+                <configuration>
+                  <executable>istanbul</executable>
+                  <arguments>
+                    <argument>instrument</argument>
+                    <argument>src/main/resources/webapp/scripts/</argument>
+                    <argument>--output</argument>
+                    <argument>target/classes/webapp/instrumented-scripts</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>casperjs-test</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>src/test/resources/integration-tests.sh</executable>
+                  <workingDirectory>${basedir}</workingDirectory>
+                  <environmentVariables>
+                    <SERVER_PORT>${server.port}</SERVER_PORT>
+                  </environmentVariables>
+                </configuration>
+              </execution>
+              <execution>
+                <id>istanbul-report</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>istanbul</executable>
+                  <workingDirectory>${basedir}</workingDirectory>
+                  <arguments>
+                    <argument>report</argument>
+                    <argument>--include</argument>
+                    <argument>target/js-coverage/test*.json</argument>
+                    <argument>--dir</argument>
+                    <argument>target/site/cobertura</argument>
+                    <argument>-v</argument>
+                    <argument>html</argument>
+                    <argument>cobertura</argument>
+                    <argument>lcovonly</argument>
+                  </arguments>
+                </configuration>
               </execution>
             </executions>
-            <configuration>
-              <executable>istanbul</executable>
-              <arguments>
-                <argument>instrument</argument>
-                <argument>src/main/resources/webapp/scripts/</argument>
-                <argument>--output</argument>
-                <argument>target/classes/webapp/instrumented-scripts</argument>
-              </arguments>
-            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>merge-its</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>merge</goal>
+                </goals>
+                <configuration>
+                  <fileSets>
+                    <fileSet>
+                      <directory>${project.build.directory}/willow-deployer</directory>
+                      <includes>
+                        <include>*.exec</include>
+                      </includes>
+                    </fileSet>
+                  </fileSets>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
+              <execution>
+                <id>extract-classes</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <unzip dest="target/classes">
+                      <fileset dir="..">
+                        <include name="**/willow-*${project.version}.jar"/>
+                      </fileset>
+                    </unzip>
+                  </target>
+                </configuration>
+              </execution>
               <execution>
                 <id>fix-test-reports</id>
                 <phase>verify</phase>

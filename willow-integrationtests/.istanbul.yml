@@ -1,9 +1,0 @@
-verbose: true
-reporting:
-    print: summary
-    reports:
-        - html
-        - cobertura
-    dir: target/site/cobertura
-    report-config:
-        cobertura: {file: coverage.xml}
