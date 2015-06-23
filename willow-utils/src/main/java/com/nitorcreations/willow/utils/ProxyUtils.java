@@ -24,10 +24,16 @@ import com.btr.proxy.selector.pac.PacProxySelector;
 public class ProxyUtils {
   private static Logger log = Logger.getLogger(ProxyUtils.class.getCanonicalName());
   private static ConcurrentHashMap<String, PacProxySelector> pacSelectors = new ConcurrentHashMap<>();
+  public static final String USE_SYSTEMPROXIES = "java.net.useSystemProxies";
   public static List<Proxy> resolveSystemProxy(URI target) {
-    if (Boolean.getBoolean("java.net.useSystemProxies")) {
-      List<Proxy> l = ProxySelector.getDefault().select(target);
-      if (l.size() > 0) {
+    if (Boolean.getBoolean(USE_SYSTEMPROXIES)) {
+      List<Proxy> l = null;
+      try {
+         l = ProxySelector.getDefault().select(target);
+      } catch (IllegalArgumentException e) {
+        log.log(Level.FINE, "Failed to resolve with default system proxy", e);
+      }
+      if (l !=  null && !l.isEmpty()) {
         return l;
       }
     }

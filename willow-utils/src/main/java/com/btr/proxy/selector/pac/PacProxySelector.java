@@ -153,15 +153,10 @@ public class PacProxySelector extends ProxySelector {
    * @return a Proxy
    ************************************************************************/
   public static Proxy buildProxyFromPacResult(String pacResult) {
-    if (pacResult == null || pacResult.trim().length() < PROXY_TYPE_LEN) {
+    if (StringUtils.isBlank(pacResult) || pacResult.trim().toUpperCase(Locale.ENGLISH).startsWith(PAC_DIRECT)) {
       return Proxy.NO_PROXY;
     }
     String proxyDef = pacResult.trim();
-    if (proxyDef.toUpperCase(Locale.ENGLISH).startsWith(PAC_DIRECT)) {
-      return Proxy.NO_PROXY;
-    }
-
-    // Check proxy type.
     Proxy.Type type = Proxy.Type.HTTP;
     if (proxyDef.toUpperCase(Locale.ENGLISH).startsWith(PAC_SOCKS)) {
       type = Proxy.Type.SOCKS;
