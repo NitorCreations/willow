@@ -211,7 +211,7 @@
       </build>
     </profile>
     <profile>
-      <id>deploy</id>
+      <id>integrationtests</id>
       <build>
         <plugins>
           <plugin>
