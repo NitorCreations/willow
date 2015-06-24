@@ -1,5 +1,7 @@
 package com.nitorcreations.willow.auth;
 
+import static com.nitorcreations.willow.sshagentauth.SSHUtil.components;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +17,6 @@ import org.apache.shiro.codec.Base64;
 
 import com.google.inject.ConfigurationException;
 import com.google.inject.spi.Message;
-import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
 import com.nitorcreations.willow.utils.ProxyUtils;
 
 public class AuthorizedKeys {
@@ -42,7 +43,7 @@ public class AuthorizedKeys {
           }
           AuthorizedKey key = new AuthorizedKey();
           key.type = elems[0];
-          key.keycomponents = SSHAgentAuthorizationUtil.components(Base64.decode(elems[1]));
+          key.keycomponents = components(Base64.decode(elems[1]));
           key.comment = elems[2];
           ret.addKey(key);
         }

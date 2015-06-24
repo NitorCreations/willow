@@ -15,8 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
-
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -25,6 +23,7 @@ import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import com.nitorcreations.willow.messages.event.Event;
+import com.nitorcreations.willow.sshagentauth.SSHUtil;
 
 public class WebSocketTransmitter {
   private long flushInterval = 2000;
@@ -202,7 +201,7 @@ public class WebSocketTransmitter {
       client.setConnectTimeout(2000);
       client.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
-      request.setHeader("Authorization", SSHAgentAuthorizationUtil.getSshAgentAuthorization(username));
+      request.setHeader("Authorization", SSHUtil.getSshAgentAuthorization(username));
       Future<Session> future = client.connect(this, uri, request);
       logger.info(String.format("Connecting to : %s", uri));
       try {

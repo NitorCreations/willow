@@ -1,20 +1,39 @@
 package com.nitorcreations.willow.autoscaler.clouds.aws;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.apache.commons.codec.binary.Base64;
+
 import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.*;
+import com.amazonaws.services.ec2.model.CreateTagsRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Filter;
+import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceStateChange;
+import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.RunInstancesRequest;
+import com.amazonaws.services.ec2.model.RunInstancesResult;
+import com.amazonaws.services.ec2.model.Tag;
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.amazonaws.services.ec2.model.TerminateInstancesResult;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapter;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.deployment.AutoScalingGroupDeploymentStatus;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingGroupStatus;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
-import org.apache.commons.codec.binary.Base64;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Named("AWS")
 public class AWSCloudAdapter implements CloudAdapter {

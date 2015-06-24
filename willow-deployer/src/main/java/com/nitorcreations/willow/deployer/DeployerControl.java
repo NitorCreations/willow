@@ -44,7 +44,7 @@ import sun.management.ConnectorAddressLink;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.protocols.Register;
-import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
+import com.nitorcreations.willow.sshagentauth.SSHUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.RequestCustomizer;
 import com.nitorcreations.willow.utils.SimpleFormatter;
@@ -190,7 +190,7 @@ public class DeployerControl {
     @Override
     public void customize(URLConnection conn) {
       if (conn instanceof HttpURLConnection) {
-        conn.setRequestProperty("Authorization", SSHAgentAuthorizationUtil.getSshAgentAuthorization(username));
+        conn.setRequestProperty("Authorization", SSHUtil.getSshAgentAuthorization(username));
       }
     }
   }

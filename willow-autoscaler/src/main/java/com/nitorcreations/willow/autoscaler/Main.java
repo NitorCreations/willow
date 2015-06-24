@@ -1,6 +1,27 @@
 package com.nitorcreations.willow.autoscaler;
 
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import org.eclipse.sisu.space.SpaceModule;
+import org.eclipse.sisu.space.URLClassSpace;
+import org.eclipse.sisu.wire.WireModule;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
@@ -13,22 +34,6 @@ import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import org.eclipse.sisu.space.SpaceModule;
-import org.eclipse.sisu.space.URLClassSpace;
-import org.eclipse.sisu.wire.WireModule;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.logging.*;
 
 @Named
 @Singleton

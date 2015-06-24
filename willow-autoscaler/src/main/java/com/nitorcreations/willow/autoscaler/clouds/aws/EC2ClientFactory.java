@@ -1,11 +1,11 @@
 package com.nitorcreations.willow.autoscaler.clouds.aws;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2Client;
-
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Named
 @Singleton

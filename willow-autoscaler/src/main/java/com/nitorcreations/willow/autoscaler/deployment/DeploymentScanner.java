@@ -1,21 +1,27 @@
 package com.nitorcreations.willow.autoscaler.deployment;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapter;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapters;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.metrics.AutoScalingStatus;
 import com.nitorcreations.willow.messages.HostInfoMessage;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Named
 public class DeploymentScanner implements Runnable {

@@ -1,18 +1,5 @@
 package com.nitorcreations.willow.autoscaler.metrics;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
-import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
-import com.nitorcreations.willow.messages.metrics.MetricConfig;
-import com.nitorcreations.willow.messages.metrics.TimePoint;
-import com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.*;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
-
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -25,16 +12,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
+
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
+import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
+import com.nitorcreations.willow.messages.metrics.MetricConfig;
+import com.nitorcreations.willow.messages.metrics.TimePoint;
+import com.nitorcreations.willow.sshagentauth.SSHUtil;
+
 public class MetricPoller {
 
   private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
 
   @Inject
-  Gson gson;
+  private Gson gson;
   @Inject
-  ExecutorService executorService;
+  private ExecutorService executorService;
   @Inject
-  AutoScalingStatus autoScalingStatus;
+  private AutoScalingStatus autoScalingStatus;
 
   Map<AutoScalingGroupConfig, Map<String, GroupMetricListener>> groupMetricListeners;
 
@@ -105,7 +111,7 @@ public class MetricPoller {
       ClientUpgradeRequest request = new ClientUpgradeRequest();
       request.setHeader(
           "Authorization",
-          SSHAgentAuthorizationUtil.getSshAgentAuthorization(System.getProperty("user.name", "willow")));
+          SSHUtil.getSshAgentAuthorization(System.getProperty("user.name", "willow")));
       Future<Session> future = client.connect(this, uri, request);
       logger.info(String.format("Connecting to : %s", uri));
       try {

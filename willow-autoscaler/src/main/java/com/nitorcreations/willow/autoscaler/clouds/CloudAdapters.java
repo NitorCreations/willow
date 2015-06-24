@@ -1,9 +1,10 @@
 package com.nitorcreations.willow.autoscaler.clouds;
 
-import com.google.inject.Inject;
+import java.util.Map;
 
 import javax.inject.Named;
-import java.util.Map;
+
+import com.google.inject.Inject;
 
 @Named
 public class CloudAdapters {

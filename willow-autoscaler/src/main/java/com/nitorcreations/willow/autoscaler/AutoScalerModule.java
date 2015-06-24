@@ -1,12 +1,12 @@
 package com.nitorcreations.willow.autoscaler;
 
-import com.google.inject.AbstractModule;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
-
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import com.google.inject.AbstractModule;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class AutoScalerModule extends AbstractModule {
 
