@@ -1,12 +1,12 @@
 package com.nitorcreations.willow.autoscaler.config;
 
-import com.nitorcreations.willow.utils.MergeableProperties;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class AutoScalingGroupConfig {
 

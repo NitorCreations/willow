@@ -1,5 +1,14 @@
 package com.nitorcreations.willow.autoscaler.scaling;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.inject.Inject;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapter;
 import com.nitorcreations.willow.autoscaler.clouds.CloudAdapters;
@@ -15,15 +24,6 @@ import com.nitorcreations.willow.messages.event.ScaleOutEvent;
 import com.nitorcreations.willow.messages.metrics.TimePoint;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Scaler implements Runnable {
 

@@ -1,9 +1,9 @@
 package com.nitorcreations.willow.autoscaler.clouds;
 
+import java.util.List;
+
 import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.deployment.AutoScalingGroupDeploymentStatus;
-
-import java.util.List;
 
 public interface CloudAdapter {
 

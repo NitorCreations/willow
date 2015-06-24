@@ -44,7 +44,6 @@ import sun.management.ConnectorAddressLink;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.protocols.Register;
-import com.nitorcreations.willow.sshagentauth.SSHAuthentication;
 import com.nitorcreations.willow.sshagentauth.SSHUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.RequestCustomizer;

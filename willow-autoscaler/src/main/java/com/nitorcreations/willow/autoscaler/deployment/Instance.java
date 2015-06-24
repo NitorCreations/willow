@@ -1,8 +1,8 @@
 package com.nitorcreations.willow.autoscaler.deployment;
 
-import com.nitorcreations.willow.autoscaler.config.Tag;
-
 import java.util.List;
+
+import com.nitorcreations.willow.autoscaler.config.Tag;
 
 public class Instance {
 
