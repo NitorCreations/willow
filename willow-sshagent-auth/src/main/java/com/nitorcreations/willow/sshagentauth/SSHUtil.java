@@ -1,14 +1,5 @@
 package com.nitorcreations.willow.sshagentauth;
 
-import com.jcraft.jsch.Identity;
-import com.jcraft.jsch.IdentityRepository;
-import com.jcraft.jsch.Signature;
-import com.jcraft.jsch.agentproxy.AgentProxyException;
-import com.jcraft.jsch.agentproxy.Connector;
-import com.jcraft.jsch.agentproxy.ConnectorFactory;
-import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
-import com.jcraft.jsch.jce.SignatureDSA;
-import com.jcraft.jsch.jce.SignatureRSA;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -17,39 +8,28 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Signature;
+import com.jcraft.jsch.jce.SignatureDSA;
+import com.jcraft.jsch.jce.SignatureRSA;
 
-public class SSHAgentAuthorizationUtil {
-
-  private static Logger logger = Logger.getLogger(SSHAgentAuthorizationUtil.class.getCanonicalName());
-
-  @SuppressWarnings("unchecked")
-  public static String getSshAgentAuthorization(String username) {
-    StringBuilder ret = new StringBuilder("PUBLICKEY ");
-    String now = "" + System.currentTimeMillis();
-    Connector con = null;
-    try {
-      ConnectorFactory cf = ConnectorFactory.getDefault();
-      con = cf.createConnector();
-    } catch (AgentProxyException e) {
-      logger.log(Level.SEVERE, "Unable to fetch authorization keys!", e);
-    }
-    byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
-    ret.append(printBase64Binary(sign));
-    if (con != null) {
-      IdentityRepository irepo = new RemoteIdentityRepository(con);
-      for (Identity id : (List<Identity>)irepo.getIdentities()) {
-        try {
-          byte[] sig = id.getSignature(sign);
-          if (sig != null) {
-            ret.append(" ").append(printBase64Binary(sig));
-          }
-        } catch (Exception t) {
-          logger.log(Level.FINE, "Failed to add signature: " + t.getMessage());
-        }
+public class SSHUtil {
+  private static Logger logger = Logger.getLogger(SSHUtil.class.getCanonicalName());
+  private static SSHAuthentication sshAuthentication;
+  private static String ENV_SSH_ID = "W_SSH_IDENTITY";
+  static {
+    String sshId = System.getenv(ENV_SSH_ID );
+    if (sshId != null) {
+      sshAuthentication = new PrivateKeySSHAuthentication();
+      try {
+        ((PrivateKeySSHAuthentication)sshAuthentication).addIdentity(sshId);
+      } catch (JSchException e) {
+        logger.log(Level.WARNING, "Failed to add key - reverting to ssh agent authentication", e);
+        sshAuthentication = new SSHAgentAuthentication();
       }
+    } else {
+      sshAuthentication = new SSHAgentAuthentication();
     }
-    return ret.toString();
   }
   public static boolean verify(byte[] nextSig, String type, List<byte[]> keycomponents, byte[] sign, String keyInfo) {
     String sigtype = new String(components(nextSig).get(0), StandardCharsets.UTF_8);
@@ -117,5 +97,8 @@ public class SSHAgentAuthorizationUtil {
       index += lenBi.intValue();
     }
     return ret;
+  }
+  public static String getSshAgentAuthorization(String username) {
+    return sshAuthentication.getSshAgentAuthorization(username);
   }
 }

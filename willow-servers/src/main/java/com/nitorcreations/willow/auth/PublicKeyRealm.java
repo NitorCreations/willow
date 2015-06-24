@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.auth;
 
-import static com.nitorcreations.willow.sshagentauth.SSHAgentAuthorizationUtil.verify;
+import static com.nitorcreations.willow.sshagentauth.SSHUtil.verify;
 
 import java.util.logging.Logger;
 

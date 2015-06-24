@@ -57,6 +57,19 @@ else
   exit 2
 fi
 
+if [ -z "$SSH_AUTH_SOCK" -a -z "$W_SSH_IDENTITY" ]; then
+  if [ -r $HOME/.ssh/id_rsa ]; then
+    W_SSH_IDENTITY="$HOME/.ssh/id_rsa"
+  elif [ -r $HOME/.ssh/id_dsa ]; then
+    W_SSH_IDENTITY="$HOME/.ssh/id_dsa"
+  else
+    echo "WARNING No valid deployer authentication method found"
+  fi
+  if [ -z "$W_SSH_IDENTITY" ]; then
+    export W_SSH_IDENTITY
+  fi
+fi
+
 JAVA_TOOLS=$JAVA_LIB/tools.jar
 W_DEPLOYER_NAME=$2
 W_CLASSPATH=$JAVA_TOOLS:$W_DEPLOYER_JAR
