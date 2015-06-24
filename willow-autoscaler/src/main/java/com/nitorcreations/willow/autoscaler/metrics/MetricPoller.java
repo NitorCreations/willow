@@ -42,7 +42,6 @@ public class MetricPoller {
   private ExecutorService executorService;
   @Inject
   private AutoScalingStatus autoScalingStatus;
-  private SSHAuthentication sshAuthentication;
 
   Map<AutoScalingGroupConfig, Map<String, GroupMetricListener>> groupMetricListeners;
 

@@ -19,9 +19,10 @@ public class SSHAgentAuthentication implements SSHAuthentication {
   private static Logger logger = Logger.getLogger(SSHAgentAuthentication.class.getCanonicalName());
 
   @SuppressWarnings("unchecked")
+  @Override
   public String getSshAgentAuthorization(String username) {
     StringBuilder ret = new StringBuilder("PUBLICKEY ");
-    String now = "" + System.currentTimeMillis();
+    String now = Long.toString(System.currentTimeMillis());
     byte[] sign = (username + ":" + now).getBytes(StandardCharsets.UTF_8);
     ret.append(printBase64Binary(sign));
     Connector con = null;
