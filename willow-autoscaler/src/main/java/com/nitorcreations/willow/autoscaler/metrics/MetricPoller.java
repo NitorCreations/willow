@@ -29,7 +29,6 @@ import com.nitorcreations.willow.autoscaler.config.AutoScalingGroupConfig;
 import com.nitorcreations.willow.autoscaler.config.AutoScalingPolicy;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.messages.metrics.TimePoint;
-import com.nitorcreations.willow.sshagentauth.SSHAuthentication;
 import com.nitorcreations.willow.sshagentauth.SSHUtil;
 
 public class MetricPoller {
