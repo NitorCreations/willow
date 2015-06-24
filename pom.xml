@@ -244,6 +244,9 @@
           <version>3.1.0</version>
           <configuration>
             <repoToken>${env.COVERALLS_TOKEN}</repoToken>
+            <sagaReports>
+              <sagaReport>willow-servers/target/saga-coverage/total-coverage.xml</sagaReport>
+            </sagaReports>
             <sourceDirectories>
               <sourceDirectory>.</sourceDirectory>
               <sourceDirectory>willow-servers</sourceDirectory>
