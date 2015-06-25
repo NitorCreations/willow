@@ -20,6 +20,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import com.google.gson.Gson;
+import com.google.inject.Injector;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.metrics.Metric;
 
@@ -27,7 +28,9 @@ import com.nitorcreations.willow.metrics.Metric;
 @Named
 public class ServerSidePollingSocket extends BasicWillowSocket {
   @Inject
-  ScheduledExecutorService scheduler;
+  private ScheduledExecutorService scheduler;
+  @Inject
+  private Injector injector;
   private final Map<String, Metric> metrics;
   private List<ScheduledFuture<?>> pollers = new ArrayList<>();
   public final int minStep = 1000;
@@ -55,6 +58,7 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
         long stop = System.currentTimeMillis() - currTimeDelay;
         long start = stop - conf.getStep();
         Metric nextMetric = metric.getClass().newInstance();
+        injector.injectMembers(nextMetric);
         Object ret = nextMetric.calculateMetric(conf);
         conf.setStop(stop);
         conf.setStart(start);
