@@ -40,5 +40,6 @@
     <js>/scripts/modules/graphs/heap-graph.js</js>
     <js>/scripts/modules/graphs/access-graph.js</js>
     <js>/scripts/modules/graphs/childcpu-graph.js</js>
+    <js>/scripts/modules/graphs/flame-graph.js</js>
   </group>
 </groups>
