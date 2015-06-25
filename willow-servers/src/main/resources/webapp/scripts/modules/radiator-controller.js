@@ -23,8 +23,11 @@ Box.Application.addModule('radiator-controller', function(context) {
     heap: function(config) {
       moduleElem.call(createHeapGraph, config.chart);
     },
-    childcpu:  function(config) {
+    childcpu: function(config) {
       moduleElem.call(createChildCpuGraph, config.chart);
+    },
+    flame: function(config) {
+      moduleElem.call(createFlameGraph, config.chart);
     }
   };
 
@@ -114,6 +117,15 @@ Box.Application.addModule('radiator-controller', function(context) {
     injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
     configMap[heapGraphElement.attr('id')] = chartConfig;
+  }
+
+  function createFlameGraph(parentElement, chartConfig) {
+    var flameGraphElement = parentElement.append("div")
+      .classed("flame-graph__wrapper scalable col c6", true)
+      .attr("data-module", "flame-graph");
+    injectModuleConfiguration(flameGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
+    Box.Application.start(flameGraphElement[0][0]);
+    configMap[flameGraphElement.attr('id')] = chartConfig;
   }
 
   function timeRangeSelectionArea() {
