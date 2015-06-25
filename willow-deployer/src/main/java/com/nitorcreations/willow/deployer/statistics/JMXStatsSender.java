@@ -40,17 +40,18 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
   }
   @Override
   public void execute() {
-    MBeanServerConnection server = getMBeanServerConnection();
     long now = System.currentTimeMillis();
-    if (server != null && now > nextJmx) {
-      try {
-        JmxMessage msg = getJmxStats();
-        msg.addTags("category_jmx_" + getChildName());
-        transmitter.queue(msg);
-      } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
-        logger.log(Level.WARNING, "Failed to get JMX statistics", e);
+    if (now > nextJmx) {
+      for (String childName : getChildren()) {
+        try {
+          JmxMessage msg = getJmxStats(childName);
+          msg.addTags("category_jmx_" + childName);
+          transmitter.queue(msg);
+        } catch (IOException | MalformedObjectNameException | ReflectionException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstanceNotFoundException | MBeanException e) {
+          logger.log(Level.WARNING, "Failed to get JMX statistics", e);
+        }
+        nextJmx = nextJmx + conf.getIntervalJmx();
       }
-      nextJmx = nextJmx + conf.getIntervalJmx();
     }
     try {
       TimeUnit.MILLISECONDS.sleep(conf.shortest());
@@ -60,19 +61,19 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     }
   }
 
-  public JmxMessage getJmxStats() throws MalformedObjectNameException, IOException, ReflectionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstanceNotFoundException, MBeanException {
+  public JmxMessage getJmxStats(String childName) throws MalformedObjectNameException, IOException, ReflectionException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstanceNotFoundException, MBeanException {
     JmxMessage ret = new JmxMessage();
-    Set<String> poolNames = addGc(ret);
-    addPools(ret, poolNames);
-    addMemory(ret);
-    addCodeCache(ret);
-    addUptime(ret);
-    addClassloading(ret);
+    Set<String> poolNames = addGc(ret, childName);
+    addPools(ret, poolNames, childName);
+    addMemory(ret, childName);
+    addCodeCache(ret, childName);
+    addUptime(ret, childName);
+    addClassloading(ret, childName);
     return ret;
   }
 
-  private Set<String> addGc(JmxMessage ret) throws MalformedObjectNameException, IOException {
-    MBeanServerConnection server = getMBeanServerConnection();
+  private Set<String> addGc(JmxMessage ret, String childName) throws MalformedObjectNameException, IOException {
+    MBeanServerConnection server = getMBeanServerConnection(childName);
     ObjectName query = new ObjectName("java.lang:type=GarbageCollector,*");
     Set<ObjectInstance> gcs = server.queryMBeans(query, null);
     LinkedHashSet<String> poolNames = new LinkedHashSet<String>();
@@ -96,8 +97,8 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     return poolNames;
   }
 
-  private void addPools(JmxMessage ret, Set<String> poolNames) throws MalformedObjectNameException, IOException {
-    MBeanServerConnection server = getMBeanServerConnection();
+  private void addPools(JmxMessage ret, Set<String> poolNames, String childName) throws MalformedObjectNameException, IOException {
+    MBeanServerConnection server = getMBeanServerConnection(childName);
     for (String nextPool : poolNames) {
       ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=" + nextPool);
       Set<ObjectInstance> memPool = server.queryMBeans(query, null);
@@ -111,8 +112,8 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     }
   }
 
-  private void addMemory(JmxMessage ret) throws MalformedObjectNameException, IOException {
-    MBeanServerConnection server = getMBeanServerConnection();
+  private void addMemory(JmxMessage ret, String childName) throws MalformedObjectNameException, IOException {
+    MBeanServerConnection server = getMBeanServerConnection(childName);
     ObjectName query = new ObjectName("java.lang:type=Memory");
     Set<ObjectInstance> mem = server.queryMBeans(query, null);
     ObjectInstance next = mem.iterator().next();
@@ -124,8 +125,8 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     }
   }
 
-  private void addCodeCache(JmxMessage ret) throws IOException, MalformedObjectNameException {
-    MBeanServerConnection server = getMBeanServerConnection();
+  private void addCodeCache(JmxMessage ret, String childName) throws IOException, MalformedObjectNameException {
+    MBeanServerConnection server = getMBeanServerConnection(childName);
     ObjectName query = new ObjectName("java.lang:type=MemoryPool,name=Code Cache");
     Set<ObjectInstance> cc = server.queryMBeans(query, null);
     ObjectInstance next = cc.iterator().next();
@@ -136,16 +137,16 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     }
   }
 
-  private void addUptime(JmxMessage ret) throws MalformedObjectNameException {
-    MBeanServerConnection server = getMBeanServerConnection();
+  private void addUptime(JmxMessage ret, String childName) throws MalformedObjectNameException {
+    MBeanServerConnection server = getMBeanServerConnection(childName);
     ObjectName query = new ObjectName("java.lang:type=Runtime");
     RuntimeMXBean runtimeBean = JMX.newMBeanProxy(server, query, RuntimeMXBean.class);
     ret.setStartTime(runtimeBean.getStartTime());
     ret.setUptime(runtimeBean.getUptime());
   }
 
-  private void addClassloading(JmxMessage ret) throws MalformedObjectNameException {
-    MBeanServerConnection server = getMBeanServerConnection();
+  private void addClassloading(JmxMessage ret, String childName) throws MalformedObjectNameException {
+    MBeanServerConnection server = getMBeanServerConnection(childName);
     ObjectName query = new ObjectName("java.lang:type=ClassLoading");
     ClassLoadingMXBean clBean = JMX.newMBeanProxy(server, query, ClassLoadingMXBean.class);
     ret.setLoadedClassCount(clBean.getLoadedClassCount());
