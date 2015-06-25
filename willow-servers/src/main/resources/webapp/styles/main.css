@@ -297,6 +297,14 @@ textarea, input[type=text] {
   outline: 0;
 }
 
+.flame-graph__wrapper {
+  position: relative;
+  overflow: hidden;
+  height: 420px;
+  padding: 20px;
+  background: white;
+}
+
 .nv-graph__wrapper {
   position: relative;
   overflow: hidden;
@@ -306,9 +314,14 @@ textarea, input[type=text] {
 }
 
 .nv-graph,
-.nv-graph__wrapper.scalable:only-of-type {
+.nv-graph__wrapper.scalable:only-of-type,
+.flame-graph__wrapper.scalable:only-of-type {
   width: 100%;
   height: 100%;
+}
+
+.nv-graph,
+.nv-graph__wrapper.scalable:only-of-type {
   margin-left: -25px;
 }
 
@@ -525,11 +538,13 @@ select.navcenter {
   opacity: 0;
 }
 
+.flame-graph__wrapper:hover .icon,
 .nv-graph__wrapper:hover .icon,
 .horizon:hover .icon {
   opacity: .5;
 }
 
+.flame-graph__icons .icon:hover,
 .nv-graph__icons .icon:hover,
 .horizon__icons .icon:hover {
   opacity: 1;
