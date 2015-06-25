@@ -33,25 +33,29 @@ public class ThreadDumpStatisticsSender extends AbstractJMXStatisticsSender {
 
   @Override
   public void execute() {
+    for (String childName : getChildren()) {
+      try {
+        ThreadMXBean threadMXBean = getThreadMXBean(childName);
+        ThreadInfo[] threadInfo = threadMXBean.dumpAllThreads(threadMXBean.isObjectMonitorUsageSupported(), threadMXBean.isSynchronizerUsageSupported());
+        ThreadDumpMessage threadDumpMessage = new ThreadDumpMessage(threadInfo);
+        threadDumpMessage.addTags("category_threaddump_" + childName);
+        transmitter.queue(threadDumpMessage);
+      } catch (IOException ie) {
+        logger.log(Level.INFO, "Cannot get thread management bean of child process", ie);
+      }
+    }
     try {
       Thread.sleep(this.interval);
-      ThreadMXBean threadMXBean = getThreadMXBean();
-      ThreadInfo[] threadInfo = threadMXBean.dumpAllThreads(threadMXBean.isObjectMonitorUsageSupported(), threadMXBean.isSynchronizerUsageSupported());
-      ThreadDumpMessage threadDumpMessage = new ThreadDumpMessage(threadInfo);
-      threadDumpMessage.addTags("category_threaddump_" + getChildName());
-      transmitter.queue(threadDumpMessage);
     } catch (InterruptedException ie) {
       logger.log(Level.INFO, "Sleep was interrupted", ie);
-    } catch (IOException ie) {
-      logger.log(Level.INFO, "Cannot get thread management bean of child process", ie);
     }
     if (!running.get()) {
-      closeMBeanServerConnection();
+      stop();
     }
   }
 
-  private ThreadMXBean getThreadMXBean() throws IOException {
-    MBeanServerConnection connection = getMBeanServerConnection();
+  private ThreadMXBean getThreadMXBean(String childName) throws IOException {
+    MBeanServerConnection connection = getMBeanServerConnection(childName);
     ThreadMXBean threadMXBean = ManagementFactory.newPlatformMXBeanProxy(connection , ManagementFactory.THREAD_MXBEAN_NAME, ThreadMXBean.class);
     return threadMXBean;
   }

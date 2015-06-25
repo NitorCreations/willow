@@ -121,26 +121,29 @@ public class CustomJMXStatsSender extends AbstractJMXStatisticsSender {
   }
   @Override
   public void execute() {
-    MBeanServerConnection server = getMBeanServerConnection();
     long now = System.currentTimeMillis();
-    if (server != null && now > nextJmx) {
-      try {
-        Map<String, Object> map = new LinkedHashMap<>();
-        for (Entry<String, JMXReader> next : props.entrySet()) {
-          Object val = next.getValue().read(server);
-          if (val != null) {
-            map.put(next.getKey(), val.toString());
+    if (now > nextJmx) {
+      for (String childName : getChildren()) {
+        try {
+          Map<String, Object> map = new LinkedHashMap<>();
+          MBeanServerConnection server = getMBeanServerConnection(childName);
+          if (server == null) continue; 
+          for (Entry<String, JMXReader> next : props.entrySet()) {
+            Object val = next.getValue().read(server);
+            if (val != null) {
+              map.put(next.getKey(), val.toString());
+            }
           }
+          if (!map.isEmpty()) {
+            HashMessage msg = HashMessage.create(map);
+            msg.addTags("category_customjmx_" + childName);
+            transmitter.queue(msg);
+          }
+        } catch (IOException | ReflectionException | AttributeNotFoundException
+            | InstanceNotFoundException | IntrospectionException | MBeanException
+            | ClassNotFoundException e) {
+          logger.log(Level.WARNING, "Failed to get JMX statistics", e);
         }
-        if (!map.isEmpty()) {
-          HashMessage msg = HashMessage.create(map);
-          msg.addTags("category_customjmx_" + getChildName());
-          transmitter.queue(msg);
-        }
-      } catch (IOException | ReflectionException | AttributeNotFoundException
-          | InstanceNotFoundException | IntrospectionException | MBeanException
-          | ClassNotFoundException e) {
-        logger.log(Level.WARNING, "Failed to get JMX statistics", e);
       }
       nextJmx = nextJmx + interval;
     }

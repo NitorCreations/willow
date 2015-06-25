@@ -13,17 +13,13 @@ import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.SigarProxy;
 
-import com.nitorcreations.willow.deployer.Main;
 import com.nitorcreations.willow.messages.ProcessCPU;
 
 @Named("process")
-public class ProcessStatSender extends AbstractStatisticsSender {
+public class ProcessStatSender extends AbstractChildStatisticsSender {
   @Inject
   protected SigarProxy sigar;
-  private String childName;
   private StatisticsConfig conf;
-  @Inject
-  protected Main main;
   private long nextProcCpus;
 
 
@@ -35,17 +31,19 @@ public class ProcessStatSender extends AbstractStatisticsSender {
     ProcCpu pCStat;
     long now = System.currentTimeMillis();
     if (now > nextProcCpus) {
-      try {
-        long pid = main.getChildPid(getChildName());
-        if (pid > 0) {
-          pCStat = sigar.getProcCpu(pid);
-          ProcessCPU msg = new ProcessCPU();
-          PropertyUtils.copyProperties(msg, pCStat);
-          msg.addTags("category_processcpu_" + childName);
-          transmitter.queue(msg);
+      for (String childName : getChildren()) {
+        try {
+          long pid = main.getChildPid(childName);
+          if (pid > 0) {
+            pCStat = sigar.getProcCpu(pid);
+            ProcessCPU msg = new ProcessCPU();
+            PropertyUtils.copyProperties(msg, pCStat);
+            msg.addTags("category_processcpu_" + childName);
+            transmitter.queue(msg);
+          }
+        } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+          logger.log(Level.WARNING, "Failed to Process CPU statistics", e);
         }
-      } catch (SigarException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        logger.log(Level.WARNING, "Failed to Process CPU statistics", e);
       }
       nextProcCpus = nextProcCpus + conf.getIntervalProcCpus();
     }
@@ -59,18 +57,8 @@ public class ProcessStatSender extends AbstractStatisticsSender {
 
   @Override
   public void setProperties(Properties properties) {
+    super.setProperties(properties);
     conf = new StatisticsConfig(properties);
     nextProcCpus = System.currentTimeMillis() + conf.getIntervalProcCpus();
-    childName = properties.getProperty("childName");
-  }
-
-  protected String getChildName() {
-    if (childName == null) {
-      String[] children = main.getChildNames();
-      if (children.length > 0) {
-        childName = children[0];
-      }
-    }
-    return childName;
   }
 }
