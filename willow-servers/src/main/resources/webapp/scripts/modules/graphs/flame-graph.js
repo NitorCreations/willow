@@ -50,12 +50,10 @@ Box.Application.addModule('flame-graph', function(context) {
           .attr("y", function(d) { return yPosClick(d) + y(d.y + d.dy) - y(d.y); })
           .attr("width", function(d) { return x(d.x + d.dx) - x(d.x); })
           .attr("height", function(d) { return y(d.y + d.dy) - y(d.y); })
-          .transition().each("end", zoomFinish);
-  }
-
-  function zoomFinish(d) {
-    var width = x(d.x + d.dx) - x(d.x) - 10;
-    this.style.visibility = width > this.getComputedTextLength() ? '' : 'hidden';
+          .transition().each("end", function (d) {
+            var width = x(d.x + d.dx) - x(d.x) - 10;
+            this.style.visibility = width > this.getComputedTextLength() ? '' : 'hidden';
+          });
   }
 
   function createFlameGraph() {
