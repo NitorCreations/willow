@@ -598,6 +598,10 @@ select.navcenter {
   content: ": ";
 }
 
+.host-link small:before {
+  content: ' ';
+}
+
 /* Dialog styling, dont' want to mix them with jquery-ui functional css */
 .ui-widget-overlay {
   background: darkgray;

@@ -146,7 +146,9 @@ Box.Application.addModule('flame-graph', function(context) {
       timescale = windowSvc.getTimescale();
 
       var graphIconsElem = moduleElement.append("div").classed("nv-graph__icons", true);
-      graphIconsElem.call(utils.appendHostRadiatorLink, moduleConf.chart.metric, host);
+      var extraLinkInfo = '(' + moduleConf.chart.childtag.split('category_threaddump_')[1] + ')';
+
+      graphIconsElem.call(utils.appendHostRadiatorLink, moduleConf.chart.metric, host, extraLinkInfo);
       graphIconsElem.call(utils.appendShareRadiatorIcon, host);
       graphIconsElem.call(utils.appendPopupGraphIcon, host);
       graphIconsElem.call(utils.appendRemovalButton, moduleElement.attr('id'));
