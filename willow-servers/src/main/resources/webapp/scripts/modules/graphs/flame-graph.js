@@ -64,7 +64,8 @@ Box.Application.addModule('flame-graph', function(context) {
         dataUrl = "/metrics/" + moduleConf.chart.metric +
                   '?start=' + detailsStart +
                   "&stop=" + detailsStop +
-                  '&tag=host_' + host;
+                  '&tag=host_' + host +
+                  '&tag=' + moduleConf.chart.childtag;
 
     var graph = moduleElement.append("svg").classed('graph', true)
                 .attr("width", moduleWidth)
