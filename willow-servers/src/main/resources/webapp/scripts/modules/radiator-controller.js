@@ -2,7 +2,7 @@ Box.Application.addModule('radiator-controller', function(context) {
   'use strict';
 
   var utils, store, windowSvc, metrics, intercom, d3, $, moduleElem, cubismGraphs,
-    radiatorName, host, configMap = {};
+    radiatorName, host, threaddumpChildren, configMap = {};
 
   var detailsStart, detailsStop, dragStart,
     isDragging = false, //FIXME can usage of these be removed?
@@ -27,7 +27,15 @@ Box.Application.addModule('radiator-controller', function(context) {
       moduleElem.call(createChildCpuGraph, config.chart);
     },
     flame: function(config) {
-      moduleElem.call(createFlameGraph, config.chart);
+      if (!threaddumpChildren.length) {
+        return;
+      }
+
+      threaddumpChildren.forEach(function(childtag) {
+        var extendedChart = jQuery.extend({}, config.chart);
+        extendedChart.childtag = childtag;
+        moduleElem.call(createFlameGraph, extendedChart);
+      });
     }
   };
 
@@ -234,24 +242,32 @@ Box.Application.addModule('radiator-controller', function(context) {
       host         = windowSvc.getHashVariable("host");
       radiatorName = windowSvc.getHashVariable("name");
       var configs      = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
-      configs.forEach(function(config, i) {
-        // init all graphs found in radiator configuration
-        configs[i] = config = config.chart ? config : { chart: config };
-        initGraph(config);
-        // wipe config if it is marked for deletion (e.g. single graph)
-        if (config.removeAfterUse) {
-          store.customRadiators.removeConfiguration(radiatorName);
+
+      // fetch category data prior to rendering graphs
+      d3.json('/metrics/categories?start=' + detailsStart + "&stop=" + detailsStop, function(error, categories) {
+        threaddumpChildren = categories.filter(function(category) {
+          return category.indexOf('category_threaddump_') > -1;
+        });
+
+        configs.forEach(function(config, i) {
+          // init all graphs found in radiator configuration
+          configs[i] = config = config.chart ? config : { chart: config };
+          initGraph(config);
+          // wipe config if it is marked for deletion (e.g. single graph)
+          if (config.removeAfterUse) {
+            store.customRadiators.removeConfiguration(radiatorName);
+          }
+        });
+
+        var metric = (configs[0].chart.metric || configs[0].chart.type).toUpperCase();
+        if (configs.length === 1) {
+          // we're showing single graph, might as well update title nicely
+          windowSvc.setTitle(metric + " for " + configs[0].chart.host);
+        } else {
+          // update title with radiator name
+          windowSvc.setTitle(radiatorName || host + " radiator");
         }
       });
-
-      var metric = (configs[0].chart.metric || configs[0].chart.type).toUpperCase();
-      if (configs.length === 1) {
-        // we're showing single graph, might as well update title nicely
-        windowSvc.setTitle(metric + " for " + configs[0].chart.host);
-      } else {
-        // update title with radiator name
-        windowSvc.setTitle(radiatorName || host + " radiator");
-      }
     },
 
     onmousedown: isDraggingMouseDown,
