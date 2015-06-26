@@ -190,7 +190,7 @@ public class DeployerControl {
     @Override
     public void customize(URLConnection conn) {
       if (conn instanceof HttpURLConnection) {
-        conn.setRequestProperty("Authorization", SSHUtil.getSshAgentAuthorization(username));
+        conn.setRequestProperty("Authorization", SSHUtil.getPublicKeyAuthorization(username));
       }
     }
   }

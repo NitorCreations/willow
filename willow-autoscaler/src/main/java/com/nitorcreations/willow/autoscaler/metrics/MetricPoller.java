@@ -111,7 +111,7 @@ public class MetricPoller {
       ClientUpgradeRequest request = new ClientUpgradeRequest();
       request.setHeader(
           "Authorization",
-          SSHUtil.getSshAgentAuthorization(System.getProperty("user.name", "willow")));
+          SSHUtil.getPublicKeyAuthorization(System.getProperty("user.name", "willow")));
       Future<Session> future = client.connect(this, uri, request);
       logger.info(String.format("Connecting to : %s", uri));
       try {

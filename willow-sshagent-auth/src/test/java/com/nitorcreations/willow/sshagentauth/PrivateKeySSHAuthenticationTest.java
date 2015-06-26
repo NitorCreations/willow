@@ -3,6 +3,7 @@ import static com.nitorcreations.willow.sshagentauth.SSHUtil.verify;
 import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.Test;
@@ -16,9 +17,8 @@ public class PrivateKeySSHAuthenticationTest {
     List<byte[]> components = SSHUtil.components(parseBase64Binary(pubKey));
     PrivateKeySSHAuthentication test = new PrivateKeySSHAuthentication();
     test.addIdentity("src/test/resources/id_rsa");
-    String authorizationHeader = test.getSshAgentAuthorization("foo");
-    String[] header = authorizationHeader.split("\\s+");
-    byte[] sign = parseBase64Binary(header[1]);
-    assertTrue(verify(parseBase64Binary(header[2]), "ssh-rsa", components, sign, "pasi@venom"));
+    byte[] sign = "kwiidswuywslsgjslghs".getBytes(StandardCharsets.UTF_8);
+    String authorizationHeader = test.getSshSignatures(sign);
+    assertTrue(verify(parseBase64Binary(authorizationHeader), "ssh-rsa", components, sign, "pasi@venom"));
   }
 }

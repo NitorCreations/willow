@@ -1,8 +1,11 @@
 package com.nitorcreations.willow.sshagentauth;
 
+import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,8 +20,9 @@ public class SSHUtil {
   private static Logger logger = Logger.getLogger(SSHUtil.class.getCanonicalName());
   private static SSHAuthentication sshAuthentication;
   private static String ENV_SSH_ID = "W_SSH_IDENTITY";
+  private final static SecureRandom random = new SecureRandom();
   static {
-    String sshId = System.getenv(ENV_SSH_ID );
+    String sshId = System.getenv(ENV_SSH_ID);
     if (sshId != null) {
       sshAuthentication = new PrivateKeySSHAuthentication();
       try {
@@ -29,6 +33,24 @@ public class SSHUtil {
       }
     } else {
       sshAuthentication = new SSHAgentAuthentication();
+      byte[] sign = new byte[40];
+      random.nextBytes(sign);
+      String sigs = sshAuthentication.getSshSignatures(sign);
+      if (sigs.isEmpty()) {
+        String home = System.getProperty("user.home");
+        String sshDir = home + File.separator + ".ssh" + File.separator;
+        String[] defaultKeys = new String[] { 
+            sshDir + "id_rsa", sshDir + "id_dsa", sshDir + "identity"
+        };
+        sshAuthentication = new PrivateKeySSHAuthentication();
+        for (String nextKey : defaultKeys) {
+          try {
+            ((PrivateKeySSHAuthentication)sshAuthentication).addIdentity(nextKey);
+          } catch (JSchException e) {
+            logger.log(Level.FINE, "Failed to add key " + nextKey, e);
+          }
+        }
+      }
     }
   }
   public static boolean verify(byte[] nextSig, String type, List<byte[]> keycomponents, byte[] sign, String keyInfo) {
@@ -98,7 +120,14 @@ public class SSHUtil {
     }
     return ret;
   }
-  public static String getSshAgentAuthorization(String username) {
-    return sshAuthentication.getSshAgentAuthorization(username);
+  public static String getPublicKeyAuthorization(String username) {
+    StringBuilder ret = new StringBuilder("PUBLICKEY ");
+    String now = Long.toString(System.currentTimeMillis());
+    byte[] rnd = new byte[39];
+    random.nextBytes(rnd);
+    byte[] sign = (username + ":" + now + ":" + printBase64Binary(rnd)).getBytes(StandardCharsets.UTF_8);
+    ret.append(printBase64Binary(sign));
+    ret.append(sshAuthentication.getSshSignatures(sign));
+    return ret.toString();
   }
 }

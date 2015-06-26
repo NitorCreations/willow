@@ -201,7 +201,7 @@ public class WebSocketTransmitter {
       client.setConnectTimeout(2000);
       client.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
-      request.setHeader("Authorization", SSHUtil.getSshAgentAuthorization(username));
+      request.setHeader("Authorization", SSHUtil.getPublicKeyAuthorization(username));
       Future<Session> future = client.connect(this, uri, request);
       logger.info(String.format("Connecting to : %s", uri));
       try {
