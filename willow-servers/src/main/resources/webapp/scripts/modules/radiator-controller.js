@@ -2,7 +2,7 @@ Box.Application.addModule('radiator-controller', function(context) {
   'use strict';
 
   var utils, store, windowSvc, metrics, intercom, d3, $, moduleElem, cubismGraphs,
-    radiatorName, host, configMap = {};
+    radiatorName, host, threaddumpChildren, configMap = {};
 
   var detailsStart, detailsStop, dragStart,
     isDragging = false, //FIXME can usage of these be removed?
@@ -23,8 +23,19 @@ Box.Application.addModule('radiator-controller', function(context) {
     heap: function(config) {
       moduleElem.call(createHeapGraph, config.chart);
     },
-    childcpu:  function(config) {
+    childcpu: function(config) {
       moduleElem.call(createChildCpuGraph, config.chart);
+    },
+    flame: function(config) {
+      if (!threaddumpChildren.length) {
+        return;
+      }
+
+      threaddumpChildren.forEach(function(childtag) {
+        var extendedChart = jQuery.extend({}, config.chart);
+        extendedChart.childtag = childtag;
+        moduleElem.call(createFlameGraph, extendedChart);
+      });
     }
   };
 
@@ -114,6 +125,15 @@ Box.Application.addModule('radiator-controller', function(context) {
     injectModuleConfiguration(heapGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
     Box.Application.start(heapGraphElement[0][0]);
     configMap[heapGraphElement.attr('id')] = chartConfig;
+  }
+
+  function createFlameGraph(parentElement, chartConfig) {
+    var flameGraphElement = parentElement.append("div")
+      .classed("flame-graph__wrapper scalable col c6", true)
+      .attr("data-module", "flame-graph");
+    injectModuleConfiguration(flameGraphElement, radiatorGraphIdPrefix('custom'), chartConfig);
+    Box.Application.start(flameGraphElement[0][0]);
+    configMap[flameGraphElement.attr('id')] = chartConfig;
   }
 
   function timeRangeSelectionArea() {
@@ -222,24 +242,32 @@ Box.Application.addModule('radiator-controller', function(context) {
       host         = windowSvc.getHashVariable("host");
       radiatorName = windowSvc.getHashVariable("name");
       var configs      = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
-      configs.forEach(function(config, i) {
-        // init all graphs found in radiator configuration
-        configs[i] = config = config.chart ? config : { chart: config };
-        initGraph(config);
-        // wipe config if it is marked for deletion (e.g. single graph)
-        if (config.removeAfterUse) {
-          store.customRadiators.removeConfiguration(radiatorName);
+
+      // fetch category data prior to rendering graphs
+      d3.json('/metrics/categories?start=' + detailsStart + "&stop=" + detailsStop, function(error, categories) {
+        threaddumpChildren = categories.filter(function(category) {
+          return category.indexOf('category_threaddump_') > -1;
+        });
+
+        configs.forEach(function(config, i) {
+          // init all graphs found in radiator configuration
+          configs[i] = config = config.chart ? config : { chart: config };
+          initGraph(config);
+          // wipe config if it is marked for deletion (e.g. single graph)
+          if (config.removeAfterUse) {
+            store.customRadiators.removeConfiguration(radiatorName);
+          }
+        });
+
+        var metric = (configs[0].chart.metric || configs[0].chart.type).toUpperCase();
+        if (configs.length === 1) {
+          // we're showing single graph, might as well update title nicely
+          windowSvc.setTitle(metric + " for " + configs[0].chart.host);
+        } else {
+          // update title with radiator name
+          windowSvc.setTitle(radiatorName || host + " radiator");
         }
       });
-
-      var metric = (configs[0].chart.metric || configs[0].chart.type).toUpperCase();
-      if (configs.length === 1) {
-        // we're showing single graph, might as well update title nicely
-        windowSvc.setTitle(metric + " for " + configs[0].chart.host);
-      } else {
-        // update title with radiator name
-        windowSvc.setTitle(radiatorName || host + " radiator");
-      }
     },
 
     onmousedown: isDraggingMouseDown,

@@ -94,13 +94,15 @@ Box.Application.addService('utils', function(application) {
         .append("use").attr("xlink:href", "#shape-close2");
     },
 
-    appendHostRadiatorLink: function(parentElement, title, host) {
+    appendHostRadiatorLink: function(parentElement, title, host, extraInfo) {
+      extraInfo = extraInfo || "";
       var link = parentElement.append("div").classed("host-link", true);
       link.append("span").text(title);
       link.append("a")
         .attr("href", "radiator.html#host=" + host)
         .attr("data-host", host)
         .attr("data-type", "host-radiator").text(host);
+      link.append("small").text(extraInfo);
       return link;
     },
 
