@@ -12,7 +12,7 @@ Box.Application.addModule('childcpu-graph', function(context) {
 
   function calculateStep(timescale) {
     var steps = $(moduleElement[0]).width() / 2;
-    detailsStep = parseInt((timescale *1000) / steps);
+    detailsStep = parseInt((timescale * 1000) / steps);
   }
 
   function createChildCpuGraph(data) {
@@ -25,6 +25,35 @@ Box.Application.addModule('childcpu-graph', function(context) {
         .datum(data)
         .transition().duration(500)
         .call(chart);
+
+      var isFirstMessage = true,
+          socket = utils.configureSocket({
+            start: detailsStart,
+            stop: detailsStop,
+            step: detailsStep,
+            metricKey: moduleConf.chart.type
+          });
+
+      socket.onmessage = function(event) {
+        // first message we get from the socket contains last 15 minutes, we dont need that
+        if (firstMessage) {
+          firstMessage = false;
+          return;
+        }
+
+        var parsedData = JSON.parse(event.data);
+
+        // make sure there's data available before updating the chart
+        if (parsedData.length && parsedData[0].values.length) {
+          parsedData[0].values.forEach(function(value) {
+            data[0].values.push(value);
+            data[0].values.shift();
+          });
+          // update the chart once all data is in place
+          chart.update();
+        }
+      };
+
       return chart;
     });
   }
