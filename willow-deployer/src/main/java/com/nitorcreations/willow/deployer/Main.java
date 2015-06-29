@@ -115,10 +115,14 @@ public class Main extends DeployerControl implements MainMBean {
     List<String> launchUrls = mergedProperties.getArrayProperty(PROPERTY_KEY_LAUNCH_URLS);
     if (launchUrls.size() > 0) {
       launchUrls.add(0, deployerName);
-      // For most use cases we want a singleton, but here we want a fresh copy to avoid infinite recursion
-      Main newMain = new Main();
-      injector.injectMembers(newMain);
-      newMain.doMain(launchUrls.toArray(new String[launchUrls.size()]));
+      for (MergeableProperties next : launchPropertiesList) {
+        int i=0;
+        while(next.remove(PROPERTY_KEY_LAUNCH_URLS + "[" + i + "]") != null) {
+          log.log(Level.FINE, "Removing launch urls for relaunch");
+          i++;
+        }
+      }
+      this.doMain(launchUrls.toArray(new String[launchUrls.size()]));
       return;
     }
     registerBean();
