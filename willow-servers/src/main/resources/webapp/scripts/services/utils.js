@@ -118,6 +118,26 @@ Box.Application.addService('utils', function(application) {
       }
     },
 
+    configureSocket: function(opts) {
+      var loc = window.location,
+          ws_uri = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + "/poll/",
+          socket = new WebSocket(ws_uri);
+
+      socket.onopen = function(e) {
+        var pollConf = {
+          metricKey: "/" + opts.metricKey,
+          start: opts.start,
+          stop: opts.stop,
+          step: opts.step,
+          minSteps: 1
+        };
+
+        socket.send( JSON.stringify(pollConf) );
+      };
+
+      return socket;
+    },
+
     timeFormat: d3.time.format("%H:%M"),
     dateFormat: d3.time.format("%a %e. %B"),
     dayTimeFormat: d3.time.format("%a %H:%M")
