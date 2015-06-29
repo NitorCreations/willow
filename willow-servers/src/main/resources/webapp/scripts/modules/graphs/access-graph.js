@@ -43,6 +43,41 @@ Box.Application.addModule('access-graph', function(context) {
         .attr("y", 35)
         .attr("text-anchor", "left")
         .text(legend);
+
+      var latestTimestamp = data[0].values[data[0].values.length - 1].x, // keeps track of latest processed bit of data
+          socket = utils.configureSocket({
+            start: detailsStart,
+            stop: detailsStop,
+            step: detailsStep,
+            metricKey: moduleConf.chart.type
+          });
+
+      socket.onmessage = function(event) {
+        var parsedData = JSON.parse(event.data),
+            parsedDataTimestamp;
+
+        // no data or no values = there's nothing to update
+        if (!parsedData.length || !parsedData[0].values.length) { return; }
+
+        // we can assume all values in a set have same timestamp
+        parsedDataTimestamp = parsedData[0].values[0].x;
+        // make sure we're showing new data only
+        if (latestTimestamp <= parsedDataTimestamp) { return; }
+        // update the value for next cycle
+        latestTimestamp = parsedData[0].values[0].x;
+
+        // feed new data into chart data
+        parsedData.forEach(function(set, setIndex) {
+          set.values.forEach(function(value) {
+            data[setIndex].values.push(value);
+            data[setIndex].values.shift();
+          });
+        });
+
+        // update the chart once all data is in place
+        chart.update();
+      };
+
       return chart;
     });
   }
