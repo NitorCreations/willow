@@ -62,7 +62,7 @@ Box.Application.addModule('access-graph', function(context) {
         // we can assume all values in a set have same timestamp
         parsedDataTimestamp = parsedData[0].values[0].x;
         // make sure we're showing new data only
-        if (latestTimestamp <= parsedDataTimestamp) { return; }
+        if (latestTimestamp >= parsedDataTimestamp) { return; }
         // update the value for next cycle
         latestTimestamp = parsedData[0].values[0].x;
 

@@ -26,7 +26,7 @@ Box.Application.addModule('childcpu-graph', function(context) {
         .transition().duration(500)
         .call(chart);
 
-      var isFirstMessage = true,
+      var latestTimestamp = data[0].values[data[0].values.length - 1].x,
           socket = utils.configureSocket({
             start: detailsStart,
             stop: detailsStop,
@@ -35,23 +35,25 @@ Box.Application.addModule('childcpu-graph', function(context) {
           });
 
       socket.onmessage = function(event) {
-        // first message we get from the socket contains last 15 minutes, we dont need that
-        if (firstMessage) {
-          firstMessage = false;
-          return;
-        }
+        var parsedData = JSON.parse(event.data),
+            parsedDataTimestamp;
 
-        var parsedData = JSON.parse(event.data);
+        // no data or no values = there's nothing to update
+        if (!parsedData.length || !parsedData[0].values.length) { return; }
 
-        // make sure there's data available before updating the chart
-        if (parsedData.length && parsedData[0].values.length) {
-          parsedData[0].values.forEach(function(value) {
-            data[0].values.push(value);
-            data[0].values.shift();
-          });
-          // update the chart once all data is in place
-          chart.update();
-        }
+        // we can assume all values in a set have same timestamp
+        parsedDataTimestamp = parsedData[0].values[0].x;
+
+        if (latestTimestamp >= parsedDataTimestamp) { return; }
+        // update the value for next cycle
+        latestTimestamp = parsedData[0].values[0].x;
+
+        parsedData[0].values.forEach(function(value) {
+          data[0].values.push(value);
+          data[0].values.shift();
+        });
+        // update the chart once all data is in place
+        chart.update();
       };
 
       return chart;
