@@ -302,8 +302,8 @@ public class MergeableProperties extends Properties {
     if (key == null || value == null) {
       throw new NullPointerException("Null keys or values not allowed");
     }
-    String k = resolveIndexes((String) key);
-    String v = resolveIndexes((String) value);
+    String k = resolveIndexes(key.toString());
+    String v = resolveIndexes(value.toString());
     StrSubstitutor sub = new StrSubstitutor(table, "@", "@", '\\');
     k = sub.replace(k);
     v = evaluate(sub.replace(v), allowEval);
