@@ -3,9 +3,10 @@ package com.nitorcreations.willow.protocols.jaronclasspathcontaining;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 
-public class Handler extends URLStreamHandler {
+import com.nitorcreations.willow.protocols.ProxylessURLStreamHandler;
+
+public class Handler extends ProxylessURLStreamHandler {
   private final ClassLoader classLoader;
 
   public Handler() {

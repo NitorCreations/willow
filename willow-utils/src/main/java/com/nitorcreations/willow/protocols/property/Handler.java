@@ -2,9 +2,10 @@ package com.nitorcreations.willow.protocols.property;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 
-public class Handler extends URLStreamHandler {
+import com.nitorcreations.willow.protocols.ProxylessURLStreamHandler;
+
+public class Handler extends ProxylessURLStreamHandler {
   public Handler() {
   }
   @Override
