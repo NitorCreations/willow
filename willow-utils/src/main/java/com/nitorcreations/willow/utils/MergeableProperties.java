@@ -36,7 +36,7 @@ import com.nitorcreations.willow.protocols.Register;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public class MergeableProperties extends Properties {
+public class MergeableProperties extends Properties implements Cloneable {
   public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
   public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
   public static final Pattern SCRIPT_REGEX = Pattern.compile("(.*?)(\\<script\\>(.*?)\\<\\/script\\>)", Pattern.DOTALL + Pattern.MULTILINE);
@@ -471,7 +471,6 @@ public class MergeableProperties extends Properties {
   @SuppressFBWarnings(value={"CN_IDIOM_NO_SUPER_CALL"},
   justification="Don't actually want anything from parent class except for load and save functions" )
   public synchronized Object clone() {
-    super.clone();
     return new MergeableProperties(defaults, table, allowScripts, prefixes);
   }
 
