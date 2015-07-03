@@ -25,6 +25,7 @@ import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.nitorcreations.willow.messages.event.EventMessage;
 import com.nitorcreations.willow.messages.metrics.MetricConfig;
 import com.nitorcreations.willow.sshagentauth.SSHUtil;
@@ -122,7 +123,7 @@ public class EventPoller {
       EventMessage[] eventMessages = null;
       List<EventMessage> uniqueEventMessages = new ArrayList<>();
       try {
-        eventMessages = gson.fromJson(message, EventMessage[].class);
+        eventMessages = gson.fromJson(gson.fromJson(message, JsonObject.class).get("data"), EventMessage[].class);
       } catch (Exception e) {
         logger.log(Level.INFO, "Failure in unmarshalling event data", e);
       }
@@ -179,6 +180,7 @@ public class EventPoller {
       logger.info("Sending poll request for events");
       MetricConfig metricConfig = new MetricConfig();
       long now = System.currentTimeMillis();
+      metricConfig.setId("eventhandler");
       metricConfig.setMetricKey("/event");
       metricConfig.setStart(now - 20000);   // For the first chunk, send events from 20s ago
       metricConfig.setStop(now);            // ... up to the current moment.
