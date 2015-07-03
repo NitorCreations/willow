@@ -40,7 +40,12 @@ Box.Application.addModule('alerts-navigation', function(context) {
       } else {
         ws_uri = "ws:";
       }
-      ws_uri += "//" + loc.host + "/poll/";
+      var ctx = "/";
+      var ctxEnd = loc.pathname.lastIndexOf("/");
+      if (ctx > 0) {
+        ctx += loc.pathname.substring(0, contextEnd) + "/";
+      }
+      ws_uri += "//" + loc.host + ctx + "poll/";
       socket = new WebSocket(ws_uri);
       socket.onopen = pollAlerts;
       socket.onmessage = onEvents;

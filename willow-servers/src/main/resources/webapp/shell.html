@@ -20,82 +20,87 @@
     #else
 <script type="text/javascript" src="scripts/all.js" charset="utf-8"></script>
 #end
-    <script type="text/javascript">
-    String.prototype.width = function(font) {
-      var f = font || '12px arial',
-      o = $('<div>' + this + '</div>')
-            .css({'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
-            .appendTo($('body')),
-      w = o.width();
-      o.remove();
-      return w;
-    }
-    String.prototype.height = function(font) {
-      var f = font || '12px arial',
-      o = $('<div>' + this + '</div>')
-            .css({'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
-            .appendTo($('body')),
-      h = o.height();
-      o.remove();
-      return h;
-    }
+<script type="text/javascript">
+String.prototype.width = function(font) {
+  var f = font || '12px arial',
+  o = $('<div>' + this + '</div>')
+        .css({'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
+        .appendTo($('body')),
+  w = o.width();
+  o.remove();
+  return w;
+}
+String.prototype.height = function(font) {
+  var f = font || '12px arial',
+  o = $('<div>' + this + '</div>')
+        .css({'position': 'absolute', 'float': 'left', 'white-space': 'nowrap', 'visibility': 'hidden'})
+        .appendTo($('body')),
+  h = o.height();
+  o.remove();
+  return h;
+}
 
-    var debouncer = function(func , timeout) {
-        var timeoutID , timeout = timeout || 200;
-        return function () {
-            var scope = this , args = arguments;
-            clearTimeout( timeoutID );
-            timeoutID = setTimeout( function () {
-                func.apply( scope , Array.prototype.slice.call( args ) );
-            } , timeout );
-        }
-    };
+var debouncer = function(func , timeout) {
+  var timeoutID , timeout = timeout || 200;
+  return function () {
+    var scope = this , args = arguments;
+    clearTimeout( timeoutID );
+    timeoutID = setTimeout( function () {
+      func.apply( scope , Array.prototype.slice.call( args ) );
+      } , timeout );
+  }
+};
 
-    window.addEventListener('load', function() {
-        var nCols = parseInt(20 * $(window).width() / "0123456789ABCDEFGHIJK".width());
-        var nRows = parseInt($(window).height() / "0123456789ABCDEFGHIJK".height());
-		var loc = window.location, ws_uri;
-		if (loc.protocol === "https:") {
-			ws_uri = "wss:";
-		} else {
-			ws_uri = "ws:";
-		}
-		ws_uri += "//" + loc.host + "/rawterminal/" + loc.search + "&cols=" + nCols + "&rows=" + nRows;
-  	    var socket = new WebSocket(ws_uri);
-  	    window.socket = socket;
-        socket.onopen = function() {
-    	    var term = new Terminal({
-    	      cols: nCols,
-    	      rows: nRows,
+window.addEventListener('load', function() {
+  var nCols = parseInt(20 * $(window).width() / "0123456789ABCDEFGHIJK".width());
+  var nRows = parseInt($(window).height() / "0123456789ABCDEFGHIJK".height());
+  var loc = window.location, ws_uri;
+  if (loc.protocol === "https:") {
+    ws_uri = "wss:";
+  } else {
+    ws_uri = "ws:";
+  }
+  var context = "/";
+  var contextEnd = loc.pathname.lastIndexOf("/");
+  if (contextEnd > 0) {
+    context += loc.pathname.substring(0, contextEnd) + "/";
+  }
+  ws_uri += "//" + loc.host + context + "rawterminal/" + loc.search + "&cols=" + nCols + "&rows=" + nRows;
+  var socket = new WebSocket(ws_uri);
+  window.socket = socket;
+  socket.onopen = function() {
+    var term = new Terminal({
+              cols: nCols,
+              rows: nRows,
               screenKeys: true,
               cursorBlink: true,
               useStyles: true
     	    });
-    	    term.on('data', function(data) {
-    	      socket.send(data);
-    	    });
-    	    window.term = term;
-    	    term.on('title', function(title) {
-    	      document.title = title;
-    	    });
-    	    term.open(document.body);
-    	    socket.onmessage = function(event) {
-    	      term.write(event.data);
-    	    };
-    	    socket.onclose = function() {
-    	      term.destroy();
-    	    };
-      };
-    }, false);
-    $(window).resize(debouncer(function (e) {
-        var nCols = parseInt(20 * $(window).width() / "0123456789ABCDEFGHIJK".width() + 1);
-        var nRows = parseInt($(window).height() / "0123456789ABCDEFGHIJK".height() - 1);
-    	window.term.resize(nCols, nRows);
-    	window.socket.send("{\"cols\":" + nCols + ",\"rows\":" + nRows + "}");
-	}));
-    window.setInterval(function() {
-    	window.socket.send("{\"ping\":1}");
-    }, 2000);
+    term.on('data', function(data) {
+        socket.send(data);
+      });
+    window.term = term;
+    term.on('title', function(title) {
+        document.title = title;
+       });
+    term.open(document.body);
+    socket.onmessage = function(event) {
+        term.write(event.data);
+       };
+    socket.onclose = function() {
+        term.destroy();
+       };
+   };
+  }, false);
+$(window).resize(debouncer(function (e) {
+    var nCols = parseInt(20 * $(window).width() / "0123456789ABCDEFGHIJK".width() + 1);
+    var nRows = parseInt($(window).height() / "0123456789ABCDEFGHIJK".height() - 1);
+      window.term.resize(nCols, nRows);
+      window.socket.send("{\"cols\":" + nCols + ",\"rows\":" + nRows + "}");
+  }));
+window.setInterval(function() {
+    window.socket.send("{\"ping\":1}");
+  }, 2000);
     </script>
     <style type="text/css">
 	body {
