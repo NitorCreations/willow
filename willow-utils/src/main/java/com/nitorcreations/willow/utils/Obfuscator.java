@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.utils;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
@@ -9,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
@@ -52,7 +52,7 @@ public class Obfuscator {
       byte[] key = new byte[128];
       sr.nextBytes(key);
       try (OutputStream out = new FileOutputStream(masterFile)) {
-        out.write(("value=" + printBase64Binary(key) + "\n").getBytes(Charset.forName("UTF-8")));
+        out.write(("value=" + printBase64Binary(key) + "\n").getBytes(UTF_8));
         out.flush();
       }
       Set<PosixFilePermission> perms = new HashSet<>();
@@ -113,7 +113,7 @@ public class Obfuscator {
     try {
       out = Cipher.getInstance(CIPHER);
       out.init(Cipher.ENCRYPT_MODE, key);
-      byte[] input = value.getBytes("UTF-8");
+      byte[] input = value.getBytes(UTF_8);
       for (int i = 0; i < digestIterations; i++) {
         bOut = new ByteArrayOutputStream();
         cOut = new CipherOutputStream(bOut, out);
@@ -157,7 +157,7 @@ public class Obfuscator {
       if (result.length <= (SALT_LENGTH + 4) || result[SALT_LENGTH] != (byte) 0xca || result[SALT_LENGTH + 1] != (byte) 0xfe || result[SALT_LENGTH + 2] != (byte) 0xba || result[SALT_LENGTH + 3] != (byte) 0xbe) {
         return null;
       }
-      return new String(result, SALT_LENGTH + 4, result.length - (SALT_LENGTH + 4), Charset.forName("UTF-8"));
+      return new String(result, SALT_LENGTH + 4, result.length - (SALT_LENGTH + 4), UTF_8);
     } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IOException e) {
       Logger.getAnonymousLogger().log(Level.FINE, "Failed to encrypt", e);
       return null;
@@ -168,7 +168,7 @@ public class Obfuscator {
     MessageDigest md;
     try {
       md = MessageDigest.getInstance(digest.toString().replace("_", "-"));
-      byte[] raw = key.getBytes(Charset.forName("UTF-8"));
+      byte[] raw = key.getBytes(UTF_8);
       for (int i = 0; i < digestIterations; ++i) {
         md.update(raw);
         raw = md.digest();
@@ -215,8 +215,8 @@ public class Obfuscator {
       md.update(content);
     } else {
       for (Entry<String, String> next : p.backingEntrySet()) {
-        md.update(next.getKey().getBytes(Charset.forName("UTF-8")));
-        md.update(next.getValue().getBytes(Charset.forName("UTF-8")));
+        md.update(next.getKey().getBytes(UTF_8));
+        md.update(next.getValue().getBytes(UTF_8));
       }
     }
     return printBase64Binary(md.digest());

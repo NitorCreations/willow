@@ -17,11 +17,16 @@ import com.jcraft.jsch.jce.SignatureDSA;
 import com.jcraft.jsch.jce.SignatureRSA;
 
 public class SSHUtil {
-  private static Logger logger = Logger.getLogger(SSHUtil.class.getCanonicalName());
+  private static final SecureRandom random = new SecureRandom();
+  private static final Logger logger = Logger.getLogger(SSHUtil.class.getCanonicalName());
+  private static final String ENV_SSH_ID = "W_SSH_IDENTITY";
+
   private static SSHAuthentication sshAuthentication;
-  private static String ENV_SSH_ID = "W_SSH_IDENTITY";
-  private final static SecureRandom random = new SecureRandom();
-  static {
+
+  private static synchronized void initializeSshAuthentication() {
+    if (sshAuthentication != null) {
+        return;
+    }
     String sshId = System.getenv(ENV_SSH_ID);
     if (sshId != null) {
       sshAuthentication = new PrivateKeySSHAuthentication();
@@ -40,7 +45,7 @@ public class SSHUtil {
         String home = System.getProperty("user.home");
         String sshDir = home + File.separator + ".ssh" + File.separator;
         String[] defaultKeys = new String[] { 
-            sshDir + "id_rsa", sshDir + "id_dsa", sshDir + "identity"
+          sshDir + "id_ecdsa", sshDir + "id_id_ed25519", sshDir + "id_rsa", sshDir + "id_dsa", sshDir + "identity"
         };
         sshAuthentication = new PrivateKeySSHAuthentication();
         for (String nextKey : defaultKeys) {
@@ -121,6 +126,7 @@ public class SSHUtil {
     return ret;
   }
   public static String getPublicKeyAuthorization(String username) {
+    initializeSshAuthentication();
     StringBuilder ret = new StringBuilder("PUBLICKEY ");
     String now = Long.toString(System.currentTimeMillis());
     byte[] rnd = new byte[39];
