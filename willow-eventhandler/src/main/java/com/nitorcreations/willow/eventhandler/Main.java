@@ -26,6 +26,7 @@ import org.eclipse.sisu.wire.WireModule;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.SimpleFormatter;
 
@@ -41,23 +42,18 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
 public class Main {
 
-  private Logger logger = Logger.getLogger(getClass().getName());
-
-  private static Injector injector;
-
-  private MergeableProperties properties;
+  protected Logger logger = Logger.getLogger(getClass().getName());
 
   @Inject
-  ExecutorService executorService;
+  protected Injector injector;
+
+  protected MergeableProperties properties;
 
   @Inject
-  private EventPoller eventPoller;
+  protected ExecutorService executorService;
 
-  static {
-    setupLogging();
-    injector = Guice.createInjector(new WireModule(new EventHandlerModule(),
-        new SpaceModule(new URLClassSpace(Main.class.getClassLoader()))));
-  }
+  @Inject
+  protected EventPoller eventPoller;
 
   /**
    * Command-line entry point.
@@ -65,7 +61,46 @@ public class Main {
    * @param args The command line arguments. These should be URLs that point to the configuration file(s).
    */
   public static void main(String... args) {
-    injector.getInstance(Main.class).doMain(args);
+    main(new Main(), args);
+  }
+
+  /**
+   * Subclass specific entry point.
+   * 
+   * @param main The actual main class implementation to use.
+   * @param args The command line arguments.
+   */
+  protected static void main(Main main, String... args) {
+    main.getInjector().getInstance(main.getMainClass()).doMain(args);
+  }
+
+  /**
+   * Get an Injector to be used in instantiating the main class.
+   * 
+   * @return An Injector.
+   */
+  protected Injector getInjector() {
+    return Guice.createInjector(getModules());
+  }
+
+  /**
+   * Get the Guice modules to be used in injecting dependencies.
+   * 
+   * @return The modules.
+   */
+  protected Module[] getModules() {
+    Module[] modules = { new WireModule(new EventHandlerModule(),
+        new SpaceModule(new URLClassSpace(Main.class.getClassLoader()))) };
+    return modules;
+  }
+
+  /**
+   * Get the main class to be instantiated and run.
+   * 
+   * @return The main class to be used.
+   */
+  protected Class<? extends Main> getMainClass() {
+    return getClass();
   }
 
   /**
@@ -73,7 +108,7 @@ public class Main {
    * 
    * @param args The command line arguments. These should be URLs that point to the configuration file(s).
    */
-  public void doMain(String... args) {
+  protected void doMain(String... args) {
     properties = new MergeableProperties();
     properties.putAll(System.getProperties());
     for (String arg : args) {
@@ -91,7 +126,7 @@ public class Main {
       String handlerClassName = handlerProperties.getProperty("handler");
       String eventClassName = handlerProperties.getProperty("event");
       try {
-        EventHandler eventHandler = (EventHandler) Class.forName(handlerClassName).newInstance();
+        EventHandler eventHandler = (EventHandler) injector.getInstance(Class.forName(handlerClassName));
         MergeableProperties beanProperties = handlerProperties.getPrefixed("properties");
         for (String propertyName : beanProperties.stringPropertyNames()) {
           String propertyValue = beanProperties.getProperty(propertyName);
@@ -103,7 +138,7 @@ public class Main {
           eventHandlers.put(eventClassName, eventHandlersForType);
         }
         eventHandlersForType.add(eventHandler);
-      } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+      } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
         logger.log(Level.SEVERE, "Error instantiating handler", e);
         System.exit(1);
       }
@@ -132,13 +167,13 @@ public class Main {
     }
   }
 
-  private void stop() {
+  protected void stop() {
     System.out.println("Willow event handler stopping...");
     executorService.shutdown();
     System.out.println("Willow event handler stopped.");
   }
 
-  private static void setupLogging() {
+  protected void setupLogging() {
     Logger rootLogger = Logger.getLogger("");
     for (Handler nextHandler : rootLogger.getHandlers()) {
       rootLogger.removeHandler(nextHandler);
