@@ -60,12 +60,15 @@ window.addEventListener('load', function() {
   } else {
     ws_uri = "ws:";
   }
-  var context = "/";
-  var contextEnd = loc.pathname.lastIndexOf("/");
-  if (contextEnd > 0) {
-    context += loc.pathname.substring(0, contextEnd) + "/";
+  var ctx = "/";
+  var ctxEnd = loc.pathname.lastIndexOf("/");
+  if (ctxEnd > 0) {
+    if (loc.pathname.indexOf("/") == 0) {
+      ctx = "";
+    }
+    ctx += loc.pathname.substring(0, contextEnd) + "/";
   }
-  ws_uri += "//" + loc.host + context + "rawterminal/" + loc.search + "&cols=" + nCols + "&rows=" + nRows;
+  ws_uri += "//" + loc.host + ctx + "rawterminal/" + loc.search + "&cols=" + nCols + "&rows=" + nRows;
   var socket = new WebSocket(ws_uri);
   window.socket = socket;
   socket.onopen = function() {

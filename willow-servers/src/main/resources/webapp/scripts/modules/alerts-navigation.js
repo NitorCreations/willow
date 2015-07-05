@@ -42,7 +42,10 @@ Box.Application.addModule('alerts-navigation', function(context) {
       }
       var ctx = "/";
       var ctxEnd = loc.pathname.lastIndexOf("/");
-      if (ctx > 0) {
+      if (ctxEnd > 0) {
+        if (loc.pathname.indexOf("/") == 0) {
+          ctx = "";
+        }
         ctx += loc.pathname.substring(0, contextEnd) + "/";
       }
       ws_uri += "//" + loc.host + ctx + "poll/";
