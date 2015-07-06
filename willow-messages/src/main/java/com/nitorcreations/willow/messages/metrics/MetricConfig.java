@@ -11,6 +11,7 @@ public class MetricConfig {
   private static final Pattern nonword= Pattern.compile("\\W");
   public static final int MIN_STEPLEN = 1000;
   public static final long MAX_TIMEPERIOD = TimeUnit.DAYS.toMillis(30);
+  private String id = "";
   private String metricKey = "";
   private long start;
   private long stop;
@@ -116,6 +117,12 @@ public class MetricConfig {
     } else {
       return input.substring(0, matcher.start());
     }
+  }
+  public String getId() {
+    return id;
+  }
+  public void setId(String id) {
+    this.id = id;
   }
 
 }

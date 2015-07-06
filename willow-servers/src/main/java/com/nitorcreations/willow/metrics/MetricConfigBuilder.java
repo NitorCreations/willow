@@ -7,10 +7,10 @@ import com.nitorcreations.willow.messages.metrics.MetricConfig;
 
 @Named
 public class MetricConfigBuilder {
-
   public MetricConfig fromRequest(HttpServletRequest req) {
     MetricConfig config = new MetricConfig();
     long now = System.currentTimeMillis();
+    config.setId(getStringParameter(req, "id", null));
     config.setMetricKey(req.getPathInfo());
     config.setStart(getLongParameter(req, "start", now - 30000));
     config.setStop(getLongParameter(req, "stop", now));
@@ -40,5 +40,12 @@ public class MetricConfigBuilder {
       return new String[0];
     }
     return ret;
+  }
+  private String getStringParameter(HttpServletRequest req, String name, String def) {
+    String[] ret = req.getParameterValues(name);
+    if (ret == null || ret.length == 0) {
+      return def;
+    }
+    return ret[0];
   }
 }

@@ -12,7 +12,7 @@ Box.Application.addModule('childcpu-graph', function(context) {
 
   function calculateStep(timescale) {
     var steps = $(moduleElement[0]).width() / 2;
-    detailsStep = parseInt((timescale *1000) / steps);
+    detailsStep = parseInt((timescale * 1000) / steps);
   }
 
   function createChildCpuGraph(data) {
@@ -25,6 +25,37 @@ Box.Application.addModule('childcpu-graph', function(context) {
         .datum(data)
         .transition().duration(500)
         .call(chart);
+
+      var latestTimestamp = data[0].values[data[0].values.length - 1].x,
+          socket = utils.configureSocket({
+            start: detailsStart,
+            stop: detailsStop,
+            step: detailsStep,
+            metricKey: moduleConf.chart.type
+          });
+
+      socket.onmessage = function(event) {
+        var parsedData = JSON.parse(event.data),
+            parsedDataTimestamp;
+
+        // no data or no values = there's nothing to update
+        if (!parsedData.length || !parsedData[0].values.length) { return; }
+
+        // we can assume all values in a set have same timestamp
+        parsedDataTimestamp = parsedData[0].values[0].x;
+
+        if (latestTimestamp >= parsedDataTimestamp) { return; }
+        // update the value for next cycle
+        latestTimestamp = parsedData[0].values[0].x;
+
+        parsedData[0].values.forEach(function(value) {
+          data[0].values.push(value);
+          data[0].values.shift();
+        });
+        // update the chart once all data is in place
+        chart.update();
+      };
+
       return chart;
     });
   }

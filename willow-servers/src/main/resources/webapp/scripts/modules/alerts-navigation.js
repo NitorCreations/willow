@@ -14,11 +14,11 @@ Box.Application.addModule('alerts-navigation', function(context) {
   var onEvents = function(event) {
     var willowEvents = JSON.parse(event.data);
     var i;
-    for (i=0; i<willowEvents.length; i++) {
-      if (!seenEvent(willowEvents[i].id)) {
-        $("tbody").prepend("<tr><td>" + timeFormatter(new Date(willowEvents[i].timestamp)) + "</td><td>" +
-          willowEvents[i].eventType.substring(willowEvents[i].eventType.lastIndexOf(".") + 1) +
-          "</td><td>" + willowEvents[i].description + "</td></tr>");
+    for (i=0; i<willowEvents.data.length; i++) {
+      if (!seenEvent(willowEvents.data[i].id)) {
+        $("tbody").prepend("<tr><td>" + timeFormatter(new Date(willowEvents.data[i].timestamp)) + "</td><td>" +
+          willowEvents.data[i].eventType.substring(willowEvents.data[i].eventType.lastIndexOf(".") + 1) +
+          "</td><td>" + willowEvents.data[i].description + "</td></tr>");
       }
     }
   };
