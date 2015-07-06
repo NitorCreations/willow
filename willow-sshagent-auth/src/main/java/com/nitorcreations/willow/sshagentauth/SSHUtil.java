@@ -125,7 +125,7 @@ public class SSHUtil {
     }
     return ret;
   }
-  public static String getPublicKeyAuthorization(String username) {
+  public synchronized static String getPublicKeyAuthorization(String username) {
     initializeSshAuthentication();
     StringBuilder ret = new StringBuilder("PUBLICKEY ");
     String now = Long.toString(System.currentTimeMillis());
