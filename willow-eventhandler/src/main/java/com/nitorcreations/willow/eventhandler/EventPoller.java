@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.eventhandler;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -86,38 +87,33 @@ public class EventPoller {
       return this.client;
     }
 
-    private synchronized WebSocketClient createClient() {
-      this.client = new WebSocketClient();
-      return this.client;
-    }
-
     private void connect() throws Exception {
       logger.info("Connecting event listener");
-      WebSocketClient client = createClient();
-      client.start();
-      client.setAsyncWriteTimeout(5000);
-      client.setConnectTimeout(2000);
-      client.setStopTimeout(5000);
+      WebSocketClient connectClient = getClient();
+      connectClient.start();
+      connectClient.setAsyncWriteTimeout(5000);
+      connectClient.setConnectTimeout(2000);
+      connectClient.setStopTimeout(5000);
       ClientUpgradeRequest request = new ClientUpgradeRequest();
       request.setHeader("Authorization", SSHUtil.getPublicKeyAuthorization(System.getProperty("user.name", "willow")));
-      Future<Session> future = client.connect(this, uri, request);
+      Future<Session> future = connectClient.connect(this, uri, request);
       logger.info("Connecting to : " + uri);
       try {
         future.get();
         logger.info("Connected to : " + uri);
       } catch (Exception e) {
         logger.log(Level.SEVERE, "Failed to connect event poller with uri " + uri, e);
-        if (client.isRunning()) {
-          client.stop();
-          client.destroy();
+        if (connectClient.isRunning()) {
+          connectClient.stop();
+          connectClient.destroy();
         }
         throw e;
       }
     }
 
     @OnWebSocketMessage
-    public void messageReceived(Session session, String message) {
-      if (message == null || message.isEmpty()) {
+    public void messageReceived(Session session, Reader message) {
+      if (message == null) {
         return;
       }
       EventMessage[] eventMessages = null;
@@ -126,35 +122,34 @@ public class EventPoller {
         eventMessages = gson.fromJson(gson.fromJson(message, JsonObject.class).get("data"), EventMessage[].class);
       } catch (Exception e) {
         logger.log(Level.INFO, "Failure in unmarshalling event data", e);
+        return;
       }
-      if (eventMessages != null) {
-        // Loop through all events that happened during the retrieved time window
-        synchronized (messageIds) {
-          Set<String> newMessageIds = new HashSet<>();
-          for (EventMessage eventMessage : eventMessages) {
-            if (eventMessage != null && eventMessage.eventType != null && eventMessage.getId() != null) {
-              String id = eventMessage.getId();
-              newMessageIds.add(id);
-              // Ignore duplicate messages
-              if (!messageIds.contains(id)) {
-                uniqueEventMessages.add(eventMessage);
-              }
+      // Loop through all events that happened during the retrieved time window
+      Set<String> newMessageIds = new HashSet<>(eventMessages.length);
+      synchronized (messageIds) {
+        for (EventMessage eventMessage : eventMessages) {
+          if (eventMessage != null && eventMessage.eventType != null && eventMessage.getId() != null) {
+            String id = eventMessage.getId();
+            newMessageIds.add(id);
+            // Ignore duplicate messages
+            if (!messageIds.contains(id)) {
+              uniqueEventMessages.add(eventMessage);
             }
           }
-          // Clear the previous message IDs and set the now received message IDs, note the synchronization
-          messageIds.clear();
-          messageIds.addAll(newMessageIds);
         }
-        // Loop through configured handlers to handle the non-duplicate message
-        for (EventMessage eventMessage : uniqueEventMessages) {
-          List<EventHandler> messageEventHandlers = eventHandlers.get(eventMessage.eventType);
-          if (messageEventHandlers != null) {
-            for (EventHandler eventHandler : messageEventHandlers) {
-              try {
-                eventHandler.handle(eventMessage);
-              } catch (Exception e) {
-                logger.log(Level.INFO, "Failure in handling event data", e);
-              }
+        // Clear the previous message IDs and set the now received message IDs, note the synchronization
+        messageIds.clear();
+        messageIds.addAll(newMessageIds);
+      }
+      // Loop through configured handlers to handle the non-duplicate message
+      for (EventMessage eventMessage : uniqueEventMessages) {
+        List<EventHandler> messageEventHandlers = eventHandlers.get(eventMessage.eventType);
+        if (messageEventHandlers != null) {
+          for (EventHandler eventHandler : messageEventHandlers) {
+            try {
+              eventHandler.handle(eventMessage);
+            } catch (Exception e) {
+              logger.log(Level.INFO, "Failure in handling event data", e);
             }
           }
         }
@@ -165,14 +160,12 @@ public class EventPoller {
     public void handleClose(Session closedSession, int statusCode, String reason) {
       logger.log(Level.INFO, "Event listener websocket closed with status " + statusCode + ". Reason: " + reason);
       closeClient();
-      connectLatch.countDown();
     }
 
     @OnWebSocketError
     public void handleError(Session errorSession, Throwable throwable) {
       logger.log(Level.INFO, "Event listener websocket error", throwable);
       closeClient();
-      connectLatch.countDown();
     }
 
     @OnWebSocketConnect
@@ -193,24 +186,27 @@ public class EventPoller {
       } catch (IOException e) {
         logger.log(Level.SEVERE, "Failed to send event polling request", e);
         closeClient();
-        connectLatch.countDown();
       }
     }
 
     @Override
     public void run() {
       while (!Thread.currentThread().isInterrupted()) {
-        WebSocketClient client = getClient();
-        if (!client.isRunning() && !client.isStarting() || client.isFailed()) {
+        if (client == null || !client.isRunning() && !client.isStarting() || client.isFailed()) {
           try {
             connect();
             connectLatch = new CountDownLatch(1);
           } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error setting up websocket connection", e);
+            logger.log(Level.SEVERE, "Error setting up websocket connection - retrying", e);
+            connectLatch = null;
           }
         }
         try {
-          connectLatch.await();
+          if (connectLatch != null) {
+            connectLatch.await();
+          } else {
+            Thread.sleep(1000);
+          }
         } catch (InterruptedException e) {
         }
       }
@@ -218,13 +214,14 @@ public class EventPoller {
 
     private void closeClient() {
       try {
-        WebSocketClient client = getClient();
         if (client.isRunning()) {
           client.stop();
           client.destroy();
         }
       } catch (Exception e) {
         logger.log(Level.INFO, "Error stopping websocket client", e);
+      } finally {
+        connectLatch.countDown();
       }
     }
   }

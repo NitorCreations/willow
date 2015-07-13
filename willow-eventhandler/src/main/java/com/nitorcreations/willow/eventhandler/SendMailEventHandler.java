@@ -1,13 +1,16 @@
 package com.nitorcreations.willow.eventhandler;
 
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -28,11 +31,11 @@ public class SendMailEventHandler implements EventHandler {
   private String password;
   private boolean ssl;
   private boolean tls;
-  private String from;
-  private String to;
+  private InternetAddress from;
+  private InternetAddress[] to;
 
   @Override
-  public void handle(EventMessage eventMessage) throws Exception {
+  public void handle(EventMessage eventMessage) {
     logger.fine("Sending mail to " + host + ":" + port);
 
     Properties properties = new Properties();
@@ -59,12 +62,15 @@ public class SendMailEventHandler implements EventHandler {
     }
  
     Message message = new MimeMessage(session);
-    message.setFrom(new InternetAddress(from));
-    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-    message.setSubject(eventMessage.eventType);
-    message.setText(eventMessage.description);
-
-    Transport.send(message);
+    try {
+      message.setFrom(from);
+      message.setRecipients(Message.RecipientType.TO, to);
+      message.setSubject(eventMessage.eventType);
+      message.setText(eventMessage.description);
+      Transport.send(message);
+    } catch (MessagingException e) {
+      logger.log(Level.INFO, "Message sending failed", e);
+    }
 
     logger.fine("Mail sent");
   }
@@ -127,17 +133,19 @@ public class SendMailEventHandler implements EventHandler {
    * Set the "from" field of the emails sent.
    * 
    * @param from The "from" address in RFC822 format.
+   * @throws AddressException
    */
-  public void setFrom(String from) {
-    this.from = from;
+  public void setFrom(String from) throws AddressException {
+    this.from = new InternetAddress(from);
   }
 
   /**
    * Set the "to" field of the emails sent.
    * 
    * @param to Comma-separated list of email addresses in RFC822 format.
+   * @throws AddressException
    */
-  public void setTo(String to) {
-    this.to = to;
+  public void setTo(String to) throws AddressException {
+    this.to = InternetAddress.parse(to);
   }
 }
