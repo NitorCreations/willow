@@ -1,0 +1,14 @@
+---
+willow-event-handler:
+  eventsUri: ws://localhost:5120/poll-internal/
+  handlers:
+    - event: com.nitorcreations.willow.messages.event.ChildDiedEvent
+      handler: com.nitorcreations.willow.eventhandler.SendMailEventHandler
+      properties: &mail
+        host: mail-gateway
+        port: 25
+        from: nobody@hostname.com
+        to: somebody@hostname.com
+    - event: com.nitorcreations.willow.messages.event.ChildRestartedEvent
+      handler: com.nitorcreations.willow.eventhandler.SendMailEventHandler
+      properties: *mail

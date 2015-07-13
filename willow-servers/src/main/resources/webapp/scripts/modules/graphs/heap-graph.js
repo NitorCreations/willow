@@ -4,6 +4,13 @@ Box.Application.addModule('heap-graph', function(context) {
   var nv, d3, host, windowSvc, metrics, store, utils;
 
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep, isTimescaleLongerThanDay;
+  var chart, chartData;
+
+  var onmessage = function(parsedData) {
+    if (!parsedData.length || !parsedData[0].values.length) { return; }
+    utils.mergePoints(chartData, parsedData);
+    chart.update();
+  };
 
   function xTicks(d) {
     var date = new Date(d);
@@ -16,8 +23,9 @@ Box.Application.addModule('heap-graph', function(context) {
   }
 
   function createHeapGraph(data) {
+    chartData = data;
     nv.addGraph(function() {
-      var chart = nv.models.lineChart();
+      chart = nv.models.lineChart();
       chart.margin({right: 25});
       chart.xAxis.tickFormat(xTicks);
       chart.yAxis.tickFormat(d3.format(',.2s'));
@@ -25,6 +33,12 @@ Box.Application.addModule('heap-graph', function(context) {
         .datum(data)
         .transition().duration(500)
         .call(chart);
+      utils.configureSocket({
+          start: detailsStart,
+          stop: detailsStop,
+          step: detailsStep,
+          metricKey: moduleConf.chart.type
+      }, onmessage);
       return chart;
     });
   }
