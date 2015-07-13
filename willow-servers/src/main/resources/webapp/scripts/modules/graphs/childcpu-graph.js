@@ -4,6 +4,13 @@ Box.Application.addModule('childcpu-graph', function(context) {
   var nv, d3, host, windowSvc, metrics, store, utils;
 
   var moduleElement, moduleConf, detailsStart, detailsStop, detailsStep, isTimescaleLongerThanDay;
+  var chart, chartData;
+
+  var onmessage = function(parsedData) {
+    if (!parsedData.length || !parsedData[0].values.length) { return; }
+    utils.mergePoints(chartData, parsedData);
+    chart.update();
+  };
 
   function xTicks(d) {
     var date = new Date(d);
@@ -16,8 +23,9 @@ Box.Application.addModule('childcpu-graph', function(context) {
   }
 
   function createChildCpuGraph(data) {
+    chartData = data;
     nv.addGraph(function() {
-      var chart = nv.models.lineChart();
+      chart = nv.models.lineChart();
       chart.margin({right: 25});
       chart.xAxis.tickFormat(xTicks);
       chart.yAxis.tickFormat(d3.format('%'));
@@ -26,35 +34,12 @@ Box.Application.addModule('childcpu-graph', function(context) {
         .transition().duration(500)
         .call(chart);
 
-      var latestTimestamp = data[0].values[data[0].values.length - 1].x,
-          socket = utils.configureSocket({
+      utils.configureSocket({
             start: detailsStart,
             stop: detailsStop,
             step: detailsStep,
             metricKey: moduleConf.chart.type
-          });
-
-      socket.onmessage = function(event) {
-        var parsedData = JSON.parse(event.data),
-            parsedDataTimestamp;
-
-        // no data or no values = there's nothing to update
-        if (!parsedData.length || !parsedData[0].values.length) { return; }
-
-        // we can assume all values in a set have same timestamp
-        parsedDataTimestamp = parsedData[0].values[0].x;
-
-        if (latestTimestamp >= parsedDataTimestamp) { return; }
-        // update the value for next cycle
-        latestTimestamp = parsedData[0].values[0].x;
-
-        parsedData[0].values.forEach(function(value) {
-          data[0].values.push(value);
-          data[0].values.shift();
-        });
-        // update the chart once all data is in place
-        chart.update();
-      };
+          }, onmessage);
 
       return chart;
     });

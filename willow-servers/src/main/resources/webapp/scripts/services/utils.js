@@ -2,7 +2,51 @@ Box.Application.addService('utils', function(application) {
   'use strict';
   var $ = application.getGlobal('jQuery');
   var d3 = application.getGlobal('d3');
+  var socket;
+  var messageHandlers = {};
+  var pollConfs = {};
+  var registeredConfs = [];
 
+  var onmessage = function(event) {
+    var eventData = JSON.parse(event.data);
+    if (messageHandlers[eventData.id]) {
+      messageHandlers[eventData.id](eventData.data);
+    }
+  };
+  var registerPending = function() {
+    if (socket && socket.readyState === 1) {
+      for (var metricId in pollConfs) {
+        if (registeredConfs.indexOf(metricId) === -1) {
+          socket.send( JSON.stringify(pollConfs[metricId]) );
+          registeredConfs.push(metricId);
+        }
+      }
+    }
+  };
+  var mergePointArrays = function(chartPoints, parsedPoints) {
+    if (!chartPoints || !parsedPoints || parsedPoints.length === 0) {
+      return chartPoints;
+    }
+    var halfStep = (chartPoints[1].x - chartPoints[0].x) / 2;
+    for (var i=0; i<parsedPoints.length; i++) {
+      var nextPoint = parsedPoints[i];
+      if (nextPoint.x >= chartPoints[chartPoints.length - 1].x + halfStep) {
+        chartPoints.push(nextPoint);
+        chartPoints.shift();
+      } else {
+        for (var j=chartPoints.length - 1; j>-1; j--) {
+          if (nextPoint.x > chartPoints[j].x - halfStep &&
+           nextPoint.x <= chartPoints[j].x + halfStep) {
+             chartPoints[j].y = nextPoint.y;
+             chartPoints[j].y0 = nextPoint.y;
+             chartPoints[j].y1 = nextPoint.y;
+             continue;
+          }
+        }
+      }
+    }
+    return chartPoints;
+  };
   return {
     debouncer: function(func , timeout) {
       var timeoutID , tmOut = timeout || 200;
@@ -118,26 +162,48 @@ Box.Application.addService('utils', function(application) {
       }
     },
 
-    configureSocket: function(opts) {
-      var loc = window.location,
-          ws_uri = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + "/poll/",
-          socket = new WebSocket(ws_uri);
-
-      socket.onopen = function(e) {
-        var pollConf = {
-          metricKey: "/" + opts.metricKey,
-          start: opts.start,
-          stop: opts.stop,
-          step: opts.step,
-          minSteps: 1
-        };
-
-        socket.send( JSON.stringify(pollConf) );
+    configureSocket: function(opts, onmsg) {
+      if (!socket) {
+        var loc = window.location;
+        var ctx = "/";
+        var ctxEnd = loc.pathname.lastIndexOf("/");
+        if (ctxEnd > 0) {
+          if (loc.pathname.indexOf("/") === 0) {
+            ctx = "";
+          }
+          ctx += loc.pathname.substring(0, contextEnd) + "/";
+        }
+        var ws_uri = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + ctx +"poll/";
+        socket = new WebSocket(ws_uri);
+        socket.onopen = registerPending;
+      }
+      var metricId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+          return v.toString(16);
+        });
+      messageHandlers[metricId] = onmsg;
+      var pollConf = {
+        id: metricId,
+        metricKey: "/" + opts.metricKey,
+        start: opts.start,
+        stop: opts.stop,
+        step: opts.step,
+        minSteps: 10
       };
-
+      pollConfs[metricId] = pollConf;
+      socket.onmessage = onmessage;
+      registerPending();
       return socket;
     },
-
+    mergePoints: function(chartData, parsedData) {
+      parsedData.forEach(function(series) {
+        for (var i=0; i<chartData.length; i++) {
+          if (chartData[i].key === series.key) {
+            chartData[i].values = mergePointArrays(chartData[i].values, series.values);
+          }
+        }
+      });
+    },
     timeFormat: d3.time.format("%H:%M"),
     dateFormat: d3.time.format("%a %e. %B"),
     dayTimeFormat: d3.time.format("%a %H:%M")
