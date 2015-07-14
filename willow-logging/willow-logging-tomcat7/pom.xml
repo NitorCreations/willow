@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.nitorcreations</groupId>
     <artifactId>willow-logging</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
   </parent>
   <artifactId>willow-logging-tomcat7</artifactId>
   <name>Willow logging for Tomcat 7</name>
