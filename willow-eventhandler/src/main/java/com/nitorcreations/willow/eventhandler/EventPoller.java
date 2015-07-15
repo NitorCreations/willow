@@ -124,6 +124,9 @@ public class EventPoller {
           return;
         }
         eventMessages = gson.fromJson(json.get("data"), EventMessage[].class);
+        if (eventMessages == null) {
+          return;
+        }
       } catch (Exception e) {
         logger.log(Level.INFO, "Failure in unmarshalling event data", e);
         return;
