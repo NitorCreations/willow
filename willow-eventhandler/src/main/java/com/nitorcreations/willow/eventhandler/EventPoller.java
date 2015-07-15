@@ -119,7 +119,11 @@ public class EventPoller {
       EventMessage[] eventMessages = null;
       List<EventMessage> uniqueEventMessages = new ArrayList<>();
       try {
-        eventMessages = gson.fromJson(gson.fromJson(message, JsonObject.class).get("data"), EventMessage[].class);
+        JsonObject json = gson.fromJson(message, JsonObject.class);
+        if (json == null || json.get("data") == null) {
+          return;
+        }
+        eventMessages = gson.fromJson(json.get("data"), EventMessage[].class);
       } catch (Exception e) {
         logger.log(Level.INFO, "Failure in unmarshalling event data", e);
         return;
