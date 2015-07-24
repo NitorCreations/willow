@@ -348,7 +348,8 @@
                 </goals>
                 <configuration>
                   <portNames>
-                    <portName>server.port</portName>
+                    <portName>enduser.port</portName>
+                    <portName>deployer.port</portName>
                   </portNames>
                 </configuration>
               </execution>
@@ -384,7 +385,8 @@
                   <executable>src/test/resources/integration-tests.sh</executable>
                   <workingDirectory>${basedir}</workingDirectory>
                   <environmentVariables>
-                    <SERVER_PORT>${server.port}</SERVER_PORT>
+                    <SERVER_PORT>${enduser.port}</SERVER_PORT>
+                    <DEPLOYER_PORT>${deployer.port}</DEPLOYER_PORT>
                   </environmentVariables>
                 </configuration>
               </execution>

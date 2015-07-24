@@ -10,7 +10,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.EventListener;
 
 import javax.inject.Named;
 import javax.servlet.DispatcherType;
@@ -23,18 +22,24 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.sisu.space.SpaceModule;
+import org.eclipse.sisu.space.URLClassSpace;
+import org.eclipse.sisu.wire.WireModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import com.google.inject.servlet.GuiceFilter;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.nitorcreations.logging.jetty.WebsocketRequestLog;
 import com.nitorcreations.willow.protocols.Register;
-
+ 
 @Named
 public class MetricsServer {
   private static final Logger LOG = LoggerFactory.getLogger(MetricsServer.class);
@@ -46,25 +51,32 @@ public class MetricsServer {
   }
 
   public static void main(MetricsServer metrics) throws Exception {
-    metrics.start(getInteger("port", 5120));
+    metrics.start(getInteger("enduserport", 5120), getInteger("deployerport", 5121));
   }
   public MetricsServer() throws Exception {
   }
 
-  public void start(final int port) throws Exception {
+  public void start(final int enduserport, final int deployerport) throws Exception {
     long start = currentTimeMillis();
     SLF4JBridgeHandler.removeHandlersForRootLogger();
     SLF4JBridgeHandler.install();
     Server server = setupServer();
-    setupServerConnector(server, port);
-    ServletContextHandler servletContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
-    servletContextHandler.addEventListener(getServletContextListener());
-    servletContextHandler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
-    MimeTypes mime = servletContextHandler.getMimeTypes();
+    setupServerConnector(server, enduserport);
+    setupServerConnector(server, deployerport);
+    ClassLoader classloader =  Thread.currentThread().getContextClassLoader();
+    Injector parent = Guice.createInjector(new WireModule(new MetricsServerModule(), getElasticSearchModule(),
+        new SpaceModule(new URLClassSpace(classloader)))); 
+    ServletContextHandler endUserContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+    endUserContextHandler.setVirtualHosts(new String[] {"@" + enduserport });
+    WillowServletContextListener listener = new EndUserContextListener(parent);
+    endUserContextHandler.addEventListener(listener);
+    FilterHolder fHolder = new FilterHolder(new LazyInitGuiceFilter(listener));
+    endUserContextHandler.addFilter(fHolder, "/*", EnumSet.allOf(DispatcherType.class));
+    MimeTypes mime = endUserContextHandler.getMimeTypes();
     mime.addMimeMapping("js.gz", "text/javascript");
     mime.addMimeMapping("css.gz", "text/css");
     mime.addMimeMapping("svg.gz", "image/svg+xml");
-    ServletHolder holder = servletContextHandler.addServlet(DefaultServlet.class, "/");
+    ServletHolder holder = endUserContextHandler.addServlet(DefaultServlet.class, "/");
     holder.setInitParameter("dirAllowed", "false");
     holder.setInitParameter("gzip", "false");
     ArrayList<String> resources = new ArrayList<>();
@@ -72,12 +84,19 @@ public class MetricsServer {
       URL url = urls.nextElement();
       resources.add(url.toString().replace("resource-root.marker", ""));
     }
-    servletContextHandler.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
-    setupHandlers(server, servletContextHandler);
+    endUserContextHandler.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
+    ServletContextHandler deployerContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+    deployerContextHandler.setVirtualHosts(new String[] {"@" + deployerport });
+    listener = new DeployerContextListener(parent);
+    deployerContextHandler.addEventListener(listener);
+    fHolder = new FilterHolder(new LazyInitGuiceFilter(listener));
+    deployerContextHandler.addFilter(fHolder, "/*", EnumSet.allOf(DispatcherType.class));
+
+    setupHandlers(server, endUserContextHandler, deployerContextHandler);
     try {
       server.start();
       long end = currentTimeMillis();
-      LOG.info("Succesfully started Jetty on port {} in {} seconds", port, (end - start) / 1000.0);
+      LOG.info("Succesfully started Jetty on ports {} (user) and {} (deployer) in {} seconds", enduserport, deployerport, (end - start) / 1000.0);
       server.join();
     } catch (Exception e) {
       LOG.info("Exception starting server", e);
@@ -88,9 +107,6 @@ public class MetricsServer {
         LOG.info("Exception stopping server", e);
       }
     }
-  }
-  protected EventListener getServletContextListener() {
-    return new WillowServletContextListener();
   }
   private Server setupServer() {
     Server server = new Server(new QueuedThreadPool(100));
@@ -104,15 +120,18 @@ public class MetricsServer {
   private void setupServerConnector(final Server server, final int port) {
     ServerConnector connector = new ServerConnector(server);
     connector.setPort(port);
+    connector.setName(String.valueOf(port));
     connector.setIdleTimeout(MINUTES.toMillis(2));
     connector.setReuseAddress(true);
     server.addConnector(connector);
   }
 
-  private void setupHandlers(final Server server, final ServletContextHandler context) throws URISyntaxException {
+  private void setupHandlers(final Server server, final ServletContextHandler ... contexts) throws URISyntaxException {
     HandlerCollection handlers = new HandlerCollection();
     server.setHandler(handlers);
-    handlers.addHandler(context);
+    for (ServletContextHandler context : contexts) {
+      handlers.addHandler(context);
+    }
     handlers.addHandler(createAccessLogHandler());
   }
 
@@ -133,5 +152,8 @@ public class MetricsServer {
       requestLogHandler.setRequestLog(requestLog);
     }
     return requestLogHandler;
+  }
+  protected AbstractModule getElasticSearchModule() {
+    return new ElasticSearchModule();
   }
 }

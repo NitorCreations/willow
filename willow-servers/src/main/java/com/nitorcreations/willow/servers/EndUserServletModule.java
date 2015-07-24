@@ -1,13 +1,9 @@
 package com.nitorcreations.willow.servers;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.setProperty;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jetty.servlet.DefaultServlet;
 
@@ -15,30 +11,18 @@ import com.google.inject.servlet.ServletModule;
 import com.nitorcreations.willow.servlets.PropertyServlet;
 import com.nitorcreations.willow.servlets.TestServlet;
 
-public class ApplicationServletModule extends ServletModule {
+public class EndUserServletModule extends ServletModule {
 
   @Override
   protected void configureServlets() {
-    String env =  getProperty("env", "dev");
-    setProperty("env", env);
-    bind(MetricsServlet.class);
-    bind(StatisticsServlet.class);
-    bind(ServerSidePollingServlet.class);
-    bind(HostLookupService.class).toInstance(getHostLookupService());
-    bind(PropertyServlet.class).asEagerSingleton();
-    bind(DefaultServlet.class).asEagerSingleton();
-    bind(VelocityServlet.class).asEagerSingleton();
-    bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
-    bind(ScheduledExecutorService.class).toInstance(Executors.newScheduledThreadPool(10));
     Map<String, String> defaultInit = new HashMap<>();
     defaultInit.put("dirAllowed", "false");
     defaultInit.put("gzip", "true");
     defaultInit.put("maxCacheSize","81920");
     defaultInit.put("maxCacheSize","81920");
     defaultInit.put("welcomeServlets", "true");
+    String env =  getProperty("env", "dev");
     if ("dev".equals(env)) {
-      bind(ElasticsearchProxy.class);
-      bind(TestServlet.class).toInstance(new TestServlet());
       serve("/test/*").with(TestServlet.class);
       serve("/search/*").with(ElasticsearchProxy.class);
       defaultInit.put("gzip", "false");
@@ -53,17 +37,5 @@ public class ApplicationServletModule extends ServletModule {
     serve("/poll-internal/*").with(ServerSidePollingServlet.class);
     serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
-  }
-  protected HostLookupService getHostLookupService() {
-    String hlsClassName = getProperty("willow.hostLookupService");
-    if (hlsClassName == null) {
-      return new SimpleHostLookupService();
-    }
-    try {
-      Class<?> hlsClass = Class.forName(hlsClassName);
-      return (HostLookupService)hlsClass.newInstance();
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException("Unable to instantiate host lookupservice", e);
-    }
   }
 }

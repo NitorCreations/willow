@@ -4,39 +4,36 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import org.apache.shiro.guice.web.ShiroWebModule;
-import org.eclipse.sisu.space.SpaceModule;
-import org.eclipse.sisu.space.URLClassSpace;
-import org.eclipse.sisu.wire.WireModule;
+import org.eclipse.sisu.wire.ChildWireModule;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.servlet.ServletModule;
 
-public class WillowServletContextListener extends GuiceServletContextListener {
+public abstract class WillowServletContextListener extends GuiceServletContextListener {
   protected ServletContext servletContext;
-
+  private final Injector parent;
+  private Injector child;
+  public WillowServletContextListener(Injector parent) {
+    this.parent = parent;
+  }
+  
   @Override
   public void contextInitialized(ServletContextEvent servletContextEvent) {
     this.servletContext = servletContextEvent.getServletContext();
     super.contextInitialized(servletContextEvent);
   }
-
   @Override
   protected Injector getInjector() {
-    ClassLoader classloader =  Thread.currentThread().getContextClassLoader();
-    return  Guice.createInjector(
-        new WireModule(new ApplicationServletModule(),
-            getShiroModule(), ShiroWebModule.guiceFilterModule(),
-            getElasticSearchModule(),
-            new SpaceModule(
-                new URLClassSpace(classloader)
-                )));
+    return getChild();
   }
-  protected ShiroWebModule getShiroModule() {
-    return new WillowShiroModule(servletContext);
+  private Injector getChild() {
+    if (child == null) {
+    this.child = parent.createChildInjector(new ChildWireModule(parent, getServletModule(),
+        getShiroModule(), ShiroWebModule.guiceFilterModule()));
+    }
+    return child;
   }
-  protected AbstractModule getElasticSearchModule() {
-    return new ElasticSearchModule();
-  }
+  protected abstract ShiroWebModule getShiroModule();
+  protected abstract ServletModule getServletModule();
 }
