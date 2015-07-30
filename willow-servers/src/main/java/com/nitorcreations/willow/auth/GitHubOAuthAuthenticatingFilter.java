@@ -17,10 +17,10 @@ import java.util.Map;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import mx.com.inftel.shiro.oauth2.AbstractOAuth2AuthenticatingFilter;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import mx.com.inftel.shiro.oauth2.AbstractOAuth2AuthenticatingFilter;
 
 public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2AuthenticatingFilter {
 
