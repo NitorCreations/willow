@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import org.eclipse.jetty.http.PathMap;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.annotation.ManagedObject;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
@@ -24,10 +25,12 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements
   }
 
   @Override
-  public void log(Request request, int status, long written) {
+  public void log(Request request, Response response) {
     if (_ignorePathMap != null
         && _ignorePathMap.getMatch(request.getRequestURI()) != null)
       return;
+    int status = response.getStatus();
+    long written = response.getContentLength();
     transmitter.queue(new AccessLogJettyAdapter(request, status, written,
         _preferProxiedForAddress));
   }
@@ -35,5 +38,6 @@ public class WebsocketRequestLog extends AbstractLifeCycle implements
   public void setPreferProxiedForAddress(boolean b) {
     this._preferProxiedForAddress = b;
   }
+
 
 }

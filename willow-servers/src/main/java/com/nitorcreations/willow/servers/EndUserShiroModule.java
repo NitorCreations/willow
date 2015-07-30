@@ -11,15 +11,13 @@ import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.google.inject.Provides;
-import com.nitorcreations.willow.auth.AuthorizedKeys;
 import com.nitorcreations.willow.auth.GitHubOAuthAuthenticatingFilter;
 import com.nitorcreations.willow.auth.GitHubOAuthConfig;
 import com.nitorcreations.willow.auth.NitorGithubOAuthRealm;
 import com.nitorcreations.willow.auth.PublicKeyAuthenticationFilter;
-import com.nitorcreations.willow.auth.PublicKeyRealm;
 
-public class WillowShiroModule extends ShiroWebModule {
-  public WillowShiroModule(ServletContext servletContext) {
+public class EndUserShiroModule extends ShiroWebModule {
+  public EndUserShiroModule(ServletContext servletContext) {
     super(servletContext);
   }
 
@@ -27,28 +25,15 @@ public class WillowShiroModule extends ShiroWebModule {
   @Override
   protected void configureShiroWeb() {
     Key<? extends AuthenticatingFilter> endUserFilter = getEndUserFilter();
-    Key<? extends AuthenticatingFilter> deployerFilter = getDeployerFilter();
-    bindDeployerRealm();
     bindEnduserRealm();
     addFilterChain("/test/**", ANON);
-    addFilterChain("/statistics/**", deployerFilter);
     addFilterChain("/properties/**", endUserFilter);
-    addFilterChain("/launchproperties/**", deployerFilter);
     addFilterChain("/search/**", endUserFilter);
     addFilterChain("/metrics/**", endUserFilter);
     addFilterChain("/poll/**", endUserFilter);
-    addFilterChain("/poll-internal/**", deployerFilter);
     addFilterChain("/logout/**", LOGOUT);
     addFilterChain("/rawterminal/**", endUserFilter);
-
     addFilterChain("/**", endUserFilter);
-  }
-  protected void bindDeployerRealm() {
-    try {
-      bindRealm().toConstructor(PublicKeyRealm.class.getConstructor(AuthorizedKeys.class)).asEagerSingleton();
-    } catch (NoSuchMethodException e) {
-      addError(e);
-    }
   }
   protected void bindEnduserRealm() {
     try {
@@ -64,10 +49,6 @@ public class WillowShiroModule extends ShiroWebModule {
   @Provides
   Ini loadShiroIni() {
     return Ini.fromResourcePath(System.getProperty("shiro.ini", "classpath:shiro.ini"));
-  }
-  @Provides
-  AuthorizedKeys loadAuthorizedKeys() {
-    return AuthorizedKeys.fromUrl(System.getProperty("authorized.keys", "classpath:authorized_keys"));
   }
   @Provides
   GitHubOAuthConfig loadGitHubOAuthConfig() {

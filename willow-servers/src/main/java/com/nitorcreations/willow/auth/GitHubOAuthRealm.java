@@ -2,8 +2,6 @@ package com.nitorcreations.willow.auth;
 
 import java.util.Set;
 
-import mx.com.inftel.shiro.oauth2.OAuth2AuthenticationToken;
-
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -12,6 +10,8 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.Realm;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import mx.com.inftel.shiro.oauth2.OAuth2AuthenticationToken;
 
 public abstract class GitHubOAuthRealm implements Realm {
 
