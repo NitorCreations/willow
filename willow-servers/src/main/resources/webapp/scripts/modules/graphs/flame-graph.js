@@ -2,7 +2,7 @@ Box.Application.addModule('flame-graph', function(context) {
   'use strict';
 
   var d3, host, windowSvc, metrics, store, utils, moduleElement, moduleConf,
-      detailsStart, detailsStop, timescale, rect, text, x, y, moduleWidth, moduleHeight,
+      detailsStart, detailsStop, timescale, resetBtn, rect, text, x, y, moduleWidth, moduleHeight,
       TRANSITION_DURATION = 500;
 
   function yPos(d) {
@@ -71,12 +71,20 @@ Box.Application.addModule('flame-graph', function(context) {
                 .attr("width", moduleWidth)
                 .attr("height", moduleHeight);
 
+    resetBtn = graph.append("circle")
+              .attr("cx", moduleWidth/2)
+              .attr("cy", moduleHeight/2)
+              .attr("r", "100%")//whole background
+              .attr("fill", 'white')
+              .on('click', reset);
+
     rect = graph.selectAll("rect");
     text = graph.selectAll("text");
 
     d3.json(dataUrl, function(error, root) {
       var nodes = partition.nodes(root);
       var gSelection = rect.data(nodes).enter().append("g")
+            .style("cursor", "pointer")
             .on('mouseover', function(d){
               d3.select(this).select("text").style({visibility:'visible'});
             })
