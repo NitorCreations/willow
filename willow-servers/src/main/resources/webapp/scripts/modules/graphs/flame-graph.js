@@ -76,7 +76,16 @@ Box.Application.addModule('flame-graph', function(context) {
 
     d3.json(dataUrl, function(error, root) {
       var nodes = partition.nodes(root);
-      var gSelection = rect.data(nodes).enter().append("g");
+      var gSelection = rect.data(nodes).enter().append("g")
+            .on('mouseover', function(d){
+              d3.select(this).select("text").style({visibility:'visible'});
+            })
+            .on('mouseout', function(d){
+              if( d3.select(this).select("rect").node().attributes.width.value - 10
+                  < d3.select(this).select("text").node().getComputedTextLength() ) {
+                d3.select(this).select("text").style({visibility:'hidden'});
+              }
+            });
 
       rect = gSelection.append("rect")
             .attr("x", xPos)
