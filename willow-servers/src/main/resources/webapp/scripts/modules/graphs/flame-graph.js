@@ -89,8 +89,7 @@ Box.Application.addModule('flame-graph', function(context) {
               d3.select(this).select("text").style({visibility:'visible'});
             })
             .on('mouseout', function(d){
-              if( d3.select(this).select("rect").node().attributes.width.value - 10
-                  < d3.select(this).select("text").node().getComputedTextLength() ) {
+              if( d3.select(this).select("rect").node().attributes.width.value - 10 < d3.select(this).select("text").node().getComputedTextLength() ) {
                 d3.select(this).select("text").style({visibility:'hidden'});
               }
             });
