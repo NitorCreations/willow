@@ -25,14 +25,18 @@ class LogStash::Outputs::WebSocket < LogStash::Outputs::Base
     options[:type] = :node
 
     @transmitter = com.nitorcreations.willow.messages.WebSocketTransmitter.getSingleton(@flush_interval, @uri)
+    @adapter = com.nitorcreations.willow.logstash.Adapter.new()
     @transmitter.start()
   end # def register
-
 
   public
   def receive(event)
     return unless output?(event)
-    @transmitter.queue(com.nitorcreations.willow.messages.HashMessage.create(event.to_hash))
+    event_hash = event.to_hash
+    msgtype = event_hash["wsmsgtype"]
+    unless msgtype then
+      msgtype = "logmessage"
+    end
+    @transmitter.queue(@adapter.fromHash(msgtype, event_hash))
   end # def receive
-
 end # class LogStash::Outputs::WebSocket

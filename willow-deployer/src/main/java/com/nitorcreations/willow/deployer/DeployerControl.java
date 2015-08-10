@@ -39,8 +39,6 @@ import org.hyperic.sigar.SigarProxy;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
-import sun.management.ConnectorAddressLink;
-
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.protocols.Register;
@@ -54,6 +52,7 @@ import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import sun.management.ConnectorAddressLink;
 
 @SuppressWarnings("restriction")
 @SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")

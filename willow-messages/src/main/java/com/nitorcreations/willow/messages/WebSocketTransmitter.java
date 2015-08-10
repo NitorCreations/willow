@@ -91,6 +91,7 @@ public class WebSocketTransmitter {
         return false;
       }
     }
+    if (msg == null) return false;
     logger.fine("Queue message type: " + MessageMapping.map(msg.getClass()));
     try {
       while (!queue.offer(msg, flushInterval * 2, TimeUnit.MILLISECONDS)) {

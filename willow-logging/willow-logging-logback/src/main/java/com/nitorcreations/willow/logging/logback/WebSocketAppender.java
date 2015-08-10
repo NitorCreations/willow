@@ -2,14 +2,14 @@ package com.nitorcreations.willow.logging.logback;
 
 import java.net.URISyntaxException;
 
+import com.nitorcreations.willow.messages.LogMessage;
+import com.nitorcreations.willow.messages.LogMessageAdapter;
+import com.nitorcreations.willow.messages.WebSocketTransmitter;
+
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-
-import com.nitorcreations.willow.messages.LogMessage;
-import com.nitorcreations.willow.messages.LogMessageAdapter;
-import com.nitorcreations.willow.messages.WebSocketTransmitter;
 
 public class WebSocketAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
   private String uri;
