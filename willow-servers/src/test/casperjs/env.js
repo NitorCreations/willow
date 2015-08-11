@@ -17,6 +17,13 @@ exports.connDiv = {  type: 'xpath', path: '//div[@data-metric="tcpinfo"]'  }
 exports.hostLink = { type: 'xpath', path: '//a[@data-host="integrationtest"]' };
 exports.heapDiv = '#mod-heap-graph-1';
 
+exports.toCustomRadiatorLink = "svg[data-type=to-radiator]";
+exports.customRadiatorDialog = {
+  modal: ".ui-dialog.ui-widget",
+  newNameField: "#custom-radiator-list-dialog input[name=radiator-id]",
+  createNewButton: "#custom-radiator-list-dialog #create"
+};
+
 exports.init = function() {
   casper.options.viewportSize = { width: 1920, height: 1080 };
   casper.start();
@@ -31,4 +38,8 @@ exports.writeCoverage = function(cspr, name) {
     fs.write("target/js-coverage/test-" + name + ".json",
       JSON.stringify(coverage), 'w');
   }
+}
+
+exports.screencapFailure = function(name) {
+  return function() { this.capture("failed-screenshot-" + name + ".png"); }
 }
