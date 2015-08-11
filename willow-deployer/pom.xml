@@ -310,6 +310,10 @@
                   </sources>
                 </mapping>
               </mappings>
+              <postinstallScriptlet>
+                <scriptFile>src/main/shell/postinstall.sh</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </postinstallScriptlet>
             </configuration>
           </plugin>
         </plugins>
