@@ -297,7 +297,7 @@
                 </mapping>
                 <mapping>
                   <directory>/var/lib/deployer</directory>
-                  <filemode>644</filemode>
+                  <filemode>755</filemode>
                   <username>root</username>
                   <groupname>root</groupname>
                   <sources>
@@ -310,10 +310,6 @@
                   </sources>
                 </mapping>
               </mappings>
-              <postinstallScriptlet>
-                <scriptFile>src/main/shell/postinstall.sh</scriptFile>
-                <fileEncoding>utf-8</fileEncoding>
-              </postinstallScriptlet>
             </configuration>
           </plugin>
         </plugins>
