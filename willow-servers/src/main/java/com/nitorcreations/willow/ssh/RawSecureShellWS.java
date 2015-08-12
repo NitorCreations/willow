@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.ssh;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
@@ -8,6 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -53,9 +55,28 @@ public class RawSecureShellWS extends BasicWillowSocket{
     } catch (AgentProxyException e) {
       System.out.println(e);
     }
+    IdentityRepository irepo = null;
     if (con != null) {
-      IdentityRepository irepo = new RemoteIdentityRepository(con);
-      jsch.setIdentityRepository(irepo);
+      RemoteIdentityRepository rrepo = new RemoteIdentityRepository(con);
+      if (rrepo.getIdentities() != null && rrepo.getIdentities().size() > 0) {
+        irepo = rrepo;
+        jsch.setIdentityRepository(irepo);
+      }
+    }
+    if (irepo == null) {
+      String home = System.getProperty("user.home");
+      String sshDir = home + File.separator + ".ssh" + File.separator;
+      String[] defaultKeys = new String[] {
+        sshDir + "id_ecdsa", sshDir + "id_id_ed25519", sshDir + "id_rsa", sshDir + "id_dsa", sshDir + "identity"
+      };
+      for (String nextKey : defaultKeys) {
+        try {
+          jsch.addIdentity(nextKey);
+          log.fine("Key '" + nextKey + "'  added");
+        } catch (JSchException e) {
+          log.log(Level.FINE, "Key '" + nextKey + "'  not valid", e);
+        }
+      }
     }
     Map<String, List<String>> parameterMap = session.getUpgradeRequest().getParameterMap();
     String host = getStringParameter(parameterMap, "host", null);
