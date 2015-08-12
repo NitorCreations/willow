@@ -75,10 +75,10 @@ public class PropertyServlet extends HttpServlet {
       if (!roots.isEmpty()) {
         mrg = new MergeableProperties(roots.split("\\|"));
       } else {
-        mrg = new MergeableProperties();
+        mrg = new MergeableProperties("classpath:properties/");
       }
     } else {
-      mrg = new MergeableProperties();
+      mrg = new MergeableProperties("classpath:properties/");
     }
     MergeableProperties seed = new MergeableProperties();
     for (Entry<String, String[]> next : req.getParameterMap().entrySet()) {
