@@ -37,7 +37,8 @@ Box.Application.addModule('heap-graph', function(context) {
           start: detailsStart,
           stop: detailsStop,
           step: detailsStep,
-          metricKey: moduleConf.chart.type
+          metricKey: moduleConf.chart.type,
+          tags: [ "host_" + host ]
       }, onmessage);
       return chart;
     });
