@@ -17,7 +17,7 @@ public class MetricsProxyingEndUserServletModule extends EndUserServletModule {
     serve("/metrics/*").with(MetricsProxyServlet.class);
   }
   public static class MetricsProxyServlet extends ProxyServlet {
-    private transient Logger log = Logger.getLogger(getClass().getName());
+    private transient final Logger log = Logger.getLogger(getClass().getName());
     private static final long serialVersionUID = 2110808412869526116L;
     private final String prefix;
     public MetricsProxyServlet() {
