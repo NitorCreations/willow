@@ -25,6 +25,7 @@ public class EndUserShiroModule extends ShiroWebModule {
   protected void configureShiroWeb() {
     Key<? extends AuthenticatingFilter> endUserFilter = getEndUserFilter();
     bindEnduserRealm();
+    addFilterChain("/healthcheck/**", ANON);
     addFilterChain("/test/**", ANON);
     addFilterChain("/properties/**", endUserFilter);
     addFilterChain("/search/**", endUserFilter);

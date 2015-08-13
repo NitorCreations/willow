@@ -38,7 +38,7 @@ public class LazyInitGuiceFilter implements Filter {
     try {
       getGuiceFilter().destroy();
     } catch (ServletException e) {
-      Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Failed to destroy gucefilter", e);
+      Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Failed to destroy guicefilter", e);
     }
   }
   

@@ -23,6 +23,7 @@ public class MetricsServerModule extends AbstractModule {
     bind(StatisticsServlet.class);
     bind(ServerSidePollingServlet.class);
     bind(HostLookupService.class).toInstance(getHostLookupService());
+    bind(InfoServlet.class).asEagerSingleton();
     bind(PropertyServlet.class).asEagerSingleton();
     bind(DefaultServlet.class).asEagerSingleton();
     bind(VelocityServlet.class).asEagerSingleton();

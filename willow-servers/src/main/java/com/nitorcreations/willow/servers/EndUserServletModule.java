@@ -15,6 +15,37 @@ public class EndUserServletModule extends ServletModule {
 
   @Override
   protected void configureServlets() {
+    configureHealthCheck();
+    configureMetrics();
+    configureProperties();
+    configureRawTerminal();
+    configureSession();
+    configurePoll();
+    configureVelocity();
+    configureDefault();
+  }
+  protected void configureHealthCheck() {
+    serve("/healthcheck/*").with(InfoServlet.class);
+  }
+  protected void configureMetrics() {
+    serve("/metrics/*").with(MetricsServlet.class);
+  }
+  protected void configureProperties() {
+    serve("/properties/*").with(PropertyServlet.class);
+  }
+  protected void configureRawTerminal() {
+    serve("/rawterminal/*").with(RawTerminalServlet.class);
+  }
+  protected void configureSession() {
+    serve("/session/*").with(SessionServlet.class);
+  }
+  protected void configurePoll() {
+    serve("/poll/*").with(ServerSidePollingServlet.class);
+  }
+  protected void configureVelocity() {
+    serve("*.html").with(VelocityServlet.class);
+  }
+  protected void configureDefault() {
     Map<String, String> defaultInit = new HashMap<>();
     defaultInit.put("dirAllowed", "false");
     defaultInit.put("gzip", "true");
@@ -27,15 +58,6 @@ public class EndUserServletModule extends ServletModule {
       serve("/search/*").with(ElasticsearchProxy.class);
       defaultInit.put("gzip", "false");
     }
-    serve("/metrics/*").with(MetricsServlet.class);
-    serve("/properties/*").with(PropertyServlet.class);
-    serve("/launchproperties/*").with(PropertyServlet.class);
-    serve("/statistics/*").with(StatisticsServlet.class);
-    serve("/rawterminal/*").with(RawTerminalServlet.class);
-    serve("/session/*").with(SessionServlet.class);
-    serve("/poll/*").with(ServerSidePollingServlet.class);
-    serve("/poll-internal/*").with(ServerSidePollingServlet.class);
-    serve("*.html").with(VelocityServlet.class);
     serve("/*").with(DefaultServlet.class, defaultInit);
   }
 }
