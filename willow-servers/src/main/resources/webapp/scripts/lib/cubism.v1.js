@@ -750,7 +750,8 @@ cubism_contextPrototype.horizon = function() {
 
     selection
         .on("mousemove.horizon", function() { context.focus(Math.round(d3.mouse(this)[0])); })
-        .on("mouseout.horizon", function() { context.focus(null); });
+        .on("mouseout.horizon", function() { context.focus(null); })
+        .on("touchmove.horizon", function() { context.focus(Math.round(d3.touches(this)[0][0])); });
 
     selection.append("canvas")
         .attr("width", width)
