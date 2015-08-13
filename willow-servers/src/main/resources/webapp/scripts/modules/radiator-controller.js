@@ -243,8 +243,16 @@ Box.Application.addModule('radiator-controller', function(context) {
       radiatorName = windowSvc.getHashVariable("name");
       var configs      = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
 
+      detailsStop  = parseInt(new Date().getTime());
+      var timescale = windowSvc.getTimescale();
+      detailsStart = parseInt(detailsStop - (1000 * timescale));
+      var categoryUrl = '/metrics/categories?start=' + detailsStart + "&stop=" + detailsStop;
+
+      if (host) {
+        categoryUrl += "&tag=host_" + host;
+      }
       // fetch category data prior to rendering graphs
-      d3.json('/metrics/categories?start=' + detailsStart + "&stop=" + detailsStop, function(error, categories) {
+      d3.json(categoryUrl, function(error, categories) {
         threaddumpChildren = categories.filter(function(category) {
           return category.indexOf('category_threaddump_') > -1;
         });
