@@ -14,7 +14,7 @@ exports.memDiv = {  type: 'xpath', path: '//div[@data-metric="mem"]'  }
 exports.netDiv = {  type: 'xpath', path: '//div[@data-metric="net"]'  }
 exports.diskDiv = {  type: 'xpath', path: '//div[@data-metric="diskio"]'  }
 exports.connDiv = {  type: 'xpath', path: '//div[@data-metric="tcpinfo"]'  }
-exports.hostLink = { type: 'xpath', path: '//a[@data-host="integrationtest"]' };
+exports.hostLink = { type: 'xpath', path: '//a[@data-type="host-radiator"]' };
 exports.heapDiv = '#mod-heap-graph-1';
 
 exports.toCustomRadiatorLink = "svg[data-type=to-radiator]";
@@ -29,17 +29,18 @@ exports.init = function() {
   casper.start();
   casper.setHttpAuth('admin', 'admin');
   casper.viewport(1920, 1080);
-}
+};
+
 exports.writeCoverage = function(cspr, name) {
-  var coverage = cspr.evaluate(function() {
+  var coverage = casper.evaluate(function() {
     return window.__coverage__;
   });
   if (coverage) {
     fs.write("target/js-coverage/test-" + name + ".json",
       JSON.stringify(coverage), 'w');
   }
-}
+};
 
 exports.screencapFailure = function(name) {
   return function() { this.capture("failed-screenshot-" + name + ".png"); }
-}
+};
