@@ -40,6 +40,7 @@ a {
 }
 
 .axis text {
+  fill: #888;
   -webkit-transition: fill-opacity 250ms linear;
 }
 
@@ -48,7 +49,7 @@ a {
 }
 
 .axis line {
-  stroke: #000;
+  stroke: #DDD;
   shape-rendering: crispEdges;
 }
 
@@ -112,8 +113,8 @@ a {
   border-bottom: solid 1px #000;
   overflow: hidden;
   position: relative;
-  border-top: solid 1px #000;
-  border-bottom: solid 1px #000;
+  border-top: solid 1px #DDD;
+  border-bottom: solid 1px #DDD;
 }
 
 .horizon+.horizon {
@@ -148,7 +149,7 @@ a {
 }
 
 .line {
-  background: #000;
+  background: #888;
   z-index: 2;
   top: 50px !important;
 }
@@ -340,7 +341,7 @@ textarea, input[type=text] {
 }
 
 #time-range-selection {
-  background-color: lightgray;
+  background-color: #DDD;
   display: none;
   height: 27px;
   margin-top: -27px;
@@ -590,6 +591,7 @@ select.navcenter {
   position: absolute;
   top: 25px;
   left: .2em;
+  color: #888;
 }
 
 .nv-graph__icons .host-link {
