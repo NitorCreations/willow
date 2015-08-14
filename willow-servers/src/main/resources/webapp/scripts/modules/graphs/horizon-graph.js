@@ -22,9 +22,8 @@ Box.Application.addModule('horizon-graph', function(context) {
     }
   };
 
-  var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
-  var cpuColors = ["#006C6D", "#008F6D", "#7FB600", "#A6C800","#D3FF00","#FCFB97","#FFFB00","#FFDD00","#FFAD00","#D82929"];
-  var memColors = ["#009688","#4CAF50","#8BC34A","#CDDC39","#DCE775","#FFEB3B","#FFC107","#FF9800","#FF5722","#F44336"];
+  var cpuColors = ["#1B5E20", "#388E3C", "#4CAF50", "#81C784","#C8E6C9","#DCEDC8","#AED581","#8BC34A","#689F38","#33691E"];
+  var memColors = ["#E65100","#F57C00","#FF9800","#FFB74D","#FFE0B2","#FFCCBC","#FF8A65","#FF5722","#E64A19","#BF360C"];
   var netColors = ["#1A237E","#303F9F","#3F51B5","#7986CB","#C5CAE9","#BBDEFB","#64B5F6","#2196F3","#1976D2","#0D47A1"];
   var ioColors = ["#006064","#0097A7","#00BCD4","#4DD0E1","#B2EBF2","#B2DFDB","#4DB6AC","#009688","#00796B","#004D40"];
   var connectionsColors = ["#4A148C","#7B1FA2","#9C27B0","#BA68C8","#E1BEE7","#D1C4E9","#9575CD","#673AB7","#512DA8","#311B92"];
