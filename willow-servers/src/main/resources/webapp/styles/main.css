@@ -47,8 +47,9 @@ a:focus {
 }
 
 .axis text {
-  fill: #888;
+  transition: fill-opacity 250ms linear;
   -webkit-transition: fill-opacity 250ms linear;
+  -o-transition: fill-opacity 250ms linear;
 }
 
 .axis path {
@@ -80,48 +81,15 @@ a:focus {
   padding: 24px 0 0 0;
 }
 
-.horizon {
-  border-bottom: solid 1px #000;
-  overflow: hidden;
-  position: relative;
-}
-
-.horizon {
-  border-top: solid 1px #000;
-  border-bottom: solid 1px #000;
-}
-
 [data-module="horizon-graph"] + [data-module="horizon-graph"] .horizon {
   border-top: none;
 }
 
-.horizon canvas {
-  display: block;
-}
-
-.horizon .title, .horizon .value {
-  bottom: 0;
-  line-height: 30px;
-  margin: 0 6px;
-  position: absolute;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-  white-space: nowrap;
-}
-
-.horizon .title {
-  left: 0;
-}
-
-.horizon .value {
-  right: 0;
-}
-
 .horizon {
-  border-bottom: solid 1px #000;
   overflow: hidden;
   position: relative;
-  border-top: solid 1px #DDD;
-  border-bottom: solid 1px #DDD;
+  border-top: solid 1px #000;
+  border-bottom: solid 1px #000;
 }
 
 .horizon+.horizon {
@@ -131,6 +99,7 @@ a:focus {
 .horizon canvas {
   display: block;
   /* Disable unwanted selection */
+  user-select: none;
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer */
   -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
@@ -143,7 +112,7 @@ a:focus {
   line-height: 30px;
   margin: 0 6px;
   position: absolute;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  text-shadow: 0 0 4px #fff;
   white-space: nowrap;
 }
 
@@ -546,6 +515,10 @@ select.navcenter {
   height: 0;
 }
 
+.horizon__icons .icon {
+  margin: 2px;
+}
+
 .nv-graph__icons .icon,
 .horizon__icons .icon {
   opacity: 0;
@@ -564,7 +537,6 @@ select.navcenter {
 }
 
 .icon {
-  float: left;
   display: inline-block;
   width: 25px;
   height: 25px;
@@ -595,7 +567,6 @@ select.navcenter {
   position: absolute;
   top: 25px;
   left: .2em;
-  color: #888;
 }
 
 .nv-graph__icons .host-link {
@@ -664,5 +635,4 @@ ul.radiator-list {
   height: calc(100% - 50px);
   width: 100%;
   display: inline-block;
-  float: left;
 }
