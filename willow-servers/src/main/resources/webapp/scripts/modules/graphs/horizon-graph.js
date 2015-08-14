@@ -27,6 +27,7 @@ Box.Application.addModule('horizon-graph', function(context) {
                     "#FCFB97","#FFFB00","#FFDD00","#FFAD00","#D82929"];
 
   var netColors = ["#1A237E","#303F9F","#3F51B5","#7986CB","#C5CAE9","#BBDEFB","#64B5F6","#2196F3","#1976D2","#0D47A1"];
+  var connectionsColors = ["#4A148C","#7B1FA2","#9C27B0","#BA68C8","#E1BEE7","#D1C4E9","#9575CD","#673AB7","#512DA8","#311B92"];
 
   var metricMap = {
     "cpu" : { "title" : "cpu", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
