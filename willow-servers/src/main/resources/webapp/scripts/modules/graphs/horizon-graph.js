@@ -23,7 +23,7 @@ Box.Application.addModule('horizon-graph', function(context) {
   };
 
   var cpuColors = ["#1B5E20", "#388E3C", "#4CAF50", "#81C784","#C8E6C9","#DCEDC8","#AED581","#8BC34A","#689F38","#33691E"];
-  var memColors = ["#E65100","#F57C00","#FF9800","#FFB74D","#FFE0B2","#FFCCBC","#FF8A65","#FF5722","#E64A19","#BF360C"];
+  var memColors = ["#FF6F00","#FFA000","#FFC107","#FFD54F","#FFECB3","#FFE0B2","#FFB74D","#FF9800","#F57C00","#E65100"];
   var netColors = ["#1A237E","#303F9F","#3F51B5","#7986CB","#C5CAE9","#BBDEFB","#64B5F6","#2196F3","#1976D2","#0D47A1"];
   var ioColors = ["#006064","#0097A7","#00BCD4","#4DD0E1","#B2EBF2","#B2DFDB","#4DB6AC","#009688","#00796B","#004D40"];
   var connectionsColors = ["#4A148C","#7B1FA2","#9C27B0","#BA68C8","#E1BEE7","#D1C4E9","#9575CD","#673AB7","#512DA8","#311B92"];
