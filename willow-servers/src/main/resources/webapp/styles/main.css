@@ -49,6 +49,7 @@ a:focus {
 .axis text {
   transition: fill-opacity 250ms linear;
   -webkit-transition: fill-opacity 250ms linear;
+  -moz-transition: fill-opacity 250ms linear;
   -o-transition: fill-opacity 250ms linear;
 }
 
@@ -65,6 +66,7 @@ a:focus {
   background-image: linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)  100%);
+  background-image: -webkit-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   top: 0;
@@ -75,6 +77,7 @@ a:focus {
   background-image: linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -webkit-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   bottom: 0;
@@ -99,12 +102,12 @@ a:focus {
 .horizon canvas {
   display: block;
   /* Disable unwanted selection */
-  user-select: none;
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* Internet Explorer */
   -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
   -webkit-user-select: none; /* Chrome, Safari, and Opera */
   -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+  user-select: none;
 }
 
 .horizon .title, .horizon .value {
@@ -276,6 +279,7 @@ textarea:focus, input:focus, select:focus {
 
 textarea, input[type=text] {
   -webkit-appearance: none;
+  -moz-appearance: none;
   width: 13em;
   outline: 0;
 }
@@ -339,7 +343,6 @@ textarea, input[type=text] {
 
 .nav {
   display: inline-block;
-  float: left;
   padding: 11px 0 15px;
   width: 100%;
 }
@@ -606,7 +609,7 @@ select.navcenter {
   text-align: center;
 }
 
-ul.radiator-list {
+.radiator-list {
   list-style-type: none;
   padding-left: 0;
 }
