@@ -23,13 +23,9 @@ Box.Application.addModule('horizon-graph', function(context) {
   };
 
   var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
-<<<<<<< HEAD
   var cpuColors = ["#006C6D", "#008F6D", "#7FB600", "#A6C800","#D3FF00",
                     "#FCFB97","#FFFB00","#FFDD00","#FFAD00","#D82929"];
-=======
-  var cpuColors = ["rgb(84,39,143)", "rgb(117,107,177)", "rgb(158,154,200)", "rgb(203,201,226)", "rgb(242,240,247)",
-                   'rgb(235,235,128)','rgb(254,204,92)','rgb(253,141,60)','rgb(240,59,32)','rgb(189,0,38)'];
->>>>>>> e5b656a898838bc1617f6f4883352fbbfaed67eb
+
   var metricMap = {
     "cpu" : { "title" : "cpu", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
     "mem" : { "title" : "mem", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
