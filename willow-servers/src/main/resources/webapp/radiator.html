@@ -11,12 +11,25 @@
 <nav class="nav" tabindex="-1">
   <div class="container" data-module="radiator-navigation">
     #include("/templates/time-scale-picker.html")
-    <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts">
-      <use xlink:href="#shape-alarm"></use>
-    </svg>
-    <svg viewBox="0 0 100 100" class="icon shape-navterminal white navright" data-type="start-terminal">
-      <use xlink:href="#shape-terminal"></use>
-    </svg>
+    <a title="View alerts"
+      data-type="alerts">
+      <svg viewBox="0 0 100 100" class="icon shape-bell white navright">
+        <use xlink:href="#shape-alarm"></use>
+      </svg>
+    </a>
+    <a title="Open host terminal"
+      data-type="start-terminal">
+      <svg viewBox="0 0 100 100" class="icon shape-navterminal white navright">
+        <use xlink:href="#shape-terminal"></use>
+      </svg>
+    </a>
+    <a title="Download radiator configuration"
+      data-type="download-configs"
+      id="download-configs">
+      <svg viewBox="0 0 100 100" class="icon shape-download white navright" >
+        <use xlink:href="#shape-download"></use>
+      </svg>
+    </a>
   </div>
 </nav>
 
