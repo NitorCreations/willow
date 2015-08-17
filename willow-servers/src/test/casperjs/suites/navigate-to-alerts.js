@@ -9,7 +9,6 @@ casper.test.begin('navigate to host page', 4, function(test) {
   casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
     test.assertVisible(env.alertsLink);
-
   });
 
   env.waitForAndClick(env.alertsLink, name, waitTimeout);
@@ -21,8 +20,15 @@ casper.test.begin('navigate to host page', 4, function(test) {
     casper.waitUntilVisible("tr", function() {
       test.assertVisible("thead");
       test.assertVisible("tr");
-      env.writeCoverage(this, name);
     }, env.screencapFailure(name), waitTimeout);
+  });
+
+  casper.then(function() {
+    env.writeCoverage(this, name);
+  });
+
+  casper.on('error', function() {
+    this.capture("failed-on-error-screenshot-" + name + ".png")
   });
 
   casper.run(function() { test.done(); });

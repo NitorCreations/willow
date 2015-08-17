@@ -44,7 +44,6 @@ exports.writeCoverage = function(cspr, name) {
 
 exports.screencapFailure = function(name) {
   return function() {
-    casper.popups.list();
     this.capture("failed-screenshot-" + name + ".png");
   }
 };

@@ -18,8 +18,15 @@ casper.test.begin('navigate to host page', 2, function(test) {
   casper.withPopup(env.root + "/radiator.html", function() {
     casper.waitUntilVisible(env.connDiv, function() {
       env.assertHorizonGraph(env.connDiv);
-      env.writeCoverage(this, name);
     }, env.screencapFailure(name), waitTimeout);
+  });
+
+  casper.then(function() {
+    env.writeCoverage(this, name);
+  });
+
+  casper.on('error', function() {
+    this.capture("failed-on-error-screenshot-" + name + ".png")
   });
 
   casper.run(function() { test.done(); });
