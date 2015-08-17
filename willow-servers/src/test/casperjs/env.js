@@ -43,12 +43,12 @@ exports.writeCoverage = function(cspr, name) {
   if (cspr.popups.length > 0) {
     for (var i=0; i < cspr.popups.length; i++) {
       cspr.withPopup(cspr.popups[i], function() {
-         this.evaluate(function() {
+        var popupcoverage = this.evaluate(function() {
           return window.__coverage__;
         });
-        if (coverage) {
+        if (popupcoverage) {
           fs.write("target/js-coverage/test-" + name + "-" + i + ".json",
-            JSON.stringify(coverage), 'w');
+            JSON.stringify(popupcoverage), 'w');
         }
       });
     }
