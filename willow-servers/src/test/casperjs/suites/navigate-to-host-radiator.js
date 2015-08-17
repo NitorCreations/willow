@@ -4,7 +4,7 @@ env.init();
 var name = "navigate-to-radiator";
 var waitTimeout = 10000;
 
-casper.test.begin('navigate to host page', 2, function(test) {
+casper.test.begin('navigate to host page', 3, function(test) {
 
   casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
@@ -13,6 +13,7 @@ casper.test.begin('navigate to host page', 2, function(test) {
   env.waitForAndClick(env.hostLink, name, waitTimeout);
 
   casper.waitForPopup(env.root + "/radiator.html", function() {
+    test.assertEquals(this.popups.length, 1);
   }, env.screencapFailure(name), waitTimeout);
 
   casper.withPopup(env.root + "/radiator.html", function() {

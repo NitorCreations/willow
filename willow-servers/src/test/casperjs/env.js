@@ -33,12 +33,25 @@ exports.init = function() {
 };
 
 exports.writeCoverage = function(cspr, name) {
-  var coverage = casper.evaluate(function() {
+  var coverage = cspr.evaluate(function() {
     return window.__coverage__;
   });
   if (coverage) {
     fs.write("target/js-coverage/test-" + name + ".json",
       JSON.stringify(coverage), 'w');
+  }
+  if (cspr.popups.length > 0) {
+    for (var i=0; i < cspr.popups.length; i++) {
+      cspr.withPopup(cspr.popups[i], function() {
+         this.evaluate(function() {
+          return window.__coverage__;
+        });
+        if (coverage) {
+          fs.write("target/js-coverage/test-" + name + "-" + i + ".json",
+            JSON.stringify(coverage), 'w');
+        }
+      });
+    }
   }
 };
 
