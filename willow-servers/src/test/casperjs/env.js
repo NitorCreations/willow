@@ -16,6 +16,7 @@ exports.diskDiv        = { type: 'xpath', path: '//div[@data-metric="diskio"]'  
 exports.connDiv        = { type: 'xpath', path: '//div[@data-metric="tcpinfo"]'  }
 exports.radiatorNavDiv = { type: 'xpath', path: '//div[@data-module="radiator-controller"]'  }
 exports.hostLink       = { type: 'xpath', path: '//a[@data-type="host-radiator"]' };
+exports.alertsLink     = 'svg.shape-bell';
 exports.heapDiv        = '#mod-heap-graph-1';
 
 exports.toCustomRadiatorLink = "svg[data-type=to-radiator]";
@@ -42,7 +43,10 @@ exports.writeCoverage = function(cspr, name) {
 };
 
 exports.screencapFailure = function(name) {
-  return function() { this.capture("failed-screenshot-" + name + ".png"); }
+  return function() {
+    casper.popups.list();
+    this.capture("failed-screenshot-" + name + ".png");
+  }
 };
 
 exports.assertHorizonGraph = function(elementSelector) {
