@@ -6,7 +6,7 @@ var waitTimeout = 10000;
 
 casper.test.begin('User adds graph to new radiator', 6, function(test) {
 
-  var newRadiatorName = "new-test-radiator2";
+  var newRadiatorName = "new-test-radiator" + Math.floor((Math.random() * 1000) + 1);
 
   var fieldSelector = {};
   fieldSelector[env.customRadiatorDialog.newNameField] = newRadiatorName;
@@ -17,22 +17,20 @@ casper.test.begin('User adds graph to new radiator', 6, function(test) {
   }, {});
 
   casper.start(env.root + "/#metric=mem&timescale=10800", function() {
-    test.assertExists(env.toCustomRadiatorLink);
+    test.assertExists(env.memLink);
   });
 
-  casper.waitUntilVisible(env.toCustomRadiatorLink, function() {
-    this.click(env.toCustomRadiatorLink);
-  }, env.screencapFailure(name), waitTimeout);
+  env.waitForAndClick(env.toCustomRadiatorLink, name, waitTimeout);
 
   casper.waitUntilVisible(env.customRadiatorDialog.modal, function() {
     this.sendKeys(env.customRadiatorDialog.newNameField, newRadiatorName);
-  });
+  }, env.screencapFailure(name), waitTimeout);
 
   casper.thenClick(env.customRadiatorDialog.createNewButton, function() {
-    test.assertNotVisible(env.customRadiatorDialog.modal)
+    test.assertNotVisible(env.customRadiatorDialog.modal);
   });
 
-  casper.waitForPopup(env.root + "/radiator.html#name=" + newRadiatorName + "&timescale=10800", function() {
+  casper.waitForPopup(env.root + "/radiator.html#name=" + newRadiatorName, function() {
     test.assertEquals(this.popups.length, 1);
   });
 

@@ -4,7 +4,7 @@ env.init();
 var name = "index-horizons";
 var waitTimeout = 2000;
 
-casper.test.begin('index page metrics navigation links changes graphs', 5, function(test) {
+casper.test.begin('index page metrics navigation links changes graphs', 9, function(test) {
 
   casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
     test.assertExists(env.cpuLink, "cpu link present");
@@ -19,22 +19,22 @@ casper.test.begin('index page metrics navigation links changes graphs', 5, funct
   }, env.screencapFailure(name), waitTimeout);
 
   casper.waitUntilVisible(env.memDiv, function() {
-    assertHorizonGraph(env.memDiv);
+    env.assertHorizonGraph(env.memDiv);
     this.click(env.netLink);
   }, env.screencapFailure(name), waitTimeout);
 
   casper.waitUntilVisible(env.netDiv, function() {
-    assertHorizonGraph(env.netDiv);
+    env.assertHorizonGraph(env.netDiv);
     this.click(env.diskLink);
   }, env.screencapFailure(name), waitTimeout);
 
   casper.waitUntilVisible(env.diskDiv, function() {
-    assertHorizonGraph(env.diskDiv);
+    env.assertHorizonGraph(env.diskDiv);
     this.click(env.connLink);
   }, env.screencapFailure(name), waitTimeout);
 
   casper.waitUntilVisible(env.connDiv, function() {
-    assertHorizonGraph(env.connDiv);
+    env.assertHorizonGraph(env.connDiv);
   }, env.screencapFailure(name), waitTimeout);
 
   casper.then(function() {
@@ -46,8 +46,4 @@ casper.test.begin('index page metrics navigation links changes graphs', 5, funct
   });
 
   casper.run(function() { test.done(); });
-
-  function assertHorizonGraph(elementSelector) {
-    //FIXME how to merge selector object of {type, path}?
-  }
 });
