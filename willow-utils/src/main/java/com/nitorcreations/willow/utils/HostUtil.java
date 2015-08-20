@@ -23,7 +23,7 @@ public class HostUtil {
 
   /**
    *
-   * @return The first site local IP address encountered while looping through all
+   * @return The first site local IPv4 address encountered while looping through all
    *         network interfaces.
    */
   public static InetAddress getPrivateIpAddress() {
@@ -34,7 +34,7 @@ public class HostUtil {
         Enumeration<InetAddress> addresses = ni.getInetAddresses();
         while (addresses.hasMoreElements()) {
           InetAddress address = addresses.nextElement();
-          if (address.isSiteLocalAddress()) {
+          if (address.isSiteLocalAddress() && !address.getHostAddress().contains(":")) {
             return address;
           }
         }
@@ -47,7 +47,7 @@ public class HostUtil {
 
   /**
    *
-   * @return The first non-local IP address encountered while looping through all
+   * @return The first non-local IPv4 address encountered while looping through all
    *         network interfaces.
    */
   public static InetAddress getPublicIpAddress() {
@@ -58,7 +58,7 @@ public class HostUtil {
         Enumeration<InetAddress> addresses = ni.getInetAddresses();
         while (addresses.hasMoreElements()) {
           InetAddress address = addresses.nextElement();
-          if (isPublicAddress(address)) {
+          if (isPublicAddress(address) && !address.getHostAddress().contains(":")) {
             return address;
           }
         }

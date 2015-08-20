@@ -19,28 +19,42 @@ public class HostInfoHostLookupServiceTest {
     public Collection<HostInfoMessage> calculateMetric(MetricConfig conf) {
       HashSet<HostInfoMessage> ret = new LinkedHashSet<>();
       HostInfoMessage testVal = new HostInfoMessage();
-      testVal.setInstance("foo");
-      testVal.username = "foo";
-      testVal.privateHostname = "foo-host";
-      ret.add(testVal);
       testVal = new HostInfoMessage();
       testVal.setInstance("test");
       testVal.username = "admin";
       testVal.privateHostname = "test-host";
+      testVal.publicHostname = "test-host-public";
       ret.add(testVal);
       return ret;
     }      
   }
   public HostInfoHostLookupService test = new HostInfoHostLookupService();
+
   public HostInfoHostLookupServiceTest() {
     test.hostInfoMetric = new DummyHostInfoMetric();
   }
+
   @Test
   public void testAdminUser() {
     assertEquals("Test should return 'admin'", "admin", test.getAdminUserFor("test"));
   }
+
   @Test
-  public void testGetResolvableHostname() {
-    assertEquals("Test should return 'admin'", "test-host", test.getResolvableHostname("test"));
+  public void testGetResolvableHostnameNoTypeSpecified() {
+    System.clearProperty(HostInfoHostLookupService.PROPERTY_KEY_IP_ADDRESS_TYPE);
+    assertEquals("Test should return 'test-host'", "test-host", test.getResolvableHostname("test"));
   }
+
+  @Test
+  public void testGetResolvableHostnamePrivate() {
+    System.setProperty(HostInfoHostLookupService.PROPERTY_KEY_IP_ADDRESS_TYPE, "private");
+    assertEquals("Test should return 'test-host'", "test-host", test.getResolvableHostname("test"));
+  }
+
+  @Test
+  public void testGetResolvableHostnamePublic() {
+    System.setProperty(HostInfoHostLookupService.PROPERTY_KEY_IP_ADDRESS_TYPE, "public");
+    assertEquals("Test should return 'test-host'", "test-host-public", test.getResolvableHostname("test"));
+  }
+
 }
