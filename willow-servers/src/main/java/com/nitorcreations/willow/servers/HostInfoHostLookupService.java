@@ -20,11 +20,11 @@ public class HostInfoHostLookupService implements HostLookupService {
 
   @Override
   public String getAdminUserFor(String tagHost) {
-    logger.info(String.format("Resolving username for %s", tagHost));
+    logger.finest(String.format("Resolving username for %s", tagHost));
     Collection<HostInfoMessage> hostInfoMessages = getHostInfoMessages(tagHost);
     if (hostInfoMessages != null && hostInfoMessages.size() > 0) {
       HostInfoMessage msg = hostInfoMessages.iterator().next();
-      logger.info(String.format("Resolved %s username to %s", tagHost, msg.username));
+      logger.finest(String.format("Resolved %s username to %s", tagHost, msg.username));
       return msg.username;
     }
     logger.info("Could not resolve username using HostInfo metric, returning system username");
@@ -33,16 +33,16 @@ public class HostInfoHostLookupService implements HostLookupService {
 
   @Override
   public String getResolvableHostname(String tagHost) {
-    logger.info(String.format("Resolving hostname for %s", tagHost));
+    logger.finest(String.format("Resolving hostname for %s", tagHost));
     Collection<HostInfoMessage> hostInfoMessages = getHostInfoMessages(tagHost);
     for (HostInfoMessage msg : hostInfoMessages) {
       String hostname = getConfiguredHostname(msg);
       if (hostname != null) {
-        logger.info(String.format("Resolved %s to %s", tagHost, hostname));
+        logger.finest(String.format("Resolved %s to %s", tagHost, hostname));
         return hostname;
       }
     }
-    logger.info("Could not resolve hostname using HostInfo metric, returning host tag as is.");
+    logger.info("Could not resolve hostname using HostInfo metric, returning host tag as hostname.");
     return tagHost;
   }
 
