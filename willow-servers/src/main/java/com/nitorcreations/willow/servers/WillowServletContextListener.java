@@ -30,7 +30,7 @@ public abstract class WillowServletContextListener extends GuiceServletContextLi
   private Injector getChild() {
     if (child == null) {
     this.child = parent.createChildInjector(new ChildWireModule(parent, getServletModule(),
-        getShiroModule(), ShiroWebModule.guiceFilterModule()));
+        ShiroWebModule.guiceFilterModule(), getShiroModule()));
     }
     return child;
   }

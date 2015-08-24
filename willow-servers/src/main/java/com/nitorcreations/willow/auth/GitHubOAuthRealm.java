@@ -1,19 +1,22 @@
 package com.nitorcreations.willow.auth;
 
-import java.util.Set;
+import javax.inject.Inject;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAccount;
-import org.apache.shiro.authz.Permission;
-import org.apache.shiro.realm.Realm;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.subject.PrincipalCollection;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import mx.com.inftel.shiro.oauth2.OAuth2AuthenticationToken;
 
-public abstract class GitHubOAuthRealm implements Realm {
+public class GitHubOAuthRealm extends AuthorizingRealm {
+
+  @Inject
+  private GitHubOAuthAccounts accounts;
 
   @Override
   public String getName() {
@@ -26,18 +29,16 @@ public abstract class GitHubOAuthRealm implements Realm {
   }
 
   @Override
-  public AuthenticationInfo getAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-    JSONObject user = (JSONObject) authenticationToken.getPrincipal();
-    try {
-      String userId = user.getString("login");
-      Set<String> memberOf = JSONTool.toStringSet(user.getJSONArray("member_of"));
-      return new SimpleAccount(userId, null, getName(), memberOf, memberShipsToPermissions(memberOf));
-    } catch (JSONException e) {
-      throw new AuthenticationException(e);
-    }
+  protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+    return accounts.get(principals.getPrimaryPrincipal().toString());
   }
 
-  protected abstract Set<Permission> memberShipsToPermissions(Set<String> organizations);
-
-
+  @Override
+  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+    try {
+      return accounts.get(((JSONObject)token.getPrincipal()).getString("login"));
+    } catch (JSONException e) {
+      throw new AuthenticationException("Failed to get user info", e);
+    }
+  }
 }

@@ -1,0 +1,5 @@
+redirect_uri=http://localhost:5120/
+client_id=4a733933dfd6f692468e
+client_secret=306d09f2a4dcf61f1233e5f00df42ef81f7a2aea
+organization=willowdemo
+admin_team=admin

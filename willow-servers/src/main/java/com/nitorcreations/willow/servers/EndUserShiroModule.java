@@ -13,7 +13,7 @@ import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.nitorcreations.willow.auth.GitHubOAuthAuthenticatingFilter;
 import com.nitorcreations.willow.auth.GitHubOAuthConfig;
-import com.nitorcreations.willow.auth.NitorGithubOAuthRealm;
+import com.nitorcreations.willow.auth.GitHubOAuthRealm;
 import com.nitorcreations.willow.auth.PublicKeyAuthenticationFilter;
 
 public class EndUserShiroModule extends ShiroWebModule {
@@ -39,7 +39,7 @@ public class EndUserShiroModule extends ShiroWebModule {
   protected void bindEnduserRealm() {
     try {
       if(useGitHubOAuth()) {
-        bindRealm().toConstructor(NitorGithubOAuthRealm.class.getConstructor(GitHubOAuthConfig.class)).asEagerSingleton();
+        bindRealm().to(GitHubOAuthRealm.class);
       } else {
         bindRealm().toConstructor(IniRealm.class.getConstructor(Ini.class)).asEagerSingleton();
       }
