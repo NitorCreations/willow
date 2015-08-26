@@ -37,8 +37,8 @@ import com.nitorcreations.willow.protocols.Register;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class MergeableProperties extends Properties implements Cloneable {
-  public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
-  public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
+  public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[(last|\\d*?)\\](\\}?)$");
+  public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[(last|\\d+?)\\](.*?)$");
   public static final Pattern SCRIPT_REGEX = Pattern.compile("(.*?)(\\<script\\>(.*?)\\<\\/script\\>)", Pattern.DOTALL + Pattern.MULTILINE);
   public static final String URL_PREFIX_CLASSPATH = "classpath:";
   public static final String INCLUDE_PROPERTY = "include.properties";
@@ -336,19 +336,30 @@ public class MergeableProperties extends Properties implements Cloneable {
   protected String resolveIndexes(String original) {
     String ret = original;
     Matcher m = ARRAY_REFERENCE_REGEX.matcher(ret);
+    StringBuilder subst = new StringBuilder();
+    String rem = "";
     while (m.matches()) {
-      String arrKey = m.group(2);
+      String arrKey = subst.toString() + m.group(2);
+      if (arrKey.startsWith("${")) {
+        arrKey = arrKey.substring(2);
+      }
       Integer lastIndex = arrayIndexes.get(arrKey);
       String prefix = "";
       if (m.group(1) != null) {
         prefix = m.group(1);
       }
       if (lastIndex != null) {
-        ret = prefix + arrKey + "[" + lastIndex + "]" + m.group(3);
-        m = ARRAY_REFERENCE_REGEX.matcher(ret);
+        subst.append(prefix).append(m.group(2)).append("[")
+        .append(lastIndex).append("]");
+        rem = m.group(4);
+        m = ARRAY_REFERENCE_REGEX.matcher(rem);
       } else {
+        subst.setLength(0);
         break;
       }
+    }
+    if (subst.length() > 0) {
+      ret = subst.toString() + rem;
     }
     m = ARRAY_PROPERTY_REGEX.matcher(ret);
     if (m.matches()) {
@@ -360,10 +371,14 @@ public class MergeableProperties extends Properties implements Cloneable {
       while (table.containsKey(arrKey + "[" + i + "]")) {
         i++;
       }
-      arrayIndexes.put(arrKey, Integer.valueOf(i));
+      if (m.group(2).equals("last")) {
+        i--;
+      } else {
+        arrayIndexes.put(arrKey, Integer.valueOf(i));
+      }
       ret = arrKey + "[" + i + "]";
-      if (m.group(2) != null) {
-        ret = ret + m.group(2);
+      if (m.group(3) != null) {
+        ret = ret + m.group(3);
       }
     }
     return ret;

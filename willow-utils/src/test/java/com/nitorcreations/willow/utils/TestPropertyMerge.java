@@ -35,16 +35,16 @@ public class TestPropertyMerge {
     assertTrue(m.matches());
     assertNull(m.group(1));
     assertEquals("foo.bar", m.group(2));
-    assertEquals(".extractroot", m.group(3));
+    assertEquals(".extractroot", m.group(4));
     m = p.matcher("${foo.bar[last].extractroot[]}");
     assertTrue(m.matches());
     assertEquals("${", m.group(1));
     assertEquals("foo.bar", m.group(2));
-    assertEquals(".extractroot[]}", m.group(3));
+    assertEquals(".extractroot[]}", m.group(4));
     m = MergeableProperties.ARRAY_PROPERTY_REGEX.matcher("${foo.bar[1].extractroot[]}");
     assertTrue(m.matches());
     assertEquals("${foo.bar[1].extractroot", m.group(1));
-    assertEquals("}", m.group(2));
+    assertEquals("}", m.group(3));
     m = p.matcher("foo.bar.plalala[].doo");
     assertFalse(m.matches());
   }
@@ -186,6 +186,18 @@ public class TestPropertyMerge {
     prefixed = props.get(1);
     assertEquals("value2", prefixed.getProperty("key2"));
     assertEquals("secondValue2", prefixed.getProperty("secondKey2"));
-
   }
+  @Test
+  public void testPutAll() {
+    MergeableProperties p = new MergeableProperties();
+    p.merge(System.getProperties(), "file:./target/test-classes/develop-servers.properties");
+    MergeableProperties q = new MergeableProperties();
+    q.merge(System.getProperties(),"classpath:logstash.properties");
+    MergeableProperties r = new MergeableProperties();
+    r.putAll(q);
+    r.putAll(p);
+    assertEquals("ptql", r.getProperty("deployer.statistics[5]"));
+    assertEquals("State.Name.eq=java,Args.*.eq=com.nitorcreations.willow.deployer.Main", r.getProperty("deployer.statistics[5].query"));
+  }
+  
 }
