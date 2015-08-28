@@ -320,7 +320,7 @@ public class Main extends DeployerControl implements MainMBean {
 
   protected void usage(Throwable e) {
     stop();
-    log.log(Level.INFO, "Starting deployer faied", e);
+    log.log(Level.INFO, "Starting deployer failed", e);
     super.usage(e.getMessage());
   }
   public static String getStatisticsUrl() {
