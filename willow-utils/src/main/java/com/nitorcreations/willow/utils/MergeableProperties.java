@@ -3,8 +3,10 @@ package com.nitorcreations.willow.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,8 +39,8 @@ import com.nitorcreations.willow.protocols.Register;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class MergeableProperties extends Properties implements Cloneable {
-  public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[\\d*?\\](\\}?)$");
-  public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[last\\](.*)$");
+  public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[(last|\\d*?)\\](\\}?)$");
+  public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[(last|\\d+?)\\](.*?)$");
   public static final Pattern SCRIPT_REGEX = Pattern.compile("(.*?)(\\<script\\>(.*?)\\<\\/script\\>)", Pattern.DOTALL + Pattern.MULTILINE);
   public static final String URL_PREFIX_CLASSPATH = "classpath:";
   public static final String INCLUDE_PROPERTY = "include.properties";
@@ -224,7 +226,7 @@ public class MergeableProperties extends Properties implements Cloneable {
       for (String nextPrefix : prefixes) {
         String url = nextPrefix + name;
         try (InputStream in1 = getIncludeUriInputStream(url)) {
-          includeQueryParameters(name);
+          includeQueryParameters(url);
           load(in1);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
@@ -234,8 +236,8 @@ public class MergeableProperties extends Properties implements Cloneable {
     }
     return ret;
   }
-  private void includeQueryParameters(String name) throws URISyntaxException {
-    URI uri = new URI(name);
+  private void includeQueryParameters(String name) throws MalformedURLException {
+    URL uri = new URL(name);
     String query = uri.getQuery();
     if (query != null && !query.isEmpty()) {
       final String[] pairs = query.split("&");
@@ -271,7 +273,7 @@ public class MergeableProperties extends Properties implements Cloneable {
           YamlProcessor p = new YamlProcessor();
           p.setResources(in1);
           Properties props = p.createProperties();
-          includeQueryParameters(name);
+          includeQueryParameters(url);
           this.putAll(props);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
@@ -336,19 +338,30 @@ public class MergeableProperties extends Properties implements Cloneable {
   protected String resolveIndexes(String original) {
     String ret = original;
     Matcher m = ARRAY_REFERENCE_REGEX.matcher(ret);
+    StringBuilder subst = new StringBuilder();
+    String rem = "";
     while (m.matches()) {
-      String arrKey = m.group(2);
+      String arrKey = subst.toString() + m.group(2);
+      if (arrKey.startsWith("${")) {
+        arrKey = arrKey.substring(2);
+      }
       Integer lastIndex = arrayIndexes.get(arrKey);
       String prefix = "";
       if (m.group(1) != null) {
         prefix = m.group(1);
       }
       if (lastIndex != null) {
-        ret = prefix + arrKey + "[" + lastIndex + "]" + m.group(3);
-        m = ARRAY_REFERENCE_REGEX.matcher(ret);
+        subst.append(prefix).append(m.group(2)).append("[")
+        .append(lastIndex).append("]");
+        rem = m.group(4);
+        m = ARRAY_REFERENCE_REGEX.matcher(rem);
       } else {
+        subst.setLength(0);
         break;
       }
+    }
+    if (subst.length() > 0) {
+      ret = subst.toString() + rem;
     }
     m = ARRAY_PROPERTY_REGEX.matcher(ret);
     if (m.matches()) {
@@ -360,10 +373,14 @@ public class MergeableProperties extends Properties implements Cloneable {
       while (table.containsKey(arrKey + "[" + i + "]")) {
         i++;
       }
-      arrayIndexes.put(arrKey, Integer.valueOf(i));
+      if (m.group(2).equals("last")) {
+        i--;
+      } else {
+        arrayIndexes.put(arrKey, Integer.valueOf(i));
+      }
       ret = arrKey + "[" + i + "]";
-      if (m.group(2) != null) {
-        ret = ret + m.group(2);
+      if (m.group(3) != null) {
+        ret = ret + m.group(3);
       }
     }
     return ret;

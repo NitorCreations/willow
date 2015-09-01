@@ -147,7 +147,7 @@ public abstract class AbstractLauncher implements LaunchMethod {
         throw new RuntimeException("Failed to create working directory");
       }
       pb.directory(workingDir);
-      log.info(String.format("Starting %s%n", pb.command().toString()));
+      log.info(String.format("Starting %s in %s%n", pb.command().toString(), workingDir.getAbsolutePath()));
       try {
         synchronized(this) {
           child = pb.start();

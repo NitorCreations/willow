@@ -1,12 +1,17 @@
 package com.nitorcreations.willow.messages;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
@@ -32,6 +37,9 @@ public class WebSocketTransmitter {
 
   private static final Logger logger = Logger.getLogger(WebSocketTransmitter.class.getName());
   private final ArrayBlockingQueue<AbstractMessage> queue = new ArrayBlockingQueue<AbstractMessage>(200);
+  private final ArrayBlockingQueue<AbstractMessage> toDiskBuffer = new ArrayBlockingQueue<AbstractMessage>(200);
+  private final List<File> diskBuffer = new ArrayList<>();
+  private final Object toDiskLock = new Object();
   private final Worker worker = new Worker();
   private final Thread workerThread = new Thread(worker, "websocket-transfer");
   private final MessageMapping msgmap = new MessageMapping();
@@ -91,10 +99,31 @@ public class WebSocketTransmitter {
         return false;
       }
     }
+    if (msg == null) return false;
     logger.fine("Queue message type: " + MessageMapping.map(msg.getClass()));
     try {
-      while (!queue.offer(msg, flushInterval * 2, TimeUnit.MILLISECONDS)) {
-        logger.info("queue full, retrying");
+      if (!queue.offer(msg, flushInterval / 4, TimeUnit.MILLISECONDS)) {
+        // Message queue is in trouble - don't want to make things potentially
+        // worse by logging about it
+        synchronized (toDiskLock) {
+          while (!toDiskBuffer.offer(msg)) {
+            File tmpDisk;
+            try {
+              tmpDisk = File.createTempFile("msgqueue", ".bin");
+              tmpDisk.deleteOnExit();
+              try (FileOutputStream fs = new FileOutputStream(tmpDisk);
+                  FileChannel out = fs.getChannel()) {
+                List<AbstractMessage> writeToDisk = new ArrayList<>(200);
+                toDiskBuffer.drainTo(writeToDisk);
+                out.write(msgmap.encode(writeToDisk));
+                fs.flush();
+              }
+              diskBuffer.add(tmpDisk);
+            } catch (IOException e) {
+              logger.log(Level.INFO, "Failed queing to disk", e);
+            }
+          }
+        }
       }
     } catch (InterruptedException e) {
       logger.log(Level.INFO, "Interrupted", e);
@@ -160,20 +189,40 @@ public class WebSocketTransmitter {
       }
 
     }
-
     private void doSend() throws IOException {
       queue.drainTo(send);
+      if (send.size() > 0) {
+        encodeAndSend(send);
+        synchronized (toDiskLock) {
+          if (!diskBuffer.isEmpty()) {
+            while (diskBuffer.size() > 0) {
+              File next = diskBuffer.remove(0);
+              byte[] nextMsgs = Files.readAllBytes(next.toPath());
+              if (nextMsgs != null && nextMsgs.length > 0) {
+                wsSession.getRemote().sendBytes(ByteBuffer.wrap(nextMsgs));
+              }
+              if (!next.delete()) {
+                logger.info("Failed to delete temporary file: " + next.getAbsolutePath());
+              }
+            }
+          }
+          diskBuffer.clear();
+          toDiskBuffer.drainTo(send);
+          encodeAndSend(send);
+        }
+      } else {
+        wsSession.getRemote().sendPing(ByteBuffer.allocate(4).putInt(1234));
+      }
+    }
+    private void encodeAndSend(List<AbstractMessage> send) throws IOException {
       if (send.size() > 0) {
         logger.finest(String.format("Sending %d messages", send.size()));
         ByteBuffer toSend = msgmap.encode(send);
         logger.finest(String.format("Sending buffer len %d", toSend.capacity()));
         wsSession.getRemote().sendBytes(toSend);
         send.clear();
-      } else {
-        wsSession.getRemote().sendPing(ByteBuffer.allocate(4).putInt(1234));
-      }
+      }      
     }
-
     public void stop() {
       synchronized (this) {
         this.running.set(false);

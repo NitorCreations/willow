@@ -8,13 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-
-import net.jpountz.lz4.LZ4Compressor;
-import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4FastDecompressor;
 
 import org.msgpack.MessagePack;
 import org.msgpack.packer.Packer;
@@ -23,15 +18,31 @@ import org.msgpack.unpacker.BufferUnpacker;
 import com.nitorcreations.willow.messages.event.EventMessage;
 import com.nitorcreations.willow.messages.event.MetricThresholdTriggeredEvent;
 
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
+
 public class MessageMapping {
   MessagePack msgpack = new MessagePack();
   private static final Logger logger = Logger.getLogger(MessageMapping.class.getCanonicalName());
 
   public enum MessageType {
-    PROC, CPU, MEM, DISK, OUTPUT, LOG, JMX, PROCESSCPU, ACCESS, LONGSTATS,
-    HASH, NET, TCPINFO, DISKIO, THREADDUMP, OS, EVENT, HOSTINFO;
+    PROC(Processes.class), CPU(CPU.class), MEM(Memory.class), DISK(DiskUsage.class), 
+    LOG(LogMessage.class), JMX(JmxMessage.class), PROCESSCPU(ProcessCPU.class),
+    ACCESS(AccessLogEntry.class), LONGSTATS(LongStatisticsMessage.class),
+    HASH(HashMessage.class), NET(NetInterface.class), TCPINFO(TcpInfo.class),
+    DISKIO(DiskIO.class), THREADDUMP(ThreadDumpMessage.class), OS(OsInfo.class),
+    EVENT(EventMessage.class),  HOSTINFO(HostInfoMessage.class);
+    private final Class<? extends AbstractMessage> implClass;
+
+    MessageType(Class<? extends AbstractMessage> implClass) {
+      this.implClass = implClass;
+    }
     public String lcName() {
       return toString().toLowerCase(Locale.ENGLISH);
+    }
+    public Class<? extends AbstractMessage> getMessageClass() {
+      return implClass;
     }
 
     public static String[] lcNames() {
@@ -43,27 +54,13 @@ public class MessageMapping {
     }
   }
   private static Map<MessageType, Class<? extends AbstractMessage>> messageTypes = new ConcurrentHashMap<>(new HashMap<MessageMapping.MessageType, Class<? extends AbstractMessage>>());
+  private static Map<String, Class<? extends AbstractMessage>> messageNames = new ConcurrentHashMap<>(new HashMap<String, Class<? extends AbstractMessage>>());
   private static Map<Class<? extends AbstractMessage>, MessageType> messageClasses = new ConcurrentHashMap<>(new HashMap<Class<? extends AbstractMessage>, MessageType>());
   static {
-    messageTypes.put(MessageType.PROC, Processes.class);
-    messageTypes.put(MessageType.CPU, CPU.class);
-    messageTypes.put(MessageType.MEM, Memory.class);
-    messageTypes.put(MessageType.DISK, DiskUsage.class);
-    messageTypes.put(MessageType.LOG, LogMessage.class);
-    messageTypes.put(MessageType.JMX, JmxMessage.class);
-    messageTypes.put(MessageType.PROCESSCPU, ProcessCPU.class);
-    messageTypes.put(MessageType.ACCESS, AccessLogEntry.class);
-    messageTypes.put(MessageType.LONGSTATS, LongStatisticsMessage.class);
-    messageTypes.put(MessageType.HASH, HashMessage.class);
-    messageTypes.put(MessageType.NET, NetInterface.class);
-    messageTypes.put(MessageType.DISKIO, DiskIO.class);
-    messageTypes.put(MessageType.TCPINFO, TcpInfo.class);
-    messageTypes.put(MessageType.THREADDUMP, ThreadDumpMessage.class);
-    messageTypes.put(MessageType.OS, OsInfo.class);
-    messageTypes.put(MessageType.EVENT, EventMessage.class);
-    messageTypes.put(MessageType.HOSTINFO, HostInfoMessage.class);
-    for (Entry<MessageType, Class<? extends AbstractMessage>> next : messageTypes.entrySet()) {
-      messageClasses.put(next.getValue(), next.getKey());
+    for (MessageType next : MessageType.values()) {
+      messageTypes.put(next, next.getMessageClass());
+      messageNames.put(next.lcName(), next.getMessageClass());
+      messageClasses.put(next.getMessageClass(), next);
     }
   }
 
@@ -88,6 +85,10 @@ public class MessageMapping {
 
   public static Class<? extends AbstractMessage> map(int type) {
     return messageTypes.get(MessageType.values()[type]);
+  }
+
+  public static Class<? extends AbstractMessage> map(String name) {
+    return messageNames.get(name);
   }
 
   public static MessageType map(Class<?> msgclass) {

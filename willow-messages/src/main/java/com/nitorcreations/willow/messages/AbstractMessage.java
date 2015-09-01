@@ -1,14 +1,17 @@
 package com.nitorcreations.willow.messages;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AbstractMessage {
   private String instance = "";
-  private  long timestamp = System.currentTimeMillis();
+  public long timestamp = System.currentTimeMillis();
   public List<String> tags = new ArrayList<>();
   private String id = null;
-
+  public Map<String, String> extras = new LinkedHashMap<>();
+  
   public AbstractMessage() {
     tags.add("category_" + MessageMapping.map(this.getClass()).lcName());
   }
@@ -52,5 +55,14 @@ public class AbstractMessage {
 
   public void setTimestamp(long timestamp) {
     this.timestamp = timestamp;
+  }
+  public void setExtra(String name, String value) {
+    extras.put(name, value);
+  }
+  public Map<String, String> getExtras() {
+    return new LinkedHashMap<>(extras);
+  }
+  public String getExtra(String name) {
+    return extras.get(name);
   }
 }
