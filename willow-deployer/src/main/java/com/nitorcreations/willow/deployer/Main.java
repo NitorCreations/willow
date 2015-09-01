@@ -305,7 +305,7 @@ public class Main extends DeployerControl implements MainMBean {
     } else {
       ret.append(children.size()).append(" children ");
       for (LaunchMethod next : children) {
-        ret.append("(" + next.getName() + ": ").append(next.getProcessId()).append(" - restarts:").append(next.restarts()).append(") ");
+        ret.append("(" + next.getName() + ": ").append(next.getProcessId()).append(" - restarts: ").append(next.restarts()).append(") ");
       }
       ret.setLength(ret.length() - 1);
     }
