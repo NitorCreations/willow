@@ -3,8 +3,10 @@ package com.nitorcreations.willow.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -224,7 +226,7 @@ public class MergeableProperties extends Properties implements Cloneable {
       for (String nextPrefix : prefixes) {
         String url = nextPrefix + name;
         try (InputStream in1 = getIncludeUriInputStream(url)) {
-          includeQueryParameters(name);
+          includeQueryParameters(url);
           load(in1);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
@@ -234,8 +236,8 @@ public class MergeableProperties extends Properties implements Cloneable {
     }
     return ret;
   }
-  private void includeQueryParameters(String name) throws URISyntaxException {
-    URI uri = new URI(name);
+  private void includeQueryParameters(String name) throws MalformedURLException {
+    URL uri = new URL(name);
     String query = uri.getQuery();
     if (query != null && !query.isEmpty()) {
       final String[] pairs = query.split("&");
@@ -271,7 +273,7 @@ public class MergeableProperties extends Properties implements Cloneable {
           YamlProcessor p = new YamlProcessor();
           p.setResources(in1);
           Properties props = p.createProperties();
-          includeQueryParameters(name);
+          includeQueryParameters(url);
           this.putAll(props);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
