@@ -22,15 +22,18 @@ Box.Application.addModule('horizon-graph', function(context) {
     }
   };
 
-  var defaultColors = ["#08519c", "#3182bd", "#6baed6", "#bdd7e7", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
-  var cpuColors = ["rgb(84,39,143)", "rgb(117,107,177)", "rgb(158,154,200)", "rgb(203,201,226)", "rgb(242,240,247)",
-                   'rgb(235,235,128)','rgb(254,204,92)','rgb(253,141,60)','rgb(240,59,32)','rgb(189,0,38)'];
+  var cpuColors = ["#1B5E20", "#388E3C", "#4CAF50", "#81C784","#C8E6C9","#DCEDC8","#AED581","#8BC34A","#689F38","#33691E"];
+  var memColors = ["#FF6F00","#FFA000","#FFC107","#FFD54F","#FFECB3","#FFE0B2","#FFB74D","#FF9800","#F57C00","#E65100"];
+  var netColors = ["#1A237E","#303F9F","#3F51B5","#7986CB","#C5CAE9","#BBDEFB","#64B5F6","#2196F3","#1976D2","#0D47A1"];
+  var ioColors = ["#006064","#0097A7","#00BCD4","#4DD0E1","#B2EBF2","#B2DFDB","#4DB6AC","#009688","#00796B","#004D40"];
+  var connectionsColors = ["#4A148C","#7B1FA2","#9C27B0","#BA68C8","#E1BEE7","#D1C4E9","#9575CD","#673AB7","#512DA8","#311B92"];
+
   var metricMap = {
     "cpu" : { "title" : "cpu", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
-    "mem" : { "title" : "mem", "format" : ".2f", "extent": [0, 100], colors : cpuColors, height: 50 },
-    "net" : { "title" : "net", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
-    "diskio" : { "title" : "io", "format" : bytesToString, "extent": undefined, colors : defaultColors, height: 50 },
-    "tcpinfo" : { "title" : "conn", "format" : ".0f", "extent": undefined, colors : defaultColors, height: 50 }
+    "mem" : { "title" : "mem", "format" : ".2f", "extent": [0, 100], colors : memColors, height: 50 },
+    "net" : { "title" : "net", "format" : bytesToString, "extent": undefined, colors : netColors, height: 50 },
+    "diskio" : { "title" : "io", "format" : bytesToString, "extent": undefined, colors : ioColors, height: 50 },
+    "tcpinfo" : { "title" : "conn", "format" : ".0f", "extent": undefined, colors : connectionsColors, height: 50 }
   };
 
   function resetGraph() {

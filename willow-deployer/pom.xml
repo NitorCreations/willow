@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.nitorcreations</groupId>
     <artifactId>willow-parent</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>2.0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>willow-deployer</artifactId>
@@ -297,7 +297,7 @@
                 </mapping>
                 <mapping>
                   <directory>/var/lib/deployer</directory>
-                  <filemode>644</filemode>
+                  <filemode>755</filemode>
                   <username>root</username>
                   <groupname>root</groupname>
                   <sources>

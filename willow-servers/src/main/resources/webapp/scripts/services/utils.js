@@ -188,7 +188,8 @@ Box.Application.addService('utils', function(application) {
         start: opts.start,
         stop: opts.stop,
         step: opts.step,
-        minSteps: 10
+        minSteps: 10,
+        tags: opts.tags
       };
       pollConfs[metricId] = pollConf;
       socket.onmessage = onmessage;

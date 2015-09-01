@@ -219,6 +219,21 @@ Box.Application.addModule('radiator-controller', function(context) {
     store.customRadiators.removeRadiatorConfig(radiatorName, graphConfig.chart);
   }
 
+  function isConfigMarkedForRemoval(config) {
+    return config.removeAfterUse;
+  }
+
+  function downloadConfigs() {
+    var configs = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName),
+        url = 'data:text/json;charset=utf8,' + encodeURIComponent(JSON.stringify(configs)),
+        filename = (host || radiatorName) + '.json';
+
+    $('<a>')
+      .attr('href', url)
+      .attr('download', filename)[0]
+      .click();
+  }
+
   return {
     init: function() {
       intercom   = context.getGlobal("Intercom").getInstance();
@@ -241,10 +256,18 @@ Box.Application.addModule('radiator-controller', function(context) {
 
       host         = windowSvc.getHashVariable("host");
       radiatorName = windowSvc.getHashVariable("name");
-      var configs      = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
+      var configs  = host ? metrics.defaultMetrics(host) : store.customRadiators.readConfiguration(radiatorName);
 
+      detailsStop  = parseInt(new Date().getTime());
+      var timescale = windowSvc.getTimescale();
+      detailsStart = parseInt(detailsStop - (1000 * timescale));
+      var categoryUrl = '/metrics/categories?start=' + detailsStart + "&stop=" + detailsStop;
+
+      if (host) {
+        categoryUrl += "&tag=host_" + host;
+      }
       // fetch category data prior to rendering graphs
-      d3.json('/metrics/categories?start=' + detailsStart + "&stop=" + detailsStop, function(error, categories) {
+      d3.json(categoryUrl, function(error, categories) {
         threaddumpChildren = categories.filter(function(category) {
           return category.indexOf('category_threaddump_') > -1;
         });
@@ -254,10 +277,15 @@ Box.Application.addModule('radiator-controller', function(context) {
           configs[i] = config = config.chart ? config : { chart: config };
           initGraph(config);
           // wipe config if it is marked for deletion (e.g. single graph)
-          if (config.removeAfterUse) {
+          if (isConfigMarkedForRemoval(config)) {
             store.customRadiators.removeConfiguration(radiatorName);
           }
         });
+
+        // if all configs were removed there's no configs to download
+        if (configs.every(isConfigMarkedForRemoval)) {
+          $('#download-configs').remove();
+        }
 
         var metric = (configs[0].chart.metric || configs[0].chart.type).toUpperCase();
         if (configs.length === 1) {
@@ -272,12 +300,19 @@ Box.Application.addModule('radiator-controller', function(context) {
 
     onmousedown: isDraggingMouseDown,
 
-    messages: ["timescale-changed"],
+    messages: [
+      "download-configs",
+      "timescale-changed"
+    ],
 
     onmessage: function(name, timescale) {
       switch (name) {
         case 'timescale-changed':
           cubismGraphs.resetCubismContext();
+          break;
+
+        case 'download-configs':
+          downloadConfigs();
           break;
       }
     },

@@ -2,6 +2,7 @@ package com.nitorcreations.willow.auth;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
+import static java.util.Collections.unmodifiableSet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,33 +12,52 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.inject.Inject;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.SimpleAccount;
+import org.apache.shiro.authz.Permission;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.common.collect.ImmutableMap;
 
 import mx.com.inftel.shiro.oauth2.AbstractOAuth2AuthenticatingFilter;
 
 public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2AuthenticatingFilter {
 
   private static final String SCOPE = "user:email,read:org";
-
-  public GitHubOAuthAuthenticatingFilter(GitHubOAuthConfig config) throws IOException {
+  private final Map<String,? extends Permission> PERMISSIONS;
+  private final GitHubOAuthAccounts accounts;
+  
+  @Inject
+  public GitHubOAuthAuthenticatingFilter(GitHubOAuthConfig config, GitHubOAuthAccounts accounts) throws IOException {
     setRedirectUri(config.getRedirectUri());
     setClientId(config.getClientId());
     setClientSecret(config.getClientSecret());
     setLoginUrl("/");
-  }
+    this.accounts = accounts;
+    PERMISSIONS = ImmutableMap.of(
+        config.getOrganization()  + "." + config.getAdminTeam(), Permissions.ADMIN,
+        config.getOrganization(),       Permissions.MONITOR);
 
+  }
+  @Override
+  public String getName() {
+    return getClass().getName();
+  }
   @Override
   protected String getAuthorizeURL(ServletRequest request, ServletResponse response) throws Exception {
     return makeStandardAuthorizeURL(request, response, "https://github.com/login/oauth/authorize", SCOPE);
   }
-
   @Override
   protected JSONObject getOAuth2Principal(ServletRequest request, ServletResponse response) throws Exception {
     String tokenResponse = httpPost("https://github.com/login/oauth/access_token",
@@ -45,13 +65,17 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
         "&client_secret=" + getClientSecret() +
         "&redirect_uri=" + encodeURL(getRedirectUri()) +
         "&code=" + encodeURL(request.getParameter("code")));
-    Map<String,String> headers = singletonMap("Authorization", "token " + getAccessToken(tokenResponse));
+    String token = getAccessToken(tokenResponse);
+    Map<String,String> headers = singletonMap("Authorization", "token " + token);
     JSONArray memberOf = JSONTool.toArray(getOrganizations(headers), getTeams(headers));
     String loginId = new JSONObject(httpGet("https://api.github.com/user", headers)).getString("login");
-
-    return new JSONObject()
-    .put("login", loginId)
-    .put("member_of", memberOf);
+    JSONObject ret = new JSONObject()
+        .put("login", loginId)
+        .put("member_of", memberOf)
+        .put("token", token);
+    SimpleAccount acco = doGetAuthenticationInfo(ret);
+    accounts.add(acco);
+    return ret;
   }
 
   @Override
@@ -127,4 +151,27 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
     }
     return body;
   }
+  public SimpleAccount doGetAuthenticationInfo(JSONObject user) throws AuthenticationException {
+    try {
+      String userId = user.getString("login");
+      Set<String> memberOf = JSONTool.toStringSet(user.getJSONArray("member_of"));
+      return new SimpleAccount(userId, userId, getName(), memberOf, memberShipsToPermissions(memberOf));
+    } catch (JSONException e) {
+      throw new AuthenticationException(e);
+    }
+  }
+  
+
+  protected Set<Permission> memberShipsToPermissions(Set<String> organizations) {
+    Set<Permission> permissions = new HashSet<>();
+    for(String team : organizations) {
+      Permission permission = PERMISSIONS.get(team);
+      if(permission != null) {
+        permissions.add(permission);
+      }
+    }
+    return unmodifiableSet(permissions);
+  }
+
+
 }

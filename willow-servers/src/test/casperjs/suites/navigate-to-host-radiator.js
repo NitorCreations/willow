@@ -2,26 +2,33 @@ var env = require('../env');
 var fs = require('fs');
 env.init();
 var name = "navigate-to-radiator";
+var waitTimeout = 10000;
 
-casper.test.begin('navigate to host page', 2, function(test) {
+casper.test.begin('navigate to host page', 3, function(test) {
+
   casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
-    test.assertExists(env.cpuLink);
-    this.waitUntilVisible(env.hostLink,
-      function() {
-        this.click(env.hostLink);
-        casper.waitForPopup(/radiator\.html/);
-        casper.withPopup(/radiator\.html/, function() {
-          this.waitUntilVisible(env.heapDiv, function() {
-            env.writeCoverage(this, name + "-1");
-            test.pass('integrationtest graph visible');
-          });
-        });
-        env.writeCoverage(casper, name + "-2");
-      },
-      function() {
-        this.capture("failed-screenshot-" + name + ".png");
-      }, 15000);
-  }).run(function() {
-    test.done();
+    test.assertExists(env.cpuLink, "common navigation is initialized");
   });
+
+  env.waitForAndClick(env.hostLink, name, waitTimeout);
+
+  casper.waitForPopup(env.root + "/radiator.html", function() {
+    test.assertEquals(this.popups.length, 1);
+  }, env.screencapFailure(name), waitTimeout);
+
+  casper.withPopup(env.root + "/radiator.html", function() {
+    casper.waitUntilVisible(env.connDiv, function() {
+      env.assertHorizonGraph(env.connDiv);
+    }, env.screencapFailure(name), waitTimeout);
+  });
+
+  casper.then(function() {
+    env.writeCoverage(this, name);
+  });
+
+  casper.on('error', function() {
+    this.capture("failed-on-error-screenshot-" + name + ".png")
+  });
+
+  casper.run(function() { test.done(); });
 });

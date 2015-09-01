@@ -68,9 +68,9 @@ public class MetricsServer {
         new SpaceModule(new URLClassSpace(classloader)))); 
     ServletContextHandler endUserContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
     endUserContextHandler.setVirtualHosts(new String[] {"@" + enduserport });
-    WillowServletContextListener listener = new EndUserContextListener(parent);
-    endUserContextHandler.addEventListener(listener);
-    FilterHolder fHolder = new FilterHolder(new LazyInitGuiceFilter(listener));
+    WillowServletContextListener euListener = getEnduserContextListener(parent);
+    endUserContextHandler.addEventListener(euListener);
+    FilterHolder fHolder = new FilterHolder(new LazyInitGuiceFilter(euListener));
     endUserContextHandler.addFilter(fHolder, "/*", EnumSet.allOf(DispatcherType.class));
     MimeTypes mime = endUserContextHandler.getMimeTypes();
     mime.addMimeMapping("js.gz", "text/javascript");
@@ -87,9 +87,9 @@ public class MetricsServer {
     endUserContextHandler.setBaseResource(new ResourceCollection(resources.toArray(new String[resources.size()])));
     ServletContextHandler deployerContextHandler = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
     deployerContextHandler.setVirtualHosts(new String[] {"@" + deployerport });
-    listener = new DeployerContextListener(parent);
-    deployerContextHandler.addEventListener(listener);
-    fHolder = new FilterHolder(new LazyInitGuiceFilter(listener));
+    WillowServletContextListener dListener = getDeployerContextListener(parent);
+    deployerContextHandler.addEventListener(dListener);
+    fHolder = new FilterHolder(new LazyInitGuiceFilter(dListener));
     deployerContextHandler.addFilter(fHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
     setupHandlers(server, endUserContextHandler, deployerContextHandler);
@@ -155,5 +155,12 @@ public class MetricsServer {
   }
   protected AbstractModule getElasticSearchModule() {
     return new ElasticSearchModule();
+  }
+
+  protected WillowServletContextListener getEnduserContextListener(Injector parent) {
+    return new EndUserContextListener(parent);
+  }
+  protected WillowServletContextListener getDeployerContextListener(Injector parent) {
+    return new DeployerContextListener(parent);
   }
 }

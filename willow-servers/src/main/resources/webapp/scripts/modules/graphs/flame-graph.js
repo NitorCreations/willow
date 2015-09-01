@@ -2,7 +2,7 @@ Box.Application.addModule('flame-graph', function(context) {
   'use strict';
 
   var d3, host, windowSvc, metrics, store, utils, moduleElement, moduleConf,
-      detailsStart, detailsStop, timescale, resetBtn, rect, text, x, y, moduleWidth, moduleHeight,
+      detailsStart, detailsStop, resetBtn, rect, text, x, y, moduleWidth, moduleHeight,
       TRANSITION_DURATION = 500;
 
   function yPos(d) {
@@ -59,8 +59,6 @@ Box.Application.addModule('flame-graph', function(context) {
   function createFlameGraph() {
     var colors = d3.scale.category20c(),
         partition = d3.layout.partition(),
-        detailsStop = new Date().getTime(),
-        detailsStart = parseInt(detailsStop - timescale),
         dataUrl = "/metrics/" + moduleConf.chart.metric +
                   '?start=' + detailsStart +
                   "&stop=" + detailsStop +
@@ -143,7 +141,11 @@ Box.Application.addModule('flame-graph', function(context) {
       width: window.innerWidth * 0.75
     });
   }
-
+  function timeRangeMaxMinutes(minutes) {
+    if ((detailsStop - detailsStart) > (minutes * 60000)) {
+      detailsStart = detailsStop - (minutes * 60000);
+    }
+  }
   return {
     init: function() {
       d3        = context.getGlobal("d3");
@@ -159,7 +161,10 @@ Box.Application.addModule('flame-graph', function(context) {
         host: windowSvc.getHashVariable("host")
       };
       host = moduleConf.chart.host;
-      timescale = windowSvc.getTimescale();
+      detailsStop  = parseInt(new Date().getTime());
+      var timescale = windowSvc.getTimescale();
+      detailsStart = parseInt(detailsStop - (1000 * timescale));
+      timeRangeMaxMinutes(15);
 
       var graphIconsElem = moduleElement.append("div").classed("nv-graph__icons", true);
       var extraLinkInfo = '(' + moduleConf.chart.childtag.split('category_threaddump_')[1] + ')';
@@ -178,14 +183,20 @@ Box.Application.addModule('flame-graph', function(context) {
       moduleElement = null;
     },
 
-    messages: [ "timescale-changed" ],
+    messages: [ "time-range-updated", "timescale-changed" ],
 
     onmessage: function(name, data) {
       switch (name) {
+        case 'time-range-updated':
+          detailsStart = data.start;
+          detailsStop = data.stop;
+          timeRangeMaxMinutes(15);
+          reset();
+          break;
         case 'timescale-changed':
-          timescale = data;
           detailsStop = new Date().getTime();
-          detailsStart = detailsStop - timescale;
+          detailsStart = detailsStop - data;
+          timeRangeMaxMinutes(15);
           reset();
           break;
       }

@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(fonts/Lato-Regular.ttf);
+}
+
 *, *:after, *:before {
   box-sizing: border-box;
 }
@@ -12,7 +19,7 @@ html {
 }
 
 body {
-  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-family: 'Lato', sans-serif;
   margin: 30px 50px;
   position: relative;
 }
@@ -24,6 +31,11 @@ header {
 a {
   color: #000;
 }
+
+a:focus {
+  outline: 3px solid #1976D2;
+}
+
 .mainchart {
   padding: 0;
 }
@@ -33,14 +45,17 @@ a {
 }
 
 .axis {
-  font: 10px sans-serif;
+  font-size: 10px;
   position: relative;
   pointer-events: none;
   z-index: 2;
 }
 
 .axis text {
+  transition: fill-opacity 250ms linear;
   -webkit-transition: fill-opacity 250ms linear;
+  -moz-transition: fill-opacity 250ms linear;
+  -o-transition: fill-opacity 250ms linear;
 }
 
 .axis path {
@@ -48,7 +63,7 @@ a {
 }
 
 .axis line {
-  stroke: #000;
+  stroke: #DDD;
   shape-rendering: crispEdges;
 }
 
@@ -56,6 +71,7 @@ a {
   background-image: linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -moz-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0)  100%);
+  background-image: -webkit-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -webkit-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(top, #fff 0%, rgba(255, 255, 255, 0) 100%);
   top: 0;
@@ -66,50 +82,18 @@ a {
   background-image: linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -o-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -moz-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  background-image: -webkit-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -webkit-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   background-image: -ms-linear-gradient(bottom, #fff 0%, rgba(255, 255, 255, 0) 100%);
   bottom: 0;
   padding: 24px 0 0 0;
 }
 
-.horizon {
-  border-bottom: solid 1px #000;
-  overflow: hidden;
-  position: relative;
-}
-
-.horizon {
-  border-top: solid 1px #000;
-  border-bottom: solid 1px #000;
-}
-
 [data-module="horizon-graph"] + [data-module="horizon-graph"] .horizon {
   border-top: none;
 }
 
-.horizon canvas {
-  display: block;
-}
-
-.horizon .title, .horizon .value {
-  bottom: 0;
-  line-height: 30px;
-  margin: 0 6px;
-  position: absolute;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-  white-space: nowrap;
-}
-
-.horizon .title {
-  left: 0;
-}
-
-.horizon .value {
-  right: 0;
-}
-
 .horizon {
-  border-bottom: solid 1px #000;
   overflow: hidden;
   position: relative;
   border-top: solid 1px #000;
@@ -122,6 +106,13 @@ a {
 
 .horizon canvas {
   display: block;
+  /* Disable unwanted selection */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer */
+  -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
+  -webkit-user-select: none; /* Chrome, Safari, and Opera */
+  -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+  user-select: none;
 }
 
 .horizon .title, .horizon .value {
@@ -129,7 +120,7 @@ a {
   line-height: 30px;
   margin: 0 6px;
   position: absolute;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  text-shadow: 0 0 4px #fff;
   white-space: nowrap;
 }
 
@@ -142,7 +133,7 @@ a {
 }
 
 .line {
-  background: #000;
+  background: #888;
   z-index: 2;
   top: 50px !important;
 }
@@ -169,7 +160,7 @@ body, textarea, input, select {
   background: 0;
   border-radius: 0;
   color: inherit;
-  font: 16px sans-serif;
+  font-size: 16px;
   margin: 0;
 }
 
@@ -288,11 +279,12 @@ textarea, input, select {
 }
 
 textarea:focus, input:focus, select:focus {
-  border-color: #5ab;
+  border-color: #1976D2;
 }
 
 textarea, input[type=text] {
   -webkit-appearance: none;
+  -moz-appearance: none;
   width: 13em;
   outline: 0;
 }
@@ -334,7 +326,7 @@ textarea, input[type=text] {
 }
 
 #time-range-selection {
-  background-color: lightgray;
+  background-color: #DDD;
   display: none;
   height: 27px;
   margin-top: -27px;
@@ -352,19 +344,17 @@ textarea, input[type=text] {
 
 .nav .current {
   color: #fff;
-  font-weight: bolder;
 }
 
 .nav {
   display: inline-block;
-  float: left;
   padding: 11px 0 15px;
   width: 100%;
 }
 
 .nav a {
   color: #aaa;
-  padding-right: 1em;
+  margin-right: 10px;
   position: relative;
   top: -1px;
 }
@@ -533,6 +523,10 @@ select.navcenter {
   height: 0;
 }
 
+.horizon__icons .icon {
+  margin: 2px;
+}
+
 .nv-graph__icons .icon,
 .horizon__icons .icon {
   opacity: 0;
@@ -551,12 +545,9 @@ select.navcenter {
 }
 
 .icon {
-  float: left;
-  font-size: 1.2em;
-  margin: 2px;
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   opacity: .5;
   transition: opacity 0.35s ease;
   cursor: pointer;
@@ -623,7 +614,7 @@ select.navcenter {
   text-align: center;
 }
 
-ul.radiator-list {
+.radiator-list {
   list-style-type: none;
   padding-left: 0;
 }
@@ -652,5 +643,4 @@ ul.radiator-list {
   height: calc(100% - 50px);
   width: 100%;
   display: inline-block;
-  float: left;
 }

@@ -42,7 +42,9 @@ Box.Application.addBehavior('navigation-common', function(context) {
         case 'start-terminal':
           windowSvc.openTerminalToHost(user, host);
           break;
-
+        case 'download-configs':
+          context.broadcast("download-configs");
+          break;
       }
     },
     onchange: function(event, element, elementType) {
