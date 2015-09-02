@@ -1,5 +1,8 @@
 package com.nitorcreations.willow.messages;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.msgpack.annotation.Message;
 
 @Message
@@ -18,9 +21,24 @@ public class AccessLogEntry extends AbstractMessage {
   public String getUri() {
     return uri;
   }
-
   public void setUri(String uri) {
     this.uri = uri;
+      try {
+        URI parsed = new URI(uri);
+        String path = parsed.getPath();
+        if (path == null || path.length() == 0) {
+          addTags("context_empty");
+        } else {
+          String[] parts = path.split("/");
+          if (parts.length < 2) {
+            addTags("context_empty");
+          } else {
+            addTags("context_" + parts[1].replaceAll("\\W", "_"));
+          }
+        }
+      } catch (URISyntaxException e) {
+        addTags("context_empty");
+      }
   }
 
   public String getMethod() {

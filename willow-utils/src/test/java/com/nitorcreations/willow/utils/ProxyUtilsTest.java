@@ -58,6 +58,16 @@ public class ProxyUtilsTest {
       setEnv(oldEnv);
     }
   }
+  @Test
+  public void testURIParsing() throws URISyntaxException {
+    assertEquals("/", new URI("http://foo.bar/").getPath());
+    assertEquals(0, new URI("http://foo.bar/").getPath().split("/").length);
+    assertEquals("", new URI("http://foo.bar").getPath());
+    assertEquals(1, new URI("http://foo.bar").getPath().split("/").length);
+    assertEquals("/foo", new URI("http://foo.bar/foo").getPath());
+    assertEquals(2, new URI("http://foo.bar/foo").getPath().split("/").length);
+    assertEquals(0, new URI("http://foo.bar/foo").getPath().split("/")[0].length());
+  }
   protected static void setEnv(Map<String, String> newenv) {
     try {
       Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
