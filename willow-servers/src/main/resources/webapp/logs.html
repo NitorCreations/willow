@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Willow monitoring - Main</title>
+  <meta charset="utf-8" />
+#parse("/templates/head.html")
+</head>
+<body>
+#include("/images/icons.svg")
+<nav class="nav" tabindex="-1">
+  <div class="container" data-module="logs-navigation">
+    <svg viewBox="0 0 100 100" class="icon shape-bell white navright" data-type="alerts">
+      <use xlink:href="#shape-alarm"></use>
+    </svg>
+  </div>
+</nav>
+<table class="table">
+	<thead>
+		<tr>
+			<th>Time</th>
+			<th>Logger</th>
+			<th>Level</th>
+			<th>Message</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+<script id="bootstrap-application" type="text/javascript">
+  Box.Application.init({
+    debug: $debug
+  });
+</script>
+</body>
+</html>

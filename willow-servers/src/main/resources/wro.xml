@@ -29,6 +29,7 @@
     <js>/scripts/behaviors/metric-links.js</js>
     <js>/scripts/behaviors/navigation-common.js</js>
     <js>/scripts/modules/alerts-navigation.js</js>
+    <js>/scripts/modules/logs-navigation.js</js>
     <js>/scripts/modules/horizon-ruler.js</js>
     <js>/scripts/modules/index-horizon-graphs.js</js>
     <js>/scripts/modules/index-navigation.js</js>
