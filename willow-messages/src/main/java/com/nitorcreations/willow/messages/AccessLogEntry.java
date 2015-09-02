@@ -30,7 +30,7 @@ public class AccessLogEntry extends AbstractMessage {
           addTags("context_empty");
         } else {
           String[] parts = path.split("/");
-          if (parts.length < 2) {
+          if (parts.length < 3) {
             addTags("context_empty");
           } else {
             addTags("context_" + parts[1].replaceAll("\\W", "_"));
