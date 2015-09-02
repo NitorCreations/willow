@@ -1,26 +1,30 @@
 var env = require('../env');
 var fs = require('fs');
 env.init();
-var name = "graph-to-new-custom-radiator";
+var name = "graph-is-added-to-custom-radiator";
+var waitTimeout = 10000;
 
 casper.test.begin('User adds graph to new radiator', 6, function(test) {
 
-  var newRadiatorName = "new-test-radiator" + Math.floor((Math.random() * 100000) + 1);
+  var newRadiatorName = "new-test-radiator" + Math.floor((Math.random() * 1000) + 1);
 
   var fieldSelector = {};
   fieldSelector[env.customRadiatorDialog.newNameField] = newRadiatorName;
 
-  env.clearLocalStorage();
+  //FIXME sami-airaksinen: how I clear localstorage?
+  casper.evaluate(function() {
+    localStorage.clear();
+  }, {});
 
   casper.start(env.root + "/#metric=mem&timescale=10800", function() {
     test.assertExists(env.memLink);
   });
 
-  env.waitForAndClick(env.toCustomRadiatorLink, name, env.defaultTimeOut);
+  env.waitForAndClick(env.toCustomRadiatorLink, name, waitTimeout);
 
   casper.waitUntilVisible(env.customRadiatorDialog.modal, function() {
     this.sendKeys(env.customRadiatorDialog.newNameField, newRadiatorName);
-  }, env.screencapFailure(name), env.defaultTimeOut);
+  }, env.screencapFailure(name), waitTimeout);
 
   casper.thenClick(env.customRadiatorDialog.createNewButton, function() {
     test.assertNotVisible(env.customRadiatorDialog.modal);
@@ -32,10 +36,10 @@ casper.test.begin('User adds graph to new radiator', 6, function(test) {
 
   casper.withPopup(env.root + "/radiator.html#name=" + newRadiatorName + "&timescale=10800", function() {
     test.assertUrlMatch(env.root + "/radiator.html#name=" + newRadiatorName + "&timescale=10800",
-        "creating new radiator should open new tab");
-    test.assertTitleMatch(/^Willow - MEM for/); //TODO sami-airaksinen 8/28/15 : fix real issue with title setting
+      "creating new radiator should open new tab");
+    test.assertTitleMatch(/^Willow - MEM for/);
     test.assertExists('div[data-module=horizon-graph] > div[data-metric=mem]',
-        "mem horizon graph should be present in the radiator now");
+      "mem horizon graph should be present in the radiator now");
   });
 
   casper.then(function() {

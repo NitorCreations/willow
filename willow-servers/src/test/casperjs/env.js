@@ -23,21 +23,8 @@ exports.toCustomRadiatorLink = "svg[data-type=to-radiator]";
 exports.customRadiatorDialog = {
   modal: ".ui-dialog.ui-widget",
   newNameField: "#custom-radiator-list-dialog input[name=radiator-id]",
-  createNewButton: "#custom-radiator-list-dialog #create",
-  existingRadiatorLink: function(name) {
-    return "#custom-radiator-list-dialog li[data-radiator-id=" + name + "]";
-  }
+  createNewButton: "#custom-radiator-list-dialog #create"
 };
-
-exports.graph = function(name) {
-  var graphModuleSelector = "div[data-module=" + name +"]";
-  return {
-    openHostRadiatorLink: graphModuleSelector + " a[data-type=host-radiator]",
-    addToRadiator: graphModuleSelector + " svg[data-type=to-radiator]"
-  }
-};
-
-exports.defaultTimeOut = 10000;
 exports.init = function() {
   casper.options.viewportSize = { width: 1920, height: 1080 };
   casper.start();
