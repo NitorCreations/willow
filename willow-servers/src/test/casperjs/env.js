@@ -19,14 +19,30 @@ exports.hostLink       = { type: 'xpath', path: '//a[@data-type="host-radiator"]
 exports.alertsLink     = 'svg.shape-bell';
 exports.heapDiv        = '#mod-heap-graph-1';
 
+exports.toHostLink = "a[data-type=to-radiator]";
 exports.toCustomRadiatorLink = "svg[data-type=to-radiator]";
 exports.customRadiatorDialog = {
   modal: ".ui-dialog.ui-widget",
   newNameField: "#custom-radiator-list-dialog input[name=radiator-id]",
-  createNewButton: "#custom-radiator-list-dialog #create"
+  createNewButton: "#custom-radiator-list-dialog #create",
+  existingRadiatorLink: function(name) {
+    return "#custom-radiator-list-dialog li[data-radiator-id=" + name + "]";
+  }
 };
+
+exports.graph = function(name) {
+  var graphModuleSelector = "div[data-module=" + name +"]";
+  return {
+    module: graphModuleSelector,
+    openHostRadiatorLink: graphModuleSelector + " a[data-type=host-radiator]",
+    addToRadiator: graphModuleSelector + " svg[data-type=to-radiator]"
+  }
+};
+
+exports.defaultTimeOut = 10000;
 exports.init = function() {
   casper.options.viewportSize = { width: 1920, height: 1080 };
+ // casper.options.logLevel = 'debug'
   casper.start();
   casper.setHttpAuth('admin', 'admin');
   casper.viewport(1920, 1080);
@@ -79,9 +95,9 @@ exports.clearLocalStorage = function() {
 };
 
 casper.on('popup.created', function(webpage) {
-    this.echo("url popup created from: " + this.page.url,"INFO");
+    this.echo("url popup created from: " + this.page.url, "INFO");
 });
 
 casper.on('popup.loaded', function(webpage) {
-    this.echo("url popup loaded to: " + webpage.url,"INFO");
+    this.echo("url popup loaded to: " + webpage.url, "INFO");
 });

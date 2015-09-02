@@ -6,17 +6,17 @@ var waitTimeout = 10000;
 
 casper.test.begin('navigate to host page', 3, function(test) {
 
-  casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
+  casper.start(env.root, function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
   });
 
   env.waitForAndClick(env.hostLink, name, waitTimeout);
 
-  casper.waitForPopup(env.root + "/radiator.html", function() {
+  casper.waitForPopup(env.root + "/radiator.html#host=", function() {
     test.assertEquals(this.popups.length, 1);
   }, env.screencapFailure(name), waitTimeout);
 
-  casper.withPopup(env.root + "/radiator.html", function() {
+  casper.withPopup(env.root + "/radiator.html#host=", function() {
     casper.waitUntilVisible(env.connDiv, function() {
       env.assertHorizonGraph(env.connDiv);
     }, env.screencapFailure(name), waitTimeout);

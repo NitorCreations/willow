@@ -6,7 +6,7 @@ var waitTimeout = 2000;
 
 casper.test.begin('index page metrics navigation links changes graphs', 9, function(test) {
 
-  casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
+  casper.start(env.root, function() {
     test.assertExists(env.cpuLink, "cpu link present");
     test.assertExists(env.memLink, "mem link present");
     test.assertExists(env.netLink, "net link present");

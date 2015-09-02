@@ -6,7 +6,7 @@ var waitTimeout = 10000;
 
 casper.test.begin('navigate to host page', 5, function(test) {
 
-  casper.start(env.root + "/#metric=cpu&timescale=10800", function() {
+  casper.start(env.root, function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
     test.assertVisible(env.alertsLink);
   });
