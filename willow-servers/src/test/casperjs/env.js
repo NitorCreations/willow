@@ -90,3 +90,11 @@ exports.clearLocalStorage = function() {
     localStorage.clear();
   }, {});
 };
+
+casper.on('popup.created', function(webpage) {
+    this.echo("url popup created from: " + this.page.url,"INFO");
+});
+
+casper.on('popup.loaded', function(webpage) {
+    this.echo("url popup loaded to: " + webpage.url,"INFO");
+});
