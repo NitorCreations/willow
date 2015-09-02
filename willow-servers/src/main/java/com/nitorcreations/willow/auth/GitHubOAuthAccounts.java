@@ -15,7 +15,10 @@ public class GitHubOAuthAccounts {
   private final Map<String, SimpleAccount> accounts = new ConcurrentHashMap<>();
   public GitHubOAuthAccounts() {}
   public void add(SimpleAccount account) {
-    accounts.put(account.getPrincipals().getPrimaryPrincipal().toString(), account);
+    Object principal = account.getPrincipals().getPrimaryPrincipal();
+    if (principal != null) {
+      accounts.put(principal.toString(), account);
+    }
   }
   public SimpleAccount get(String principal) {
     return accounts.get(principal);

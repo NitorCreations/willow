@@ -25,3 +25,9 @@ triage:
     - action: suppress
       issueKey: 1afe0844904430378b9790e7df09ddcc
       comment: Iterator is from a ConcurrentHashMap, which returns a weakly consistent iterator
+    - action: suppress
+      issueKey: 2f0ae00d6d09a088ad04721380b3063d
+      comment: Authentication items passed in from the handshake to the rest of the authorization chain
+    - action: suppress
+      issueKey: d81386cab521971d32515cf315f64570
+      comment: NullPointerException in tests would reveal an actual bug

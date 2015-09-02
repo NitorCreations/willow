@@ -19,7 +19,6 @@ public class HostInfoHostLookupServiceTest {
     public Collection<HostInfoMessage> calculateMetric(MetricConfig conf) {
       HashSet<HostInfoMessage> ret = new LinkedHashSet<>();
       HostInfoMessage testVal = new HostInfoMessage();
-      testVal = new HostInfoMessage();
       testVal.setInstance("test");
       testVal.username = "admin";
       testVal.privateHostname = "test-host";

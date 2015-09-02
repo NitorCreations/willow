@@ -30,7 +30,11 @@ public class GitHubOAuthRealm extends AuthorizingRealm {
 
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-    return accounts.get(principals.getPrimaryPrincipal().toString());
+    Object principal = principals.getPrimaryPrincipal();
+    if (principal != null) {
+      return accounts.get(principal.toString());
+    }
+    return null;
   }
 
   @Override
