@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 // Test root given on command line as --home
 exports.root = casper.cli.options.home
 
@@ -41,8 +43,9 @@ exports.graph = function(name) {
 
 exports.defaultTimeOut = 10000;
 exports.init = function() {
+  //casper.options.logLevel = 'debug'
   casper.options.viewportSize = { width: 1920, height: 1080 };
- // casper.options.logLevel = 'debug'
+  casper.page = casper.mainPage = null; //this will force recreate phatomjs instance
   casper.start();
   casper.setHttpAuth('admin', 'admin');
   casper.viewport(1920, 1080);
@@ -78,7 +81,7 @@ exports.screencapFailure = function(name) {
 };
 
 exports.assertHorizonGraph = function(elementSelector) {
-  casper.test.assertVisible(elementSelector);
+  casper.test.assertVisible(elementSelector, "horizon graph should be visible");
 };
 
 exports.waitForAndClick = function(selector, name, waitTimeout) {
@@ -95,9 +98,13 @@ exports.clearLocalStorage = function() {
 };
 
 casper.on('popup.created', function(webpage) {
-    this.echo("url popup created from: " + this.page.url, "INFO");
+  this.echo("url popup created from: " + this.page.url, "INFO");
 });
 
 casper.on('popup.loaded', function(webpage) {
-    this.echo("url popup loaded to: " + webpage.url, "INFO");
+  this.echo("url popup loaded to: " + webpage.url, "INFO");
+});
+
+casper.on('error', function(err) {
+  this.capture("failed-on-error-" + err + "-screenshot.png")
 });

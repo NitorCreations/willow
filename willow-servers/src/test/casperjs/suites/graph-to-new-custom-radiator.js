@@ -1,19 +1,18 @@
 //TODO some of it should go into includes and some of to the pre
 var env = require('../env');
-var fs = require('fs');
-env.init();
+
 var name = "graph-to-new-custom-radiator";
+var newRadiatorName = "new-test-radiator" + Math.floor((Math.random() * 100000) + 1);
+var fieldSelector = {};
+fieldSelector[env.customRadiatorDialog.newNameField] = newRadiatorName;
 
 casper.test.begin('User adds graph to new radiator', 6, function(test) {
 
-  var newRadiatorName = "new-test-radiator" + Math.floor((Math.random() * 100000) + 1);
-
-  var fieldSelector = {};
-  fieldSelector[env.customRadiatorDialog.newNameField] = newRadiatorName;
+  env.init();
 
   env.clearLocalStorage();
 
-  casper.start(env.root, function() {
+  casper.thenOpen(env.root, function() {
     test.assertExists(env.memLink, "common link 'mem' visible (sanity check)");
   });
 
@@ -41,13 +40,9 @@ casper.test.begin('User adds graph to new radiator', 6, function(test) {
         "mem horizon graph should be present in the radiator now");
   });
 
-  casper.then(function() {
+  casper.run(function() {
     env.writeCoverage(this, name);
+    casper.mainPage.close();
+    test.done();
   });
-
-  casper.on('error', function() {
-    this.capture("failed-on-error-screenshot-" + name + ".png")
-  });
-
-  casper.run(function() { test.done(); });
 });

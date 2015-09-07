@@ -1,12 +1,12 @@
 var env = require('../env');
-var fs = require('fs');
-env.init();
+
 var name = "index-horizons";
-var waitTimeout = 2000;
 
-casper.test.begin('index page metrics navigation links changes graphs', 9, function(test) {
+casper.test.begin('index page metrics navigation links changes graphs', 8, function(test) {
 
-  casper.start(env.root, function() {
+  env.init();
+
+  casper.thenOpen(env.root, function() {
     test.assertExists(env.cpuLink, "cpu link present");
     test.assertExists(env.memLink, "mem link present");
     test.assertExists(env.netLink, "net link present");
@@ -14,36 +14,36 @@ casper.test.begin('index page metrics navigation links changes graphs', 9, funct
     test.assertExists(env.connLink, "conn link present");
   });
 
-  casper.waitUntilVisible(env.hostLink, function() {
-    this.click(env.memLink);
-  }, env.screencapFailure(name), waitTimeout);
+  casper.waitUntilVisible(env.hostLink, function(){},
+    env.screencapFailure(name), env.defaultTimeOut);
+
+  casper.thenClick(env.memLink);
 
   casper.waitUntilVisible(env.memDiv, function() {
     env.assertHorizonGraph(env.memDiv);
-    this.click(env.netLink);
-  }, env.screencapFailure(name), waitTimeout);
+  }, env.screencapFailure(name), env.defaultTimeOut);
+
+  casper.thenClick(env.memLink);
 
   casper.waitUntilVisible(env.netDiv, function() {
     env.assertHorizonGraph(env.netDiv);
-    this.click(env.diskLink);
-  }, env.screencapFailure(name), waitTimeout);
+  }, env.screencapFailure(name), env.defaultTimeOut);
+
+  casper.thenClick(env.diskLink);
 
   casper.waitUntilVisible(env.diskDiv, function() {
     env.assertHorizonGraph(env.diskDiv);
-    this.click(env.connLink);
-  }, env.screencapFailure(name), waitTimeout);
+  }, env.screencapFailure(name), env.defaultTimeOut);
+
+  casper.thenClick(env.connLink);
 
   casper.waitUntilVisible(env.connDiv, function() {
     env.assertHorizonGraph(env.connDiv);
-  }, env.screencapFailure(name), waitTimeout);
+  }, env.screencapFailure(name), env.defaultTimeOut);
 
-  casper.then(function() {
+  casper.run(function() {
     env.writeCoverage(this, name);
+    casper.mainPage.close();
+    test.done();
   });
-
-  casper.on('error', function() {
-    this.capture("failed-on-error-screenshot-" + name + ".png")
-  });
-
-  casper.run(function() { test.done(); });
 });

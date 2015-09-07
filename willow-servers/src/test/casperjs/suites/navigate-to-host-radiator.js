@@ -1,14 +1,18 @@
 var env = require('../env');
-var fs = require('fs');
-env.init();
+
 var name = "navigate-to-radiator";
 var waitTimeout = 10000;
 
 casper.test.begin('navigate to host page', 3, function(test) {
 
-  casper.start(env.root, function() {
+  env.init();
+
+  casper.thenOpen(env.root, function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
+    console.log("open popups currently " + this.popups.length);
   });
+
+  env.waitForAndClick(env.memLink, name, waitTimeout);
 
   env.waitForAndClick(env.hostLink, name, waitTimeout);
 
@@ -22,13 +26,9 @@ casper.test.begin('navigate to host page', 3, function(test) {
     }, env.screencapFailure(name), waitTimeout);
   });
 
-  casper.then(function() {
+  casper.run(function() {
     env.writeCoverage(this, name);
+    casper.mainPage.close();
+    test.done();
   });
-
-  casper.on('error', function() {
-    this.capture("failed-on-error-screenshot-" + name + ".png")
-  });
-
-  casper.run(function() { test.done(); });
 });

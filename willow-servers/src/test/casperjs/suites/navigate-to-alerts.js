@@ -1,27 +1,27 @@
 var env = require('../env');
-var fs = require('fs');
-env.init();
+
 var name = "navigate-to-alerts";
-var waitTimeout = 10000;
 
-casper.test.begin('navigate to host page', 5, function(test) {
+casper.test.begin('navigate to alerts page', 5, function(test) {
 
-  casper.start(env.root, function() {
+  env.init();
+
+  casper.thenOpen(env.root, function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
     test.assertVisible(env.alertsLink);
   });
 
-  env.waitForAndClick(env.alertsLink, name, waitTimeout);
+  env.waitForAndClick(env.alertsLink, name, env.defaultTimeOut);
 
   casper.waitForPopup(env.root + "/alerts.html", function() {
     test.assertEquals(this.popups.length, 1);
-  }, env.screencapFailure(name), waitTimeout);
+  }, env.screencapFailure(name), env.defaultTimeOut);
 
   casper.withPopup(env.root + "/alerts.html", function() {
     casper.waitUntilVisible("tr", function() {
       test.assertVisible("thead");
       test.assertVisible("tr");
-    }, env.screencapFailure(name), waitTimeout);
+    }, env.screencapFailure(name), env.defaultTimeOut);
   });
 
   casper.then(function() {
@@ -32,5 +32,9 @@ casper.test.begin('navigate to host page', 5, function(test) {
     this.capture("failed-on-error-screenshot-" + name + ".png")
   });
 
-  casper.run(function() { test.done(); });
+  casper.run(function() {
+    env.writeCoverage(this, name);
+    casper.mainPage.close();
+    test.done();
+  });
 });

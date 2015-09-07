@@ -1,16 +1,15 @@
 var env = require('../env');
-var fs = require('fs');
-env.init();
-var name = "graph-to-existing-custom-radiator";
 
+var name = "graph-to-existing-custom-radiator";
 var existingRadiatorName = "existing-test-radiator" + Math.floor((Math.random() * 1000) + 1);
 
 casper.test.begin('User adds graph to existing radiator', function(test) {
 
+  env.init();
+
   env.clearLocalStorage();
 
-  casper.start(env.root, function() {
-    //this.capture("what-is-the-start-page-in-existing-page.png")
+  casper.thenOpen(env.root, function() {
     test.assertExists(env.cpuLink, "common link 'cpu' visible (sanity check)");
   });
 
@@ -51,7 +50,6 @@ casper.test.begin('User adds graph to existing radiator', function(test) {
 
   //TODO sami-airaksinen 8/28/15 : reload doesn't work properly with popups
   casper.thenOpen(env.root + "/radiator.html#name=" + existingRadiatorName + "&timescale=10800", function() {
-    this.capture("custom-radiator-for-testing.png")
     test.assertUrlMatch(env.root + "/radiator.html#name=" + existingRadiatorName + "&timescale=10800",
       "creating new radiator should open new tab");
     test.assertTitleMatch(new RegExp("^Willow - "+ existingRadiatorName));
@@ -61,9 +59,9 @@ casper.test.begin('User adds graph to existing radiator', function(test) {
       "cpu horizon graph should be present in the radiator now");
   });
 
-  casper.then(function() {
+  casper.run(function() {
     env.writeCoverage(this, name);
+    casper.mainPage.close();
+    test.done();
   });
-
-  casper.run(function() { test.done(); });
 });
