@@ -43,6 +43,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.nitorcreations.willow.protocols.Register;
 import com.nitorcreations.willow.sshagentauth.SSHUtil;
+import com.nitorcreations.willow.utils.FileUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 import com.nitorcreations.willow.utils.RequestCustomizer;
 import com.nitorcreations.willow.utils.SimpleFormatter;
@@ -194,10 +195,11 @@ public class DeployerControl {
     }
   }
   protected MergeableProperties getURLProperties(String url) {
-    MergeableProperties launchProperties = new MergeableProperties();
+    MergeableProperties launchProperties = new MergeableProperties(FileUtil.getFilePath(url),
+        "classpath:", "file:./");
     final String username = System.getProperty("user.name");
     launchProperties.setRequestCustomizer(new SshAgentAuhtorizationRequestCustomizer(username));
-    launchProperties.merge(System.getProperties(), url);
+    launchProperties.merge(System.getProperties(), FileUtil.getFileNameAndQuery(url));
     return launchProperties;
   }
   protected void populateProperties(String[] args) {

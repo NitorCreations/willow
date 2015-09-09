@@ -230,9 +230,13 @@ public class MergeableProperties extends Properties implements Cloneable {
           load(in1);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
-          this.log.log(Level.INFO, "Failed to render url: " + url);
+          this.log.log(Level.FINE, "Failed to render url: " + url);
         }
       }
+    }
+    if (!ret) {
+      this.log.log(Level.INFO, String.format("Failed to render file %s with any of the prefixes %s",
+          name, Arrays.toString(prefixes)));
     }
     return ret;
   }
@@ -277,9 +281,13 @@ public class MergeableProperties extends Properties implements Cloneable {
           this.putAll(props);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
-          this.log.log(Level.INFO, "Failed to render url: " + url);
+          this.log.log(Level.FINE, "Failed to render url: " + url);
         }
       }
+    }
+    if (!ret) {
+      this.log.log(Level.INFO, String.format("Failed to render file %s with any of the prefixes %s",
+          name, Arrays.toString(prefixes)));
     }
     return ret;
   }
