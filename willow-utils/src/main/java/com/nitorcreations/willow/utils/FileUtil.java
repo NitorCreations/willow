@@ -32,6 +32,10 @@ public class FileUtil {
     }
     return name.substring(lastSeparator + 1, queryIndex);
   }
+  public static String getFilePath(String name) {
+    int lastSeparator = Math.max(Math.max(name.lastIndexOf(':'), name.lastIndexOf('/')), name.lastIndexOf('\\'));
+    return name.substring(0, lastSeparator);
+  }
 
   public static long copy(InputStream in, File target) throws IOException {
     return copy(in, target, null);
