@@ -39,7 +39,6 @@ import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
-import com.nitorcreations.willow.deployer.download.FileUtil;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.messages.event.ChildDiedEvent;
 import com.nitorcreations.willow.messages.event.ChildRestartedEvent;
@@ -49,6 +48,7 @@ import com.nitorcreations.willow.messages.event.ChildStartingEvent;
 import com.nitorcreations.willow.messages.event.ChildStoppedEvent;
 import com.nitorcreations.willow.messages.event.ChildStoppingEvent;
 import com.nitorcreations.willow.utils.AbstractStreamPumper;
+import com.nitorcreations.willow.utils.FileUtil;
 import com.nitorcreations.willow.utils.LoggingStreamPumper;
 import com.nitorcreations.willow.utils.MergeableProperties;
 

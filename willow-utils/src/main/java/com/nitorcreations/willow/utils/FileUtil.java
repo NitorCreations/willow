@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer.download;
+package com.nitorcreations.willow.utils;
 
 import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.AT_DELIMITERS;
 import static com.nitorcreations.willow.utils.ReplaceTokensInputStream.CURLY_DELIMITERS;
@@ -13,7 +13,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import com.nitorcreations.willow.utils.ReplaceTokensInputStream;
 
 public class FileUtil {
   public static final int BUFFER_LEN = 8 * 1024;

@@ -8,8 +8,8 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFI
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXYAUTOCONF;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
 import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
-import static com.nitorcreations.willow.deployer.download.FileUtil.createDir;
-import static com.nitorcreations.willow.deployer.download.FileUtil.getFileName;
+import static com.nitorcreations.willow.utils.FileUtil.createDir;
+import static com.nitorcreations.willow.utils.FileUtil.getFileName;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -29,6 +29,8 @@ import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Hex;
 
+import com.nitorcreations.willow.utils.DownloadLogger;
+import com.nitorcreations.willow.utils.FileUtil;
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.ProxyUtils;
 

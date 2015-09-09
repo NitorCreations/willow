@@ -60,7 +60,6 @@ import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
-import com.nitorcreations.willow.deployer.download.FileUtil;
 import com.nitorcreations.willow.deployer.download.PreLaunchDownloadAndExtract;
 import com.nitorcreations.willow.deployer.launch.LaunchCallback;
 import com.nitorcreations.willow.deployer.launch.LaunchMethod;
@@ -68,6 +67,7 @@ import com.nitorcreations.willow.deployer.statistics.StatisticsSender;
 import com.nitorcreations.willow.messages.WebSocketTransmitter;
 import com.nitorcreations.willow.messages.event.DeployerStartEvent;
 import com.nitorcreations.willow.messages.event.DeployerStopEvent;
+import com.nitorcreations.willow.utils.FileUtil;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

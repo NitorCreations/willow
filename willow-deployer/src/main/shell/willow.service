@@ -1,0 +1,12 @@
+[Unit]
+Description=Willow deployer
+
+[Service]
+ExecStart=/bin/bash -xc "/usr/bin/deployer.sh start willow_app $(cat /opt/willow/version.conf)"
+ExecReload=/bin/bash -xc "/usr/bin/deployer.sh start willow_app $(cat /opt/willow/version.conf)"
+ExecStop=/usr/bin/deployer.sh stop willow_app
+Restart=always
+User=willow
+
+[Install]
+WantedBy=multi-user.target

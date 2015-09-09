@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer.download;
+package com.nitorcreations.willow.utils;
 
 public interface DownloadLogger {
   void log(long downloaded);

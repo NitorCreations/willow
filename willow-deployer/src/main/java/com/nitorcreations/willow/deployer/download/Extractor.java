@@ -43,6 +43,8 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
+import com.nitorcreations.willow.utils.FileUtil;
+
 @SuppressWarnings({"PMD.TooManyStaticImports", "PMD.AvoidUsingOctalValues"})
 public class Extractor implements Callable<Boolean> {
   private final Properties properties;
