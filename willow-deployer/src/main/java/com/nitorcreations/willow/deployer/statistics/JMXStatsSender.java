@@ -131,7 +131,7 @@ public class JMXStatsSender extends AbstractJMXStatisticsSender {
     Set<ObjectInstance> cc = server.queryMBeans(query, null);
     ObjectInstance next = cc.iterator().next();
     try {
-      ret.setHeapMemory(((Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "Usage")).get("used")).longValue());
+      ret.setCodeCache(((Long) ((CompositeDataSupport) server.getAttribute(next.getObjectName(), "Usage")).get("used")).longValue());
     } catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException | ReflectionException e) {
       logger.log(Level.WARNING, "Failed to collect Code Cache statistics");
     }
