@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +68,7 @@ public class DeployerControl {
   protected String deployerName;
   protected static final Injector injector = createInjector();
   public static final ObjectName OBJECT_NAME = createObjectName();
+  public static final String FILE_PREFIX = "file:";
   static {
     try {
       Register.doIt();
@@ -195,8 +197,7 @@ public class DeployerControl {
     }
   }
   protected MergeableProperties getURLProperties(String url) {
-    MergeableProperties launchProperties = new MergeableProperties(FileUtil.getFilePath(url),
-        "classpath:", "file:./");
+    MergeableProperties launchProperties = new MergeableProperties(getPrefixes(url));
     final String username = System.getProperty("user.name");
     launchProperties.setRequestCustomizer(new SshAgentAuhtorizationRequestCustomizer(username));
     launchProperties.merge(System.getProperties(), FileUtil.getFileNameAndQuery(url));
@@ -291,5 +292,26 @@ public class DeployerControl {
         new WireModule(new DeployerModule(), new SpaceModule(
             new URLClassSpace(DeployerControl.class.getClassLoader())
             )));
+  }
+  protected String[] getPrefixes(String url) {
+    LinkedHashSet<String> prefixes = new LinkedHashSet<>();
+    try {
+      if (url.startsWith(FILE_PREFIX)) {
+        File path = new File(url.substring(FILE_PREFIX.length()));
+        prefixes.add(FileUtil.getFilePath("file:" + path.getCanonicalPath().replaceAll("\\\\", "/")));
+      } else  {
+        prefixes.add(FileUtil.getFilePath(url));
+      }
+    } catch (IOException e) {
+      log.log(Level.FINE, "Failed to add properties prefix " + FileUtil.getFilePath(url), e);
+    }
+    prefixes.add("classpath:");
+    try {
+      File workDir = new File(".");
+      prefixes.add("file:" + workDir.getCanonicalPath().replaceAll("\\\\", "/"));
+    } catch (IOException e) {
+      log.log(Level.FINE, "Failed to add workdir prefix", e);
+    }
+    return prefixes.toArray(new String[prefixes.size()]);
   }
 }
