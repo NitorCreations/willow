@@ -59,8 +59,11 @@ casper.test.begin('User adds graph to existing radiator', function(test) {
       "cpu horizon graph should be present in the radiator now");
   });
 
-  casper.run(function() {
+  casper.then(function() {
     env.writeCoverage(this, name);
+  });
+
+  casper.run(function() {
     casper.mainPage.close();
     test.done();
   });

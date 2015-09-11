@@ -52,25 +52,24 @@ exports.init = function() {
 };
 
 exports.writeCoverage = function(cspr, name) {
-  var coverage = cspr.evaluate(function() {
-    return window.__coverage__;
-  });
-  if (coverage) {
-    fs.write("target/js-coverage/test-" + name + ".json",
-      JSON.stringify(coverage), 'w');
+  writeIfPresent.call(cspr, "target/js-coverage/test-" + name + ".json");
+  for (var i = 0; i < cspr.popups.length; i++) {
+    cspr.withPopup(cspr.popups[i], function() {
+      writeIfPresent.call(this, "target/js-coverage/test-" + name + "-" + i + ".json");
+    });
   }
-  if (cspr.popups.length > 0) {
-    for (var i=0; i < cspr.popups.length; i++) {
-      cspr.withPopup(cspr.popups[i], function() {
-        var popupcoverage = this.evaluate(function() {
-          return window.__coverage__;
-        });
-        if (popupcoverage) {
-          fs.write("target/js-coverage/test-" + name + "-" + i + ".json",
-            JSON.stringify(popupcoverage), 'w');
-        }
-      });
+
+  function writeIfPresent(fileName) {
+    var coverage = this.evaluate(function() {
+      return window.__coverage__;
+    });
+    if (coverage) {
+      _writeCoverage(coverage, fileName);
     }
+  }
+
+  function _writeCoverage(coverage, filename) {
+    fs.write(filename, JSON.stringify(coverage), 'w');
   }
 };
 

@@ -40,8 +40,11 @@ casper.test.begin('User adds graph to new radiator', 6, function(test) {
         "mem horizon graph should be present in the radiator now");
   });
 
-  casper.run(function() {
+  casper.then(function() {
     env.writeCoverage(this, name);
+  });
+
+  casper.run(function() {
     casper.mainPage.close();
     test.done();
   });

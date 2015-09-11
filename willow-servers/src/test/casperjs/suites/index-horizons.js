@@ -41,8 +41,11 @@ casper.test.begin('index page metrics navigation links changes graphs', 8, funct
     env.assertHorizonGraph(env.connDiv);
   }, env.screencapFailure(name), env.defaultTimeOut);
 
-  casper.run(function() {
+  casper.then(function() {
     env.writeCoverage(this, name);
+  });
+
+  casper.run(function() {
     casper.mainPage.close();
     test.done();
   });

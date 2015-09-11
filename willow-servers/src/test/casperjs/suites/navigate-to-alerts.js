@@ -28,12 +28,7 @@ casper.test.begin('navigate to alerts page', 5, function(test) {
     env.writeCoverage(this, name);
   });
 
-  casper.on('error', function() {
-    this.capture("failed-on-error-screenshot-" + name + ".png")
-  });
-
   casper.run(function() {
-    env.writeCoverage(this, name);
     casper.mainPage.close();
     test.done();
   });

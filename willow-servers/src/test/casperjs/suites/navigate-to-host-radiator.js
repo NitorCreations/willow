@@ -9,7 +9,6 @@ casper.test.begin('navigate to host page', 3, function(test) {
 
   casper.thenOpen(env.root, function() {
     test.assertExists(env.cpuLink, "common navigation is initialized");
-    console.log("open popups currently " + this.popups.length);
   });
 
   env.waitForAndClick(env.memLink, name, waitTimeout);
@@ -23,11 +22,15 @@ casper.test.begin('navigate to host page', 3, function(test) {
   casper.withPopup(env.root + "/radiator.html#host=", function() {
     casper.waitUntilVisible(env.connDiv, function() {
       env.assertHorizonGraph(env.connDiv);
+      this.capture('how-does-the-host-radiator-looklike.png')
     }, env.screencapFailure(name), waitTimeout);
   });
 
-  casper.run(function() {
+  casper.then(function() {
     env.writeCoverage(this, name);
+  });
+
+  casper.run(function() {
     casper.mainPage.close();
     test.done();
   });
