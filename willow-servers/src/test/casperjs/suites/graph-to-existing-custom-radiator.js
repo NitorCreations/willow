@@ -59,6 +59,16 @@ casper.test.begin('User adds graph to existing radiator', function(test) {
       "cpu horizon graph should be present in the radiator now");
   });
 
+  casper.thenClick(env.graph("heap-graph").removeFromRadiator, function() {
+    test.assertVisible(env.graph("horizon-graph").module, "horizon graph is present");
+    test.assertNotVisible(env.graph("heap-graph").module, "heap graph is removed");
+  });
+
+  casper.thenOpen(env.root + "/radiator.html#name=" + existingRadiatorName + "&timescale=43200", function() {
+    test.assertVisible(env.graph("horizon-graph").module, "horizon graph is present");
+    test.assertNotVisible(env.graph("heap-graph").module, "heap graph is not present");
+  });
+
   casper.then(function() {
     env.writeCoverage(this, name);
   });

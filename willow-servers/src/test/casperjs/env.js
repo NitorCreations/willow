@@ -38,7 +38,8 @@ exports.graph = function(name) {
     module: graphModuleSelector,
     openHostRadiatorLink: graphModuleSelector + " a[data-type=host-radiator]",
     openToPopup: graphModuleSelector + " svg[data-type=to-popup]",
-    addToRadiator: graphModuleSelector + " svg[data-type=to-radiator]"
+    addToRadiator: graphModuleSelector + " svg[data-type=to-radiator]",
+    removeFromRadiator: graphModuleSelector + "  svg[data-type=close]"
   }
 };
 
@@ -96,6 +97,10 @@ exports.clearLocalStorage = function() {
     localStorage.clear();
   }, {});
 };
+
+casper.on('open', function(location) {
+  this.echo("page opened to: " + location, "INFO");
+});
 
 casper.on('popup.created', function(webpage) {
   this.echo("url popup created from: " + this.page.url, "INFO");
