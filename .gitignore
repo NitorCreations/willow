@@ -26,3 +26,4 @@ icons/icons.svg
 # Temporary artifacts
 t3model.*
 *screenshot.png
+/node_modules/

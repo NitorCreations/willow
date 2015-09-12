@@ -22,7 +22,6 @@ casper.test.begin('navigate to host page', 3, function(test) {
   casper.withPopup(env.root + "/radiator.html#host=", function() {
     casper.waitUntilVisible(env.connDiv, function() {
       env.assertHorizonGraph(env.connDiv);
-      this.capture('how-does-the-host-radiator-looklike.png')
     }, env.screencapFailure(name), waitTimeout);
   });
 
