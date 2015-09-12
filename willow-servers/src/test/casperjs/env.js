@@ -37,6 +37,7 @@ exports.graph = function(name) {
   return {
     module: graphModuleSelector,
     openHostRadiatorLink: graphModuleSelector + " a[data-type=host-radiator]",
+    openToPopup: graphModuleSelector + " svg[data-type=to-popup]",
     addToRadiator: graphModuleSelector + " svg[data-type=to-radiator]"
   }
 };
