@@ -57,7 +57,31 @@ casper.test.begin('User adds graph to existing radiator', function(test) {
       "filesystem graph should be present in the radiator now");
     test.assertExists('div[data-module=horizon-graph] > div[data-metric=cpu]',
       "cpu horizon graph should be present in the radiator now");
+    assertGraphOrdering("horizon-graph", "heap-graph");
   });
+
+/*
+  Ordering graphs by dragging can't be tested due to limitation in the phatomjs api (1.9).
+  see: http://phantomjs.org/api/webpage/method/send-event.html
+
+  casper.then(function() {
+    mouse.down(env.graph("horizon-graph").reOrderGraph);
+    this.mouse.move(env.graph("heap-graph").reOrderGraph);
+  });
+
+  casper.then(function() {
+    this.mouse.up(env.graph("heap-graph").reOrderGraph);
+  });
+
+  casper.then(function() {
+    assertGraphOrdering("heap-graph", "horizon-graph");
+  });
+
+
+  casper.thenOpen(env.root + "/radiator.html#name=" + existingRadiatorName + "&timescale=28800", function() {
+    assertGraphOrdering("heap-graph", "horizon-graph");
+  });
+*/
 
   casper.thenClick(env.graph("heap-graph").removeFromRadiator, function() {
     test.assertVisible(env.graph("horizon-graph").module, "horizon graph is present");
@@ -77,4 +101,16 @@ casper.test.begin('User adds graph to existing radiator', function(test) {
     casper.mainPage.close();
     test.done();
   });
+
+  function assertGraphOrdering(graph1, graph2) {
+    test.assertVisible(env.graph(graph1).module, "graph " + graph1 + " is present");
+    test.assertVisible(env.graph(graph2).module, "graph " + graph2 + " is present");
+    test.assertElementCount('div[data-module*=-graph]',2, "only 2 graphs present");
+    test.assertEval(function(graph1, graph2) {
+      var graphs = document.querySelectorAll('div[data-module$=-graph]');
+      return graphs[0].attributes["data-module"].value === graph1 &&
+        graphs[1].attributes["data-module"].value === graph2
+    }, "ordering should be expected [" + graph1 + ","+ graph2 +"]", [graph1, graph2]);
+  }
 });
+

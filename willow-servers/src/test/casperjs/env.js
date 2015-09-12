@@ -39,13 +39,14 @@ exports.graph = function(name) {
     openHostRadiatorLink: graphModuleSelector + " a[data-type=host-radiator]",
     openToPopup: graphModuleSelector + " svg[data-type=to-popup]",
     addToRadiator: graphModuleSelector + " svg[data-type=to-radiator]",
-    removeFromRadiator: graphModuleSelector + "  svg[data-type=close]"
+    removeFromRadiator: graphModuleSelector + "  svg[data-type=close]",
+    reOrderGraph: graphModuleSelector + " svg[data-type=graph-drag]"
   }
 };
 
 exports.defaultTimeOut = 10000;
 exports.init = function() {
-  //casper.options.logLevel = 'debug'
+  //casper.options.logLevel = 'debug';
   casper.options.viewportSize = { width: 1920, height: 1080 };
   casper.page = casper.mainPage = null; //this will force recreate phatomjs instance
   casper.start();
