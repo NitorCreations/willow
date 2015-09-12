@@ -32,6 +32,15 @@ exports.customRadiatorDialog = {
   }
 };
 
+exports.selectTimeScale = function(index) {
+  var select = document.querySelector('#timescale');
+  select.selectedIndex = index;
+  var event = document.createEvent('HTMLEvents');
+  event.initEvent("change", true, true);
+  select.dispatchEvent(event);
+  return true;
+};
+
 exports.graph = function(name) {
   var graphModuleSelector = "div[data-module=" + name +"]";
   return {

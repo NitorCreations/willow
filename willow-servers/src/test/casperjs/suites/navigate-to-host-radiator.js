@@ -3,7 +3,7 @@ var env = require('../env');
 var name = "navigate-to-radiator";
 var waitTimeout = 10000;
 
-casper.test.begin('navigate to host page', 3, function(test) {
+casper.test.begin('navigate to host page', 4, function(test) {
 
   env.init();
 
@@ -23,6 +23,12 @@ casper.test.begin('navigate to host page', 3, function(test) {
     casper.waitUntilVisible(env.connDiv, function() {
       env.assertHorizonGraph(env.connDiv);
     }, env.screencapFailure(name), waitTimeout);
+
+    casper.evaluate(env.selectTimeScale, 2);
+
+    casper.then(function() {
+      test.assertUrlMatch(/timescale=43200/, "timescale parameter has changed to match 12h")
+    });
   });
 
   casper.then(function() {
