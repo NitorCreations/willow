@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer.download;
+package com.nitorcreations.willow.download;
 
 import java.util.Collections;
 import java.util.HashSet;

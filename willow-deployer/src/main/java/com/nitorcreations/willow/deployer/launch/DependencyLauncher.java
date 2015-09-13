@@ -5,7 +5,7 @@ import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFI
 
 import java.io.File;
 
-import com.nitorcreations.willow.deployer.download.AetherDownloader;
+import com.nitorcreations.willow.download.AetherDownloader;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class DependencyLauncher extends JavaLauncher {

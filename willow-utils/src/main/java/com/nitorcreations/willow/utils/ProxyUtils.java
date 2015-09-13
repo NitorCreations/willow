@@ -2,6 +2,7 @@ package com.nitorcreations.willow.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -106,11 +107,32 @@ public class ProxyUtils {
     }
     return ret;
   }
+  public static OutputStream getUriOutputStream(String proxyAutoconf, String pacProxyResult, String url) throws IOException, URISyntaxException {
+    return getUriOutputStream(proxyAutoconf, pacProxyResult, url, null);
+  }
+  public static OutputStream getUriOutputStream(String proxyAutoconf, String pacProxyResult, String url, RequestCustomizer cust) throws IOException, URISyntaxException {
+    URI uri = new URI(url);
+    List<Proxy> l = resolveProxies(proxyAutoconf, pacProxyResult, uri);
+    URLConnection conn = openConnection(uri, l);
+    conn.setDoOutput(true);
+    if (cust != null) {
+      cust.customize(conn);
+    }
+    return conn.getOutputStream();
+  }
   public static InputStream getUriInputStream(String proxyAutoconf, String pacProxyResult, String url) throws IOException, URISyntaxException {
     return getUriInputStream(proxyAutoconf, pacProxyResult, url, null);
   }
   public static InputStream getUriInputStream(String proxyAutoconf, String pacProxyResult, String url, RequestCustomizer cust) throws IOException, URISyntaxException {
     URI uri = new URI(url);
+    List<Proxy> l = resolveProxies(proxyAutoconf, pacProxyResult, uri);
+    URLConnection conn = openConnection(uri, l);
+    if (cust != null) {
+      cust.customize(conn);
+    }
+    return conn.getInputStream();
+  }
+  public static List<Proxy> resolveProxies(String proxyAutoconf, String pacProxyResult, URI uri) {
     List<Proxy> l;
     if (proxyAutoconf != null) {
       l = ProxyUtils.resolveAutoconfig(proxyAutoconf, uri);
@@ -119,6 +141,9 @@ public class ProxyUtils {
     } else {
       l = ProxyUtils.resolveSystemProxy(uri);
     }
+    return l;
+  }
+  public static URLConnection openConnection(URI uri, List<Proxy> l) throws IOException {
     URLConnection conn = null;
     try {
       IOException lastEx = new IOException("Failed to get working proxy");
@@ -141,12 +166,9 @@ public class ProxyUtils {
       throw new IOException("Invalid uri", e);
     }
     if (conn == null) {
-      throw new IOException("Failed to get connection to " + url);
+      throw new IOException("Failed to get connection to " + uri.toString());
     }
-    if (cust != null) {
-      cust.customize(conn);
-    }
-    return conn.getInputStream();
+    return conn;
+    
   }
-
 }
