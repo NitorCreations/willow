@@ -1,9 +1,9 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.properties.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.properties.PropertyKeys.ENV_DEPLOYER_TERM_TIMEOUT;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DEPLOYER_HOST;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,13 +1,13 @@
 package com.nitorcreations.willow.download;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXY;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXYAUTOCONF;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_PROXYAUTOCONF;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_RETRIES;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_WORKDIR;
 import static com.nitorcreations.willow.utils.FileUtil.createDir;
 import static com.nitorcreations.willow.utils.FileUtil.getFileName;
 

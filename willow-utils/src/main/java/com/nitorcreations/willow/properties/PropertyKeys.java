@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.properties;
 
 @SuppressWarnings("PMD.UnusedModifier")
 public interface PropertyKeys {

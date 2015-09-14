@@ -1,9 +1,9 @@
-package com.nitorcreations.willow.download;
+package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,8 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
-import com.nitorcreations.willow.deployer.Main;
+import com.nitorcreations.willow.download.Extractor;
+import com.nitorcreations.willow.download.UrlDownloader;
 import com.nitorcreations.willow.protocols.property.PropertyUrlConnection;
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.MergeableProperties;

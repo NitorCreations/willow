@@ -1,7 +1,7 @@
 package com.nitorcreations.willow.download;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.ENV_DEPLOYER_LOCAL_REPOSITORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
 
 import java.io.File;
 import java.util.Properties;

@@ -11,7 +11,7 @@ import java.nio.file.Files;
 
 import org.junit.Test;
 
-import com.nitorcreations.willow.download.PreLaunchDownloadAndExtract;
+import com.nitorcreations.willow.deployer.PreLaunchDownloadAndExtract;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
 public class TestExtract {

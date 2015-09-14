@@ -1,11 +1,11 @@
 package com.nitorcreations.willow.download;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.BufferedInputStream;
 import java.io.File;
