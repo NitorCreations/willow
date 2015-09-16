@@ -164,6 +164,10 @@ public class TestPropertyMerge {
     assertEquals("My Cool App", p.getProperty("environments.prod.name"));
     assertEquals("foo", p.getProperty("myprop"));
     assertEquals("bar", p.getProperty("myarr[0]"));
+    assertEquals("http://first", p.getProperty("deployer.download[0].url"));
+    assertEquals("http://second", p.getProperty("deployer.download[1].url"));
+    assertEquals("aaaaaaaaaaaaaaa", p.getProperty("deployer.download[0].md5sum"));
+    assertEquals("bbbbbbbbbbbbbbb", p.getProperty("deployer.download[1].md5sum"));
   }
 
   @Test

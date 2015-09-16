@@ -30,7 +30,7 @@ public class AetherDownloader implements Callable<File> {
   private LocalRepository local;
   private RemoteRepository remote;
   private RepositorySystem system;
-  private final String artifact;
+  private String artifact;
 
   public AetherDownloader() {
     this.artifact = null;
@@ -38,7 +38,10 @@ public class AetherDownloader implements Callable<File> {
 
   public AetherDownloader(Properties properties) {
     setProperties(properties);
-    this.artifact = properties.getProperty("");
+    artifact = properties.getProperty("");
+    if (artifact == null) {
+      artifact = properties.getProperty("artifact");
+    }
   }
   public File downloadArtifact(String artifactCoords) {
     Dependency dependency = new Dependency(new DefaultArtifact(artifactCoords), "runtime");
@@ -81,7 +84,7 @@ public class AetherDownloader implements Callable<File> {
     if (localRepo == null) {
       localRepo = System.getProperty("user.home") + File.separator + ".deployer" + File.separator + "repository";
     }
-    remoteRepo = properties.getProperty(PROPERTY_KEY_REMOTE_REPOSITORY, "http://localhost:5120/maven");
+    remoteRepo = properties.getProperty(PROPERTY_KEY_REMOTE_REPOSITORY, "https://repo1.maven.org/maven2");
     system = GuiceRepositorySystemFactory.newRepositorySystem();
     local = new LocalRepository(localRepo);
     remote = new RemoteRepository.Builder("deployer", "default", remoteRepo).build();

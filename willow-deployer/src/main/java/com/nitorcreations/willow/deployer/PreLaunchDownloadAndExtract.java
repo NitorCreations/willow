@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD;
 import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT;
 import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
 import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_IGNORE_MD5;
@@ -28,6 +29,7 @@ import com.nitorcreations.willow.protocols.property.PropertyUrlConnection;
 import com.nitorcreations.willow.utils.MD5SumInputStream;
 import com.nitorcreations.willow.utils.MergeableProperties;
 
+@SuppressWarnings("PMD.TooManyStaticImports")
 public class PreLaunchDownloadAndExtract implements Callable<Integer> {
   private final MergeableProperties properties;
   private Logger logger = Logger.getLogger(this.getClass().getName());
@@ -41,45 +43,27 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
     ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
     int downloads = 0;
     List<Future<Boolean>> futures = new ArrayList<>();
-    for (int i = 0; null != properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]"); i++) {
-      final Properties downloadProperties = Main.getChildProperties(properties, PROPERTY_KEY_PREFIX_DOWNLOAD_URL + "[" + i + "]", i);
-      Future<Boolean> next = executor.submit(new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws Exception {
-          try {
-            PropertyUrlConnection.currentProperties.set(properties);
-            byte[] md5 = getMd5(downloadProperties);
-            UrlDownloader dwn = new UrlDownloader(downloadProperties, md5);
-            File downloaded = dwn.call();
-            if (downloaded != null && downloaded.exists()) {
-              downloadProperties.putAll(properties);
-              return new Extractor(downloadProperties, downloaded).call();
-            } else {
-              return false;
-            }
-          } finally {
-            PropertyUrlConnection.currentProperties.set(null);
-          }
-        }
-      });
+    int i=0;
+    for (final MergeableProperties downloadProperties : properties.getPrefixedList(PROPERTY_KEY_PREFIX_DOWNLOAD_URL)) {
+      Main.addSharedLaunchAndDownloadProperties(downloadProperties, properties, i);
+      Future<Boolean> next = executor.submit(getUrlCallable(downloadProperties));
+      futures.add(next);
+      i++;
+    }
+    for (final MergeableProperties downloadProperties : properties.getPrefixedList(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT)) {
+      Main.addSharedLaunchAndDownloadProperties(downloadProperties, properties, i);
+      Future<Boolean> next = executor.submit(getArtifactCallable(downloadProperties));
       futures.add(next);
     }
-    for (int i = 0; null != properties.getProperty(PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]"); i++) {
-      final Properties downloadProperties = Main.getChildProperties(properties, PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT + "[" + i + "]", i);
-      Future<Boolean> next = executor.submit(new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws Exception {
-          UrlDownloader dwn = new UrlDownloader(downloadProperties, getMd5(downloadProperties));
-          downloadProperties.putAll(properties);
-          File target = dwn.call();
-          if (target != null) {
-            return new Extractor(downloadProperties, target).call();
-          } else {
-            return false;
-          }
-        }
-      });
-      futures.add(next);
+    for (final MergeableProperties downloadProperties : properties.getPrefixedList(PROPERTY_KEY_PREFIX_DOWNLOAD)) {
+      Main.addSharedLaunchAndDownloadProperties(downloadProperties, properties, i);
+      if (downloadProperties.getProperty("url") != null) {
+        Future<Boolean> next = executor.submit(getUrlCallable(downloadProperties));
+        futures.add(next);
+      } else if (downloadProperties.getProperty("artifact") != null) {
+        Future<Boolean> next = executor.submit(getArtifactCallable(downloadProperties));
+        futures.add(next);
+      }
     }
     boolean failures = false;
     for (Future<Boolean> next : futures) {
@@ -99,6 +83,9 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
   private byte[] getMd5(Properties properties) throws IOException {
     byte[] md5 = null;
     String url = properties.getProperty("");
+    if (url == null) {
+      url = properties.getProperty("url");
+    }
     String urlMd5 = url + ".md5";
     String propMd5 = properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5);
     if (propMd5 != null) {
@@ -119,5 +106,41 @@ public class PreLaunchDownloadAndExtract implements Callable<Integer> {
       }
     }
     return md5;
+  }
+  private Callable<Boolean> getUrlCallable(Properties downloadProperties) {
+    return new Callable<Boolean>() {
+      @Override
+      public Boolean call() throws Exception {
+        try {
+          PropertyUrlConnection.currentProperties.set(properties);
+          byte[] md5 = getMd5(downloadProperties);
+          UrlDownloader dwn = new UrlDownloader(downloadProperties, md5);
+          File downloaded = dwn.call();
+          if (downloaded != null && downloaded.exists()) {
+            downloadProperties.putAll(properties);
+            return new Extractor(downloadProperties, downloaded).call();
+          } else {
+            return false;
+          }
+        } finally {
+          PropertyUrlConnection.currentProperties.set(null);
+        }
+      }
+    };
+  }
+  private Callable<Boolean> getArtifactCallable(Properties downloadProperties) {
+    return new Callable<Boolean>() {
+      @Override
+      public Boolean call() throws Exception {
+        UrlDownloader dwn = new UrlDownloader(downloadProperties, getMd5(downloadProperties));
+        downloadProperties.putAll(properties);
+        File target = dwn.call();
+        if (target != null) {
+          return new Extractor(downloadProperties, target).call();
+        } else {
+          return false;
+        }
+      }
+    };
   }
 }

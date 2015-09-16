@@ -39,7 +39,7 @@ public class UrlDownloader implements Callable<File> {
   private final Properties properties;
   private final byte[] md5;
   private final Logger logger;
-  private final String url;
+  private String url;
   private final String fileName;
 
   public UrlDownloader(Properties properties, byte[] md5) {
@@ -51,6 +51,9 @@ public class UrlDownloader implements Callable<File> {
       this.md5 = null;
     }
     this.url = properties.getProperty("");
+    if (url == null) {
+      this.url = properties.getProperty("url");
+    }
     fileName = getFileName(url);
     logger = Logger.getLogger(fileName);
   }
