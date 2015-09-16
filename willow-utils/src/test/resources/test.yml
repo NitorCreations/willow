@@ -11,9 +11,9 @@ listOfKeyValuePairs:
     secondKey: secondValue
   - key2: value2
     secondKey2: secondValue2
-deployer.download:
-  - url: http://first
-    md5sum: aaaaaaaaaaaaaaa      
-  - url: http://second
-    md5sum: bbbbbbbbbbbbbbb  
-  
+deployer:
+  download:
+    - url: http://first
+      md5sum: aaaaaaaaaaaaaaa
+    - url: http://second
+      md5sum: bbbbbbbbbbbbbbb
