@@ -137,7 +137,7 @@ public class UploadMojo extends AbstractMojo {
     boolean diffUploaded = false;
     if (diffFile != null) {
       try {
-        URLConnection conn = getUrlConnection(deploymentUrl + systemName + "-" + systemVersion + ".zip?diff=" + diffedVersion);
+        URLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion + "?diff=" + diffedVersion);
         conn.setDoOutput(true);
         try (OutputStream out = conn.getOutputStream();
             InputStream in = new FileInputStream(diffFile)) {
@@ -150,7 +150,7 @@ public class UploadMojo extends AbstractMojo {
     }
     if (!diffUploaded) {
       try {
-        URLConnection conn = getUrlConnection(deploymentUrl + systemName + "-" + systemVersion + ".zip");
+        URLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion);
         conn.setDoOutput(true);
         try (OutputStream out = conn.getOutputStream();
             InputStream in = new FileInputStream(target)) {
