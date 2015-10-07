@@ -123,7 +123,7 @@ public class DeploymentServlet extends DefaultServlet {
     }
     File target = new File(new File(new File(root, path[1]), path[2]), ".systempkg");
     if (req.getParameter("diff") != null) {
-      String diffVer = req.getParameter("diff").replaceAll("/|\\\\|(\\.\\.)", ""); 
+      String diffVer = req.getParameter("diff").replaceAll("[^a-zA-Z0-9\\._\\-]", "");
       File diffDir = new File(new File(root, path[1]), diffVer);
       if (diffDir.exists()) {
         File xDelta = new File(target.getParentFile(), ".xdelta-" + diffVer);
