@@ -123,9 +123,10 @@ public class DeploymentServlet extends DefaultServlet {
     }
     File target = new File(new File(new File(root, path[1]), path[2]), ".systempkg");
     if (req.getParameter("diff") != null) {
-      File diffDir = new File(new File(root, path[1]), req.getParameter("diff"));
+      String diffVer = req.getParameter("diff").replaceAll("/|\\\\|(\\.\\.)", ""); 
+      File diffDir = new File(new File(root, path[1]), diffVer);
       if (diffDir.exists()) {
-        File xDelta = new File(target.getParentFile(), ".xdelta-" + req.getParameter("diff"));
+        File xDelta = new File(target.getParentFile(), ".xdelta-" + diffVer);
         File original = new File(diffDir, ".systempkg");
         File parent = xDelta.getParentFile();
         if (!parent.mkdirs() || parent.exists()) {

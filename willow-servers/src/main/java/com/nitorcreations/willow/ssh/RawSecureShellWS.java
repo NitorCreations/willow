@@ -122,7 +122,9 @@ public class RawSecureShellWS extends BasicWillowSocket{
       if (message != null && !message.isEmpty()) {
         if (message.startsWith("{\"cols\":")) {
           Resize resize = new Gson().fromJson(message, Resize.class);
-          shell.setPtySize(resize.cols, resize.rows, resize.getPixelWidth(), resize.getPixelHeight());
+          if (resize != null) {
+            shell.setPtySize(resize.cols, resize.rows, resize.getPixelWidth(), resize.getPixelHeight());
+          }
         } else if (message.startsWith("{\"ping\":")) {
           if (!shell.isConnected()) {
             try {

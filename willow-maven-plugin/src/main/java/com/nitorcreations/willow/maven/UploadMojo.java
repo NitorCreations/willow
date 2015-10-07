@@ -3,28 +3,19 @@ package com.nitorcreations.willow.maven;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.net.Authenticator;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.zip.ZipOutputStream;
-
-import javax.xml.bind.JAXBElement.GlobalScope;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -178,6 +169,9 @@ public class UploadMojo extends AbstractMojo {
   protected URLConnection getUrlConnection(String url) throws IOException, URISyntaxException {
     URI uri = new URI(url);
     List<Proxy> l = ProxyUtils.resolveProxies(System.getProperty("proxy.autoconf"), proxy, uri);
+    if (l == null) {
+      l = new ArrayList<Proxy>();
+    }
     for (org.apache.maven.settings.Proxy next : session.getSettings().getProxies()) {
       Proxy.Type type  = Proxy.Type.HTTP;
       if (next.getProtocol().toUpperCase(Locale.ENGLISH).startsWith("SOCKS")) {

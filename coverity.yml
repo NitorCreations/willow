@@ -31,3 +31,6 @@ triage:
     - action: suppress
       issueKey: d81386cab521971d32515cf315f64570
       comment: NullPointerException in tests would reveal an actual bug
+    - action: suppress
+      issueKey: 7e8b0e1cfe38217a582f3eda4c4b237a
+      comment: Uploading a system deployment zip, not going to end user web page
