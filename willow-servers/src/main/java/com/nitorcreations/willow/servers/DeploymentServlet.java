@@ -35,7 +35,7 @@ import com.nitorcreations.willow.utils.EnumerationIterable;
 import at.spardat.xma.xdelta.JarPatcher;
 
 public class DeploymentServlet extends DefaultServlet {
-  
+  public static final String DISALLOWED_NAME_VERSION_CHARACTERS = "[^a-zA-Z0-9\\._\\-]";
   File root;
   private static final long serialVersionUID = 4507192371045140774L;
   private ServletConfig config;
@@ -59,13 +59,18 @@ public class DeploymentServlet extends DefaultServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
     String[] path = req.getPathInfo().split("/");
-    if (path.length < 3 || !new File(root, path[1]).exists() || !new File(root, path[1]).isDirectory()) {
+    if (path.length < 3) {
+      resp.sendError(404);
+      return;
+    }
+    String systemName = path[1].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
+    if (!new File(root, systemName).exists() || !new File(root, systemName).isDirectory()) {
       resp.sendError(404);
       return;
     }
     if (path[2].equals("diffcandidates")) {
       ArrayList<String> ret = new ArrayList<>();
-      File[] versions = new File(root, path[1]).listFiles();
+      File[] versions = new File(root, systemName).listFiles();
       if (versions != null) {
         Arrays.sort(versions, new Comparator<File>() {
           @Override
@@ -84,7 +89,8 @@ public class DeploymentServlet extends DefaultServlet {
         return;
       }
     }
-    if (!new File(new File(root, path[1]), path[2]).exists()) {
+    String systemVer =  path[2].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
+    if (!new File(new File(root, systemName), systemVer).exists()) {
       resp.sendError(404);
       return;
     }
@@ -103,7 +109,7 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     if (path[3].equals("properties")) {
-      File pkg = new File(new File(new File(root, path[1]), path[2]), "properties");
+      File pkg = new File(new File(new File(root, systemName), systemVer), "properties");
       PropertyServlet propertyServlet = new PropertyServlet();
       propertyServlet.init(new DelegateServletConfig(config, root, pkg));
       propertyServlet.service(req, resp);
@@ -121,9 +127,11 @@ public class DeploymentServlet extends DefaultServlet {
       resp.sendError(404);
       return;
     }
-    File target = new File(new File(new File(root, path[1]), path[2]), ".systempkg");
+    String systemName = path[1].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
+    String systemVer =  path[2].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
+    File target = new File(new File(new File(root, systemName), systemVer), ".systempkg");
     if (req.getParameter("diff") != null) {
-      String diffVer = req.getParameter("diff").replaceAll("[^a-zA-Z0-9\\._\\-]", "");
+      String diffVer = req.getParameter("diff").replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
       File diffDir = new File(new File(root, path[1]), diffVer);
       if (diffDir.exists()) {
         File xDelta = new File(target.getParentFile(), ".xdelta-" + diffVer);
