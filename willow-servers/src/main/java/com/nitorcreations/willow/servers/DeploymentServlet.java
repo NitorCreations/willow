@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -36,21 +37,21 @@ import at.spardat.xma.xdelta.JarPatcher;
 
 public class DeploymentServlet extends DefaultServlet {
   public static final String DISALLOWED_NAME_VERSION_CHARACTERS = "[^a-zA-Z0-9\\._\\-]";
-  File root;
   private static final long serialVersionUID = 4507192371045140774L;
-  private ServletConfig config;
+  private AtomicReference<File> root;
+  private transient ServletConfig config;
   @Override
   public void init(final ServletConfig config) throws ServletException {
     String rootPath = config.getInitParameter("deployment.data.root");
     if (rootPath != null) {
-      root = new File(rootPath).getAbsoluteFile();
+      root.set(new File(rootPath).getAbsoluteFile());
     } else {
-      root = new File(new File(".").getAbsoluteFile(), "deploydata");
+      root.set(new File(new File(".").getAbsoluteFile(), "deploydata"));
     }
     this.config = config;
     ServletConfig delegateConfig;
     try {
-      delegateConfig = new DelegateServletConfig(config, root);
+      delegateConfig = new DelegateServletConfig(config, root.get());
     } catch (MalformedURLException e) {
       throw new ServletException("Failed to initilaize deployment servlet", e);
     }
@@ -64,13 +65,13 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     String systemName = path[1].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-    if (!new File(root, systemName).exists() || !new File(root, systemName).isDirectory()) {
+    if (!new File(root.get(), systemName).exists() || !new File(root.get(), systemName).isDirectory()) {
       resp.sendError(404);
       return;
     }
     if (path[2].equals("diffcandidates")) {
       ArrayList<String> ret = new ArrayList<>();
-      File[] versions = new File(root, systemName).listFiles();
+      File[] versions = new File(root.get(), systemName).listFiles();
       if (versions != null) {
         Arrays.sort(versions, new Comparator<File>() {
           @Override
@@ -90,12 +91,12 @@ public class DeploymentServlet extends DefaultServlet {
       }
     }
     String systemVer =  path[2].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-    if (!new File(new File(root, systemName), systemVer).exists()) {
+    if (!new File(new File(root.get(), systemName), systemVer).exists()) {
       resp.sendError(404);
       return;
     }
     if (path.length == 3 || path[3].isEmpty()) {
-      File pkg = new File(new File(new File(root, path[1]), path[2]), ".systempkg");
+      File pkg = new File(new File(new File(root.get(), systemName), systemVer), ".systempkg");
       if (!pkg.exists()) {
         resp.sendError(404);
         return;
@@ -109,9 +110,9 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     if (path[3].equals("properties")) {
-      File pkg = new File(new File(new File(root, systemName), systemVer), "properties");
+      File pkg = new File(new File(new File(root.get(), systemName), systemVer), "properties");
       PropertyServlet propertyServlet = new PropertyServlet();
-      propertyServlet.init(new DelegateServletConfig(config, root, pkg));
+      propertyServlet.init(new DelegateServletConfig(config, root.get(), pkg));
       propertyServlet.service(req, resp);
       return;
     }
@@ -122,18 +123,25 @@ public class DeploymentServlet extends DefaultServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
       throws ServletException, IOException {
     String[] path = req.getPathInfo().split("/");
-    if (path.length < 3 || !new File(root, path[1]).exists() || !new File(root, path[1]).isDirectory()
-        || path.length > 4 || (path.length > 3 && !path[4].isEmpty())) {
+    if (path.length < 3 || path.length > 4) {
       resp.sendError(404);
       return;
     }
     String systemName = path[1].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
+    if (!new File(root.get(), systemName).exists() || !new File(root.get(), systemName).isDirectory()) {
+      resp.sendError(404);
+      return;
+    }
+    if (path.length > 3 && !path[4].isEmpty()) {
+      resp.sendError(404);
+      return;
+    }
     String systemVer =  path[2].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-    File target = new File(new File(new File(root, systemName), systemVer), ".systempkg");
+    File target = new File(new File(new File(root.get(), systemName), systemVer), ".systempkg");
     if (req.getParameter("diff") != null) {
       String diffVer = req.getParameter("diff").replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-      File diffDir = new File(new File(root, path[1]), diffVer);
-      if (diffDir.exists()) {
+      File diffDir = new File(new File(root.get(), systemName), diffVer);
+      if (diffDir.exists() && diffDir.isDirectory()) {
         File xDelta = new File(target.getParentFile(), ".xdelta-" + diffVer);
         File original = new File(diffDir, ".systempkg");
         File parent = xDelta.getParentFile();
