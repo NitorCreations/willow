@@ -38,7 +38,7 @@ import at.spardat.xma.xdelta.JarPatcher;
 public class DeploymentServlet extends DefaultServlet {
   public static final String DISALLOWED_NAME_VERSION_CHARACTERS = "[^a-zA-Z0-9\\._\\-]";
   private static final long serialVersionUID = 4507192371045140774L;
-  private AtomicReference<File> root;
+  private AtomicReference<File> root = new AtomicReference<>();
   private transient ServletConfig config;
   @Override
   public void init(final ServletConfig config) throws ServletException {
