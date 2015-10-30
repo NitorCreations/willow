@@ -1,4 +1,6 @@
-/*! t3 v 1.2.0*/
+/* */ 
+"format cjs";
+/*! t3 v 1.5.1*/
 /*!
 Copyright 2015 Box, Inc. All rights reserved.
 
@@ -146,6 +148,242 @@ Box.EventTarget = (function() {
 	return EventTarget;
 
 }());
+
+/**
+ * @fileoverview DOM abstraction to use jquery to add and remove event listeners
+ * in T3
+ * @author jdivock
+ */
+
+Box.JQueryDOM = (function() {
+    'use strict';
+
+    return {
+
+		type: 'jquery',
+
+		/**
+		 * Returns the first element that is a descendant of the element
+		 * on which it is invoked that matches the specified group of selectors.
+		 * @param {HTMLElement} root parent element to query off of
+		 * @param {string} selector query string to match on
+		 *
+		 * @returns {HTMLElement} first element found matching query
+		 */
+		query: function(root, selector) {
+			// Aligning with native which returns null if not found
+			return $(root).find(selector)[0] || null;
+		},
+
+		/**
+		 * Returns a non-live NodeList of all elements descended from the
+		 * element on which it is invoked that match the specified group of CSS selectors.
+		 * @param {HTMLElement} root parent element to query off of
+		 * @param {string} selector query string to match on
+		 *
+		 * @returns {Array} elements found matching query
+		 */
+		queryAll: function(root, selector) {
+			return $.makeArray($(root).find(selector));
+		},
+
+		/**
+		 * Adds event listener to element via jquery
+		 * @param {HTMLElement} element Target to attach listener to
+		 * @param {string} type Name of the action to listen for
+		 * @param {function} listener Function to be executed on action
+		 *
+		 * @returns {void}
+		 */
+		on: function(element, type, listener) {
+			$(element).on(type, listener);
+		},
+
+		/**
+		 * Removes event listener to element via jquery
+		 * @param {HTMLElement} element Target to remove listener from
+		 * @param {string} type Name of the action remove listener from
+		 * @param {function} listener Function to be removed from action
+		 *
+		 * @returns {void}
+		 */
+		off: function(element, type, listener) {
+			$(element).off(type, listener);
+		}
+    };
+}());
+
+Box.DOM = Box.JQueryDOM;
+
+/**
+ * @fileoverview An object that encapsulates event delegation wireup for a
+ * DOM element.
+ * @author Box
+ */
+
+Box.DOMEventDelegate = (function() {
+
+	'use strict';
+
+	// Supported events for modules. Only events that bubble properly can be used in T3.
+	var EVENT_TYPES = ['click', 'mouseover', 'mouseout', 'mousedown', 'mouseup',
+			'mouseenter', 'mouseleave', 'keydown', 'keyup', 'submit', 'change',
+			'contextmenu', 'dblclick', 'input', 'focusin', 'focusout'];
+
+
+	/**
+	 * Determines if a given element represents a module.
+	 * @param {HTMLElement} element The element to check.
+	 * @returns {boolean} True if the element represents a module, false if not.
+	 * @private
+	 */
+	function isModuleElement(element) {
+		return element && element.hasAttribute('data-module');
+	}
+
+	/**
+	 * Determines if a given element represents a T3 type.
+	 * @param {HTMLElement} element The element to check.
+	 * @returns {boolean} True if the element represents a T3 type, false if not.
+	 * @private
+	 */
+	function isTypeElement(element) {
+		return element && element.hasAttribute('data-type');
+	}
+
+	/**
+	 * Finds the closest ancestor that of an element that has a data-type
+	 * attribute.
+	 * @param {HTMLElement} element The element to start searching from.
+	 * @returns {HTMLElement} The matching element or null if not found.
+	 */
+	function getNearestTypeElement(element) {
+		var found = isTypeElement(element);
+
+		// We need to check for the existence of 'element' since occasionally we call this on a detached element node.
+		// For example:
+		//  1. event handlers like mouseout may sometimes detach nodes from the DOM
+		//  2. event handlers like mouseleave will still fire on the detached node
+		// Without checking the existence of a parentNode and returning null, we would throw errors
+		while (!found && element && !isModuleElement(element)) {
+			element = element.parentNode;
+			found = isTypeElement(element);
+		}
+
+		return found ? element : null;
+	}
+
+	/**
+	 * Iterates over each supported event type that is also in the handler, applying
+	 * a callback function. This is used to more easily attach/detach all events.
+	 * @param {Object} handler An object with onclick, onmouseover, etc. methods.
+	 * @param {Function} callback The function to call on each event type.
+	 * @param {Object} [thisValue] The value of "this" inside the callback.
+	 * @returns {void}
+	 * @private
+	 */
+	function forEachEventType(handler, callback, thisValue) {
+
+		var i,
+			type;
+
+		for (i = 0; i < EVENT_TYPES.length; i++) {
+			type = EVENT_TYPES[i];
+
+			// only call the callback if the event is on the handler
+			if (handler['on' + type]) {
+				callback.call(thisValue, type);
+			}
+		}
+	}
+
+	/**
+	 * An object that manages events within a single DOM element.
+	 * @param {HTMLElement} element The DOM element to handle events for.
+	 * @param {Object} handler An object containing event handlers such as "onclick".
+	 * @constructor
+	 */
+	function DOMEventDelegate(element, handler) {
+
+		/**
+		 * The DOM element that this object is handling events for.
+		 * @type {HTMLElement}
+		 */
+		this.element = element;
+
+		/**
+		 * Object on which event handlers are available.
+		 * @type {Object}
+		 * @private
+		 */
+		this._handler = handler;
+
+		/**
+		 * Tracks event handlers whose this-value is bound to the correct
+		 * object.
+		 * @type {Object}
+		 * @private
+		 */
+		this._boundHandler = {};
+
+		/**
+		 * Indicates if events have been attached.
+		 * @type {boolean}
+		 * @private
+		 */
+		this._attached = false;
+	}
+
+
+	DOMEventDelegate.prototype = {
+
+		// restore constructor
+		constructor: DOMEventDelegate,
+
+		_handleEvent: function(event) {
+			var targetElement = getNearestTypeElement(event.target),
+				elementType = targetElement ? targetElement.getAttribute('data-type') : '';
+
+			this._handler['on' + event.type](event, targetElement, elementType);
+		},
+
+		/**
+		 * Attaches all event handlers for the DOM element.
+		 * @returns {void}
+		 */
+		attachEvents: function() {
+			if (!this._attached) {
+
+				forEachEventType(this._handler, function(eventType) {
+					var that = this;
+
+					function handleEvent() {
+						that._handleEvent.apply(that, arguments);
+					}
+
+					Box.DOM.on(this.element, eventType, handleEvent);
+
+					this._boundHandler[eventType] = handleEvent;
+				}, this);
+
+				this._attached = true;
+			}
+		},
+
+		/**
+		 * Detaches all event handlers for the DOM element.
+		 * @returns {void}
+		 */
+		detachEvents: function() {
+			forEachEventType(this._handler, function(eventType) {
+				Box.DOM.off(this.element, eventType, this._boundHandler[eventType]);
+			}, this);
+		}
+	};
+
+	return DOMEventDelegate;
+}());
+
 
 /**
  * @fileoverview Contains the Context type which is used by modules to interact
@@ -310,11 +548,6 @@ Box.Application = (function() {
 
 		application = new Box.EventTarget();	// base object for application
 
-	// Supported events for modules. Only events that bubble properly can be used in T3.
-	var eventTypes = ['click', 'mouseover', 'mouseout', 'mousedown', 'mouseup',
-			'mouseenter', 'mouseleave', 'keydown', 'keyup', 'submit', 'change',
-			'contextmenu', 'dblclick', 'input', 'focusin', 'focusout'];
-
 	/**
 	 * Simple implementation of ES6 Object.assign() with just two parameters.
 	 * @param {Object} receiver The object to receive properties
@@ -373,6 +606,7 @@ Box.Application = (function() {
 		globalConfig = {};
 		modules = {};
 		services = {};
+		serviceStack = [];
 		behaviors = {};
 		instances = {};
 		initialized = false;
@@ -459,6 +693,8 @@ Box.Application = (function() {
 						try {
 							return method.apply(this, arguments);
 						} catch (ex) {
+							ex.methodName = methodName;
+							ex.objectName = objectName;
 							ex.name = errorPrefix + ex.name;
 							ex.message = errorPrefix + ex.message;
 							error(ex);
@@ -484,26 +720,6 @@ Box.Application = (function() {
 			return moduleAttribute.split(' ')[0];
 		}
 		return '';
-	}
-
-	/**
-	 * Determines if a given element represents a module.
-	 * @param {HTMLElement} element The element to check.
-	 * @returns {boolean} True if the element represents a module, false if not.
-	 * @private
-	 */
-	function isModuleElement(element) {
-		return element && element.hasAttribute('data-module');
-	}
-
-	/**
-	 * Determines if a given element represents a T3 type.
-	 * @param {HTMLElement} element The element to check.
-	 * @returns {boolean} True if the element represents a T3 type, false if not.
-	 * @private
-	 */
-	function isTypeElement(element) {
-		return element && element.hasAttribute('data-type');
 	}
 
 	/**
@@ -569,17 +785,22 @@ Box.Application = (function() {
 			moduleBehaviorInstances;
 
 		behaviorNames = instanceData.instance.behaviors || [];
+
 		for (i = 0; i < behaviorNames.length; i++) {
+
 			if (!('behaviorInstances' in instanceData)) {
 				instanceData.behaviorInstances = {};
 			}
+
 			moduleBehaviorInstances = instanceData.behaviorInstances;
 			behaviorData = behaviors[behaviorNames[i]];
 
 			if (behaviorData) {
+
 				if (!moduleBehaviorInstances[behaviorNames[i]]) {
 					moduleBehaviorInstances[behaviorNames[i]] = behaviorData.creator(instanceData.context);
 				}
+
 				behaviorInstances.push(moduleBehaviorInstances[behaviorNames[i]]);
 			} else {
 				error(new Error('Behavior "' + behaviorNames[i] + '" not found'));
@@ -590,54 +811,18 @@ Box.Application = (function() {
 	}
 
 	/**
-	 * Finds the closest ancestor that of an element that has a data-type
-	 * attribute.
-	 * @param {HTMLElement} element The element to start searching from.
-	 * @returns {HTMLElement} The matching element or null if not found.
-	 */
-	function getNearestTypeElement(element) {
-		var found = isTypeElement(element);
-
-
-		// We need to check for the existence of 'element' since occasionally we call this on a detached element node.
-		// For example:
-		//  1. event handlers like mouseout may sometimes detach nodes from the DOM
-		//  2. event handlers like mouseleave will still fire on the detached node
-		// Without checking the existence of a parentNode and returning null, we would throw errors
-		while (!found && element && !isModuleElement(element)) {
-			element = element.parentNode;
-			found = isTypeElement(element);
-		}
-
-		return found ? element : null;
-	}
-
-	/**
-	 * Binds a user event to a DOM element with the given handler
-	 * @param {HTMLElement} element DOM element to bind the event to
-	 * @param {string} type Event type (click, mouseover, ...)
-	 * @param {Function[]} handlers Array of event callbacks to be called in that order
-	 * @returns {Function} The event handler
+	 * Creates a new event delegate and sets up its event handlers.
+	 * @param {Array} eventDelegates The array of event delegates to add to.
+	 * @param {HTMLElement} element The HTML element to bind to.
+	 * @param {Object} handler The handler object for the delegate (either the
+	 *		module instance or behavior instance).
+	 * @returns {void}
 	 * @private
 	 */
-	function bindEventType(element, type, handlers) {
-
-		function eventHandler(event) {
-
-			var targetElement = getNearestTypeElement(event.target),
-				elementType = targetElement ? targetElement.getAttribute('data-type') : '';
-
-			for (var i = 0; i < handlers.length; i++) {
-				handlers[i](event, targetElement, elementType);
-			}
-
-			return true;
-		}
-
-		// @NOTE(nzakas): Using jQuery for event normalization
-		$(element).on(type, eventHandler);
-
-		return eventHandler;
+	function createAndBindEventDelegate(eventDelegates, element, handler) {
+		var delegate = new Box.DOMEventDelegate(element, handler);
+		eventDelegates.push(delegate);
+		delegate.attachEvents();
 	}
 
 	/**
@@ -647,34 +832,15 @@ Box.Application = (function() {
 	 * @private
 	 */
 	function bindEventListeners(instanceData) {
-		var i,
-			j,
-			type,
-			eventHandlerName,
-			eventHandlerFunctions,
+		var eventDelegates = instanceData.eventDelegates,
 			moduleBehaviors = getBehaviors(instanceData);
 
-		for (i = 0; i < eventTypes.length; i++) {
-			eventHandlerFunctions = [];
+		// bind the module events
+		createAndBindEventDelegate(eventDelegates, instanceData.element, instanceData.instance);
 
-			type = eventTypes[i];
-			eventHandlerName = 'on' + type;
-
-			// Module's event handler gets called first
-			if (instanceData.instance[eventHandlerName]) {
-				eventHandlerFunctions.push(bind(instanceData.instance[eventHandlerName], instanceData.instance));
-			}
-
-			// And then all of its behaviors in the order they were declared
-			for (j = 0; j < moduleBehaviors.length; j++) {
-				if (moduleBehaviors[j][eventHandlerName]) {
-					eventHandlerFunctions.push(bind(moduleBehaviors[j][eventHandlerName], moduleBehaviors[j]));
-				}
-			}
-
-			if (eventHandlerFunctions.length) {
-				instanceData.eventHandlers[type] = bindEventType(instanceData.element, type, eventHandlerFunctions);
-			}
+		// bind the behavior(s) events
+		for (var i = 0; i < moduleBehaviors.length; i++) {
+			createAndBindEventDelegate(eventDelegates, instanceData.element, moduleBehaviors[i]);
 		}
 	}
 
@@ -685,14 +851,14 @@ Box.Application = (function() {
 	 * @private
 	 */
 	function unbindEventListeners(instanceData) {
-		for (var type in instanceData.eventHandlers) {
-			if (instanceData.eventHandlers.hasOwnProperty(type)) {
-				// @NOTE(nzakas): Using jQuery for event normalization
-				$(instanceData.element).off(type, instanceData.eventHandlers[type]);
-			}
+
+		var eventDelegates = instanceData.eventDelegates;
+
+		for (var i = 0; i < eventDelegates.length; i++) {
+			eventDelegates[i].detachEvents();
 		}
 
-		instanceData.eventHandlers = {};
+		instanceData.eventDelegates = [];
 	}
 
 	/**
@@ -719,7 +885,7 @@ Box.Application = (function() {
 		/**
 		 * Initializes the application
 		 * @param {Object} [params] Configuration object
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		init: function(params) {
 			assign(globalConfig, params || {});
@@ -728,16 +894,19 @@ Box.Application = (function() {
 
 			this.fire('init');
 			initialized = true;
+			return this;
 		},
 
 		/**
 		 * Stops all modules and clears all saved state
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		destroy: function() {
 			this.stopAll(document.documentElement);
 
 			reset();
+
+			return this;
 		},
 
 		//----------------------------------------------------------------------
@@ -749,7 +918,7 @@ Box.Application = (function() {
 		 * If the element doesn't have a data-module attribute, this method
 		 * always returns false.
 		 * @param {HTMLElement} element The element that represents a module.
-		 * @returns {Boolean} True if the module is started, false if not.
+		 * @returns {boolean} True if the module is started, false if not.
 		 */
 		isStarted: function(element) {
 			var instanceData = getInstanceDataByElement(element);
@@ -759,7 +928,7 @@ Box.Application = (function() {
 		/**
 		 * Begins the lifecycle of a module (registers and binds listeners)
 		 * @param {HTMLElement} element DOM element associated with module to be started
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		start: function(element) {
 			var moduleName = getModuleName(element),
@@ -770,7 +939,7 @@ Box.Application = (function() {
 
 			if (!moduleData) {
 				error(new Error('Module type "' + moduleName + '" is not defined.'));
-				return;
+				return this;
 			}
 
 			if (!this.isStarted(element)) {
@@ -795,7 +964,7 @@ Box.Application = (function() {
 					instance: module,
 					context: context,
 					element: element,
-					eventHandlers: {}
+					eventDelegates: []
 				};
 
 				bindEventListeners(instanceData);
@@ -813,12 +982,14 @@ Box.Application = (function() {
 				}
 
 			}
+
+			return this;
 		},
 
 		/**
 		 * Ends the lifecycle of a module (unregisters and unbinds listeners)
 		 * @param {HTMLElement} element DOM element associated with module to be stopped
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		stop: function(element) {
 			var instanceData = getInstanceDataByElement(element);
@@ -827,7 +998,7 @@ Box.Application = (function() {
 
 				if (globalConfig.debug) {
 					error(new Error('Unable to stop module associated with element: ' + element.id));
-					return;
+					return this;
 				}
 
 			} else {
@@ -846,32 +1017,38 @@ Box.Application = (function() {
 
 				delete instances[element.id];
 			}
+
+			return this;
 		},
 
 		/**
 		 * Starts all modules contained within an element
 		 * @param {HTMLElement} root DOM element which contains modules
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		startAll: function(root) {
-			var moduleElements = root.querySelectorAll(MODULE_SELECTOR);
+			var moduleElements = Box.DOM.queryAll(root, MODULE_SELECTOR);
 
 			for (var i = 0, len = moduleElements.length; i < len; i++) {
 				this.start(moduleElements[i]);
 			}
+
+			return this;
 		},
 
 		/**
 		 * Stops all modules contained within an element
 		 * @param {HTMLElement} root DOM element which contains modules
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		stopAll: function(root) {
-			var moduleElements = root.querySelectorAll(MODULE_SELECTOR);
+			var moduleElements = Box.DOM.queryAll(root, MODULE_SELECTOR);
 
 			for (var i = 0, len = moduleElements.length; i < len; i++) {
 				this.stop(moduleElements[i]);
 			}
+
+			return this;
 		},
 
 		//----------------------------------------------------------------------
@@ -882,18 +1059,20 @@ Box.Application = (function() {
 		 * Registers a new module
 		 * @param {string} moduleName Unique module identifier
 		 * @param {Function} creator Factory function used to generate the module
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		addModule: function(moduleName, creator) {
 			if (typeof modules[moduleName] !== 'undefined') {
 				error(new Error('Module ' + moduleName + ' has already been added.'));
-				return;
+				return this;
 			}
 
 			modules[moduleName] = {
 				creator: creator,
 				counter: 1 // increments for each new instance
 			};
+
+			return this;
 		},
 
 		/**
@@ -913,7 +1092,7 @@ Box.Application = (function() {
 
 				if (!instanceData.config) {
 					// <script type="text/x-config"> is used to store JSON data
-					configElement = element.querySelector('script[type="text/x-config"]');
+					configElement = Box.DOM.query(element, 'script[type="text/x-config"]');
 
 					// <script> tag supports .text property
 					if (configElement) {
@@ -945,13 +1124,13 @@ Box.Application = (function() {
 		 * @param {Function} creator Factory function used to generate the service
 		 * @param {Object} [options] Additional options
 		 * @param {string[]} [options.exports] Method names to expose on context and application
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		addService: function(serviceName, creator, options) {
 
 			if (typeof services[serviceName] !== 'undefined') {
 				error(new Error('Service ' + serviceName + ' has already been added.'));
-				return;
+				return this;
 			}
 
 			options = options || {};
@@ -980,14 +1159,14 @@ Box.Application = (function() {
 
 					if (exportedMethodName in this) {
 						error(new Error(exportedMethodName + ' already exists on Application object'));
-						return;
+						return this;
 					} else {
 						this[exportedMethodName] = handler;
 					}
 
 					if (exportedMethodName in Box.Context.prototype) {
 						error(new Error(exportedMethodName + ' already exists on Context prototype'));
-						return;
+						return this;
 					} else {
 						Box.Context.prototype[exportedMethodName] = handler;
 					}
@@ -995,6 +1174,8 @@ Box.Application = (function() {
 					exports.push(exportedMethodName);
 				}
 			}
+
+			return this;
 		},
 
 		/**
@@ -1013,18 +1194,20 @@ Box.Application = (function() {
 		 * Registers a new behavior
 		 * @param {string} behaviorName Unique behavior identifier
 		 * @param {Function} creator Factory function used to generate the behavior
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		addBehavior: function(behaviorName, creator) {
 			if (typeof behaviors[behaviorName] !== 'undefined') {
 				error(new Error('Behavior ' + behaviorName + ' has already been added.'));
-				return;
+				return this;
 			}
 
 			behaviors[behaviorName] = {
 				creator: creator,
 				instance: null
 			};
+
+			return this;
 		},
 
 		//----------------------------------------------------------------------
@@ -1035,7 +1218,7 @@ Box.Application = (function() {
 		 * Broadcasts a message to all registered listeners
 		 * @param {string} name Name of the message
 		 * @param {*} [data] Custom parameters for the message
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		broadcast: function(name, data) {
 			var i,
@@ -1078,6 +1261,8 @@ Box.Application = (function() {
 				message: name,
 				messageData: data
 			});
+
+			return this;
 		},
 
 		//----------------------------------------------------------------------
@@ -1116,15 +1301,16 @@ Box.Application = (function() {
 		/**
 		 * Sets the global configuration data
 		 * @param {Object} config Global configuration object
-		 * @returns {void}
+		 * @returns {Box.Application} The application object.
 		 */
 		setGlobalConfig: function(config) {
 			if (initialized) {
 				error(new Error('Cannot set global configuration after application initialization'));
-				return;
+				return this;
 			}
 
 			assign(globalConfig, config);
+			return this;
 		},
 
 		//----------------------------------------------------------------------
@@ -1142,8 +1328,13 @@ Box.Application = (function() {
 
 }());
 
-	// CommonJS/npm, we want to export Box instead of assigning to global Window
-	if (typeof module === 'object' && typeof module.exports === 'object') {
+	if (typeof define === 'function' && define.amd) {
+		// AMD
+		define('t3', [], function() {
+			return Box;
+		});
+	} else if (typeof module === 'object' && typeof module.exports === 'object') {
+		// CommonJS/npm, we want to export Box instead of assigning to global Window
 		module.exports = Box;
 	} else {
 		// Make sure not to override Box namespace
