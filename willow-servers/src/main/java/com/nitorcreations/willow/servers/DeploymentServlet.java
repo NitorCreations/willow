@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -29,7 +30,9 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
+import com.nitorcreations.willow.download.Extractor;
 import com.nitorcreations.willow.download.StreamPumper;
+import com.nitorcreations.willow.properties.PropertyKeys;
 import com.nitorcreations.willow.servlets.PropertyServlet;
 import com.nitorcreations.willow.utils.EnumerationIterable;
 
@@ -38,7 +41,8 @@ import at.spardat.xma.xdelta.JarPatcher;
 public class DeploymentServlet extends DefaultServlet {
   public static final String DISALLOWED_NAME_VERSION_CHARACTERS = "[^a-zA-Z0-9\\._\\-]";
   private static final long serialVersionUID = 4507192371045140774L;
-  private AtomicReference<File> root = new AtomicReference<>();
+  private AtomicReference<File> root = new AtomicReference<>()
+       ;
   private transient ServletConfig config;
   @Override
   public void init(final ServletConfig config) throws ServletException {
@@ -66,8 +70,11 @@ public class DeploymentServlet extends DefaultServlet {
     }
     String systemName = path[1].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
     if (!new File(root.get(), systemName).exists() || !new File(root.get(), systemName).isDirectory()) {
-      resp.sendError(404);
-      return;
+      try (OutputStream out = resp.getOutputStream()) {
+        resp.setStatus(200);
+        out.write("[]".getBytes(StandardCharsets.UTF_8));
+        return;
+      }
     }
     if (path[2].equals("diffcandidates")) {
       ArrayList<String> ret = new ArrayList<>();
@@ -137,7 +144,8 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     String systemVer =  path[2].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-    File target = new File(new File(new File(root.get(), systemName), systemVer), ".systempkg");
+    File versionRoot = new File(new File(root.get(), systemName), systemVer);
+    File target = new File(versionRoot, ".systempkg");
     if (req.getParameter("diff") != null) {
       String diffVer = req.getParameter("diff").replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
       File diffDir = new File(new File(root.get(), systemName), diffVer);
@@ -155,7 +163,7 @@ public class DeploymentServlet extends DefaultServlet {
         }
         JarPatcher.main(new String[]{ xDelta.getAbsolutePath(), target.getAbsolutePath(), original.getAbsolutePath()});
       } else {
-        resp.sendError(404);
+        resp.sendError(404, "Diff original not found");
         return;
       }
     }
@@ -163,6 +171,26 @@ public class DeploymentServlet extends DefaultServlet {
         OutputStream out = new FileOutputStream(target)) {
       new StreamPumper(in, out).run();
     }
+    Properties extAll = new Properties();
+    extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB, "**");
+    extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, versionRoot.getAbsolutePath());
+    Extractor extract = new Extractor(extAll, target);
+    extract.call();
+    File props = new File(versionRoot, "properties.jar");
+    File propertiesRoot = new File(versionRoot, "properties");
+    if (!props.exists()) {
+      resp.sendError(503, "properties.jar not found");
+      return;
+    }
+    if (!propertiesRoot.mkdirs() || !(propertiesRoot.exists() && propertiesRoot.isDirectory())) {
+      resp.sendError(503, "Failed to create properties extract root");
+      return;
+      
+    }
+    extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, propertiesRoot.getAbsolutePath());
+    Extractor extractProps = new Extractor(extAll, props);
+    extractProps.call();
+    resp.setStatus(200);
   }
   private static class DelegateServletConfig implements ServletConfig {
     private final ServletConfig config;

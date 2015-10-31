@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URI;
@@ -21,6 +22,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.execution.MavenSession;
@@ -32,7 +34,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.repository.LocalArtifactRepository;
 import org.apache.maven.repository.RepositorySystem;
 
 import com.google.gson.Gson;
@@ -49,7 +50,7 @@ public class UploadMojo extends AbstractMojo {
 
 
   @Parameter(defaultValue = "${localRepository}", required = true, readonly = true)
-  protected  LocalArtifactRepository local;
+  protected  ArtifactRepository local;
 
   @Parameter( required = true)
   protected Dependency propertiesArtifact;
@@ -128,7 +129,8 @@ public class UploadMojo extends AbstractMojo {
     boolean diffUploaded = false;
     if (diffFile != null) {
       try {
-        URLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion + "?diff=" + diffedVersion);
+        HttpURLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion + "?diff=" + diffedVersion);
+        conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         try (OutputStream out = conn.getOutputStream();
             InputStream in = new FileInputStream(diffFile)) {
@@ -141,7 +143,8 @@ public class UploadMojo extends AbstractMojo {
     }
     if (!diffUploaded) {
       try {
-        URLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion);
+        HttpURLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion);
+        conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         try (OutputStream out = conn.getOutputStream();
             InputStream in = new FileInputStream(target)) {
@@ -166,7 +169,7 @@ public class UploadMojo extends AbstractMojo {
       zipFile.closeArchiveEntry();
     }
   }
-  protected URLConnection getUrlConnection(String url) throws IOException, URISyntaxException {
+  protected HttpURLConnection getUrlConnection(String url) throws IOException, URISyntaxException {
     URI uri = new URI(url);
     List<Proxy> l = ProxyUtils.resolveProxies(System.getProperty("proxy.autoconf"), proxy, uri);
     if (l == null) {
@@ -179,6 +182,6 @@ public class UploadMojo extends AbstractMojo {
       }
       l.add(new Proxy(type, new InetSocketAddress(next.getHost(), next.getPort())));
     }
-    return ProxyUtils.openConnection(uri, l);
+    return (HttpURLConnection) ProxyUtils.openConnection(uri, l);
   }
 }

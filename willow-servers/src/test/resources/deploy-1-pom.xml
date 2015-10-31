@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.nitorcreations.it</groupId>
+  <artifactId>properties</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <description>A simple IT verifying the basic use case.</description>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.nitorcreations</groupId>
+        <artifactId>willow-maven-plugin</artifactId>
+        <version>${env.WILLOW_VERSION}</version>
+        <configuration>
+          <deploymentUrl>http://localhost:${env.DEPLOYER_PORT}/deploy</deploymentUrl>
+          <propertiesArtifact>
+            <groupId>com.nitorcreations.it</groupId>
+            <artifactId>properties</artifactId>
+            <version>${project.version}</version>
+          </propertiesArtifact>
+          <artifacts>
+            <artifact>
+              <groupId>com.nitorcreations</groupId>
+              <artifactId>willow-messages</artifactId>
+              <version>${env.WILLOW_VERSION}</version>
+            </artifact>
+          </artifacts>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
