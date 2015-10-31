@@ -22,6 +22,7 @@ public class EndUserServletModule extends ServletModule {
     configureSession();
     configurePoll();
     configureVelocity();
+    configureUi();
     configureDefault();
   }
   protected void configureHealthCheck() {
@@ -41,6 +42,15 @@ public class EndUserServletModule extends ServletModule {
   }
   protected void configurePoll() {
     serve("/poll/*").with(ServerSidePollingServlet.class);
+  }
+  protected void configureUi() {
+    Map<String, String> conf = new HashMap<>();
+    conf.put("preserveHost", "true");
+    if (System.getProperty("willow.backend.port") != null) {
+      conf.put("backend.port", System.getProperty("willow.backend.port"));
+    }
+    serve("/ui/*").with(BackendProxyServlet.class, conf);
+    serve("/uiws/*").with(BackendWebsocketServlet.class, conf);
   }
   protected void configureVelocity() {
     serve("*.html").with(VelocityServlet.class);
