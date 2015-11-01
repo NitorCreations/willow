@@ -92,13 +92,7 @@ public class BackendProxySocket extends BasicWillowSocket {
   }
   @OnWebSocketClose
   public void onClose(int statusCode, String reason) {
-    log.log(Level.INFO, "Backend websocket closed - " + reason + "(" + statusCode + ")");
-    if (session.isOpen()) {
-      session.close();
-    }
-    if (wsSession.isOpen()) {
-      wsSession.close();
-    }
+    super.onClose(statusCode, reason);
   }
 
   @WebSocket

@@ -1,5 +1,6 @@
 package com.nitorcreations.willow.servers;
 
+import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +10,7 @@ import org.eclipse.jetty.proxy.ProxyServlet;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings(value={"SE_TRANSIENT_FIELD_NOT_RESTORED"}, justification="port set from init")
+@Singleton
 public class BackendProxyServlet extends ProxyServlet {
   private static final long serialVersionUID = 2325695145956031830L;
   private transient String port = "5122";
