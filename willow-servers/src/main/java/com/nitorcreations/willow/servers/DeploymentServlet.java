@@ -27,7 +27,6 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 
 import com.google.gson.Gson;
 import com.nitorcreations.willow.download.Extractor;
-import com.nitorcreations.willow.download.StreamPumper;
 import com.nitorcreations.willow.properties.PropertyKeys;
 import com.nitorcreations.willow.servlets.PropertyServlet;
 import com.nitorcreations.willow.utils.EnumerationIterable;
