@@ -86,6 +86,7 @@ public class UploadMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException, MojoFailureException {
     File dir = Paths.get(local.getBasedir(), project.getGroupId().replaceAll("\\.", "/")).toFile();
     File target = new File(dir, systemName + "-" + systemVersion + ".zip");
+    getLog().info("Creating system archive: " + target.getAbsolutePath());
     try (ZipArchiveOutputStream zipFile = new ZipArchiveOutputStream(new FileOutputStream(target));){
       copyEntry("properties.jar", propertiesArtifact, zipFile);
       for (Dependency next : artifacts) {
@@ -111,10 +112,11 @@ public class UploadMojo extends AbstractMojo {
     if (versions != null && versions.length > 0) {
       for (String nextVersion : versions) {
         String nextVersionFileName = systemName + "-" + nextVersion + ".zip";
-        File nextFile = new File(nextVersionFileName);
+        File nextFile = new File(dir, nextVersionFileName);
         if (nextFile.exists()) {
           diffedVersion = nextVersion;
           diffFile = new File(dir, systemName + "-" + nextVersion + "-" + systemVersion + ".xd");
+          getLog().info("Creating diff: " + diffFile.getAbsolutePath());
           try (ZipArchiveOutputStream output = new ZipArchiveOutputStream(new FileOutputStream(diffFile))) {
             new JarDelta().computeDelta(nextFile.getName(), target.getName(), 
                 new ZipFile(nextFile), new ZipFile(target), output);
@@ -131,11 +133,16 @@ public class UploadMojo extends AbstractMojo {
       try {
         HttpURLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion + "?diff=" + diffedVersion);
         conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/zip");
         conn.setDoOutput(true);
         try (OutputStream out = conn.getOutputStream();
             InputStream in = new FileInputStream(diffFile)) {
+          getLog().info("Uploading diff: " + diffFile.getAbsolutePath());
           FileUtil.copy(in, out);
           diffUploaded = true;
+          if (conn.getResponseCode() >= 300) {
+            throw new MojoExecutionException("Failed to upload system package");
+          }
         }
       } catch (URISyntaxException | IOException e) {
         getLog().warn("Failed to upload diff", e);
@@ -145,14 +152,19 @@ public class UploadMojo extends AbstractMojo {
       try {
         HttpURLConnection conn = getUrlConnection(deploymentUrl + systemName + "/" + systemVersion);
         conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/zip");
         conn.setDoOutput(true);
         try (OutputStream out = conn.getOutputStream();
             InputStream in = new FileInputStream(target)) {
+          getLog().info("Uploading full system: " + target.getAbsolutePath());
           FileUtil.copy(in, out);
           diffUploaded = true;
+          if (conn.getResponseCode() >= 300) {
+            throw new MojoExecutionException("Failed to upload system package");
+          }
         }
       } catch (URISyntaxException | IOException e) {
-        getLog().warn("Failed to upload release", e);
+        throw new MojoExecutionException("Failed to upload release", e);
       }
     }
   }

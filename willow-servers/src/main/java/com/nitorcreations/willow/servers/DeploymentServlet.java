@@ -1,13 +1,11 @@
 package com.nitorcreations.willow.servers;
 
-import java.awt.List;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -28,21 +26,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.servlet.DefaultServlet;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonWriter;
 import com.nitorcreations.willow.download.Extractor;
 import com.nitorcreations.willow.download.StreamPumper;
 import com.nitorcreations.willow.properties.PropertyKeys;
 import com.nitorcreations.willow.servlets.PropertyServlet;
 import com.nitorcreations.willow.utils.EnumerationIterable;
+import com.nitorcreations.willow.utils.FileUtil;
 
 import at.spardat.xma.xdelta.JarPatcher;
 
 public class DeploymentServlet extends DefaultServlet {
   public static final String DISALLOWED_NAME_VERSION_CHARACTERS = "[^a-zA-Z0-9\\._\\-]";
+  public static final String SYSTEMPKG_NAME = ".systempkg.zip";
   private static final long serialVersionUID = 4507192371045140774L;
-  private AtomicReference<File> root = new AtomicReference<>()
-       ;
+  private AtomicReference<File> root = new AtomicReference<>();
   private transient ServletConfig config;
   @Override
   public void init(final ServletConfig config) throws ServletException {
@@ -72,7 +69,9 @@ public class DeploymentServlet extends DefaultServlet {
     if (!new File(root.get(), systemName).exists() || !new File(root.get(), systemName).isDirectory()) {
       try (OutputStream out = resp.getOutputStream()) {
         resp.setStatus(200);
+        resp.setContentType("application/json");
         out.write("[]".getBytes(StandardCharsets.UTF_8));
+        out.flush();
         return;
       }
     }
@@ -83,7 +82,7 @@ public class DeploymentServlet extends DefaultServlet {
         Arrays.sort(versions, new Comparator<File>() {
           @Override
           public int compare(File o1, File o2) {
-            return (int)(o1.lastModified() - o2.lastModified());
+            return (int)(o2.lastModified() - o1.lastModified());
           }
         });
         for (File next : versions) {
@@ -92,8 +91,10 @@ public class DeploymentServlet extends DefaultServlet {
       }
       try (OutputStream out = resp.getOutputStream()) {
         resp.setStatus(200);
-        new Gson().toJson(ret, TypeToken.get(List.class).getType(), 
-            new JsonWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8)));
+        String output = new Gson().toJson(ret);
+        resp.setContentType("application/json");
+        out.write(output.getBytes(StandardCharsets.UTF_8));
+        out.flush();
         return;
       }
     }
@@ -103,7 +104,7 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     if (path.length == 3 || path[3].isEmpty()) {
-      File pkg = new File(new File(new File(root.get(), systemName), systemVer), ".systempkg");
+      File pkg = new File(new File(new File(root.get(), systemName), systemVer), SYSTEMPKG_NAME);
       if (!pkg.exists()) {
         resp.sendError(404);
         return;
@@ -135,7 +136,8 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     String systemName = path[1].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-    if (!new File(root.get(), systemName).exists() || !new File(root.get(), systemName).isDirectory()) {
+    File systemRoot = new File(root.get(), systemName);
+    if (!(systemRoot.mkdirs() || systemRoot.exists())) {
       resp.sendError(404);
       return;
     }
@@ -144,32 +146,36 @@ public class DeploymentServlet extends DefaultServlet {
       return;
     }
     String systemVer =  path[2].replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-    File versionRoot = new File(new File(root.get(), systemName), systemVer);
-    File target = new File(versionRoot, ".systempkg");
+    File versionRoot = new File(systemRoot, systemVer);
+    if (!(versionRoot.mkdirs() || versionRoot.exists())) {
+      resp.sendError(404);
+      return;
+    }
+    File target = new File(versionRoot, SYSTEMPKG_NAME);
     if (req.getParameter("diff") != null) {
       String diffVer = req.getParameter("diff").replaceAll(DISALLOWED_NAME_VERSION_CHARACTERS, "");
-      File diffDir = new File(new File(root.get(), systemName), diffVer);
+      File diffDir = new File(systemRoot, diffVer);
       if (diffDir.exists() && diffDir.isDirectory()) {
-        File xDelta = new File(target.getParentFile(), ".xdelta-" + diffVer);
-        File original = new File(diffDir, ".systempkg");
-        File parent = xDelta.getParentFile();
-        if (!parent.mkdirs() || parent.exists()) {
-          resp.sendError(503);
+        File xDelta = new File(versionRoot, ".xdelta-" + diffVer);
+        File original = new File(diffDir, SYSTEMPKG_NAME);
+        if (!original.exists()) {
+          resp.sendError(404, "Diff original not found");
           return;
         }
         try (InputStream in = req.getInputStream();
             OutputStream out = new FileOutputStream(xDelta)) {
-          new StreamPumper(in, out).run();
+          FileUtil.copy(in, out);
         }
         JarPatcher.main(new String[]{ xDelta.getAbsolutePath(), target.getAbsolutePath(), original.getAbsolutePath()});
       } else {
-        resp.sendError(404, "Diff original not found");
+        resp.sendError(404, "Diff version not found" );
         return;
       }
-    }
-    try (InputStream in = req.getInputStream();
-        OutputStream out = new FileOutputStream(target)) {
-      new StreamPumper(in, out).run();
+    } else {
+      try (InputStream in = req.getInputStream();
+          OutputStream out = new FileOutputStream(target)) {
+        FileUtil.copy(in, out);
+      }
     }
     Properties extAll = new Properties();
     extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB, "**");

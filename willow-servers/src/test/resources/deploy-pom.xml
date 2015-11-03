@@ -28,6 +28,9 @@
               <version>${env.WILLOW_VERSION}</version>
             </artifact>
           </artifacts>
+          <prefixes>
+            <prefix>file:./target/test-classes/target/classes/</prefix>
+          </prefixes>
         </configuration>
       </plugin>
     </plugins>
