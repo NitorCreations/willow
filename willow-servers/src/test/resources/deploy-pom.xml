@@ -24,7 +24,7 @@
           <artifacts>
             <artifact>
               <groupId>com.nitorcreations</groupId>
-              <artifactId>willow-messages</artifactId>
+              <artifactId>willow-utils</artifactId>
               <version>${env.WILLOW_VERSION}</version>
             </artifact>
           </artifacts>

@@ -90,7 +90,11 @@ public class UploadMojo extends AbstractMojo {
     try (ZipArchiveOutputStream zipFile = new ZipArchiveOutputStream(new FileOutputStream(target));){
       copyEntry("properties.jar", propertiesArtifact, zipFile);
       for (Dependency next : artifacts) {
-        copyEntry(next.getArtifactId() + ".jar", next, zipFile);
+        String nextName = next.getArtifactId();
+        if (next.getClassifier() != null && !next.getClassifier().isEmpty()) {
+          nextName += "-" + next.getClassifier();
+        }
+        copyEntry(nextName +".jar", next, zipFile);
       }
     } catch (IOException e) {
       throw new MojoExecutionException("Failed to create zip file" ,e);
@@ -176,6 +180,9 @@ public class UploadMojo extends AbstractMojo {
     req.setArtifact(nextArtifact);
     ArtifactResolutionResult resolved = repoSystem.resolve(req);
     File nextFile = resolved.getArtifacts().iterator().next().getFile();
+    if (nextFile == null || !nextFile.exists()) {
+      throw new IOException(dependency.toString() + " not found");
+    }
     try (FileInputStream in = new FileInputStream(nextFile)) {
       FileUtil.copy(in, zipFile);
       zipFile.closeArchiveEntry();
