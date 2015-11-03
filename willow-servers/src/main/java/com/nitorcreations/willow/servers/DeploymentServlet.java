@@ -113,7 +113,7 @@ public class DeploymentServlet extends DefaultServlet {
       resp.setContentType("application/zip");
       try (FileInputStream in = new FileInputStream(pkg);
           OutputStream out = resp.getOutputStream()) {
-        new StreamPumper(in, out).run();
+        FileUtil.copy(in, out);
       }
       return;
     }
