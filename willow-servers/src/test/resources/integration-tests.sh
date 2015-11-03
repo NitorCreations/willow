@@ -56,7 +56,7 @@ TEST_RETURN=$?
 
 TEST_STR=$(date | md5sum | cut -d" " -f1)
 export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven1.exec"
-mvn $REPO -f target/test-classes/deploy-pom.xml clean install com.nitorcreations:willow-maven-plugin:upload
+mvn $REPO -B -e -f target/test-classes/deploy-pom.xml clean install willow:upload
 TEST_RETURN=$(($TEST_RETURN + $?))
 if ! [ -r target/metrics/deploydata/properties/1.0-SNAPSHOT.$BUILD_NUMBER/properties/root.properties ]; then
   echo "Test system properties not found"
@@ -65,14 +65,14 @@ fi
 export BUILD_NUMBER=$(($BUILD_NUMBER + 1))
 export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven2.exec"
 echo "integration1=$TEST_STR" >> target/test-classes/src/main/resources/root.properties
-mvn $REPO -f target/test-classes/deploy-pom.xml clean install com.nitorcreations:willow-maven-plugin:upload
+mvn $REPO -B -e -f target/test-classes/deploy-pom.xml clean install willow:upload
 TEST_RETURN=$(($TEST_RETURN + $?))
 if ! grep "integration1=$TEST_STR" target/metrics/deploydata/properties/1.0-SNAPSHOT.$BUILD_NUMBER/properties/root.properties > /dev/null; then
   echo "Test system updated properties not found"
   TEST_RETURN=$(($TEST_RETURN + 1))
 fi
 export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven3.exec"
-mvn $REPO -f target/test-classes/deploy-pom.xml com.nitorcreations:willow-maven-plugin:properties
+mvn $REPO -B -e -f target/test-classes/deploy-pom.xml willow:properties
 TEST_RETURN=$(($TEST_RETURN + $?))
 if ! grep "integration1=$TEST_STR" target/test-classes/target/application.properties > /dev/null; then
   echo "Properties merge failed"
