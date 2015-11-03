@@ -42,7 +42,7 @@ chmod 600 src/test/resources/id_rsa
 ssh-add src/test/resources/id_rsa
 rm ~/.sincedb_*
 
-export WILLOW_VERSION=$(xpath -q -e '/project/parent/version/text()' pom.xml)
+export WILLOW_VERSION=$(grep '<version>' pom.xml  | head -1 | awk -F'<|>' '{ print $3 }')
 
 JACOCO_PREFIX="-javaagent:target/jacoco-agent.jar=jmx=true,destfile=target/"
 export W_JAVA_OPTS="-Denduser.port=$SERVER_PORT -Ddeployer.port=$DEPLOYER_PORT "$JACOCO_PREFIX"willow-deployer/run-its.exec"
