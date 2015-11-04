@@ -28,6 +28,13 @@
               <version>${env.WILLOW_VERSION}</version>
             </artifact>
           </artifacts>
+          <downloads>
+            <download>
+              <url>https://download.elasticsearch.org/logstash/logstash/logstash-1.4.2.tar.gz</url>
+              <md5>6e6be734392e8c7d6d55e23d0bd8d2b3</md5>
+              <finalName>logstash.tar.gz</finalName>
+            </download>
+          </downloads>
           <prefixes>
             <prefix>file:./target/test-classes/target/classes/</prefix>
           </prefixes>

@@ -1,5 +1,12 @@
 package com.nitorcreations.willow.maven;
 
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_WORKDIR;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,11 +19,17 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLConnection;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Filter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -37,8 +50,11 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 
 import com.google.gson.Gson;
+import com.nitorcreations.willow.download.UrlDownloader;
 import com.nitorcreations.willow.utils.FileUtil;
+import com.nitorcreations.willow.utils.MavenFormatter;
 import com.nitorcreations.willow.utils.ProxyUtils;
+import com.nitorcreations.willow.utils.SimpleFormatter;
 
 import at.spardat.xma.xdelta.JarDelta;
 
@@ -55,12 +71,12 @@ public class UploadMojo extends AbstractMojo {
   @Parameter( required = true)
   protected Dependency propertiesArtifact;
 
-  @Parameter( required = true)
+  @Parameter( required = false)
   protected List<Dependency> artifacts;
 
-  @Parameter
-  protected List<String> urls;
-
+  @Parameter( required = false, readonly = true )
+  protected List<Properties> downloads;
+  
   @Parameter(defaultValue = "${project.artifactId}", required = true)
   protected String systemName;
 
@@ -81,7 +97,10 @@ public class UploadMojo extends AbstractMojo {
 
   @Parameter(required = false)
   protected String proxy;
-  
+  public UploadMojo() {
+    super();
+    setupLogging();
+  }
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
     File dir = Paths.get(local.getBasedir(), project.getGroupId().replaceAll("\\.", "/")).toFile();
@@ -95,6 +114,24 @@ public class UploadMojo extends AbstractMojo {
           nextName += "-" + next.getClassifier();
         }
         copyEntry(nextName +".jar", next, zipFile);
+      }
+      for (Properties next : downloads) {
+        String url = next.getProperty("url");
+        if (url == null) {
+          throw new MojoExecutionException("Download with no url: " + next.toString());
+        }
+        String name = next.getProperty("finalName");
+        if (name == null) {
+          name = FileUtil.getFileName(url); 
+        }
+        File dwnldTarget = new File(dir, name);
+        next.setProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_FINALPATH, dwnldTarget.getAbsolutePath());
+        dwnldTarget = new UrlDownloader(next, FileUtil.getMd5(next)).call();
+        zipFile.putArchiveEntry(new ZipArchiveEntry(name));
+        try (FileInputStream in = new FileInputStream(dwnldTarget)) {
+          FileUtil.copy(in, zipFile);
+          zipFile.closeArchiveEntry();
+        }
       }
     } catch (IOException e) {
       throw new MojoExecutionException("Failed to create zip file" ,e);
@@ -202,5 +239,21 @@ public class UploadMojo extends AbstractMojo {
       l.add(new Proxy(type, new InetSocketAddress(next.getHost(), next.getPort())));
     }
     return (HttpURLConnection) ProxyUtils.openConnection(uri, l);
+  }
+  public void setupLogging() {
+    Logger rootLogger = Logger.getLogger("");
+    for (Handler nextHandler : rootLogger.getHandlers()) {
+      rootLogger.removeHandler(nextHandler);
+    }
+    Handler console = new ConsoleHandler();
+    console.setFormatter(new MavenFormatter());
+    rootLogger.addHandler(console);
+    if (getLog().isDebugEnabled()) {
+      console.setLevel(Level.FINER);
+      rootLogger.setLevel(Level.FINER);
+    } else {
+      console.setLevel(Level.INFO);
+      rootLogger.setLevel(Level.INFO);
+    }
   }
 }

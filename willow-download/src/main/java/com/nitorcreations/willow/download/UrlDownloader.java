@@ -38,7 +38,7 @@ import com.nitorcreations.willow.utils.ProxyUtils;
 public class UrlDownloader implements Callable<File> {
   private final Properties properties;
   private final byte[] md5;
-  private final Logger logger;
+  private Logger logger;
   private String url;
   private final String fileName;
 
