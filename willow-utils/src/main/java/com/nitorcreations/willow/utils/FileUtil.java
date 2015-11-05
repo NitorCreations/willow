@@ -88,10 +88,10 @@ public class FileUtil {
     }
   }
 
-  public static long filterStream(InputStream original, FileOutputStream out, Map<String, String> replaceTokens) throws IOException {
+  public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens) throws IOException {
     return filterStream(original, out, replaceTokens, null);
   }
-  public static long filterStream(InputStream original, FileOutputStream out, Map<String, String> replaceTokens, DownloadLogger logger) throws IOException {
+  public static long filterStream(InputStream original, OutputStream out, Map<String, String> replaceTokens, DownloadLogger logger) throws IOException {
     try (InputStream in = new ReplaceTokensInputStream(new BufferedInputStream(original, BUFFER_LEN), StandardCharsets.UTF_8, replaceTokens, AT_DELIMITERS, CURLY_DELIMITERS)) {
       long length = copyByteByByte(in, out, logger);
       return length;

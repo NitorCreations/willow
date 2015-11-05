@@ -179,6 +179,8 @@ public class DeploymentServlet extends DefaultServlet {
     Properties extAll = new Properties();
     extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_GLOB, "**");
     extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRACT_ROOT, versionRoot.getAbsolutePath());
+    extAll.setProperty(PropertyKeys.PROPERTY_KEY_SUFFIX_WRITE_MD5SUMS, "true");
+
     Extractor extract = new Extractor(extAll, target);
     extract.call();
     File props = new File(versionRoot, "properties.jar");

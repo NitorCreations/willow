@@ -48,6 +48,7 @@ public interface PropertyKeys {
   String PROPERTY_KEY_SUFFIX_EXTRACT_GLOB = "extract.glob";
   String PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB = "extract.skip.glob";
   String PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB = "extract.filter.glob";
+  String PROPERTY_KEY_SUFFIX_WRITE_MD5SUMS = "extract.writemd5sums";
   String PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE = "extract.overwrite";
   String PROPERTY_KEY_SUFFIX_PROXYAUTOCONF = "proxyautoconf";
   String PROPERTY_KEY_SUFFIX_PROXY = "proxy";

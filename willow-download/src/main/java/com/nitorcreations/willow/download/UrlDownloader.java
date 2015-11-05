@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -145,7 +144,7 @@ public class UrlDownloader implements Callable<File> {
           }
         }
         break;
-      } catch (URISyntaxException | IOException | NoSuchAlgorithmException e) {
+      } catch (URISyntaxException | IOException e) {
         tryNo++;
         target = null;
         logger.log(Level.WARNING, "Failed to download and extract " + url, e);
