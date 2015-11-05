@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ public class TestObfuscatorTool {
     System.setProperty("decrypt", "");
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     PrintStream oldOut = System.out;
-    System.setOut(new PrintStream(output));
+    System.setOut(new PrintStream(output, true, "UTF-8"));
     ObfuscatorTool.main(new String[] {"target/test-classes/root.properties.encrypted", "target/test-classes/root.properties.key" });
     System.setOut(oldOut);
     byte[] outputData = output.toByteArray();
