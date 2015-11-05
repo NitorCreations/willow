@@ -27,7 +27,9 @@
   </developers>
   <modules>
     <module>willow-sshagent-auth</module>
+    <module>willow-download</module>
     <module>willow-messages</module>
+    <module>willow-process-control</module>
     <module>willow-deployer</module>
     <module>willow-utils</module>
     <module>willow-simulate</module>
@@ -538,6 +540,11 @@
         <groupId>javax.mail</groupId>
         <artifactId>mail</artifactId>
         <version>1.4.7</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nitorcreations</groupId>
+        <artifactId>javaxdelta</artifactId>
+        <version>1.5</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>

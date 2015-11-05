@@ -31,7 +31,10 @@ public class PropertiesMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     ensureDir(outputFile.getParentFile());
     if (prefixes == null || prefixes.length == 0) {
-      prefixes = new String[] { "file:" + project.getBuild().getTestOutputDirectory() + "/" };
+      prefixes = new String[] { "file:" + project.getBuild().getTestOutputDirectory() + "/",
+          "file:" + project.getBuild().getDirectory() + "/",
+          "file:" + project.getBuild().getOutputDirectory() + "/",
+          };
     }
     Properties tmp = new Properties();
     tmp.putAll(project.getProperties());

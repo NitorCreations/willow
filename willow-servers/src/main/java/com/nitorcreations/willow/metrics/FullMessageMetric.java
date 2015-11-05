@@ -33,8 +33,10 @@ public abstract class FullMessageMetric<T extends AbstractMessage, R> extends Ab
     Gson gson = new Gson();
     for (SearchHit next : response.getHits().getHits()) {
       T nextMsg = gson.fromJson(next.getSourceAsString(), type);
-      nextMsg.setId(next.getId());
-      rawData.put(nextMsg.getTimestamp(), nextMsg);
+      if (nextMsg != null) {
+        nextMsg.setId(next.getId());
+        rawData.put(nextMsg.getTimestamp(), nextMsg);
+      }
     }
   }
   @Override

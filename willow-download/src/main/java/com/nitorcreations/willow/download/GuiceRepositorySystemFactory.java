@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer.download;
+package com.nitorcreations.willow.download;
 
 import org.eclipse.aether.RepositorySystem;
 

@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_HOME;
+import static com.nitorcreations.willow.properties.PropertyKeys.ENV_DEPLOYER_HOME;
 
 import java.io.File;
 import java.io.FileOutputStream;

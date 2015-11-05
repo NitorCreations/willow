@@ -31,3 +31,15 @@ triage:
     - action: suppress
       issueKey: d81386cab521971d32515cf315f64570
       comment: NullPointerException in tests would reveal an actual bug
+    - action: suppress
+      issueKey: 7e8b0e1cfe38217a582f3eda4c4b237a
+      comment: Uploading a system deployment zip, not going to end user web page
+    - action: suppress
+      issueKey: 7e7a9e142e99d544c2d287820761f85c
+      comment: Input sanitized properly
+    - action: suppress
+      issueKey: f00b2996b0a8216184f17d9b6d837bd5
+      comment: Input sanitized properly
+    - action: suppress
+      issueKey: b5621d072fed5b277e0be7abf256dcdb
+      comment: The input is put into a file and not to the response. Additionaly uploading requires authentication.

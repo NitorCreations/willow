@@ -1,28 +1,28 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_DOWNLOAD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP_OLD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_DOWNLOAD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_START;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PREFIX_STATISTICS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_METHOD;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_SUFFIX_TIMEOUT;
-import static com.nitorcreations.willow.deployer.PropertyKeys.PROPERTY_KEY_WORKDIR;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DEPLOYER_NAME;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DOWNLOAD_DIRECTORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_DOWNLOAD_RETRIES;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_LAUNCH_URLS;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_DOWNLOAD_URL;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_LAUNCH;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_POST_DOWNLOAD;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_POST_START;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_POST_STOP_OLD;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_DOWNLOAD;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_PRE_START;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_SHUTDOWN;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PREFIX_STATISTICS;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_PROPERTIES_FILENAME;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_REMOTE_REPOSITORY;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_STATISTICS_FLUSHINTERVAL;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_STATISTICS_URI;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_METHOD;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_SUFFIX_TIMEOUT;
+import static com.nitorcreations.willow.properties.PropertyKeys.PROPERTY_KEY_WORKDIR;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,7 +60,6 @@ import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.ptql.ProcessQuery;
 import org.hyperic.sigar.ptql.ProcessQueryFactory;
 
-import com.nitorcreations.willow.deployer.download.PreLaunchDownloadAndExtract;
 import com.nitorcreations.willow.deployer.launch.LaunchCallback;
 import com.nitorcreations.willow.deployer.launch.LaunchMethod;
 import com.nitorcreations.willow.deployer.statistics.StatisticsSender;
@@ -224,7 +223,8 @@ public class Main extends DeployerControl implements MainMBean {
         usage(e);
       }
       if (launcher != null) {
-        MergeableProperties childProps = getChildProperties(launchProps, PROPERTY_KEY_PREFIX_LAUNCH, i);
+        MergeableProperties childProps = launchProps.getPrefixed(PROPERTY_KEY_PREFIX_LAUNCH);
+        addSharedLaunchAndDownloadProperties(childProps, launchProps, i);
         launcher.setProperties(childProps, new LaunchCallback() {
           @Override
           public void postStop() throws Exception {
@@ -393,13 +393,14 @@ public class Main extends DeployerControl implements MainMBean {
     Exception lastThrown = null;
     for (MergeableProperties properties : propertiesList) {
       int i = 0;
-      for (String nextMethod : properties.getArrayProperty(hookPrefix, "." + PROPERTY_KEY_SUFFIX_METHOD)) {
+      for (MergeableProperties next : properties.getPrefixedList(hookPrefix)) {
         LaunchMethod launcher = null;
+        String nextMethod = next.getProperty(PROPERTY_KEY_SUFFIX_METHOD);
+        if (nextMethod == null) continue;
         launcher = injector.getInstance(LaunchMethod.TYPE.valueOf(nextMethod.toUpperCase(Locale.ENGLISH)).getLauncher());
-        String prefix = hookPrefix + "[" + i + "]";
-        MergeableProperties childProps = getChildProperties(properties, prefix, i);
-        launcher.setProperties(childProps);
-        long timeout = Long.parseLong(properties.getProperty(prefix + PROPERTY_KEY_SUFFIX_TIMEOUT, "30"));
+        addSharedLaunchAndDownloadProperties(next, properties, i);
+        launcher.setProperties(next);
+        long timeout = Long.parseLong(next.getProperty(PROPERTY_KEY_SUFFIX_TIMEOUT, "30"));
         Future<Integer> ret = executor.submit(launcher);
         try {
           int retVal = ret.get(timeout, TimeUnit.SECONDS);
@@ -423,28 +424,23 @@ public class Main extends DeployerControl implements MainMBean {
       throw lastThrown;
     }
   }
-  public static MergeableProperties getChildProperties(MergeableProperties launchProps, String prefix, int index) {
-    MergeableProperties childProps = launchProps.getPrefixed(prefix);
+  public static void addSharedLaunchAndDownloadProperties(MergeableProperties childProps, MergeableProperties launchProps, int index) {
     childProps.setProperty(PROPERTY_KEY_DEPLOYER_LAUNCH_INDEX, Integer.toString(index));
     for (String next : new String[] {
-        PROPERTY_KEY_DEPLOYER_NAME,
-        PROPERTY_KEY_WORKDIR,
-        PROPERTY_KEY_DOWNLOAD_DIRECTORY,
-        PROPERTY_KEY_DOWNLOAD_RETRIES,
+        PROPERTY_KEY_DEPLOYER_NAME, PROPERTY_KEY_WORKDIR,
+        PROPERTY_KEY_DOWNLOAD_DIRECTORY, PROPERTY_KEY_DOWNLOAD_RETRIES,
         PROPERTY_KEY_REMOTE_REPOSITORY }) {
       if (launchProps.get(next) != null) {
         childProps.setProperty(next, launchProps.getProperty(next));
       }
     }
-    String extraEnvKeys = launchProps.getProperty(prefix + "." + PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS);
+    String extraEnvKeys = childProps.getProperty(PROPERTY_KEY_SUFFIX_EXTRA_ENV_KEYS);
     if (extraEnvKeys != null) {
       for (String nextKey : extraEnvKeys.split(",")) {
         String key = nextKey.trim();
         childProps.put(key, launchProps.getProperty(key,  ""));
       }
     }
-
-    return childProps;
   }
 
   @Override

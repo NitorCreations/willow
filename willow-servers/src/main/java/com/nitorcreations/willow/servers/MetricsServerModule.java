@@ -27,6 +27,7 @@ public class MetricsServerModule extends AbstractModule {
     bind(PropertyServlet.class).asEagerSingleton();
     bind(DefaultServlet.class).asEagerSingleton();
     bind(VelocityServlet.class).asEagerSingleton();
+    bind(DeploymentServlet.class).asEagerSingleton();
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
     bind(ScheduledExecutorService.class).toInstance(Executors.newScheduledThreadPool(10));
     if ("dev".equals(env)) {

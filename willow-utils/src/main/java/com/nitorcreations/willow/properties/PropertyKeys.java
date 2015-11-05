@@ -1,4 +1,4 @@
-package com.nitorcreations.willow.deployer;
+package com.nitorcreations.willow.properties;
 
 @SuppressWarnings("PMD.UnusedModifier")
 public interface PropertyKeys {
@@ -23,6 +23,7 @@ public interface PropertyKeys {
   String PROPERTY_KEY_PREFIX_POST_STOP_OLD = "deployer.post.stop.old";
   String PROPERTY_KEY_PREFIX_POST_DOWNLOAD = "deployer.post.download";
   String PROPERTY_KEY_PREFIX_PRE_DOWNLOAD = "deployer.pre.download";
+  String PROPERTY_KEY_PREFIX_DOWNLOAD = "deployer.download";
   String PROPERTY_KEY_PREFIX_DOWNLOAD_URL = "deployer.download.url";
   String PROPERTY_KEY_PREFIX_DOWNLOAD_ARTIFACT = "deployer.download.artifact";
   String PROPERTY_KEY_SUFFIX_METHOD = "method";
@@ -47,6 +48,7 @@ public interface PropertyKeys {
   String PROPERTY_KEY_SUFFIX_EXTRACT_GLOB = "extract.glob";
   String PROPERTY_KEY_SUFFIX_EXTRACT_SKIP_GLOB = "extract.skip.glob";
   String PROPERTY_KEY_SUFFIX_EXTRACT_FILTER_GLOB = "extract.filter.glob";
+  String PROPERTY_KEY_SUFFIX_WRITE_MD5SUMS = "extract.writemd5sums";
   String PROPERTY_KEY_SUFFIX_EXTRACT_OVERWRITE = "extract.overwrite";
   String PROPERTY_KEY_SUFFIX_PROXYAUTOCONF = "proxyautoconf";
   String PROPERTY_KEY_SUFFIX_PROXY = "proxy";

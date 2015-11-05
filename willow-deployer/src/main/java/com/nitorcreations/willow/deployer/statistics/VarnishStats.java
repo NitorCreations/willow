@@ -15,7 +15,7 @@ import javax.inject.Named;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.nitorcreations.willow.deployer.download.StreamPumper;
+import com.nitorcreations.willow.download.StreamPumper;
 import com.nitorcreations.willow.messages.LongStatisticsMessage;
 
 @Named("varnish")

@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.deployer;
 
-import static com.nitorcreations.willow.deployer.PropertyKeys.ENV_DEPLOYER_NAME;
+import static com.nitorcreations.willow.properties.PropertyKeys.ENV_DEPLOYER_NAME;
 
 import java.util.ArrayList;
 import java.util.List;

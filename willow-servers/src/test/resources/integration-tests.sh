@@ -34,9 +34,17 @@ if [ -z "$SSH_AUTH_SOCK" ]; then
   export SSH_AUTH_SOCK
   AGENT_STARTED="true"
 fi
+if [ -z "$BUILD_NUMBER" ]; then
+  export BUILD_NUMBER=1
+fi
+if [ -d ../.repository ]; then
+  REPO="-Dmaven.repo.local=$(cd .. && pwd -P)/.repository"
+fi
 chmod 600 src/test/resources/id_rsa
 ssh-add src/test/resources/id_rsa
 rm ~/.sincedb_*
+
+export WILLOW_VERSION=$(grep '<version>' pom.xml  | head -1 | awk -F'<|>' '{ print $3 }')
 
 JACOCO_PREFIX="-javaagent:target/jacoco-agent.jar=jmx=true,destfile=target/"
 export W_JAVA_OPTS="-Denduser.port=$SERVER_PORT -Ddeployer.port=$DEPLOYER_PORT "$JACOCO_PREFIX"willow-deployer/run-its.exec"
@@ -45,6 +53,31 @@ START=$(($(date +%s) * 1000 - 15000))
 wait_for_data
 casperjs test --verbose --no-colors --concise --home=http://localhost:$SERVER_PORT src/test/casperjs/suites
 TEST_RETURN=$?
+
+TEST_STR=$(date | md5sum | cut -d" " -f1)
+export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven1.exec"
+mvn $REPO -B -e -f target/test-classes/deploy-pom.xml clean install willow:upload
+TEST_RETURN=$(($TEST_RETURN + $?))
+if ! [ -r target/metrics/deploydata/properties/1.0-SNAPSHOT.$BUILD_NUMBER/properties/root.properties ]; then
+  echo "Test system properties not found"
+  TEST_RETURN=$(($TEST_RETURN + 1))
+fi
+export BUILD_NUMBER=$(($BUILD_NUMBER + 1))
+export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven2.exec"
+echo "integration1=$TEST_STR" >> target/test-classes/src/main/resources/root.properties
+mvn $REPO -B -e -f target/test-classes/deploy-pom.xml clean install willow:upload
+TEST_RETURN=$(($TEST_RETURN + $?))
+if ! grep "integration1=$TEST_STR" target/metrics/deploydata/properties/1.0-SNAPSHOT.$BUILD_NUMBER/properties/root.properties > /dev/null; then
+  echo "Test system updated properties not found"
+  TEST_RETURN=$(($TEST_RETURN + 1))
+fi
+export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven3.exec"
+mvn $REPO -B -e -f target/test-classes/deploy-pom.xml willow:properties
+TEST_RETURN=$(($TEST_RETURN + $?))
+if ! grep "integration1=$TEST_STR" target/test-classes/target/application.properties > /dev/null; then
+  echo "Properties merge failed"
+  TEST_RETURN=$(($TEST_RETURN + 1))
+fi
 
 export W_JAVA_OPTS=$JACOCO_PREFIX"willow-deployer/status.exec"
 $DEPLOYER status integration-test

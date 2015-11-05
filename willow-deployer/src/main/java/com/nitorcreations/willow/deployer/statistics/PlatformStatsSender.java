@@ -20,6 +20,7 @@ import org.hyperic.sigar.NetStat;
 import org.hyperic.sigar.OperatingSystem;
 import org.hyperic.sigar.ProcStat;
 import org.hyperic.sigar.SigarException;
+import org.hyperic.sigar.SigarPermissionDeniedException;
 import org.hyperic.sigar.SigarProxy;
 
 import com.nitorcreations.willow.messages.CPU;
@@ -144,8 +145,12 @@ public class PlatformStatsSender extends AbstractStatisticsSender {
           FileSystem fileSystem = fileSystems[i];
           dStat[i] = new DiskUsage();
           if (fileSystem.getType() != FileSystem.TYPE_CDROM && fileSystem.getType() != FileSystem.TYPE_NETWORK) {
-            FileSystemUsage next = sigar.getMountedFileSystemUsage(fileSystem.getDirName());
-            PropertyUtils.copyProperties(dStat[i], next);
+            try {
+              FileSystemUsage next = sigar.getMountedFileSystemUsage(fileSystem.getDirName());
+              PropertyUtils.copyProperties(dStat[i], next);
+            } catch (SigarPermissionDeniedException spde) {
+              logger.log(Level.FINE, "Permission denied for file system " + fileSystem.getDirName(), spde);
+            }
           }
           dStat[i].setName(fileSystem.getDirName());
         }

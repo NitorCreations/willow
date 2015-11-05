@@ -48,8 +48,21 @@
       <version>3.0.22</version>
     </dependency>
     <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.nitorcreations</groupId>
+      <artifactId>javaxdelta</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.nitorcreations</groupId>
       <artifactId>willow-utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.nitorcreations</groupId>
+      <artifactId>willow-download</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

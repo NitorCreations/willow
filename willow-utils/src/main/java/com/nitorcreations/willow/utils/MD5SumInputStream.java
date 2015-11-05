@@ -12,8 +12,15 @@ import java.security.NoSuchAlgorithmException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class MD5SumInputStream extends DigestInputStream {
-  public MD5SumInputStream(final InputStream stream) throws NoSuchAlgorithmException {
-    super(stream, MessageDigest.getInstance("MD5"));
+  public MD5SumInputStream(final InputStream stream) {
+    super(stream, getMD5Digest());
+  }
+  public static MessageDigest getMD5Digest() {
+    try {
+      return MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("MD5 message digest not available", e);
+    }
   }
   public byte[] digest() {
     return getMessageDigest().digest();

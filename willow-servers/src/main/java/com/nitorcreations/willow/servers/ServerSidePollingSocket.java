@@ -87,12 +87,14 @@ public class ServerSidePollingSocket extends BasicWillowSocket {
   public void messageReceived(Session session, String message) {
     try {
       MetricConfig conf = gson.fromJson(message, MetricConfig.class);
-      if (conf.getId() == null || conf.getId().isEmpty()) {
-        conf.setId(UUID.randomUUID().toString());
+      if (conf != null) {
+        if (conf.getId() == null || conf.getId().isEmpty()) {
+          conf.setId(UUID.randomUUID().toString());
+        }
+        PollTask task = new PollTask(session, conf);
+        ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 0, conf.getStep(), TimeUnit.MILLISECONDS);
+        pollers.add(handle);
       }
-      PollTask task = new PollTask(session, conf);
-      ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 0, conf.getStep(), TimeUnit.MILLISECONDS);
-      pollers.add(handle);
     } catch (Exception e) {
       log.log(Level.INFO, "Failed to schedule task", e);
     }

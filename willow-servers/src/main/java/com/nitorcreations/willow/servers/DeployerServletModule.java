@@ -11,5 +11,6 @@ public class DeployerServletModule extends ServletModule {
     serve("/launchproperties/*").with(PropertyServlet.class);
     serve("/statistics/*").with(StatisticsServlet.class);
     serve("/poll-internal/*").with(ServerSidePollingServlet.class);
+    serve("/deploy/*").with(DeploymentServlet.class);
   }
 }
