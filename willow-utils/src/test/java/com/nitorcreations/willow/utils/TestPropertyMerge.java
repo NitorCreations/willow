@@ -203,5 +203,11 @@ public class TestPropertyMerge {
     assertEquals("ptql", r.getProperty("deployer.statistics[5]"));
     assertEquals("State.Name.eq=java,Args.*.eq=com.nitorcreations.willow.deployer.Main", r.getProperty("deployer.statistics[5].query"));
   }
+  @Test
+  public void testDisallowEval() {
+    MergeableProperties p = new MergeableProperties(false);
+    p.merge("file:./target/test-classes/root.properties?target.id=env_test&node-group.id=appservers&node.id=appserver&component.id=webfront");
+    assertEquals("<script>(self.get('test.scripting.value')-2).toPrecision(1)</script><script>(10+21).toPrecision(2)</script>", p.getProperty("test.scripting"));
+  }
   
 }

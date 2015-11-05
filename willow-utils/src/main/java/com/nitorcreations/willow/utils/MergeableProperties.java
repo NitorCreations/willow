@@ -69,10 +69,7 @@ public class MergeableProperties extends Properties implements Cloneable {
   }
 
   public MergeableProperties(boolean allowScripts) {
-    super();
-    defaults = new Properties();
-    prefixes = new String[] { "classpath:" };
-    this.allowScripts = allowScripts;
+    this(new Properties(), new LinkedHashMap<>(), allowScripts, "classpath:");
   }
 
   public MergeableProperties() {
@@ -102,8 +99,19 @@ public class MergeableProperties extends Properties implements Cloneable {
   private boolean pathEndsWith(String name, String suffix) {
     try {
       URI uri = new URI(name);
-      return uri.getPath().endsWith(suffix);
-    } catch (URISyntaxException e) {
+      String path = uri.getPath();
+      if (path != null) {
+        return path.endsWith(suffix);
+      } else {
+        URL url = new URL(name);
+        path = url.getPath();
+        if (path != null) {
+          return path.endsWith(suffix);
+        } else {
+          return false;
+        }
+      }
+    } catch (URISyntaxException | MalformedURLException e) {
       return false;
     }
   }
@@ -144,6 +152,7 @@ public class MergeableProperties extends Properties implements Cloneable {
   }
 
   private String evaluate(String replace, boolean allowEval) {
+    if (!allowEval || !this.allowScripts) return replace;
     Matcher m = SCRIPT_REGEX.matcher(replace);
     StringBuffer ret = new StringBuffer();
     int end = 0;
@@ -151,11 +160,7 @@ public class MergeableProperties extends Properties implements Cloneable {
     while (m.find()) {
       ret.append(m.group(1));
       try {
-        if (allowEval) {
           ret.append(engine.eval(m.group(3)));
-        } else {
-          ret.append(m.group(3));
-        }
       } catch (ScriptException e) {
         ret.append(m.group(2));
         log.log(Level.INFO, "Failed to execute javascript", e);
