@@ -54,6 +54,9 @@ wait_for_data
 casperjs test --verbose --no-colors --concise --home=http://localhost:$SERVER_PORT src/test/casperjs/suites
 TEST_RETURN=$?
 
+java -Dwillow.port=$SERVER_PORT -cp target/test-classes/:target/willow-servers-$WILLOW_VERSION-uber.jar com.nitorcreations.willow.servers.test.ExampleEchoServer
+TEST_RETURN=$(($TEST_RETURN + $?))
+
 TEST_STR=$(date | md5sum | cut -d" " -f1)
 export MAVEN_OPTS=$JACOCO_PREFIX"willow-deployer/maven1.exec"
 mvn $REPO -B -e -f target/test-classes/deploy-pom.xml clean install willow:upload
