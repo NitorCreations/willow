@@ -3,6 +3,7 @@ package com.nitorcreations.willow.servers;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,6 +30,7 @@ public class BackendProxySocket extends BasicWillowSocket {
   private transient WebSocketClient client;
   private transient URI uri;
   private Session wsSession;
+  private Future<Session> connectFuture;
   @Override
   @OnWebSocketConnect
   public void onConnect(Session session) {
@@ -56,10 +58,10 @@ public class BackendProxySocket extends BasicWillowSocket {
     client.setConnectTimeout(2000);
     client.setStopTimeout(5000);
     ClientUpgradeRequest request = new ClientUpgradeRequest();
-    Future<Session> future = client.connect(new ClientWebsocket(), uri, request);
+    connectFuture = client.connect(new ClientWebsocket(), uri, request);
     log.info(String.format("Connecting to : %s", uri));
     try {
-      wsSession = future.get();
+      wsSession = connectFuture.get();
     } catch (Exception e) {
       log.log(Level.INFO, "Exception while trying to connect", e);
       try {
@@ -71,8 +73,24 @@ public class BackendProxySocket extends BasicWillowSocket {
     }
   }
   @OnWebSocketMessage
-  public void onMessage(String message) {
-    if (wsSession.isOpen()) {
+  public void onText(Session session, String message) throws IOException
+  {
+    if (!session.isOpen())
+    {
+      log.warning("Session is closed");
+      return;
+    }
+    if (wsSession == null) {
+      try {
+        while (connectFuture == null) {
+          Thread.sleep(100);
+        }
+        wsSession = connectFuture.get();
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
+    }
+    if (wsSession != null && wsSession.isOpen()) {
       try {
         wsSession.getRemote().sendString(message);
       } catch (IOException e) {
@@ -81,7 +99,11 @@ public class BackendProxySocket extends BasicWillowSocket {
     }
   }
   @OnWebSocketMessage
-  public void onMessage(byte buf[], int offset, int length) {
+  public void onBinary(Session session, byte buf[], int offset, int length) throws IOException {
+    if (!session.isOpen())  {
+      log.warning("Session is closed");
+      return;
+    }
     if (wsSession.isOpen()) {
       try {
         wsSession.getRemote().sendBytes(ByteBuffer.wrap(buf, offset, length));
@@ -96,9 +118,9 @@ public class BackendProxySocket extends BasicWillowSocket {
   }
 
   @WebSocket
-  private class ClientWebsocket {
+  public class ClientWebsocket {
     @OnWebSocketMessage
-    public void onMessage(String message) {
+    public void onText(String message) {
       if (session.isOpen()) {
         try {
           session.getRemote().sendString(message);
@@ -108,7 +130,7 @@ public class BackendProxySocket extends BasicWillowSocket {
       }
     }
     @OnWebSocketMessage
-    public void onMessage(byte buf[], int offset, int length) {
+    public void onBinary(byte buf[], int offset, int length) {
       if (session.isOpen()) {
         try {
           session.getRemote().sendBytes(ByteBuffer.wrap(buf, offset, length));
