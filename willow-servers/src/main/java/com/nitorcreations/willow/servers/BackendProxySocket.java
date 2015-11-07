@@ -87,7 +87,7 @@ public class BackendProxySocket extends BasicWillowSocket {
         }
         wsSession = connectFuture.get();
       } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+        log.log(Level.WARNING, "Failed to connect to backend websocket", e);
       }
     }
     if (wsSession != null && wsSession.isOpen()) {
