@@ -46,3 +46,9 @@ triage:
     - action: suppress
       issueKey: 39f35957828ae77800ce37b8813357d3
       comment: Not cryptography, but verifying downloaded data
+    - action: suppress
+      issueKey: b56e67826256ede3c2b3a09a87c59352
+      comment: Test tool communicates success via exit codes
+    - action: suppress
+      issueKey: 0d5c043b88a2d594b552644c13e6166e
+      comment: Test tool communicates success via exit codes
