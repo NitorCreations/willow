@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -30,6 +31,8 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+
+import jdk.internal.perf.Perf;
 
 import org.eclipse.sisu.space.SpaceModule;
 import org.eclipse.sisu.space.URLClassSpace;
@@ -54,12 +57,14 @@ import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import sun.management.ConnectorAddressLink;
+import sun.management.counter.Counter;
+import sun.management.counter.perf.PerfInstrumentation;
 
 @SuppressWarnings("restriction")
 @SuppressFBWarnings(value={"DM_EXIT"}, justification="cli tool needs to convey correct exit code")
 public class DeployerControl {
   protected final static Logger log = Logger.getLogger("deployer");
+  private static final String CONNECTOR_ADDRESS_COUNTER = "sun.management.JMXConnectorServer.address";
   @Inject
   protected ExecutorService executor;
   @Inject
@@ -80,6 +85,8 @@ public class DeployerControl {
     }
   }
 
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   public void stopOld(String[] args) {
     if (args.length < 1) {
       usage("At least one argument expected: {name}");
@@ -153,10 +160,10 @@ public class DeployerControl {
   }
   public static JMXConnector getJMXConnector(long pid) {
     try {
-      String address = ConnectorAddressLink.importFrom((int) pid);
+      String address = importFrom((int) pid);
       if (address == null) {
         startManagementAgent(pid);
-        address = ConnectorAddressLink.importFrom((int) pid);
+        address = importFrom((int) pid);
       }
       JMXServiceURL jmxUrl = new JMXServiceURL(address);
       return JMXConnectorFactory.connect(jmxUrl);
@@ -165,6 +172,24 @@ public class DeployerControl {
       return null;
     }
   }
+
+  private static String importFrom(int vmid) throws IOException {
+    Perf perf = Perf.getPerf();
+    ByteBuffer bb;
+    try {
+      bb = perf.attach(vmid, "r");
+    } catch (IllegalArgumentException iae) {
+      throw new IOException(iae.getMessage());
+    }
+    List<Counter> ll = new PerfInstrumentation(bb).findByPattern(CONNECTOR_ADDRESS_COUNTER);
+    if (ll != null && ll.size() > 0 && ll.get(0) != null && ll.get(0).getValue() != null &&
+        ll.get(0).getValue() instanceof String) {
+      return (String)ll.get(0).getValue();
+    } else {
+      return null;
+    }
+  }
+
   private static void startManagementAgent(long pid) throws IOException, AttachNotSupportedException, AgentLoadException, AgentInitializationException {
     VirtualMachine attachedVm = VirtualMachine.attach("" + pid);
     String home = attachedVm.getSystemProperties().getProperty("java.home");

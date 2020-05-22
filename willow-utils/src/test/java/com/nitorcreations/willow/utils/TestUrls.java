@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.utils;
 
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
+import static com.nitorcreations.willow.utils.FileUtil.printHexBinary;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;

@@ -125,8 +125,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -213,42 +213,22 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>com.github.ryanholdren</groupId>
+        <artifactId>resourcecompressor</artifactId>
+        <version>2017-06-24</version>
         <executions>
           <execution>
-            <id>compress-statics</id>
             <phase>compile</phase>
             <goals>
-              <goal>run</goal>
+              <goal>compress</goal>
             </goals>
             <configuration>
-              <target>
-                <pathconvert pathsep=";" property="compress.jsfiles">
-                  <fileset dir="${project.build.directory}/classes/webapp/styles" includes="**/*.css"/>
-                  <fileset dir="${project.build.directory}/classes/webapp/scripts" includes="**/*.js"/>
-                  <fileset dir="${project.build.directory}/classes/webapp/images" includes="**/*.svg"/>
-                </pathconvert>
-                <script language="javascript"><![CDATA[
-                  try {
-                    load("nashorn:mozilla_compat.js");
-                  } catch (e) { }
-                  importPackage(java.io);
-                  //get the property and convert to an array
-                  var files = project.getProperty("compress.jsfiles").split(";"),
-                    gzip, i,len;
-                  for (i=0, len=files.length; i < len; i++) {
-                    //create new gzip task
-                    gzip = project.createTask("gzip");
-                    gzip.setSrc(new File(files[i]));
-                    gzip.setDestfile(new File(files[i].replaceAll(".js$", ".js.gz").replaceAll(".css$", ".css.gz").replaceAll(".svg$", ".svg.gz")));
-                    gzip.perform();
-                  }
-                  ]]>
-                </script>
-              </target>
+              <directory>${project.build.directory}/classes/webapp</directory>
+              <filter>(\.css|\.js|\.svg)$</filter>
+              <compression>FASTEST</compression>
             </configuration>
           </execution>
-        </executions>
+        </executions>        
       </plugin>
       <plugin>
         <groupId>com.github.searls</groupId>

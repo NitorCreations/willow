@@ -14,17 +14,53 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.bind.DatatypeConverter;
 
 
 public class FileUtil {
   public static final int BUFFER_LEN = 8 * 1024;
   public static final Logger logger = Logger.getLogger(FileUtil.class.getCanonicalName());
+  private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+
+  public static String printBase64Binary(byte[] data) {
+    return Base64.getEncoder().encodeToString(data);
+  }
+
+  public static byte[] parseBase64Binary(String data) {
+    return Base64.getDecoder().decode(data.trim());
+  }
+
+  public static byte[] parseHexBinary(String hex) {
+    if (hex == null || hex.length() == 0) {
+      return new byte[0];
+    }
+    int l = hex.length();
+    byte[] data = new byte[l/2];
+    for (int i = 0; i < l; i += 2) {
+        data[i/2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                             + Character.digit(hex.charAt(i+1), 16));
+    }
+    return data;
+  }
+
+  public static String printHexBinary(byte[] bytes) {
+    if (bytes == null || bytes.length == 0) {
+      return "";
+    }
+    char[] hexChars = new char[bytes.length * 2];
+    for (int j = 0; j < bytes.length; j++) {
+        int v = bytes[j] & 0xFF;
+        hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+        hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+    }
+    return new String(hexChars);
+  }
+
   public static synchronized boolean createDir(File dir) {
     if (dir == null) {
       return false;
@@ -155,7 +191,7 @@ public class FileUtil {
     String urlMd5 = url + ".md5";
     String propMd5 = properties.getProperty(PROPERTY_KEY_SUFFIX_DOWNLOAD_MD5);
     if (propMd5 != null) {
-        md5 = DatatypeConverter.parseHexBinary(propMd5);
+        md5 = parseHexBinary(propMd5);
         if (md5 == null || md5.length < 16) {
           logger.warning("Invalid md5sum: " + propMd5);
           return null;

@@ -1,6 +1,7 @@
 package com.nitorcreations.willow.sshagentauth;
 
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static java.util.Base64.getEncoder;
+import static java.util.Base64.getDecoder;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -23,6 +24,12 @@ public class SSHUtil {
 
   private static SSHAuthentication sshAuthentication;
 
+  public static String printBase64Binary(byte[] data) {
+    return getEncoder().encodeToString(data);
+  }
+  public static byte[] parseBase64Binary(String data) {
+    return getDecoder().decode(data.trim());
+  }
   private static synchronized void initializeSshAuthentication() {
     if (sshAuthentication != null) {
         return;

@@ -38,8 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.DatatypeConverter;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -113,6 +112,8 @@ public class Extractor implements Callable<Boolean> {
     }
   }
 
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   private int extractFile(File archive, Map<String, String> replaceTokens, File root, String extractGlob, String skipExtractGlob, String filterGlob, boolean overwrite, boolean writeMd5Sums) throws CompressorException, IOException, ArchiveException {
     Set<PathMatcher> extractMatchers = getGlobMatchers(extractGlob);
     Set<PathMatcher> skipMatchers = getGlobMatchers(skipExtractGlob);
@@ -193,6 +194,7 @@ public class Extractor implements Callable<Boolean> {
     }
     return permissions;
   }
+
   @SuppressWarnings("PMD.CollapsibleIfStatements")
   private void extractEntry(InputStream is, ArchiveEntry entry, File destFolder, Map<String, String> replaceTokens, Set<PathMatcher> extractMatchers, Set<PathMatcher> skipMatchers, Set<PathMatcher> filterMatchers, boolean overwrite, boolean writeMd5Sums) throws IOException {
     File dest = new File(destFolder, entry.getName()).getCanonicalFile();
@@ -213,7 +215,7 @@ public class Extractor implements Callable<Boolean> {
           if (out instanceof MD5SumOutputStream) {
             byte[] digest = ((MD5SumOutputStream)out).digest();
             File md5file = new File(dest.getParentFile(), dest.getName() + ".md5");
-            String md5str = DatatypeConverter.printHexBinary(digest);
+            String md5str = FileUtil.printHexBinary(digest);
             try (OutputStream mdout = new FileOutputStream(md5file)) {
               mdout.write((md5str + "  " + dest.getName() + "\n").getBytes(StandardCharsets.UTF_8));
               mdout.flush();

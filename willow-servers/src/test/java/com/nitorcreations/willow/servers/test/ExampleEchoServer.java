@@ -28,8 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.bind.DatatypeConverter;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ResourceHandler;
@@ -47,14 +46,13 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import com.nitorcreations.willow.utils.FileUtil;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Example server using WebSocket and core Jetty Handlers
  */
 public class ExampleEchoServer {
   static String willowPort = System.getProperty("willow.port", "5120");
-  static String basicAuthHeader = "Basic " + DatatypeConverter.printBase64Binary("admin:admin".getBytes(StandardCharsets.UTF_8));
+  static String basicAuthHeader = "Basic " + FileUtil.printBase64Binary("admin:admin".getBytes(StandardCharsets.UTF_8));
 
   public static final class EchoSocketHandler extends WebSocketHandler {
     @Override

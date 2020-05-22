@@ -1,8 +1,8 @@
 package com.nitorcreations.willow.utils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static com.nitorcreations.willow.utils.FileUtil.printBase64Binary;
+import static com.nitorcreations.willow.utils.FileUtil.parseBase64Binary;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

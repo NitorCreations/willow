@@ -77,8 +77,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -112,17 +112,6 @@
     </plugins>
   </build>
   <profiles>
-    <profile>
-      <activation>
-        <jdk>[1.6,1.9)</jdk>
-      </activation>
-      <dependencies>
-      <dependency>
-        <groupId>com.sun</groupId>
-        <artifactId>tools</artifactId>
-      </dependency>
-      </dependencies>
-    </profile>
     <profile>
       <id>create-script</id>
       <activation>

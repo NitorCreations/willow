@@ -19,7 +19,11 @@ public class Handler extends ProxylessURLStreamHandler {
   protected URLConnection openConnection(URL u) throws IOException {
     final URL resourceUrl = classLoader.getResource(u.getPath());
     if (resourceUrl == null) {
-      throw new IOException("Resource " + u.getPath() + " not found on classpath");
+      final URL systemResourceUrl = ClassLoader.getSystemClassLoader().getResource(u.getPath());
+      if (systemResourceUrl == null) {
+        throw new IOException("Resource " + u.getPath() + " not found on classpath");
+      }
+      return systemResourceUrl.openConnection();
     }
     return resourceUrl.openConnection();
   }

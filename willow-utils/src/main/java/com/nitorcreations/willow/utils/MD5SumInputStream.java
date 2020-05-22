@@ -25,8 +25,8 @@ public class MD5SumInputStream extends DigestInputStream {
   public byte[] digest() {
     return getMessageDigest().digest();
   }
-  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"},
-      justification="null check in check-with-resources magic bytecode")
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   public static byte[] getMd5FromURL(URL url) throws IOException {
     try (ByteArrayOutputStream out = new ByteArrayOutputStream();
         InputStream in = url.openConnection().getInputStream()) {

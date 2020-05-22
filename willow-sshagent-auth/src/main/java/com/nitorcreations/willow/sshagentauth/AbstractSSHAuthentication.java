@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.sshagentauth;
 
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static com.nitorcreations.willow.sshagentauth.SSHUtil.printBase64Binary;
 
 import java.util.List;
 import java.util.logging.Level;

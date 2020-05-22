@@ -59,6 +59,8 @@ public class PropertyServlet extends HttpServlet {
   }
 
   @Override
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     if (!req.getMethod().equals("GET")) {
       res.sendError(405, "Only GET allowed");

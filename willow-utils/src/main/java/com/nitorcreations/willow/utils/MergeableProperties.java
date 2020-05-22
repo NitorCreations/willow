@@ -38,6 +38,7 @@ import com.nitorcreations.willow.protocols.Register;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+
 public class MergeableProperties extends Properties implements Cloneable {
   public static final Pattern ARRAY_PROPERTY_REGEX = Pattern.compile("(.*?)\\[(last|\\d*?)\\](\\}?)$");
   public static final Pattern ARRAY_REFERENCE_REGEX = Pattern.compile("(\\$\\{)?(.*?)\\[(last|\\d+?)\\](.*?)$");
@@ -218,6 +219,8 @@ public class MergeableProperties extends Properties implements Cloneable {
     }
     return Collections.emptyList();
   }
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   private boolean mergeProperties(String name) {
     boolean ret = false;
     try (InputStream in = getIncludeUriInputStream(name)) {
@@ -235,7 +238,7 @@ public class MergeableProperties extends Properties implements Cloneable {
           load(in1);
           ret = true;
         } catch (IOException | URISyntaxException e1) {
-          this.log.log(Level.FINE, "Failed to render url: " + url);
+          this.log.log(Level.FINE, "Failed to render url: " + url, e1);
         }
       }
     }
@@ -263,6 +266,8 @@ public class MergeableProperties extends Properties implements Cloneable {
     }
   }
 
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   private boolean mergeYml(String name) {
     boolean ret = false;
     try (InputStream in = getIncludeUriInputStream(name)) {
@@ -437,6 +442,12 @@ public class MergeableProperties extends Properties implements Cloneable {
     boolean doAllowScripts = this.allowScripts && toMerge.allowScripts;
     for (Entry<String, String> next : toMerge.table.entrySet()) {
       put(next.getKey(), next.getValue(), doAllowScripts);
+    }
+  }
+
+  public void putAll(Properties toMerge) {
+    for (Object nextKey : toMerge.keySet()) {
+      put((String)nextKey, toMerge.getProperty((String)nextKey), this.allowScripts);
     }
   }
 

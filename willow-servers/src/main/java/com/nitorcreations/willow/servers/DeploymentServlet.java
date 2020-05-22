@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.eclipse.jetty.servlet.DefaultServlet;
 
 import com.google.gson.Gson;
@@ -58,6 +59,8 @@ public class DeploymentServlet extends DefaultServlet {
     super.init(delegateConfig);
   }
   @Override
+  @SuppressFBWarnings(value={"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
     String[] path = req.getPathInfo().split("/");
     if (path.length < 3) {

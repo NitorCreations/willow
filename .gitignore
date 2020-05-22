@@ -27,3 +27,5 @@ icons/icons.svg
 t3model.*
 *screenshot.png
 /node_modules/
+.vscode
+.factorypath

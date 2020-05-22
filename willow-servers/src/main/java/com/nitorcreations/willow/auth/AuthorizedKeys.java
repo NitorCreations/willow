@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.codec.Base64;
 
@@ -27,6 +28,8 @@ public class AuthorizedKeys {
   }
   private final List<AuthorizedKey> keys = new ArrayList<>();
 
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   public static AuthorizedKeys fromUrl(String url) throws ConfigurationException {
     AuthorizedKeys ret = new AuthorizedKeys();
     try (InputStream in = ProxyUtils.getUriInputStream(null, null, url);

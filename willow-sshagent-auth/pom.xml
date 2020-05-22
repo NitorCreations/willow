@@ -26,11 +26,6 @@
       <artifactId>jsch.agentproxy.jsch</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <artifactId>junit</artifactId>
       <groupId>junit</groupId>
       <scope>test</scope>

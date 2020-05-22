@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <targetJdk>1.7</targetJdk>
-    <maven.version>3.2.1</maven.version>
+    <maven.version>3.6.3</maven.version>
   </properties>
 
   <prerequisites>
@@ -75,16 +75,8 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>${targetJdk}</source>
-          <target>${targetJdk}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.2</version>
+        <version>3.6.0</version>
         <configuration>
           <goalPrefix>willow</goalPrefix>
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
@@ -105,19 +97,13 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>3.0.1</version>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs.version}</version>
         <executions>
           <execution>
-            <id>checkfindbugs</id>
-            <phase>package</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
+            <id>checkspotbugs</id>
+            <phase>none</phase>
           </execution>
         </executions>
       </plugin>

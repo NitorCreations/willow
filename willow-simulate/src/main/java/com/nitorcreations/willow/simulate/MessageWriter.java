@@ -28,6 +28,7 @@ public class MessageWriter {
       AbstractMessage nextMessage = next.next();
       while (nextMessage != null) {
         messages.put(Long.valueOf(nextMessage.getTimestamp()), nextMessage);
+        nextMessage = next.next();
       }
     }
     ArrayList<AbstractMessage> orderedMessages = new ArrayList<>();

@@ -2,7 +2,6 @@ package com.btr.proxy.selector.pac;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -83,16 +82,11 @@ public class UrlPacScriptSource implements PacScriptSource {
    * @throws URISyntaxException
    ************************************************************************/
   private String readPacFileContent(String scriptUrl) throws IOException {
-    try (InputStream in = new URL(scriptUrl).openConnection(Proxy.NO_PROXY).getInputStream();
-        BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+    try (BufferedReader r = new BufferedReader(new InputStreamReader(new URL(scriptUrl).openConnection(Proxy.NO_PROXY).getInputStream(), StandardCharsets.UTF_8))) {
       StringBuilder result = new StringBuilder();
-      try {
-        String line;
-        while ((line = r.readLine()) != null) {
-          result.append(line).append("\n");
-        }
-      } finally {
-        r.close();
+      String line;
+      while ((line = r.readLine()) != null) {
+        result.append(line).append("\n");
       }
       return result.toString();
     }

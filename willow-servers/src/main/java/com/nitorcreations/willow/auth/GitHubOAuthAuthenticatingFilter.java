@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authz.Permission;
@@ -134,6 +135,8 @@ public class GitHubOAuthAuthenticatingFilter extends AbstractOAuth2Authenticatin
     return readResponseBody(conn);
   }
 
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   private String readResponseBody(HttpURLConnection conn) throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 

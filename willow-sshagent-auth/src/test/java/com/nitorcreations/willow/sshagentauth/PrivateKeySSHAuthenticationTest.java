@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.sshagentauth;
 import static com.nitorcreations.willow.sshagentauth.SSHUtil.verify;
-import static javax.xml.bind.DatatypeConverter.parseBase64Binary;
+import static com.nitorcreations.willow.sshagentauth.SSHUtil.parseBase64Binary;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.charset.StandardCharsets;

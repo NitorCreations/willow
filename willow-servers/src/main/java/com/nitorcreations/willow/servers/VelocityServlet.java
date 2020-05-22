@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -52,15 +53,19 @@ public class VelocityServlet extends HttpServlet {
     return velocity;
   }
 
+  @SuppressFBWarnings(value={"NP_LOAD_OF_KNOWN_NULL_VALUE", "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+      "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"},
+      justification="null check in try-with-resources magic bytecode")
   private Properties loadProperties() throws ServletException {
     try (InputStream resource =  Thread.currentThread().getContextClassLoader().getResourceAsStream(
         this.configLocation)) {
       if (resource == null) {
         return new Properties();
+      } else {
+        final Properties props = new Properties();
+        props.load(resource);
+        return props;
       }
-      final Properties props = new Properties();
-      props.load(resource);
-      return props;
     } catch (IOException e) {
       throw new ServletException(e);
     }

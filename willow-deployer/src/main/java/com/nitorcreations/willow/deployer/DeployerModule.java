@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.hyperic.sigar.Humidor;
 import org.hyperic.sigar.SigarProxy;
 
@@ -37,6 +38,8 @@ public class DeployerModule extends AbstractModule {
     bind(ExecutorService.class).toInstance(Executors.newCachedThreadPool());
     bind(SigarProxy.class).toProvider(new HumidorProvider());
   }
+  @SuppressFBWarnings(value={"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+      justification="null check in try-with-resources magic bytecode")
   protected void extractNativeLib() {
     String deployerHome = System.getenv(ENV_DEPLOYER_HOME);
     if (deployerHome == null) {

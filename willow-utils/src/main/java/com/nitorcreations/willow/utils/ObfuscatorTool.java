@@ -1,6 +1,6 @@
 package com.nitorcreations.willow.utils;
 
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
+import static com.nitorcreations.willow.utils.FileUtil.printBase64Binary;
 
 import java.io.File;
 import java.io.FileInputStream;
