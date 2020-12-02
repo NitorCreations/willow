@@ -53,7 +53,7 @@
     <mavenVersion>3.1.0</mavenVersion>
     <wagonVersion>1.0</wagonVersion>
     <msgpack.version>0.6.11</msgpack.version>
-    <jetty.version>9.4.24.v20191120</jetty.version>
+    <jetty.version>9.4.35.v20201120</jetty.version>
     <slf4j.version>1.7.6</slf4j.version>
     <spotbugs.version>4.0.0</spotbugs.version>
     <sisu.version>0.3.0.M1</sisu.version>
