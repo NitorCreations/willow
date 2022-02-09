@@ -59,7 +59,7 @@
     <sisu.version>0.3.0.M1</sisu.version>
     <guice.version>3.0</guice.version>
     <jacoco.version>0.8.5</jacoco.version>
-    <shiro.version>1.2.3</shiro.version>
+    <shiro.version>1.7.1</shiro.version>
     <shiro.oauth.version>1.0</shiro.oauth.version>
   </properties>
   <distributionManagement>
